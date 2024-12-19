@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>The purrr Package: A Conductor’s Baton for the Tidyverse Orchestra in R – Numbers Around Us</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-29e2c20b02301cfff04dc8050bf30c7e.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-43df0d6f53b733b42d37fa7808e17715.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-9c08254e6c7f628c35df093bdfb7502b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-dcfa850a5134b92ae6cd1595fb3ecdf4.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Numbers Around Us</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../bi/index.html"> 
+<span class="menu-text">Business Intelligence</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../ds/index.html"> 
+<span class="menu-text">Data Science</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../dp/index.html"> 
+<span class="menu-text">Date Philosophy</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <a href="https://github.com" title="Github" class="quarto-navigation-tool px-1" aria-label="Github"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content column-page" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">The purrr Package: A Conductor’s Baton for the Tidyverse Orchestra in R</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta column-page">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section class="e-content" data-field="body">
+<section id="87f8" class="section--body section--first">
+<div class="section-divider">
+<hr>
+</div>
+<div class="section-content">
+<div class="section-inner sectionLayout--insetColumn">
+<section id="272b" class="level3 graf graf--h3 graf--leading graf--title" name="272b">
+<h3 class="graf graf--h3 graf--leading graf--title anchored" name="272b" data-anchor-id="272b">The purrr Package: A Conductor’s Baton for the Tidyverse Orchestra in&nbsp;R</h3>
+<figure id="9f60" class="graf graf--figure graf-after--h3 figure">
+<img src="https://cdn-images-1.medium.com/max/800/1*m7Hz7uvWmT4GRB7BCltzzA.jpeg" class="graf-image figure-img" data-image-id="1*m7Hz7uvWmT4GRB7BCltzzA.jpeg" data-width="3072" data-height="2048" data-is-featured="true">
+</figure>
+<p>The <code class="markup--code markup--p-code">purrr</code> package is a vital player in the tidyverse, an ecosystem of R packages designed to streamline data analysis tasks. As the Swiss Army knife of functional programming in R, <code class="markup--code markup--p-code">purrr</code> provides a versatile toolkit for working with data structures, especially lists and data frames. By simplifying complex operations, it brings clarity and elegance to your code, enabling you to manipulate, transform, and summarize data with ease. Picture <code class="markup--code markup--p-code">purrr</code> as the conductor of an orchestra, harmonizing the different sections of the<code class="markup--code markup--p-code">tidyverse</code> to create a beautiful symphony of data analysis. In this article, we’ll delve into the intricacies of <code class="markup--code markup--p-code">purrr</code> and discover how it can help you harness the full potential of R in your data analysis journey.</p>
+</section>
+<section id="b31f" class="level3 graf graf--h3 graf-after--p" name="b31f">
+<h3 class="graf graf--h3 graf-after--p anchored" name="b31f" data-anchor-id="b31f">Understanding purrr: The Functional Programming Paradigm</h3>
+<p>To fully appreciate the <code class="markup--code markup--p-code">purrr</code> package, it’s essential to understand the functional programming paradigm, which serves as the foundation of <code class="markup--code markup--p-code">purrr</code>’s capabilities.</p>
+<p>Functional programming is a programming approach that treats computation as the evaluation of mathematical functions while avoiding changing state and mutable data. This style of programming emphasizes the use of pure functions, which are functions that, given the same input, will always produce the same output without any side effects. Picture functional programming like a composer, who brings together various instruments, playing their individual parts in perfect harmony, to create a unified and elegant piece of music.</p>
+<p>Functional programming offers several benefits when working with R, particularly for data analysis. Some of these advantages include:</p>
+<ol type="1">
+<li><span id="f38f">Readability: Functional programming promotes writing clean and modular code, making it easier for others (and yourself) to understand and maintain the code. Think of it as a well-organized musical score, with each section clearly marked and easy to follow.</span></li>
+<li><span id="cbe6">Reusability: Pure functions can be easily reused across different parts of your code, as they don’t rely on any external state. This reduces the need to write repetitive code and allows you to create a library of versatile functions, much like a conductor reusing musical motifs throughout a symphony.</span></li>
+<li><span id="a0b4">Ease of debugging: By minimizing the use of mutable data and global state, functional programming reduces the likelihood of unexpected bugs, making the code more predictable and easier to debug. It’s akin to a conductor being able to isolate and resolve any discordant notes within the orchestra.</span></li>
+<li><span id="6bef">Parallel processing: The absence of side effects in functional programming allows for more efficient parallel processing, enabling you to harness the full power of modern multi-core processors. It’s like having multiple conductors working in perfect sync, seamlessly leading the orchestra in harmony.</span></li>
+</ol>
+<p>The <code class="markup--code markup--p-code">purrr</code> package is designed to work seamlessly with R’s functional programming capabilities. One of its key strengths lies in its ability to apply functions to elements within data structures, such as lists and data frames. The package offers a range of “map” functions that allow you to elegantly iterate over these structures, transforming and manipulating the data as needed. This powerful feature of <code class="markup--code markup--p-code">purrr</code> serves as the conductor’s baton, guiding the flow of your data analysis and helping you create a harmonious and efficient workflow.</p>
+<p>In the following sections, we will explore <code class="markup--code markup--p-code">purrr</code>’s key functions and demonstrate how they can help you streamline your data analysis process in R.</p>
+</section>
+<section id="38aa" class="level3 graf graf--h3 graf-after--p" name="38aa">
+<h3 class="graf graf--h3 graf-after--p anchored" name="38aa" data-anchor-id="38aa">A Closer Look at purrr’s Key Functions</h3>
+<p>Now that we have a solid understanding of the functional programming paradigm, let’s dive into some of the key functions that the <code class="markup--code markup--p-code">purrr</code> package offers. These functions, like a conductor’s hand gestures, guide the flow of data through various operations, ensuring an efficient and harmonious analysis.</p>
+<p><strong>map() and its variants: Turning a caterpillar of code into a butterfly</strong></p>
+<p>The <code class="markup--code markup--p-code">map()</code> function is the cornerstone of the <code class="markup--code markup--p-code">purrr</code> package, allowing you to apply a function to each element of a list or vector. This versatile function can simplify your code by replacing cumbersome for loops and <code class="markup--code markup--p-code">lapply()</code> calls with a more concise and expressive syntax. The <code class="markup--code markup--p-code">map()</code> function comes in several variants, each tailored to return a specific type of output, such as <code class="markup--code markup--p-code">map_lgl()</code> for logical, <code class="markup--code markup--p-code">map_chr()</code> for character, and <code class="markup--code markup--p-code">map_dbl()</code> for double values. This flexibility enables you to transform your code into a more elegant and streamlined form, much like a caterpillar metamorphosing into a beautiful butterfly.</p>
+<p><strong>pmap(): Mastering multiple inputs like juggling balls</strong></p>
+<p>The <code class="markup--code markup--p-code">pmap()</code> function is designed to handle multiple input lists or vectors, iterating over them in parallel and applying a specified function. This powerful function allows you to juggle multiple inputs effortlessly, enabling complex data manipulation and transformation with ease. Like a skilled juggler,<code class="markup--code markup--p-code">pmap()</code> keeps all the input “balls” in the air, ensuring that they’re processed and combined as intended.</p>
+<p><strong>keep() and discard(): Handpicking data like sorting apples</strong></p>
+<p>When you need to filter data based on specific criteria, <code class="markup--code markup--p-code">purrr</code>’s <code class="markup--code markup--p-code">keep()</code> and <code class="markup--code markup--p-code">discard()</code> functions come to the rescue. <code class="markup--code markup--p-code">keep()</code> retains elements that meet a given condition, while <code class="markup--code markup--p-code">discard()</code> removes elements that meet the condition. These functions let you handpick data elements as if you were sorting apples, keeping the good ones and discarding the bad. With their intuitive syntax and functional programming approach, <code class="markup--code markup--p-code">keep()</code> and <code class="markup--code markup--p-code">discard()</code> make data filtering a breeze.</p>
+<p><strong>reduce(): Folding data like origami</strong></p>
+<p>The <code class="markup--code markup--p-code">reduce()</code> function in purrr allows you to successively apply a function to elements of a list or vector, effectively “folding” the data like an intricate piece of origami. This function is particularly useful when you need to aggregate data or combine elements in a specific manner. By iteratively applying a specified function, <code class="markup--code markup--p-code">reduce()</code> skillfully folds your data into the desired shape or form.</p>
+<p><strong>safely(): Handling errors gracefully like a trapeze artist</strong></p>
+<p>In data analysis, errors and unexpected situations can arise. The <code class="markup--code markup--p-code">safely()</code> function in purrr enables you to handle these scenarios with grace and poise, much like a trapeze artist performing a complex routine. <code class="markup--code markup--p-code">safely()</code> takes a function as input and returns a new function that, when applied, captures any errors and returns them as part of the output, rather than halting the execution. This allows you to identify and address errors without disrupting the flow of your analysis.</p>
+<p>These key functions, along with many others in the <code class="markup--code markup--p-code">purrr</code> package, provide a powerful toolkit for efficient and harmonious data analysis in R. In the next sections, we’ll explore how to apply these functions to real-life data analysis tasks and demonstrate their practical applications.</p>
+</section>
+<section id="ea2c" class="level3 graf graf--h3 graf-after--p" name="ea2c">
+<h3 class="graf graf--h3 graf-after--p anchored" name="ea2c" data-anchor-id="ea2c">Applying purrr to Real-Life Data Analysis&nbsp;Tasks</h3>
+<p>Now that we’ve explored the key functions of the <code class="markup--code markup--p-code">purrr</code>package, let’s examine how they can be applied to real-life data analysis tasks. By integrating <code class="markup--code markup--p-code">purrr</code>into your workflow, you can master the art of data analysis like a skilled conductor, guiding the flow of data through various operations and producing harmonious results.</p>
+<p><strong>Data transformation: Cleaning up a messy room</strong></p>
+<p>Data transformation is an essential step in the data analysis process, as real-world data can often be messy and unstructured. Using <code class="markup--code markup--p-code">purrr</code>’s <code class="markup--code markup--p-code">map()</code> functions, you can easily apply cleaning and transformation operations to your data, much like tidying up a cluttered room. For example, you might use <code class="markup--code markup--p-code">map_chr()</code> to extract specific information from text strings, or <code class="markup--code markup--p-code">map_dbl()</code> to convert data types within a data frame. By applying these functions iteratively, you can transform and reshape your data into a more structured and usable format.</p>
+<p><strong>Data aggregation: Assembling a puzzle</strong></p>
+<p>In many cases, you’ll need to aggregate data from multiple sources or perform complex calculations to derive insights. The <code class="markup--code markup--p-code">reduce()</code> function in purrr allows you to combine data elements like puzzle pieces, iteratively applying a function to merge or aggregate data as needed. Whether you’re summing up values, calculating averages, or performing custom aggregations, <code class="markup--code markup--p-code">reduce()</code> can help you assemble the data puzzle and reveal the bigger picture.</p>
+<p><strong>Data summarization: Condensing a novel into a short story</strong></p>
+<p>Data summarization is the process of distilling large amounts of information into concise, meaningful insights. Using <code class="markup--code markup--p-code">purrr</code>’s functional programming approach, you can create custom summary functions that extract relevant information from your data, much like condensing a novel into a short story. By chaining together <code class="markup--code markup--p-code">map()</code> functions with other tidyverse tools, such as <code class="markup--code markup--p-code">dplyr</code>’s <code class="markup--code markup--p-code">summarize()</code> and <code class="markup--code markup--p-code">mutate()</code> functions, you can generate insightful summaries that highlight the most important aspects of your data.</p>
+<p><strong>Iterative operations: Unraveling the threads of data</strong></p>
+<p>Many data analysis tasks require performing iterative operations, such as running simulations, fitting models, or processing data in chunks. With purrr’s <code class="markup--code markup--p-code">pmap()</code> function, you can effortlessly juggle multiple inputs and apply functions across them in parallel. This enables you to unravel the threads of data, revealing patterns and relationships that might otherwise remain hidden. Additionally, by combining <code class="markup--code markup--p-code">purrr</code>’s functions with other R tools, such as parallel processing packages or machine learning libraries, you can further enhance the efficiency and power of your iterative operations.</p>
+<p>In summary, <code class="markup--code markup--p-code">purrr</code>’s functional programming capabilities enable you to tackle a wide range of data analysis tasks with elegance and efficiency. By integrating <code class="markup--code markup--p-code">purrr</code> into your workflow, you can master the art of data analysis, conducting your data orchestra in perfect harmony.</p>
+</section>
+<section id="e16f" class="level3 graf graf--h3 graf-after--p" name="e16f">
+<h3 class="graf graf--h3 graf-after--p anchored" name="e16f" data-anchor-id="e16f">Case Study: Building Models and Creating Visualizations with purrr and Nested&nbsp;Data</h3>
+<p>In R we usually have many function vectorized which mean that for example they can be used on column of dataframe without using loop, apply or map. Purrr’s map functions can of course be used to apply vectorized functions, but is too easy. Let me show you something little bit harder and showing more of <code class="markup--code markup--p-code">purrr</code>’s capabilities.</p>
+<p>In this case study, we will demonstrate how to use purrr with nested data to build multiple models and create custom visualizations.</p>
+<p><strong>Introducing the dataset: A collection of diverse species</strong></p>
+<p>Imagine we have a dataset containing measurements of various iris species, including sepal length, sepal width, petal length, and petal width, as well as the species classification. Our goal is to create separate linear regression models for each species to predict petal length based on petal width and visualize the results.</p>
+<p><strong>Data preparation: Nesting the data like a matryoshka doll</strong></p>
+<p>To begin, we need to split the dataset by species and create a nested data frame. We can use<code class="markup--code markup--p-code">dplyr</code>’s <code class="markup--code markup--p-code">group_by()</code> and <code class="markup--code markup--p-code">tidyr</code>’s <code class="markup--code markup--p-code">nest()</code> functions for this task:</p>
+<pre id="cad2" class="graf graf--pre graf-after--p graf--preV2" data-code-block-mode="2" spellcheck="false" data-code-block-lang="r"><code>library(tidyverse)
+nested_data &lt;- iris %&gt;%
+ group_by(Species) %&gt;%
+ nest()</code></pre>
+<p>This results in a nested data frame with one row for each species and a nested column containing the data for each group.</p>
+<p><strong>Model building: Crafting artisanal models for each species</strong></p>
+<p>Now that our data is nested, we can use <code class="markup--code markup--p-code">purrr</code>’s <code class="markup--code markup--p-code">map()</code> function to fit a linear regression model for each species:</p>
+<pre id="3b55" class="graf graf--pre graf-after--p graf--preV2" data-code-block-mode="2" spellcheck="false" data-code-block-lang="r"><code>model_data &lt;- nested_data %&gt;%
+ mutate(models = map(data, ~lm(Petal.Length ~ Petal.Width, data = .x)))</code></pre>
+<p>This adds a new column to our data frame containing the fitted linear regression models for each species.</p>
+<p><strong>Model evaluation: Extracting golden nuggets of insight</strong></p>
+<p>To evaluate the performance of our models, we can use purrr to calculate performance metrics, such as the R-squared value, for each model:</p>
+<pre id="8b46" class="graf graf--pre graf-after--p graf--preV2" data-code-block-mode="2" spellcheck="false" data-code-block-lang="r"><code>model_data &lt;- model_data %&gt;%
+ mutate(r_squared = map_dbl(models, ~summary(.x)$r.squared))</code></pre>
+<p>This adds a new column to our data frame with the R-squared value for each species’ model, allowing us to compare their performance.</p>
+<p><strong>Visualization: Painting a vibrant portrait of species-specific trends</strong></p>
+<p>Finally, we can use <code class="markup--code markup--p-code">purrr</code> and <code class="markup--code markup--p-code">ggplot2</code> to create custom visualizations for each species. We will create a scatter plot of petal length versus petal width, along with the fitted regression line for each species:</p>
+<pre id="2739" class="graf graf--pre graf-after--p graf--preV2" data-code-block-mode="2" spellcheck="false" data-code-block-lang="r"><code>plot_data &lt;- model_data %&gt;%
+ mutate(plots = map2(data, models, ~{
+ ggplot(.x, aes(x = Petal.Width, y = Petal.Length)) +
+ geom_point() +
+ geom_abline(aes(intercept = coef(.y)[1], slope = coef(.y)[2]), color = 'blue') +
+ ggtitle(paste('Species:', unique(Species))) +
+ theme_minimal()
+ }))</code></pre>
+<p>This adds a new column to our data frame containing a <code class="markup--code markup--p-code">ggplot</code> object for each species. To display the plots, we can use <code class="markup--code markup--p-code">purrr</code>’s <code class="markup--code markup--p-code">walk()</code> function:</p>
+<pre id="abf8" class="graf graf--pre graf-after--p graf--preV2" data-code-block-mode="2" spellcheck="false" data-code-block-lang="r"><code>walk(plot_data$plots, print)</code></pre>
+<p>This will display the three separate scatter plots with the fitted regression lines, allowing us to visually compare the relationships between petal length and petal width for each iris species.</p>
+<p>In conclusion, this case study demonstrates how the <code class="markup--code markup--p-code">purrr</code> package can be used to work with nested data, fit multiple models, and create custom visualizations. By leveraging the power of purrr and functional programming, you can efficiently analyze complex datasets and gain valuable insights.</p>
+</section>
+<section id="28c3" class="level3 graf graf--h3 graf-after--p" name="28c3">
+<h3 class="graf graf--h3 graf-after--p anchored" name="28c3" data-anchor-id="28c3">Tips and Best Practices for Using&nbsp;purrr</h3>
+<p>When incorporating the purrr package into your R programming toolbox, following these tips and best practices can help you make the most of its powerful functional programming capabilities:</p>
+<ol type="1">
+<li><span id="77c3">Embrace functional programming principles: By familiarizing yourself with the core concepts of functional programming, such as immutability, function purity, and higher-order functions, you’ll be better equipped to leverage <code class="markup--code markup--li-code">purrr</code>’s full potential.</span></li>
+<li><span id="007d">Combine <code class="markup--code markup--li-code">purrr</code> with other <code class="markup--code markup--li-code">tidyverse</code> packages: The <code class="markup--code markup--li-code">purrr</code> package is designed to work seamlessly with other<code class="markup--code markup--li-code">tidyverse</code> packages, such as <code class="markup--code markup--li-code">dplyr</code>, <code class="markup--code markup--li-code">tidyr</code>, and <code class="markup--code markup--li-code">ggplot2</code>. By integrating <code class="markup--code markup--li-code">purrr</code> into your existing <code class="markup--code markup--li-code">tidyverse</code> workflow, you can streamline your data analysis and visualization processes.</span></li>
+<li><span id="ba26">Use the appropriate <code class="markup--code markup--li-code">map()</code> variants: The <code class="markup--code markup--li-code">map()</code> function in purrr has several variants tailored for specific output types, such as<code class="markup--code markup--li-code">map_lgl()</code>, <code class="markup--code markup--li-code">map_chr()</code>, and <code class="markup--code markup--li-code">map_dbl()</code>. Make sure to choose the appropriate variant for your use case to simplify your code and improve its readability.</span></li>
+<li><span id="875f">Opt for purrr functions over for loops and <code class="markup--code markup--li-code">*apply()</code> functions: <code class="markup--code markup--li-code">Purrr</code> functions are often more concise, expressive, and efficient than for loops and base R<code class="markup--code markup--li-code">*apply()</code>functions. Whenever possible, use <code class="markup--code markup--li-code">purrr</code> functions to iterate over lists or vectors and apply functions to their elements.</span></li>
+<li><span id="da07">Make use of <code class="markup--code markup--li-code">pmap()</code> for parallel iteration: When working with multiple input lists or vectors, use the <code class="markup--code markup--li-code">pmap()</code> function to iterate over them in parallel. This can simplify your code and make it easier to read and understand.</span></li>
+<li><span id="6bee">Utilize <code class="markup--code markup--li-code">safely()</code> and other adverbs for error handling: The <code class="markup--code markup--li-code">safely()</code> function, along with other purrr adverbs like <code class="markup--code markup--li-code">quietly()</code> and <code class="markup--code markup--li-code">possibly()</code>, can help you handle errors and unexpected situations gracefully. Use these functions to create robust, error-resistant code.</span></li>
+<li><span id="299e">Experiment with list columns and nested data frames: <code class="markup--code markup--li-code">Purrr</code> excels at working with complex data structures, such as list columns and nested data frames. By nesting your data and using <code class="markup--code markup--li-code">purrr</code> functions, you can perform sophisticated analysis and manipulation tasks with ease.</span></li>
+<li><span id="b594">Familiarize yourself with <code class="markup--code markup--li-code">purrr</code>’s other functions: Beyond its core functions, <code class="markup--code markup--li-code">purrr</code> offers a wide array of additional tools for working with functions, lists, and other data structures. Explore the <code class="markup--code markup--li-code">purrr</code> documentation to discover functions like <code class="markup--code markup--li-code">reduce()</code>, <code class="markup--code markup--li-code">pluck()</code>, and <code class="markup--code markup--li-code">flatten()</code>that can help you further streamline your data analysis workflow.</span></li>
+<li><span id="de04">Test your code with smaller datasets: When working with large or complex datasets, it’s a good idea to test your purrr functions on smaller subsets of data first. This can help you identify errors and fine-tune your code before scaling up to the full dataset.</span></li>
+<li><span id="2a89">Share your knowledge: Finally, as you gain expertise with the purrr package, share your knowledge and insights with others. By discussing your experiences and collaborating with fellow R users, you can contribute to the vibrant R community and help others make the most of purrr’s powerful functional programming capabilities.</span></li>
+</ol>
+</section>
+</div>
+</div>
+</section>
+<section id="349b" class="section--body">
+<div class="section-divider">
+<hr>
+</div>
+<div class="section-content">
+<div class="section-inner sectionLayout--insetColumn">
+<p>In conclusion, the purrr package is a powerful and versatile tool that can significantly enhance your data analysis capabilities in R. By embracing the functional programming paradigm and integrating purrr with other tidyverse packages, you can create elegant, efficient, and expressive code to tackle a wide array of data analysis tasks.</p>
+<p>The case studies presented in this article demonstrate how purrr can be used to work with nested data, fit multiple models, and create custom visualizations, among other applications. By following the tips and best practices outlined, you can make the most of purrr’s features and streamline your data analysis workflow.</p>
+<p>Ultimately, incorporating the purrr package into your R programming toolbox will empower you to conduct your data orchestra with finesse, producing harmonious results and extracting valuable insights from even the most complex datasets. As you continue to explore and master purrr, remember to share your knowledge and experiences with the broader R community, contributing to the collective understanding and appreciation of this powerful tool.</p>
+</div>
+</div>
+</section>
+<section id="14ad" class="section--body section--last">
+<div class="section-divider">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 5%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>:::</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>title: “The purrr Package: A Conductor’s Baton for the Tidyverse Orchestra in R”</td>
+</tr>
+</tbody>
+</table>
+<div class="section-content">
+<div class="section-inner sectionLayout--insetColumn">
+<figure id="9f60" class="graf graf--figure graf-after--h3 figure">
+<img src="https://cdn-images-1.medium.com/max/800/1*m7Hz7uvWmT4GRB7BCltzzA.jpeg" class="graf-image figure-img" data-image-id="1*m7Hz7uvWmT4GRB7BCltzzA.jpeg" data-width="3072" data-height="2048" data-is-featured="true">
+</figure>
+<p>The <code class="markup--code markup--p-code">purrr</code> package is a vital player in the tidyverse, an ecosystem of R packages designed to streamline data analysis tasks. As the Swiss Army knife of functional programming in R, <code class="markup--code markup--p-code">purrr</code> provides a versatile toolkit for working with data structures, especially lists and data frames. By simplifying complex operations, it brings clarity and elegance to your code, enabling you to manipulate, transform, and summarize data with ease. Picture <code class="markup--code markup--p-code">purrr</code> as the conductor of an orchestra, harmonizing the different sections of the<code class="markup--code markup--p-code">tidyverse</code> to create a beautiful symphony of data analysis. In this article, we’ll delve into the intricacies of <code class="markup--code markup--p-code">purrr</code> and discover how it can help you harness the full potential of R in your data analysis journey.</p>
+<section id="b31f" class="level3 graf graf--h3 graf-after--p" name="b31f">
+<h3 class="graf graf--h3 graf-after--p anchored" name="b31f" data-anchor-id="b31f">Understanding purrr: The Functional Programming Paradigm</h3>
+<p>To fully appreciate the <code class="markup--code markup--p-code">purrr</code> package, it’s essential to understand the functional programming paradigm, which serves as the foundation of <code class="markup--code markup--p-code">purrr</code>’s capabilities.</p>
+<p>Functional programming is a programming approach that treats computation as the evaluation of mathematical functions while avoiding changing state and mutable data. This style of programming emphasizes the use of pure functions, which are functions that, given the same input, will always produce the same output without any side effects. Picture functional programming like a composer, who brings together various instruments, playing their individual parts in perfect harmony, to create a unified and elegant piece of music.</p>
+<p>Functional programming offers several benefits when working with R, particularly for data analysis. Some of these advantages include:</p>
+<ol type="1">
+<li><span id="f38f">Readability: Functional programming promotes writing clean and modular code, making it easier for others (and yourself) to understand and maintain the code. Think of it as a well-organized musical score, with each section clearly marked and easy to follow.</span></li>
+<li><span id="cbe6">Reusability: Pure functions can be easily reused across different parts of your code, as they don’t rely on any external state. This reduces the need to write repetitive code and allows you to create a library of versatile functions, much like a conductor reusing musical motifs throughout a symphony.</span></li>
+<li><span id="a0b4">Ease of debugging: By minimizing the use of mutable data and global state, functional programming reduces the likelihood of unexpected bugs, making the code more predictable and easier to debug. It’s akin to a conductor being able to isolate and resolve any discordant notes within the orchestra.</span></li>
+<li><span id="6bef">Parallel processing: The absence of side effects in functional programming allows for more efficient parallel processing, enabling you to harness the full power of modern multi-core processors. It’s like having multiple conductors working in perfect sync, seamlessly leading the orchestra in harmony.</span></li>
+</ol>
+<p>The <code class="markup--code markup--p-code">purrr</code> package is designed to work seamlessly with R’s functional programming capabilities. One of its key strengths lies in its ability to apply functions to elements within data structures, such as lists and data frames. The package offers a range of “map” functions that allow you to elegantly iterate over these structures, transforming and manipulating the data as needed. This powerful feature of <code class="markup--code markup--p-code">purrr</code> serves as the conductor’s baton, guiding the flow of your data analysis and helping you create a harmonious and efficient workflow.</p>
+<p>In the following sections, we will explore <code class="markup--code markup--p-code">purrr</code>’s key functions and demonstrate how they can help you streamline your data analysis process in R.</p>
+</section>
+<section id="38aa" class="level3 graf graf--h3 graf-after--p" name="38aa">
+<h3 class="graf graf--h3 graf-after--p anchored" name="38aa" data-anchor-id="38aa">A Closer Look at purrr’s Key Functions</h3>
+<p>Now that we have a solid understanding of the functional programming paradigm, let’s dive into some of the key functions that the <code class="markup--code markup--p-code">purrr</code> package offers. These functions, like a conductor’s hand gestures, guide the flow of data through various operations, ensuring an efficient and harmonious analysis.</p>
+<p><strong>map() and its variants: Turning a caterpillar of code into a butterfly</strong></p>
+<p>The <code class="markup--code markup--p-code">map()</code> function is the cornerstone of the <code class="markup--code markup--p-code">purrr</code> package, allowing you to apply a function to each element of a list or vector. This versatile function can simplify your code by replacing cumbersome for loops and <code class="markup--code markup--p-code">lapply()</code> calls with a more concise and expressive syntax. The <code class="markup--code markup--p-code">map()</code> function comes in several variants, each tailored to return a specific type of output, such as <code class="markup--code markup--p-code">map_lgl()</code> for logical, <code class="markup--code markup--p-code">map_chr()</code> for character, and <code class="markup--code markup--p-code">map_dbl()</code> for double values. This flexibility enables you to transform your code into a more elegant and streamlined form, much like a caterpillar metamorphosing into a beautiful butterfly.</p>
+<p><strong>pmap(): Mastering multiple inputs like juggling balls</strong></p>
+<p>The <code class="markup--code markup--p-code">pmap()</code> function is designed to handle multiple input lists or vectors, iterating over them in parallel and applying a specified function. This powerful function allows you to juggle multiple inputs effortlessly, enabling complex data manipulation and transformation with ease. Like a skilled juggler,<code class="markup--code markup--p-code">pmap()</code> keeps all the input “balls” in the air, ensuring that they’re processed and combined as intended.</p>
+<p><strong>keep() and discard(): Handpicking data like sorting apples</strong></p>
+<p>When you need to filter data based on specific criteria, <code class="markup--code markup--p-code">purrr</code>’s <code class="markup--code markup--p-code">keep()</code> and <code class="markup--code markup--p-code">discard()</code> functions come to the rescue. <code class="markup--code markup--p-code">keep()</code> retains elements that meet a given condition, while <code class="markup--code markup--p-code">discard()</code> removes elements that meet the condition. These functions let you handpick data elements as if you were sorting apples, keeping the good ones and discarding the bad. With their intuitive syntax and functional programming approach, <code class="markup--code markup--p-code">keep()</code> and <code class="markup--code markup--p-code">discard()</code> make data filtering a breeze.</p>
+<p><strong>reduce(): Folding data like origami</strong></p>
+<p>The <code class="markup--code markup--p-code">reduce()</code> function in purrr allows you to successively apply a function to elements of a list or vector, effectively “folding” the data like an intricate piece of origami. This function is particularly useful when you need to aggregate data or combine elements in a specific manner. By iteratively applying a specified function, <code class="markup--code markup--p-code">reduce()</code> skillfully folds your data into the desired shape or form.</p>
+<p><strong>safely(): Handling errors gracefully like a trapeze artist</strong></p>
+<p>In data analysis, errors and unexpected situations can arise. The <code class="markup--code markup--p-code">safely()</code> function in purrr enables you to handle these scenarios with grace and poise, much like a trapeze artist performing a complex routine. <code class="markup--code markup--p-code">safely()</code> takes a function as input and returns a new function that, when applied, captures any errors and returns them as part of the output, rather than halting the execution. This allows you to identify and address errors without disrupting the flow of your analysis.</p>
+<p>These key functions, along with many others in the <code class="markup--code markup--p-code">purrr</code> package, provide a powerful toolkit for efficient and harmonious data analysis in R. In the next sections, we’ll explore how to apply these functions to real-life data analysis tasks and demonstrate their practical applications.</p>
+</section>
+<section id="ea2c" class="level3 graf graf--h3 graf-after--p" name="ea2c">
+<h3 class="graf graf--h3 graf-after--p anchored" name="ea2c" data-anchor-id="ea2c">Applying purrr to Real-Life Data Analysis&nbsp;Tasks</h3>
+<p>Now that we’ve explored the key functions of the <code class="markup--code markup--p-code">purrr</code>package, let’s examine how they can be applied to real-life data analysis tasks. By integrating <code class="markup--code markup--p-code">purrr</code>into your workflow, you can master the art of data analysis like a skilled conductor, guiding the flow of data through various operations and producing harmonious results.</p>
+<p><strong>Data transformation: Cleaning up a messy room</strong></p>
+<p>Data transformation is an essential step in the data analysis process, as real-world data can often be messy and unstructured. Using <code class="markup--code markup--p-code">purrr</code>’s <code class="markup--code markup--p-code">map()</code> functions, you can easily apply cleaning and transformation operations to your data, much like tidying up a cluttered room. For example, you might use <code class="markup--code markup--p-code">map_chr()</code> to extract specific information from text strings, or <code class="markup--code markup--p-code">map_dbl()</code> to convert data types within a data frame. By applying these functions iteratively, you can transform and reshape your data into a more structured and usable format.</p>
+<p><strong>Data aggregation: Assembling a puzzle</strong></p>
+<p>In many cases, you’ll need to aggregate data from multiple sources or perform complex calculations to derive insights. The <code class="markup--code markup--p-code">reduce()</code> function in purrr allows you to combine data elements like puzzle pieces, iteratively applying a function to merge or aggregate data as needed. Whether you’re summing up values, calculating averages, or performing custom aggregations, <code class="markup--code markup--p-code">reduce()</code> can help you assemble the data puzzle and reveal the bigger picture.</p>
+<p><strong>Data summarization: Condensing a novel into a short story</strong></p>
+<p>Data summarization is the process of distilling large amounts of information into concise, meaningful insights. Using <code class="markup--code markup--p-code">purrr</code>’s functional programming approach, you can create custom summary functions that extract relevant information from your data, much like condensing a novel into a short story. By chaining together <code class="markup--code markup--p-code">map()</code> functions with other tidyverse tools, such as <code class="markup--code markup--p-code">dplyr</code>’s <code class="markup--code markup--p-code">summarize()</code> and <code class="markup--code markup--p-code">mutate()</code> functions, you can generate insightful summaries that highlight the most important aspects of your data.</p>
+<p><strong>Iterative operations: Unraveling the threads of data</strong></p>
+<p>Many data analysis tasks require performing iterative operations, such as running simulations, fitting models, or processing data in chunks. With purrr’s <code class="markup--code markup--p-code">pmap()</code> function, you can effortlessly juggle multiple inputs and apply functions across them in parallel. This enables you to unravel the threads of data, revealing patterns and relationships that might otherwise remain hidden. Additionally, by combining <code class="markup--code markup--p-code">purrr</code>’s functions with other R tools, such as parallel processing packages or machine learning libraries, you can further enhance the efficiency and power of your iterative operations.</p>
+<p>In summary, <code class="markup--code markup--p-code">purrr</code>’s functional programming capabilities enable you to tackle a wide range of data analysis tasks with elegance and efficiency. By integrating <code class="markup--code markup--p-code">purrr</code> into your workflow, you can master the art of data analysis, conducting your data orchestra in perfect harmony.</p>
+</section>
+<section id="e16f" class="level3 graf graf--h3 graf-after--p" name="e16f">
+<h3 class="graf graf--h3 graf-after--p anchored" name="e16f" data-anchor-id="e16f">Case Study: Building Models and Creating Visualizations with purrr and Nested&nbsp;Data</h3>
+<p>In R we usually have many function vectorized which mean that for example they can be used on column of dataframe without using loop, apply or map. Purrr’s map functions can of course be used to apply vectorized functions, but is too easy. Let me show you something little bit harder and showing more of <code class="markup--code markup--p-code">purrr</code>’s capabilities.</p>
+<p>In this case study, we will demonstrate how to use purrr with nested data to build multiple models and create custom visualizations.</p>
+<p><strong>Introducing the dataset: A collection of diverse species</strong></p>
+<p>Imagine we have a dataset containing measurements of various iris species, including sepal length, sepal width, petal length, and petal width, as well as the species classification. Our goal is to create separate linear regression models for each species to predict petal length based on petal width and visualize the results.</p>
+<p><strong>Data preparation: Nesting the data like a matryoshka doll</strong></p>
+<p>To begin, we need to split the dataset by species and create a nested data frame. We can use<code class="markup--code markup--p-code">dplyr</code>’s <code class="markup--code markup--p-code">group_by()</code> and <code class="markup--code markup--p-code">tidyr</code>’s <code class="markup--code markup--p-code">nest()</code> functions for this task:</p>
+<pre id="cad2" class="graf graf--pre graf-after--p graf--preV2" data-code-block-mode="2" spellcheck="false" data-code-block-lang="r"><code>library(tidyverse)
+nested_data &lt;- iris %&gt;%
+ group_by(Species) %&gt;%
+ nest()</code></pre>
+<p>This results in a nested data frame with one row for each species and a nested column containing the data for each group.</p>
+<p><strong>Model building: Crafting artisanal models for each species</strong></p>
+<p>Now that our data is nested, we can use <code class="markup--code markup--p-code">purrr</code>’s <code class="markup--code markup--p-code">map()</code> function to fit a linear regression model for each species:</p>
+<pre id="3b55" class="graf graf--pre graf-after--p graf--preV2" data-code-block-mode="2" spellcheck="false" data-code-block-lang="r"><code>model_data &lt;- nested_data %&gt;%
+ mutate(models = map(data, ~lm(Petal.Length ~ Petal.Width, data = .x)))</code></pre>
+<p>This adds a new column to our data frame containing the fitted linear regression models for each species.</p>
+<p><strong>Model evaluation: Extracting golden nuggets of insight</strong></p>
+<p>To evaluate the performance of our models, we can use purrr to calculate performance metrics, such as the R-squared value, for each model:</p>
+<pre id="8b46" class="graf graf--pre graf-after--p graf--preV2" data-code-block-mode="2" spellcheck="false" data-code-block-lang="r"><code>model_data &lt;- model_data %&gt;%
+ mutate(r_squared = map_dbl(models, ~summary(.x)$r.squared))</code></pre>
+<p>This adds a new column to our data frame with the R-squared value for each species’ model, allowing us to compare their performance.</p>
+<p><strong>Visualization: Painting a vibrant portrait of species-specific trends</strong></p>
+<p>Finally, we can use <code class="markup--code markup--p-code">purrr</code> and <code class="markup--code markup--p-code">ggplot2</code> to create custom visualizations for each species. We will create a scatter plot of petal length versus petal width, along with the fitted regression line for each species:</p>
+<pre id="2739" class="graf graf--pre graf-after--p graf--preV2" data-code-block-mode="2" spellcheck="false" data-code-block-lang="r"><code>plot_data &lt;- model_data %&gt;%
+ mutate(plots = map2(data, models, ~{
+ ggplot(.x, aes(x = Petal.Width, y = Petal.Length)) +
+ geom_point() +
+ geom_abline(aes(intercept = coef(.y)[1], slope = coef(.y)[2]), color = 'blue') +
+ ggtitle(paste('Species:', unique(Species))) +
+ theme_minimal()
+ }))</code></pre>
+<p>This adds a new column to our data frame containing a <code class="markup--code markup--p-code">ggplot</code> object for each species. To display the plots, we can use <code class="markup--code markup--p-code">purrr</code>’s <code class="markup--code markup--p-code">walk()</code> function:</p>
+<pre id="abf8" class="graf graf--pre graf-after--p graf--preV2" data-code-block-mode="2" spellcheck="false" data-code-block-lang="r"><code>walk(plot_data$plots, print)</code></pre>
+<p>This will display the three separate scatter plots with the fitted regression lines, allowing us to visually compare the relationships between petal length and petal width for each iris species.</p>
+<p>In conclusion, this case study demonstrates how the <code class="markup--code markup--p-code">purrr</code> package can be used to work with nested data, fit multiple models, and create custom visualizations. By leveraging the power of purrr and functional programming, you can efficiently analyze complex datasets and gain valuable insights.</p>
+</section>
+<section id="28c3" class="level3 graf graf--h3 graf-after--p" name="28c3">
+<h3 class="graf graf--h3 graf-after--p anchored" name="28c3" data-anchor-id="28c3">Tips and Best Practices for Using&nbsp;purrr</h3>
+<p>When incorporating the purrr package into your R programming toolbox, following these tips and best practices can help you make the most of its powerful functional programming capabilities:</p>
+<ol type="1">
+<li><span id="77c3">Embrace functional programming principles: By familiarizing yourself with the core concepts of functional programming, such as immutability, function purity, and higher-order functions, you’ll be better equipped to leverage <code class="markup--code markup--li-code">purrr</code>’s full potential.</span></li>
+<li><span id="007d">Combine <code class="markup--code markup--li-code">purrr</code> with other <code class="markup--code markup--li-code">tidyverse</code> packages: The <code class="markup--code markup--li-code">purrr</code> package is designed to work seamlessly with other<code class="markup--code markup--li-code">tidyverse</code> packages, such as <code class="markup--code markup--li-code">dplyr</code>, <code class="markup--code markup--li-code">tidyr</code>, and <code class="markup--code markup--li-code">ggplot2</code>. By integrating <code class="markup--code markup--li-code">purrr</code> into your existing <code class="markup--code markup--li-code">tidyverse</code> workflow, you can streamline your data analysis and visualization processes.</span></li>
+<li><span id="ba26">Use the appropriate <code class="markup--code markup--li-code">map()</code> variants: The <code class="markup--code markup--li-code">map()</code> function in purrr has several variants tailored for specific output types, such as<code class="markup--code markup--li-code">map_lgl()</code>, <code class="markup--code markup--li-code">map_chr()</code>, and <code class="markup--code markup--li-code">map_dbl()</code>. Make sure to choose the appropriate variant for your use case to simplify your code and improve its readability.</span></li>
+<li><span id="875f">Opt for purrr functions over for loops and <code class="markup--code markup--li-code">*apply()</code> functions: <code class="markup--code markup--li-code">Purrr</code> functions are often more concise, expressive, and efficient than for loops and base R<code class="markup--code markup--li-code">*apply()</code>functions. Whenever possible, use <code class="markup--code markup--li-code">purrr</code> functions to iterate over lists or vectors and apply functions to their elements.</span></li>
+<li><span id="da07">Make use of <code class="markup--code markup--li-code">pmap()</code> for parallel iteration: When working with multiple input lists or vectors, use the <code class="markup--code markup--li-code">pmap()</code> function to iterate over them in parallel. This can simplify your code and make it easier to read and understand.</span></li>
+<li><span id="6bee">Utilize <code class="markup--code markup--li-code">safely()</code> and other adverbs for error handling: The <code class="markup--code markup--li-code">safely()</code> function, along with other purrr adverbs like <code class="markup--code markup--li-code">quietly()</code> and <code class="markup--code markup--li-code">possibly()</code>, can help you handle errors and unexpected situations gracefully. Use these functions to create robust, error-resistant code.</span></li>
+<li><span id="299e">Experiment with list columns and nested data frames: <code class="markup--code markup--li-code">Purrr</code> excels at working with complex data structures, such as list columns and nested data frames. By nesting your data and using <code class="markup--code markup--li-code">purrr</code> functions, you can perform sophisticated analysis and manipulation tasks with ease.</span></li>
+<li><span id="b594">Familiarize yourself with <code class="markup--code markup--li-code">purrr</code>’s other functions: Beyond its core functions, <code class="markup--code markup--li-code">purrr</code> offers a wide array of additional tools for working with functions, lists, and other data structures. Explore the <code class="markup--code markup--li-code">purrr</code> documentation to discover functions like <code class="markup--code markup--li-code">reduce()</code>, <code class="markup--code markup--li-code">pluck()</code>, and <code class="markup--code markup--li-code">flatten()</code>that can help you further streamline your data analysis workflow.</span></li>
+<li><span id="de04">Test your code with smaller datasets: When working with large or complex datasets, it’s a good idea to test your purrr functions on smaller subsets of data first. This can help you identify errors and fine-tune your code before scaling up to the full dataset.</span></li>
+<li><span id="2a89">Share your knowledge: Finally, as you gain expertise with the purrr package, share your knowledge and insights with others. By discussing your experiences and collaborating with fellow R users, you can contribute to the vibrant R community and help others make the most of purrr’s powerful functional programming capabilities.</span></li>
+</ol>
+</section>
+</div>
+</div>
+</div>
+<section id="349b" class="section--body">
+<div class="section-divider">
+<hr>
+</div>
+<div class="section-content">
+<div class="section-inner sectionLayout--insetColumn">
+<p>In conclusion, the purrr package is a powerful and versatile tool that can significantly enhance your data analysis capabilities in R. By embracing the functional programming paradigm and integrating purrr with other tidyverse packages, you can create elegant, efficient, and expressive code to tackle a wide array of data analysis tasks.</p>
+<p>The case studies presented in this article demonstrate how purrr can be used to work with nested data, fit multiple models, and create custom visualizations, among other applications. By following the tips and best practices outlined, you can make the most of purrr’s features and streamline your data analysis workflow.</p>
+<p>Ultimately, incorporating the purrr package into your R programming toolbox will empower you to conduct your data orchestra with finesse, producing harmonious results and extracting valuable insights from even the most complex datasets. As you continue to explore and master purrr, remember to share your knowledge and experiences with the broader R community, contributing to the collective understanding and appreciation of this powerful tool.</p>
+</div>
+</div>
+</section>
+<section id="14ad" class="section--body section--last">
+<div class="section-divider">
+<hr>
+</div>
+<div class="section-content">
+<div class="section-inner sectionLayout--insetColumn">
+<p>Special gift at the end.</p>
+<figure id="b465" class="graf graf--figure graf--iframe graf-after--p graf--trailing figure">
+</figure>
+</div>
+</div>
+</section>
+</section>
+<p>By <a href="https://medium.com/@numbersaroundus" class="p-author h-card">Numbers around us</a> on <a href="https://medium.com/p/57762fd1e4bb">April 13, 2023</a>.</p>
+<p><a href="https://medium.com/@numbersaroundus/the-purrr-package-a-conductors-baton-for-the-tidyverse-orchestra-in-r-57762fd1e4bb" class="p-canonical">Canonical link</a></p>
+<p>Exported from <a href="https://medium.com">Medium</a> on December 19, 2024. ```````````````````</p>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = true;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      <div class="footer-contents">For everybody, not to be fooled by numbers</div>  
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
