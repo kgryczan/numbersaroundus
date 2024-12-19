@@ -253,7 +253,7 @@ data frame. We can use` dplyr`{.markup--code .markup--p-code}'s
 .markup--p-code}'s `nest()`{.markup--code .markup--p-code} functions for
 this task:
 
-``` {#cad2 .graf .graf--pre .graf-after--p .graf--preV2 code-block-mode="2" spellcheck="false" code-block-lang="r"}
+```r {#cad2 .graf .graf--pre .graf-after--p .graf--preV2 code-block-mode="2" spellcheck="false" code-block-lang="r"}
 library(tidyverse)
 nested_data <- iris %>%
  group_by(Species) %>%
@@ -269,7 +269,7 @@ Now that our data is nested, we can use `purrr`{.markup--code
 .markup--p-code}'s `map()`{.markup--code .markup--p-code} function to
 fit a linear regression model for each species:
 
-``` {#3b55 .graf .graf--pre .graf-after--p .graf--preV2 code-block-mode="2" spellcheck="false" code-block-lang="r"}
+```r {#3b55 .graf .graf--pre .graf-after--p .graf--preV2 code-block-mode="2" spellcheck="false" code-block-lang="r"}
 model_data <- nested_data %>%
  mutate(models = map(data, ~lm(Petal.Length ~ Petal.Width, data = .x)))
 ```
@@ -282,7 +282,7 @@ regression models for each species.
 To evaluate the performance of our models, we can use purrr to calculate
 performance metrics, such as the R-squared value, for each model:
 
-``` {#8b46 .graf .graf--pre .graf-after--p .graf--preV2 code-block-mode="2" spellcheck="false" code-block-lang="r"}
+``` r 4{#8b46 .graf .graf--pre .graf-after--p .graf--preV2 code-block-mode="2" spellcheck="false" code-block-lang="r"}
 model_data <- model_data %>%
  mutate(r_squared = map_dbl(models, ~summary(.x)$r.squared))
 ```
@@ -298,7 +298,7 @@ Finally, we can use `purrr`{.markup--code .markup--p-code} and
 for each species. We will create a scatter plot of petal length versus
 petal width, along with the fitted regression line for each species:
 
-``` {#2739 .graf .graf--pre .graf-after--p .graf--preV2 code-block-mode="2" spellcheck="false" code-block-lang="r"}
+``` r {#2739 .graf .graf--pre .graf-after--p .graf--preV2 code-block-mode="2" spellcheck="false" code-block-lang="r"}
 plot_data <- model_data %>%
  mutate(plots = map2(data, models, ~{
  ggplot(.x, aes(x = Petal.Width, y = Petal.Length)) +
@@ -313,8 +313,9 @@ This adds a new column to our data frame containing a
 `ggplot`{.markup--code .markup--p-code} object for each species. To
 display the plots, we can use `purrr`{.markup--code .markup--p-code}'s
 `walk()`{.markup--code .markup--p-code} function:
+p
 
-``` {#abf8 .graf .graf--pre .graf-after--p .graf--preV2 code-block-mode="2" spellcheck="false" code-block-lang="r"}
+``` r {#abf8 .graf .graf--pre .graf-after--p .graf--preV2 code-block-mode="2" spellcheck="false" code-block-lang="r"}
 walk(plot_data$plots, print)
 ```
 
