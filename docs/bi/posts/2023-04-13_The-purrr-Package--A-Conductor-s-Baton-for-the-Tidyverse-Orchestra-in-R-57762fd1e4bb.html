@@ -20,40 +20,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -213,81 +179,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Imagine we have a dataset containing measurements of various iris species, including sepal length, sepal width, petal length, and petal width, as well as the species classification. Our goal is to create separate linear regression models for each species to predict petal length based on petal width and visualize the results.</p>
 <p><strong>Data preparation: Nesting the data like a matryoshka doll</strong></p>
 <p>To begin, we need to split the dataset by species and create a nested data frame. We can use <code>dplyr</code>’s <code>group_by()</code> and <code>tidyr</code>’s <code>nest()</code> functions for this task:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>nested_data <span class="ot">&lt;-</span> iris <span class="sc">%&gt;%</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a> <span class="fu">group_by</span>(Species) <span class="sc">%%</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a> <span class="fu">nest</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>This results in a nested data frame with one row for each species and a nested column containing the data for each group.</p>
-<p><strong>Model building: Crafting artisanal models for each species</strong></p>
-<p>Now that our data is nested, we can use <code>purrr</code>’s <code>map()</code> function to fit a linear regression model for each species:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>model_data <span class="ot">&lt;-</span> nested_data <span class="sc">%&gt;%</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">mutate</span>(<span class="at">models =</span> <span class="fu">map</span>(data, <span class="sc">~</span><span class="fu">lm</span>(Petal.Length <span class="sc">~</span> Petal.Width, <span class="at">data =</span> .x)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>This adds a new column to our data frame containing the fitted linear regression models for each species.</p>
-<p><strong>Model evaluation: Extracting golden nuggets of insight</strong></p>
-<p>To evaluate the performance of our models, we can use purrr to calculate performance metrics, such as the R-squared value, for each model:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>model_data <span class="ot">&lt;-</span> model_data <span class="sc">%&gt;%</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">mutate</span>(<span class="at">r_squared =</span> <span class="fu">map_dbl</span>(models, <span class="sc">~</span><span class="fu">summary</span>(.x)<span class="sc">$</span>r.squared))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>This adds a new column to our data frame with the R-squared value for each species’ model, allowing us to compare their performance.</p>
-<p><strong>Visualization: Painting a vibrant portrait of species-specific trends</strong></p>
-<p>Finally, we can use <code>purrr</code> and <code>ggplot2</code> to create custom visualizations for each species. We will create a scatter plot of petal length versus petal width, along with the fitted regression line for each species:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>plot_data <span class="ot">&lt;-</span> model_data <span class="sc">%&gt;%</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">mutate</span>(<span class="at">plots =</span> <span class="fu">map2</span>(data, models, <span class="sc">~</span>{</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a> <span class="fu">ggplot</span>(.x, <span class="fu">aes</span>(<span class="at">x =</span> Petal.Width, <span class="at">y =</span> Petal.Length)) <span class="sc">+</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a> <span class="fu">geom_abline</span>(<span class="fu">aes</span>(<span class="at">intercept =</span> <span class="fu">coef</span>(.y)[<span class="dv">1</span>], <span class="at">slope =</span> <span class="fu">coef</span>(.y)[<span class="dv">2</span>]), <span class="at">color =</span> <span class="st">'blue'</span>) <span class="sc">+</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a> <span class="fu">ggtitle</span>(<span class="fu">paste</span>(<span class="st">'Species:'</span>, <span class="fu">unique</span>(Species))) <span class="sc">+</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a> <span class="fu">theme_minimal</span>()</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a> }))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>This adds a new column to our data frame containing a <code>ggplot</code> object for each species. To display the plots, we can use <code>purrr</code>’s <code>walk()</code> function:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">walk</span>(plot_data<span class="sc">$</span>plots, print)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>This will display the three separate scatter plots with the fitted regression lines, allowing us to visually compare the relationships between petal length and petal width for each iris species.</p>
-<p>In conclusion, this case study demonstrates how the <code>purrr</code> package can be used to work with nested data, fit multiple models, and create custom visualizations. By leveraging the power of purrr and functional programming, you can efficiently analyze complex datasets and gain valuable insights.</p>
-</section>
-<section id="tips-and-best-practices-for-using-purrr" class="level3">
-<h3 class="anchored" data-anchor-id="tips-and-best-practices-for-using-purrr">Tips and Best Practices for Using&nbsp;purrr</h3>
-<p>When incorporating the purrr package into your R programming toolbox, following these tips and best practices can help you make the most of its powerful functional programming capabilities:</p>
-<ol type="1">
-<li>Embrace functional programming principles: By familiarizing yourself with the core concepts of functional programming, such as immutability, function purity, and higher-order functions, you’ll be better equipped to leverage <code>purrr</code>’s full potential.</li>
-<li>Combine <code>purrr</code> with other <code>tidyverse</code> packages: The <code>purrr</code> package is designed to work seamlessly with other tidyverse packages, such as <code>dplyr</code>, <code>tidyr</code>, and <code>ggplot2</code>. By integrating <code>purrr</code> into your existing tidyverse workflow, you can streamline your data analysis and visualization processes.</li>
-<li>Use the appropriate <code>map()</code> variants: The <code>map()</code> function in purrr has several variants tailored for specific output types, such as <code>map_lgl()</code>, <code>map_chr()</code>, and <code>map_dbl()</code>. Make sure to choose the appropriate variant for your use case to simplify your code and improve its readability.</li>
-<li>Opt for purrr functions over for loops and <code>*apply()</code> functions: <code>Purrr</code> functions are often more concise, expressive, and efficient than for loops and base R <code>*apply()</code> functions. Whenever possible, use <code>purrr</code> functions to iterate over lists or vectors and apply functions to their elements.</li>
-<li>Make use of <code>pmap()</code> for parallel iteration: When working with multiple input lists or vectors, use the <code>pmap()</code> function to iterate over them in parallel. This can simplify your code and make it easier to read and understand.</li>
-<li>Utilize <code>safely()</code> and other adverbs for error handling: The <code>safely()</code> function, along with other purrr adverbs like <code>quietly()</code> and <code>possibly()</code>, can help you handle errors and unexpected situations gracefully. Use these functions to create robust, error-resistant code.</li>
-<li>Experiment with list columns and nested data frames: <code>Purrr</code> excels at working with complex data structures, such as list columns and nested data frames. By nesting your data and using <code>purrr</code> functions, you can perform sophisticated analysis and manipulation tasks with ease.</li>
-<li>Familiarize yourself with <code>purrr</code>’s other functions: Beyond its core functions, <code>purrr</code> offers a wide array of additional tools for working with functions, lists, and other data structures. Explore the <code>purrr</code> documentation to discover functions like <code>reduce()</code>, <code>pluck()</code>, and <code>flatten()</code> that can help you further streamline your data analysis workflow.</li>
-<li>Test your code with smaller datasets: When working with large or complex datasets, it’s a good idea to test your purrr functions on smaller subsets of data first. This can help you identify errors and fine-tune your code before scaling up to the full dataset.</li>
-<li>Share your knowledge: Finally, as you gain expertise with the purrr package, share your knowledge and insights with others. By discussing your experiences and collaborating with fellow R users, you can contribute to the vibrant R community and help others make the most of purrr’s powerful functional programming capabilities.</li>
-</ol>
-</section>
-</div>
-</div>
-<div class=".section">
-<div class="section-divider">
-<hr>
-</div>
-<div class="section-content">
-<div class=".section-inner">
-<p>In conclusion, the purrr package is a powerful and versatile tool that can significantly enhance your data analysis capabilities in R. By embracing the functional programming paradigm and integrating purrr with other tidyverse packages, you can create elegant, efficient, and expressive code to tackle a wide array of data analysis tasks.</p>
-<p>The case studies presented in this article demonstrate how purrr can be used to work with nested data, fit multiple models, and create custom visualizations, among other applications. By following the tips and best practices outlined, you can make the most of purrr’s features and streamline your data analysis workflow.</p>
-<p>Ultimately, incorporating the purrr package into your R programming toolbox will empower you to conduct your data orchestra with finesse, producing harmonious results and extracting valuable insights from even the most complex datasets. As you continue to explore and master purrr, remember to share your knowledge and experiences with the broader R community, contributing to the collective understanding and appreciation of this powerful tool.</p>
-</div>
-</div>
-<div class=".section">
-<div class="section-divider">
-<hr>
-</div>
-<div class="section-content">
-<div class=".section-inner">
-<p>Special gift at the end.</p>
-<figure class="figure">
-</figure>
-</div>
-</div>
-<p>By <a href="https://medium.com/@numbersaroundus">Numbers around us</a> on <a href="https://medium.com/p/57762fd1e4bb">April 13, 2023</a>.</p>
-<p><a href="https://medium.com/@numbersaroundus/the-purrr-package-a-conductors-baton-for-the-tidyverse-orchestra-in-r-57762fd1e4bb">Canonical link</a></p>
-<p>Exported from <a href="https://medium.com">Medium</a> on December 19, 2024.</p>
 
 
+</section>
 </div>
 </div>
 
