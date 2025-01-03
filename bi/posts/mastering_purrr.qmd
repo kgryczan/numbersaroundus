@@ -1,0 +1,1074 @@
+---
+title: "Mastering purrr: From Basic Maps to Functional Magic in R"
+author: "Numbers around us"
+date: "2024-05-23"
+format: html
+---
+
+![purrr image](https://cdn-images-1.medium.com/max/800/1*9tZStwt3S3jKhUWe0Xh4cA.jpeg)
+
+Welcome back to the world of `purrr`! Last time (about a year ago), we spun a metaphorical yarn about the wonders of `purrr` in R. Today, we're rolling up our sleeves and diving into a hands-on tutorial. We're going to explore how `purrr` makes working with lists and vectors a breeze, transforming and manipulating them like a data wizard.
+
+With `purrr`, you can apply functions to each element of a list or vector, manipulate them, check conditions, and so much more. It's all about making your data dance to your commands with elegance and efficiency. Ready to unleash some functional magic?
+
+### Are `map` Functions Like `apply` Functions?
+
+You might be wondering, "Aren't `map` functions just fancy versions of `apply` functions?" It's a fair question! Both `map` and `apply` functions help you apply a function to elements in a data structure, but `purrr` takes it to a whole new level.
+
+Here's why `purrr` and its `map` functions are worth your attention:
+
+-   **Consistency**: `purrr` functions have a consistent naming scheme, making them easier to learn and remember.
+-   **Type Safety**: `map` functions in `purrr` return outputs of consistent types, reducing unexpected errors.
+-   **Integration**: Seamlessly integrate with other tidyverse packages, making your data wrangling pipeline smoother.
+
+Let's see a quick comparison:
+
+``` r
+library(tidyverse)
+
+# Using lapply (base R)
+numbers <- list(1, 2, 3, 4, 5)
+squared_lapply <- lapply(numbers, function(x) x^2)
+
+# Using map (purrr)
+squared_map <- map(numbers, ~ .x^2)
+
+print(squared_lapply)
+
+[[1]]
+[1] 1
+
+[[2]]
+[1] 4
+
+[[3]]
+[1] 9
+
+[[4]]
+[1] 16
+
+[[5]]
+[1] 25
+
+print(squared_map)
+
+[[1]]
+[1] 1
+
+[[2]]
+[1] 4
+
+[[3]]
+[1] 9
+
+[[4]]
+[1] 16
+
+[[5]]
+[1] 25
+```
+
+Both do the same thing, but `purrr`'s `map` function is more readable and concise, especially when paired with the tidyverse syntax.
+
+Here's another example with a built-in dataset:
+
+``` r
+# Using lapply with a built-in dataset
+iris_split <- split(iris, iris$Species)
+mean_sepal_length_lapply <- lapply(iris_split, function(df) mean(df$Sepal.Length))
+
+# Using map with a built-in dataset
+mean_sepal_length_map <- map(iris_split, ~ mean(.x$Sepal.Length))
+
+print(mean_sepal_length_lapply)
+
+$setosa
+[1] 5.006
+
+$versicolor
+[1] 5.936
+
+$virginica
+[1] 6.588
+
+print(mean_sepal_length_map)
+
+$setosa
+[1] 5.006
+
+$versicolor
+[1] 5.936
+
+$virginica
+[1] 6.588
+```
+
+Again, the `purrr` version is cleaner and easier to understand at a glance.
+
+Convinced? Let's move on to explore simple maps and their variants to see more of `purrr`'s magic. Ready?
+
+### Simple Maps and Their Variants
+
+Now that we know why `purrr`'s `map` functions are so cool, let's dive into some practical examples. The `map` function family is like a Swiss Army knife for data transformation. It comes in different flavors depending on the type of output you want: logical, integer, character, or double.
+
+Let's start with the basic `map` function:
+
+``` r
+library(tidyverse)
+
+# Basic map example
+numbers <- list(1, 2, 3, 4, 5)
+squared_numbers <- map(numbers, ~ .x^2)
+squared_numbers
+```
+
+Easy, right? Yes, but we have one twist here. Result is returned as list, and we don't always need list. So now, let's look at the type-specific variants. These functions ensure that the output is of a specific type, which can help avoid unexpected surprises in your data processing pipeline.
+
+-   **Logical (`map_lgl`):**
+
+``` r
+# Check if each number is even
+is_even <- map_lgl(numbers, ~ .x %% 2 == 0)
+is_even
+
+[1] FALSE  TRUE FALSE  TRUE FALSE
+
+# it is not list anymore, it is logical vector
+```
+
+-   **Integer (`map_int`):**
+
+``` r
+# Double each number and return as integers
+doubled_integers <- map_int(numbers, ~ .x * 2)
+doubled_integers
+
+[1]  2  4  6  8 10
+```
+
+-   **Character (`map_chr`):**
+
+``` r
+# Convert each number to a string
+number_strings <- map_chr(numbers, ~ paste("Number", .x))
+number_strings
+
+[1] "Number 1" "Number 2" "Number 3" "Number 4" "Number 5"
+```
+
+-   **Double (`map_dbl`):**
+
+``` r
+# Half each number and return as doubles
+halved_doubles <- map_dbl(numbers, ~ .x / 2)
+halved_doubles
+
+[1] 0.5 1.0 1.5 2.0 2.5
+```
+
+Let's apply this to a built-in dataset to see it in action:
+
+``` r
+# Using map_dbl on the iris dataset to get the mean of each numeric column
+iris_means <- iris %>%
+  select(-Species) %>%
+  map_dbl(mean)
+iris_means
+
+Sepal.Length  Sepal.Width Petal.Length  Petal.Width 
+    5.843333     3.057333     3.758000     1.199333 
+```
+
+Here, we've calculated the mean of each numeric column in the `iris` dataset, and the result is a named vector of doubles.
+
+Pretty neat, huh? The `map` family makes it easy to ensure your data stays in the format you expect.
+
+Ready to see how `purrr` handles multiple vectors with `map2` and `pmap`?
+
+### Not Only One Vector: `map2` and `pmap` + Variants
+
+So far, we've seen how `map` functions work with a single vector or list. But what if you have multiple vectors and want to apply a function to corresponding elements from each? Enter `map2` and `pmap`.
+
+-   `map2`: This function applies a function to corresponding elements of two vectors or lists.
+-   `pmap`: This function applies a function to corresponding elements of multiple lists.
+
+Let's start with `map2`:
+
+``` r
+library(tidyverse)
+
+# Two vectors to work with
+vec1 <- c(1, 2, 3)
+vec2 <- c(4, 5, 6)
+
+# Adding corresponding elements of two vectors
+sum_vecs <- map2(vec1, vec2, ~ .x + .y)
+sum_vecs
+
+[[1]]
+[1] 5
+
+[[2]]
+[1] 7
+
+[[3]]
+[1] 9
+```
+
+Here, `map2` takes elements from `vec1` and `vec2` and adds them together.
+
+Now, let's step it up with `pmap`:
+
+``` r
+# Creating a tibble for multiple lists
+df <- tibble(
+  a = 1:3,
+  b = 4:6,
+  c = 7:9
+)
+
+# Summing corresponding elements of multiple lists
+sum_pmap <- pmap(df, ~ ..1 + ..2 + ..3)
+sum_pmap
+
+[[1]]
+[1] 12
+
+[[2]]
+[1] 15
+
+[[3]]
+[1] 18
+```
+
+In this example, `pmap` takes elements from columns `a`, `b`, and `c` of the tibble and sums them up.
+
+Look at syntax in those two examples. In `map2`, we give two vectors or lists, and then we are reffering to them as .x and .y. Further in `pmap` example we have data.frame, but it can be a list of lists, and we need to refer to them with numbers like ..1, ..2 and ..3 (and more if needed).
+
+### Variants of `map2` and `pmap`
+
+Just like `map`, `map2` and `pmap` have type-specific variants. Let's see a couple of examples using data structures already defined above:
+
+-   `map2_dbl:`
+
+``` r
+# Multiplying corresponding elements of two vectors and returning doubles
+product_vecs <- map2_dbl(vec1, vec2, ~ .x * .y)
+product_vecs
+
+[1]  4 10 18
+```
+
+-   `pmap_chr:`
+
+``` r
+# Concatenating corresponding elements of multiple lists into strings
+concat_pmap <- pmap_chr(df, ~ paste(..1, ..2, ..3, sep = "-"))
+concat_pmap
+
+[1] "1-4-7" "2-5-8" "3-6-9"
+```
+
+These variants ensure that your results are of the expected type, just like the basic `map` variants.
+
+With `map2` and `pmap`, you can handle more complex data transformations involving multiple vectors or lists with ease.
+
+Ready to move on and see what `lmap` and `imap` can do for you?
+
+### Using `imap` for Indexed Mapping and Conditional Maps with `_if` and `_at`
+
+Let's combine our exploration of `imap` with the conditional mapping functions `map_if` and `map_at`. These functions give you more control over how and when functions are applied to your data, making your code more precise and expressive.
+
+#### `imap`: Indexed Mapping
+
+The `imap` function is a handy tool when you need to include the index or names of elements in your function calls. This is particularly useful for tasks where the position or name of an element influences the operation performed on it.
+
+Here's a practical example with a named list:
+
+``` r
+library(tidyverse)
+
+# A named list of scores
+named_scores <- list(math = 90, science = 85, history = 78)
+
+# Create descriptive strings for each score
+score_descriptions <- imap(named_scores, ~ paste(.y, "score is", .x))
+score_descriptions
+
+$math
+[1] "math score is 90"
+
+$science
+[1] "science score is 85"
+
+$history
+[1] "history score is 78"
+```
+
+In this example:
+
+1.  We have a named list `named_scores` with subject scores.
+2.  We use `imap` to create a descriptive string for each score that includes the subject name and the score.
+
+#### Conditional Maps with `map_if` and `map_at`
+
+Sometimes, you don't want to apply a function to all elements of a list or vector --- only to those that meet certain conditions. This is where `map_if` and `map_at` come into play.
+
+**`map_if`: Conditional Mapping**
+
+Use `map_if` to apply a function to elements that satisfy a specific condition (predicate).
+
+``` r
+# Mixed list of numbers and characters
+mixed_list <- list(1, "a", 3, "b", 5)
+
+# Double only the numeric elements
+doubled_numbers <- map_if(mixed_list, is.numeric, ~ .x * 2)
+doubled_numbers
+
+[[1]]
+[1] 2
+
+[[2]]
+[1] "a"
+
+[[3]]
+[1] 6
+
+[[4]]
+[1] "b"
+
+[[5]]
+[1] 10
+```
+
+In this example:
+
+1.  We have a mixed list of numbers and characters.
+2.  We use `map_if` to double only the numeric elements, leaving the characters unchanged.
+
+**`map_at`: Specific Element Mapping**
+
+Use `map_at` to apply a function to specific elements of a list or vector, identified by their indices or names.
+
+``` r
+# A named list of mixed types
+specific_list <- list(a = 1, b = "hello", c = 3, d = "world")
+
+# Convert only the character elements to uppercase
+uppercase_chars <- map_at(specific_list, c("b", "d"), ~ toupper(.x))
+uppercase_chars
+
+$a
+[1] 1
+
+$b
+[1] "HELLO"
+
+$c
+[1] 3
+
+$d
+[1] "WORLD"
+```
+
+In this example:
+
+1.  We have a named list with mixed types.
+2.  We use `map_at` to convert only the specified character elements to uppercase.
+
+Combining `imap`, `map_if`, and `map_at` allows you to handle complex data transformation tasks with precision and clarity. These functions make it easy to tailor your operations to the specific needs of your data.
+
+Shall we move on to the next chapter to explore `walk` and its friends for side-effect operations?
+
+### Make Something Happen Outside of Data: `walk` and Its Friends
+
+Sometimes, you want to perform operations that have side effects, like printing, writing to a file, or plotting, rather than returning a transformed list or vector. This is where the `walk` family of functions comes in handy. These functions are designed to be used for their side effects, as they return `NULL`.
+
+#### `walk`
+
+The basic `walk` function applies a function to each element of a list or vector and performs actions like printing or saving files.
+
+``` r
+library(tidyverse)
+
+# A list of numbers
+numbers <- list(1, 2, 3, 4, 5)
+
+# Print each number
+walk(numbers, ~ print(.x))
+
+[1] 1
+[1] 2
+[1] 3
+[1] 4
+[1] 5
+```
+
+In this example, `walk` prints each element of the `numbers` list.
+
+#### `walk2`
+
+When you have two lists or vectors and you want to perform side-effect operations on their corresponding elements, `walk2` is your friend.
+
+``` r
+# Two vectors to work with
+vec1 <- c("apple", "banana", "cherry")
+vec2 <- c("red", "yellow", "dark red")
+
+# Print each fruit with its color
+walk2(vec1, vec2, ~ cat(.x, "is", .y, "\n"))
+
+apple is red 
+banana is yellow 
+cherry is dark red 
+```
+
+Here, `walk2` prints each fruit with its corresponding color.
+
+#### `iwalk`
+
+`iwalk` is the side-effect version of `imap`. It includes the index or names of the elements, which can be useful for logging or debugging.
+
+``` r
+# A named list of scores
+named_scores <- list(math = 90, science = 85, history = 78)
+
+# Print each subject with its score
+iwalk(named_scores, ~ cat("The score for", .y, "is", .x, "\n"))
+
+The score for math is 90 
+The score for science is 85 
+The score for history is 78 
+```
+
+In this example, `iwalk` prints each subject name with its corresponding score.
+
+#### Practical Example with Built-in Data
+
+Let's use a built-in dataset and perform some side-effect operations. Suppose you want to save plots of each numeric column in the `mtcars` dataset to separate files.
+
+``` r
+# Directory to save plots
+dir.create("plots")
+
+# Save histograms of each numeric column to files
+walk(names(mtcars), ~ {
+  if (is.numeric(mtcars[[.x]])) {
+    plot_path <- paste0("plots/", .x, "_histogram.png")
+    png(plot_path)
+    hist(mtcars[[.x]], main = paste("Histogram of", .x), xlab = .x)
+    dev.off()
+  }
+})
+```
+
+![mtcars histogram](https://cdn-images-1.medium.com/max/800/1*kDIgqygAiJndKSTgkwj_vQ.png)
+
+In this example:
+
+1.  We create a directory called "plots".
+2.  We use `walk` to iterate over the names of the `mtcars` dataset.
+3.  For each numeric column, we save a histogram to a PNG file.
+
+This is a practical demonstration of how `walk` can be used for side-effect operations such as saving files.
+
+### Why Do We Need `modify` Then?
+
+Sometimes you need to tweak elements within a list or vector without completely transforming them. This is where `modify` functions come in handy. They allow you to make specific changes to elements while preserving the overall structure of your data.
+
+#### `modify`
+
+The `modify` function applies a transformation to each element of a list or vector and returns the modified list or vector.
+
+``` r
+library(tidyverse)
+
+# A list of numbers
+numbers <- list(1, 2, 3, 4, 5)
+
+# Add 10 to each number
+modified_numbers <- modify(numbers, ~ .x + 10)
+modified_numbers
+
+[[1]]
+[1] 11
+
+[[2]]
+[1] 12
+
+[[3]]
+[1] 13
+
+[[4]]
+[1] 14
+
+[[5]]
+[1] 15
+```
+
+In this example, `modify` adds 10 to each element of the `numbers` list.
+
+#### `modify_if`
+
+`modify_if` is used to conditionally modify elements that meet a specified condition (predicate).
+
+``` r
+# Modify only the even numbers by multiplying them by 2
+modified_if <- modify_if(numbers, ~ .x %% 2 == 0, ~ .x * 2)
+modified_if
+
+[[1]]
+[1] 1
+
+[[2]]
+[1] 4
+
+[[3]]
+[1] 3
+
+[[4]]
+[1] 8
+
+[[5]]
+[1] 5
+```
+
+Here, `modify_if` multiplies only the even numbers by 2.
+
+#### `modify_at`
+
+`modify_at` allows you to specify which elements to modify based on their indices or names.
+
+``` r
+# A named list of mixed types
+named_list <- list(a = 1, b = "hello", c = 3, d = "world")
+
+# Convert only the specified elements to uppercase
+modified_at <- modify_at(named_list, c("b", "d"), ~ toupper(.x))
+modified_at
+
+$a
+[1] 1
+
+$b
+[1] "HELLO"
+
+$c
+[1] 3
+
+$d
+[1] "WORLD"
+```
+
+In this example, `modify_at` converts the specified character elements to uppercase.
+
+#### `modify` with Built-in Dataset
+
+Let's use the `iris` dataset to demonstrate how `modify` functions can be applied in a practical scenario. Suppose we want to normalize numeric columns by dividing each value by the maximum value in its column.
+
+``` r
+# Normalizing numeric columns in the iris dataset
+normalized_iris <- iris %>%
+  modify_at(vars(Sepal.Length, Sepal.Width, Petal.Length, Petal.Width), 
+            ~ .x / max(.x))
+
+head(normalized_iris)
+
+  Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+1    0.6455696   0.7954545    0.2028986        0.08  setosa
+2    0.6202532   0.6818182    0.2028986        0.08  setosa
+3    0.5949367   0.7272727    0.1884058        0.08  setosa
+4    0.5822785   0.7045455    0.2173913        0.08  setosa
+5    0.6329114   0.8181818    0.2028986        0.08  setosa
+6    0.6835443   0.8863636    0.2463768        0.16  setosa
+
+head(iris)
+1          5.1         3.5          1.4         0.2  setosa
+2          4.9         3.0          1.4         0.2  setosa
+3          4.7         3.2          1.3         0.2  setosa
+4          4.6         3.1          1.5         0.2  setosa
+5          5.0         3.6          1.4         0.2  setosa
+6          5.4         3.9          1.7         0.4  setosa
+```
+
+In this example:
+
+1.  We use `modify_at` to specify the numeric columns of the `iris` dataset.
+2.  Each value in these columns is divided by the maximum value in its respective column, normalizing the data.
+
+`modify` functions offer a powerful way to make targeted changes to your data, providing flexibility and control.
+
+### Predicates: Does Data Satisfy Our Assumptions? `every`, `some`, and `none`
+
+When working with data, it's often necessary to check if certain conditions hold across elements in a list or vector. This is where predicate functions like `every`, `some`, and `none` come in handy. These functions help you verify whether elements meet specified criteria, making your data validation tasks easier and more expressive.
+
+#### `every`
+
+The `every` function checks if all elements in a list or vector satisfy a given predicate. If all elements meet the condition, it returns `TRUE`; otherwise, it returns `FALSE`.
+
+``` r
+library(tidyverse)
+
+# A list of numbers
+numbers <- list(2, 4, 6, 8)
+
+# Check if all numbers are even
+all_even <- every(numbers, ~ .x %% 2 == 0)
+all_even
+
+[1] TRUE
+```
+
+In this example, `every` checks if all elements in the `numbers` list are even.
+
+#### `some`
+
+The `some` function checks if at least one element in a list or vector satisfies a given predicate. If any element meets the condition, it returns `TRUE`; otherwise, it returns `FALSE`.
+
+``` r
+# Check if any number is greater than 5
+any_greater_than_five <- some(numbers, ~ .x > 5)
+any_greater_than_five
+
+[1] TRUE
+```
+
+Here, `some` checks if any element in the `numbers` list is greater than 5.
+
+#### `none`
+
+The `none` function checks if no elements in a list or vector satisfy a given predicate. If no elements meet the condition, it returns `TRUE`; otherwise, it returns `FALSE`.
+
+``` r
+# Check if no number is odd
+none_odd <- none(numbers, ~ .x %% 2 != 0)
+none_odd
+
+[1] TRUE
+```
+
+In this example, `none` checks if no elements in the `numbers` list are odd.
+
+#### Practical Example with Built-in Dataset
+
+Let's use the `mtcars` dataset to demonstrate how these predicate functions can be applied in a practical scenario. Suppose we want to check various conditions on the columns of this dataset.
+
+``` r
+# Check if all cars have more than 10 miles per gallon (mpg)
+all_mpg_above_10 <- mtcars %>%
+  select(mpg) %>%
+  map_lgl(~ every(.x, ~ .x > 10))
+all_mpg_above_10
+
+mpg
+TRUE
+
+# Check if some cars have more than 150 horsepower (hp)
+some_hp_above_150 <- mtcars %>%
+  select(hp) %>%
+  map_lgl(~ some(.x, ~ .x > 150))
+some_hp_above_150
+
+hp
+TRUE
+
+# Check if no car has more than 8 cylinders
+none_cyl_above_8 <- mtcars %>%
+  select(cyl) %>%
+  map_lgl(~ none(.x, ~ .x > 8))
+none_cyl_above_8
+
+cyl
+TRUE
+```
+
+In this example:
+
+1.  We check if all cars in the `mtcars` dataset have more than 10 mpg using `every`.
+2.  We check if some cars have more than 150 horsepower using `some`.
+3.  We check if no car has more than 8 cylinders using `none`.
+
+These predicate functions provide a straightforward way to validate your data against specific conditions, making your analysis more robust.
+
+### What If Not: `keep` and `discard`
+
+When you're working with lists or vectors, you often need to filter elements based on certain conditions. The `keep` and `discard` functions from `purrr` are designed for this purpose. They allow you to retain or remove elements that meet specified criteria, making it easy to clean and subset your data.
+
+#### `keep`
+
+The `keep` function retains elements that satisfy a given predicate. If an element meets the condition, it is kept; otherwise, it is removed.
+
+``` r
+library(tidyverse)
+
+# A list of mixed numbers
+numbers <- list(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+# Keep only the even numbers
+even_numbers <- keep(numbers, ~ .x %% 2 == 0)
+even_numbers
+
+[[1]]
+[1] 2
+
+[[2]]
+[1] 4
+
+[[3]]
+[1] 6
+
+[[4]]
+[1] 8
+
+[[5]]
+[1] 10
+```
+
+In this example, `keep` retains only the even numbers from the `numbers` list.
+
+#### `discard`
+
+The `discard` function removes elements that satisfy a given predicate. If an element meets the condition, it is discarded; otherwise, it is kept.
+
+``` r
+# Discard the even numbers
+odd_numbers <- discard(numbers, ~ .x %% 2 == 0)
+odd_numbers
+
+[[1]]
+[1] 1
+
+[[2]]
+[1] 3
+
+[[3]]
+[1] 5
+
+[[4]]
+[1] 7
+
+[[5]]
+[1] 9
+```
+
+Here, `discard` removes the even numbers, leaving only the odd numbers in the `numbers` list.
+
+### Practical Example with Built-in Dataset
+
+Let's use the `iris` dataset to demonstrate how `keep` and `discard` can be applied in a practical scenario. Suppose we want to filter rows based on specific conditions for the `Sepal.Length` column.
+
+``` r
+library(tidyverse)
+
+# Keep rows where Sepal.Length is greater than 5.0
+iris_keep <- iris %>%
+  split(1:nrow(.)) %>%
+  keep(~ .x$Sepal.Length > 5.0) %>%
+  bind_rows()
+head(iris_keep)
+
+  Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+1          5.1         3.5          1.4         0.2  setosa
+2          5.4         3.9          1.7         0.4  setosa
+3          5.4         3.7          1.5         0.2  setosa
+4          5.8         4.0          1.2         0.2  setosa
+5          5.7         4.4          1.5         0.4  setosa
+6          5.4         3.9          1.3         0.4  setosa
+
+# Discard rows where Sepal.Length is less than or equal to 5.0
+iris_discard <- iris %>%
+  split(1:nrow(.)) %>%
+  discard(~ .x$Sepal.Length <= 5.0) %>%
+  bind_rows()
+head(iris_discard)
+
+  Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+1          5.1         3.5          1.4         0.2  setosa
+2          5.4         3.9          1.7         0.4  setosa
+3          5.4         3.7          1.5         0.2  setosa
+4          5.8         4.0          1.2         0.2  setosa
+5          5.7         4.4          1.5         0.4  setosa
+6          5.4         3.9          1.3         0.4  setosa
+```
+
+In this example:
+
+1.  We split the `iris` dataset into a list of rows.
+2.  We apply `keep` to retain rows where `Sepal.Length` is greater than 5.0.
+3.  We apply `discard` to remove rows where `Sepal.Length` is less than or equal to 5.0.
+4.  Finally, we use `bind_rows()` to combine the list back into a data frame.
+
+#### Combining `keep` and `discard` with `mtcars`
+
+Similarly, let's fix the `mtcars` example:
+
+``` r
+# Keep cars with mpg greater than 20 and discard cars with hp less than 100
+filtered_cars <- mtcars %>%
+  split(1:nrow(.)) %>%
+  keep(~ .x$mpg > 20) %>%
+  discard(~ .x$hp < 100) %>%
+  bind_rows()
+
+filtered_cars
+
+                mpg cyl  disp  hp drat    wt  qsec vs am gear carb
+Mazda RX4      21.0   6 160.0 110 3.90 2.620 16.46  0  1    4     4
+Mazda RX4 Wag  21.0   6 160.0 110 3.90 2.875 17.02  0  1    4     4
+Hornet 4 Drive 21.4   6 258.0 110 3.08 3.215 19.44  1  0    3     1
+Lotus Europa   30.4   4  95.1 113 3.77 1.513 16.90  1  1    5     2
+Volvo 142E     21.4   4 121.0 109 4.11 2.780 18.60  1  1    4     2
+```
+
+In this combined example:
+
+1.  We split the `mtcars` dataset into a list of rows.
+2.  We use `keep` to retain cars with `mpg` greater than 20.
+3.  We use `discard` to remove cars with `hp` less than 100.
+4.  We combine the filtered list back into a data frame using `bind_rows()`.
+
+### Do Things in Order of List/Vector: `accumulate`, `reduce`
+
+Sometimes, you need to perform cumulative or sequential operations on your data. This is where `accumulate` and `reduce` come into play. These functions allow you to apply a function iteratively across elements of a list or vector, either accumulating results at each step or reducing the list to a single value.
+
+#### `accumulate`
+
+The `accumulate` function applies a function iteratively to the elements of a list or vector and returns a list of intermediate results.
+
+Let's start with a simple example:
+
+``` r
+library(tidyverse)
+
+# A list of numbers
+numbers <- list(1, 2, 3, 4, 5)
+
+# Cumulative sum of the numbers
+cumulative_sum <- accumulate(numbers, `+`)
+cumulative_sum
+
+[1]  1  3  6 10 15
+```
+
+#### `reduce`
+
+The `reduce` function applies a function iteratively to reduce the elements of a list or vector to a single value.
+
+Here's a basic example:
+
+``` r
+# Sum of the numbers
+total_sum <- reduce(numbers, `+`)
+total_sum
+
+[1] 15
+```
+
+#### Practical Example with Built-in Dataset
+
+Let's use the `mtcars` dataset to demonstrate how `accumulate` and `reduce` can be applied in a practical scenario.
+
+**Using** **`accumulate`** **with** **`mtcars`**
+
+Suppose we want to calculate the cumulative sum of the miles per gallon (mpg) for each car.
+
+``` r
+# Cumulative sum of mpg values
+cumulative_mpg <- mtcars %>%
+  pull(mpg) %>%
+  accumulate(`+`)
+cumulative_mpg
+
+[1]  21.0  42.0  64.8  86.2 104.9 123.0 137.3 161.7 184.5 203.7 221.5 237.9 255.2 270.4 280.8 291.2 305.9 338.3 368.7
+[20] 402.6 424.1 439.6 454.8 468.1 487.3 514.6 540.6 571.0 586.8 606.5 621.5 642.9
+```
+
+In this example, `accumulate` gives us a cumulative sum of the `mpg` values for the cars in the `mtcars` dataset.
+
+**Using** **`reduce`** **with** **`mtcars`**
+
+Now, let's say we want to find the product of all `mpg` values:
+
+``` r
+# Product of mpg values
+product_mpg <- mtcars %>%
+  pull(mpg) %>%
+  reduce(`*`)
+product_mpg
+
+[1] 1.264241e+41
+```
+
+In this example, `reduce` calculates the product of all `mpg` values in the `mtcars` dataset.
+
+### Do It Another Way: `compose` and `negate`
+
+Creating flexible and reusable functions is a hallmark of efficient programming. `purrr` provides tools like `compose` and `negate` to help you build and manipulate functions more effectively. These tools allow you to combine multiple functions into one or invert the logic of a predicate function.
+
+#### `compose`
+
+The `compose` function combines multiple functions into a single function that applies them sequentially. This can be incredibly useful for creating pipelines of operations.
+
+Here's a basic example:
+
+``` r
+library(tidyverse)
+
+# Define some simple functions
+add1 <- function(x) x + 1
+square <- function(x) x * x
+
+# Compose them into a single function
+add1_and_square <- compose(square, add1)
+
+# Apply the composed function
+result <- add1_and_square(2)  # (2 + 1)^2 = 9
+result
+
+[1] 9
+```
+
+In this example:
+
+1.  We define two simple functions: `add1` and `square`.
+2.  We use `compose` to create a new function, `add1_and_square`, which first adds 1 to its input and then squares the result.
+3.  We apply the composed function to the number 2, yielding 9.
+
+#### Practical Example with Built-in Dataset
+
+Let's use `compose` with a more practical example involving the `mtcars` dataset. Suppose we want to create a function that first scales the horsepower (`hp`) by 10 and then calculates the logarithm.
+
+``` r
+# Define scaling and log functions
+scale_by_10 <- function(x) x * 10
+safe_log <- safely(log, otherwise = NA)
+
+# Compose them into a single function
+scale_and_log <- compose(safe_log, scale_by_10)
+
+# Apply the composed function to the hp column
+mtcars <- mtcars %>%
+  mutate(log_scaled_hp = map_dbl(hp, ~ scale_and_log(.x)$result))
+
+head(mtcars)
+
+                   mpg cyl disp  hp drat    wt  qsec vs am gear carb log_scaled_hp
+Mazda RX4         21.0   6  160 110 3.90 2.620 16.46  0  1    4     4      7.003065
+Mazda RX4 Wag     21.0   6  160 110 3.90 2.875 17.02  0  1    4     4      7.003065
+Datsun 710        22.8   4  108  93 3.85 2.320 18.61  1  1    4     1      6.835185
+Hornet 4 Drive    21.4   6  258 110 3.08 3.215 19.44  1  0    3     1      7.003065
+Hornet Sportabout 18.7   8  360 175 3.15 3.440 17.02  0  0    3     2      7.467371
+Valiant           18.1   6  225 105 2.76 3.460 20.22  1  0    3     1      6.956545
+```
+
+In this example:
+
+1.  We define two functions: `scale_by_10` and `safe_log`.
+2.  We compose these functions into `scale_and_log`.
+3.  We apply the composed function to the `hp` column of the `mtcars` dataset and add the results as a new column.
+
+#### `negate`
+
+The `negate` function creates a new function that returns the logical negation of a predicate function. This is useful when you want to invert the logic of a condition.
+
+Here's a simple example:
+
+``` r
+# Define a simple predicate function
+is_even <- function(x) x %% 2 == 0
+
+# Negate the predicate function
+is_odd <- negate(is_even)
+
+# Apply the negated function
+results <- map_lgl(1:10, is_odd)
+results
+
+ [1]  TRUE FALSE  TRUE FALSE  TRUE FALSE  TRUE FALSE  TRUE FALSE
+```
+
+In this example:
+
+1.  We define a predicate function `is_even` to check if a number is even.
+2.  We use `negate` to create a new function `is_odd` that returns the opposite result.
+3.  We apply `is_odd` to the numbers 1 through 10.
+
+#### Practical Example with Built-in Dataset
+
+Let's use `negate` in a practical scenario with the `iris` dataset. Suppose we want to filter out rows where the `Sepal.Length` is not greater than 5.0.
+
+``` r
+# Define a predicate function
+is_long_sepal <- function(x) x > 5.0
+
+# Negate the predicate function
+is_not_long_sepal <- negate(is_long_sepal)
+
+# Filter out rows where Sepal.Length is not greater than 5.0
+iris_filtered <- iris %>%
+  split(1:nrow(.)) %>%
+  discard(~ is_not_long_sepal(.x$Sepal.Length)) %>%
+  bind_rows()
+
+head(iris_filtered)
+
+  Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+1          5.1         3.5          1.4         0.2  setosa
+2          5.4         3.9          1.7         0.4  setosa
+3          5.4         3.7          1.5         0.2  setosa
+4          5.8         4.0          1.2         0.2  setosa
+5          5.7         4.4          1.5         0.4  setosa
+6          5.4         3.9          1.3         0.4  setosa
+```
+
+In this example:
+
+1.  We define a predicate function `is_long_sepal` to check if `Sepal.Length` is greater than 5.0.
+2.  We use `negate` to create a new function `is_not_long_sepal` that returns the opposite result.
+3.  We use `discard` to remove rows where `Sepal.Length` is not greater than 5.0, then combine the filtered list back into a data frame.
+
+With `compose` and `negate`, you can create more flexible and powerful functions, allowing for more concise and readable code.
+
+### Conclusion
+
+Congratulations! You've journeyed through the world of `purrr`, mastering a wide array of functions and techniques to manipulate and transform your data. From basic mapping to creating powerful function compositions, `purrr` equips you with tools to make your data wrangling tasks more efficient and expressive.
+
+Whether you're applying functions conditionally, dealing with side effects, or validating your data, `purrr` has you covered. Keep exploring and experimenting with these functions to unlock the full potential of functional programming in R.
+
+### Gift for patient readers
+
+I decided to give you some useful, yet not trivial use cases of purrr functions.
+
+#### Define list of function to apply on data
+
+``` r
+apply_funs <- function(x, ...) purrr::map_dbl(list(...), ~ .x(x))
+```
+
+Want to apply multiple functions to a single vector and get a tidy result? Meet `apply_funs`, your new best friend! This nifty little function takes a value and a bunch of functions, then maps each function to the vector, returning the results as a neat vector.
+
+Let's break it down:
+
+-   `x`: The value you want to transform.
+-   `...`: A bunch of functions you want to apply to `x`.
+-   `purrr::map_dbl`: Maps each function in the list to `x` and returns the results as a vector of doubles.
+
+Suppose that you want to apply 3 summary functions on vector of numbers. Here's how you can do it:
+
+``` r
+number <- 1:48
+
+results <- apply_funs(number, mean, median, sd)
+results
+
+[1] 24.5 24.5 14.0
+```
+
+#### Using pmap as equivalent of Python's zip
+
+Sometimes you need to zip two tables or columns together. In Python there is zip function for it, but we do not have twin function in R, unless you use pmap. I will not make it longer, so check it out in one of my previous [articles](https://medium.com/number-around-us/powerquery-puzzle-solved-with-r-d8aba4e33f60).
+
+#### Rendering parameterized RMarkdown reports
+
+Assuming that you have kind of report you use for each salesperson, there is possibility, that you are changing parameters manually to generate report for person X, for date range Y, for product Z. Why not prepare lists of people, time range, and list of products, and then based on them generate series of reports by one click only.
