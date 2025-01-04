@@ -1,0 +1,169 @@
+---
+title: "Object-Oriented Express: Refactoring in R"
+author: "Numbers around us"
+date: "2023-11-23"
+format: html
+---
+
+### The Journey to OOP in R
+
+![Image](images/R6OOP.jpg)
+
+In the world of programming, embarking on the path of Object-Oriented Programming (OOP) is akin to boarding a high-speed train towards more structured, efficient, and maintainable code. As we continue our series, our next stop is the "Object-Oriented Express," where we delve into the transformative power of OOP in the R programming language. This journey isn't just about adopting a new syntax; it's about embracing a new mindset that revolves around objects and classes, a stark contrast to the procedural paths we've treaded so far.
+
+The protagonist of our story, the `data_quality_report()` function, has served us well in its procedural form. However, as the complexity of our data analysis tasks grows, so does the need for a more scalable and maintainable structure. By refactoring this function into an R6 class, we will not only improve its organization but also enhance its functionality and extendibility. This transition to OOP will illustrate how your R code can evolve from a linear script to an elegant symphony of interacting objects and methods, each playing a specific role in the data analysis orchestra.
+
+### Refactoring with R6 Classes
+
+Our journey into OOP begins with the foundational step of refactoring our existing `data_quality_report()` function into an R6 class. R6 classes in R represent a more advanced and versatile system for OOP, offering both the power of encapsulation and the flexibility of reference semantics.
+
+#### Defining the R6 Class
+
+We start by defining the structure of our new class. This class will encapsulate all functionalities of our original function, transforming them into methods --- functions that belong to and operate on the class itself.
+
+```r
+library(R6)
+library(tidyverse)
+
+set.seed(123) # Ensuring reproducibility
+dummy_data <- tibble(
+  id = 1:1000,
+  category = sample(c("A", "B", "C", NA), 1000, replace = TRUE),
+  value = c(rnorm(997), -10, 100, NA), # Including outliers and a missing value
+  date = seq.Date(from = as.Date("2020-01-01"), by = "day", length.out = 1000),
+  text = sample(c("Lorem", "Ipsum", "Dolor", "Sit", NA), 1000, replace = TRUE)
+)
+
+DataQualityReport <- R6Class(
+  "DataQualityReport",
+  public = list(
+    data = NULL,
+    
+    initialize = function(data) {
+      if (!is.data.frame(data)) {
+        stop("Data must be a dataframe.")
+      }
+      self$data <- data
+    },
+    
+    calculate_missing_values = function() {
+      return(
+        self$data %>%
+          summarize(across(everything(), ~sum(is.na(.)))) %>%
+          pivot_longer(cols = everything(), names_to = "column", values_to = "missing_values")
+      )
+    },
+    
+    detect_outliers = function() {
+      return(
+        self$data %>%
+          select(where(is.numeric)) %>%
+          imap(~{
+            qnt <- quantile(.x, probs = c(0.25, 0.75), na.rm = TRUE)
+            iqr <- IQR(.x, na.rm = TRUE)
+            lower_bound <- qnt[1] - 1.5 * iqr
+            upper_bound <- qnt[2] + 1.5 * iqr
+            outlier_count <- sum(.x < lower_bound | .x > upper_bound, na.rm = TRUE)
+            tibble(column = .y, lower_bound, upper_bound, outlier_count)
+          }) %>%
+          bind_rows()
+      )
+    },
+    
+    summarize_data_types = function() {
+      return(
+        self$data %>%
+          summarize(across(everything(), ~paste(class(.), collapse = ", "))) %>%
+          pivot_longer(cols = everything(), names_to = "column", values_to = "data_type")
+      )
+    },
+    
+    generate_report = function() {
+      return(
+        list(
+          MissingValues = self$calculate_missing_values(),
+          Outliers = self$detect_outliers(),
+          DataTypes = self$summarize_data_types()
+        )
+      )
+    }
+  )
+)
+
+# Example of creating an instance and using the class
+data_report_instance <- DataQualityReport$new(dummy_data)
+report <- data_report_instance$generate_report()
+
+print(report)
+
+$MissingValues
+# A tibble: 5 × 2
+  column   missing_values
+  <chr>             <int>
+1 id                    0
+2 category            246
+3 value                 1
+4 date                  0
+5 text                180
+
+$Outliers
+# A tibble: 2 × 4
+  column lower_bound upper_bound outlier_count
+  <chr>        <dbl>       <dbl>         <int>
+1 id         -498.       1500.               0
+2 value        -2.71        2.67             9
+
+$DataTypes
+# A tibble: 5 × 2
+  column   data_type
+  <chr>    <chr>    
+1 id       integer  
+2 category character
+3 value    numeric  
+4 date     Date     
+5 text     character
+```
+
+In this refactoring, each key task of the original function becomes a method within our R6 class. The `initialize` method sets up the object with the necessary data. The `calculate_missing_values`, `detect_outliers`, and `summarize_data_types` methods each handle a specific aspect of the data quality report, encapsulating the functionality in a clear and organized manner. The `generate_report` method brings these pieces together to produce the final report.
+
+### The Power of Modular Design
+
+The transition to an R6 class structure is not just a change in syntax; it's a shift towards a more modular design. Modular programming is a design technique that breaks a program into separate, interchangeable modules, each handling a specific subtask. This approach has several benefits:
+
+1. **Improved Readability**: When functions are broken down into smaller, purpose-specific methods, it becomes easier to understand what each part of the code does. This clarity is invaluable, especially as the complexity of the codebase grows.
+2. **Enhanced Maintainability**: With a modular structure, updating the code becomes more straightforward. If a specific aspect of the functionality needs to be changed, you only need to modify the relevant method, rather than wading through a monolithic function.
+3. **Easier Debugging and Testing**: Each module or method can be tested independently, simplifying the debugging process. This independent testability ensures that changes in one part of the code do not inadvertently affect other parts.
+4. **Reusability**: Modular design promotes the reuse of code. Methods in an R6 class can be reused across different projects or datasets, facilitating a more efficient and DRY (Don't Repeat Yourself) coding practice.
+
+In our `DataQualityReport` class, the modular design is evident. The class acts as a container for related methods, each responsible for a different aspect of data quality reporting. This organization makes it clear what each part of the code is doing, and allows for easy modifications and extensions in the future.
+
+### Extending Functionality
+
+A key advantage of OOP and our R6 class structure is the ease of extending functionality. For example, we can add a new method to our `DataQualityReport` class that exports the generated report to a CSV file. This extension demonstrates how we can build upon our existing class without altering its core functionality:
+
+```r
+DataQualityReport$set("public", "export_to_csv", function(file_name) {
+  report <- self$generate_report()
+  write.csv(report$MissingValues, paste0(file_name, "_missing_values.csv"))
+  write.csv(report$Outliers, paste0(file_name, "_outliers.csv"))
+  write.csv(report$DataTypes, paste0(file_name, "_data_types.csv"))
+  message("Report exported to CSV files with base name: ", file_name)
+})
+
+data_report_instance2 <- DataQualityReport$new(dummy_data)
+
+data_report_instance2$export_to_csv("data_report")
+
+#> Report exported to CSV files with base name: data_report
+```
+
+With this new `export_to_csv` method, our class not only analyzes the data but also provides an easy way to export the results, enhancing the user experience and the utility of our class.
+
+### OOP in R --- A Paradigm Shift
+
+The journey of refactoring our `data_quality_report()` function into an R6 class represents more than just an exercise in coding. It signifies a paradigm shift in the way we think about and structure our R code. By embracing OOP, we're not only streamlining our workflow but also opening doors to more advanced programming practices that can handle larger, more complex tasks with ease.
+
+The modular design, enhanced maintainability, and extensibility we've achieved with our `DataQualityReport` class illustrate the profound impact OOP can have. This shift in approach, from procedural to object-oriented, is a crucial step towards writing more robust, scalable, and efficient R code.
+
+As we continue our exploration in R programming, I encourage readers to experiment with OOP. Embrace its principles in your projects and discover how it can transform your code, making it not only more powerful but also a joy to work with.
+

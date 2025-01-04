@@ -1,0 +1,530 @@
+---
+title: "Why Every Data Scientist Needs the janitor Package"
+author: "Numbers around us"
+date: "2024-08-16"
+format: html
+---
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          222222222222222222222222222222222222222 
+![Image](images/janitor.jpg)
+### Lessons from Will Hunting and McGayver
+
+In the world of data science, data cleaning is often seen as one of the most time-consuming and least glamorous tasks. Yet, it's also one of the most critical. Without clean data, even the most sophisticated algorithms and models can produce misleading results. This is where the *janitor* package in R comes into play, serving as the unsung hero that quietly handles the nitty-gritty work of preparing data for analysis.
+
+Much like the janitors we often overlook in our daily lives, the `janitor` package works behind the scenes to ensure everything runs smoothly. It takes care of the small but essential tasks that, if neglected, could bring a project to a halt. The package simplifies data cleaning with a set of intuitive functions that are both powerful and easy to use, making it an indispensable tool for any data scientist.
+
+To better understand the importance of `janitor`, we can draw parallels to two iconic figures from pop culture: Will Hunting, the genius janitor from *Good Will Hunting*, and McGayver, the handyman known for his ability to solve any problem with minimal resources. Just as Will Hunting and McGayver possess hidden talents that make a huge impact, the `janitor` package holds a set of powerful functions that can transform messy datasets into clean, manageable ones, enabling data scientists to focus on the more complex aspects of their work.
+
+### Will Hunting: The Genius Janitor
+
+Will Hunting, the protagonist of *Good Will Hunting*, is an unassuming janitor at the Massachusetts Institute of Technology (MIT). Despite his modest job, Will possesses a genius-level intellect, particularly in mathematics. His hidden talent is discovered when he solves a complex math problem left on a blackboard, something that had stumped even the brightest minds at the university. This revelation sets off a journey that challenges his self-perception and the expectations of those around him.
+
+The story of Will Hunting is a perfect metaphor for the `janitor` package in R. Just as Will performs crucial tasks behind the scenes at MIT, the `janitor` package operates in the background of data science projects. It handles the essential, albeit often overlooked, work of data cleaning, ensuring that data is in the best possible shape for analysis. Like Will, who is initially underestimated but ultimately proves invaluable, `janitor` is a tool that may seem simple at first glance but is incredibly powerful and essential for any serious data scientist.
+
+Without proper data cleaning, even the most advanced statistical models can produce incorrect or misleading results. The `janitor` package, much like Will Hunting, quietly ensures that the foundations are solid, allowing the more complex and visible work to shine.
+
+### McGayver: The Handyman Who Fixes Everything
+
+In your school days, you might have known someone who was a jack-of-all-trades, able to fix anything with whatever tools or materials were on hand. Perhaps this person was affectionately nicknamed "McGayver," a nod to the famous TV character MacGyver, who was known for solving complex problems with everyday objects. This school janitor, like McGayver, was indispensable --- working in the background, fixing leaks, unclogging drains, and keeping everything running smoothly. Without him, things would quickly fall apart.
+
+This is exactly how the `janitor` package functions in the world of data science. Just as your school's McGayver could solve any problem with a handful of tools, the `janitor` package offers a set of versatile functions that can clean up the messiest of datasets with minimal effort. Whether it's removing empty rows and columns, cleaning up column names, or handling duplicates, `janitor` has a tool for the job. And much like McGayver, it accomplishes these tasks efficiently and effectively, often with a single line of code.
+
+The genius of McGayver wasn't just in his ability to fix things, but in how he could use simple tools to do so. In the same way, `janitor` simplifies tasks that might otherwise require complex code or multiple steps. It allows data scientists to focus on the bigger picture, confident that the foundations of their data are solid.
+
+### Problem-Solving with and without janitor
+
+In this section, we'll dive into specific data cleaning problems that data scientists frequently encounter. For each problem, we'll first show how it can be solved using base R, and then demonstrate how the `janitor` package offers a more streamlined and efficient solution.
+
+#### 1. clean_names(): Tidying Up Column Names
+
+**Problem:**\
+Column names in datasets are often messy --- containing spaces, special characters, or inconsistent capitalization --- which can make data manipulation challenging. Consistent, tidy column names are essential for smooth data analysis.
+
+**Base R Solution:** To clean column names manually, you would need to perform several steps, such as converting names to lowercase, replacing spaces with underscores, and removing special characters. Here's an example using base R:
+
+```r
+# Creating dummy empty data frame
+df = data.frame(a = NA, b = NA, c = NA, d = NA)
+
+# Original column names
+names(df) <- c("First Name", "Last Name", "Email Address", "Phone Number")
+
+# Cleaning the names manually
+names(df) <- tolower(names(df))                        # Convert to lowercase
+names(df) <- gsub(" ", "_", names(df))                 # Replace spaces with underscores
+names(df) <- gsub("[^[:alnum:]_]", "", names(df))      # Remove special characters
+
+# Resulting column names
+names(df)
+# [1] "first_name" "last_name" "email_address" "phone_number"
+```
+
+This approach requires multiple lines of code, each handling a different aspect of cleaning.
+
+**janitor Solution:** With the `janitor` package, the same result can be achieved with a single function:
+
+```r
+# creating dummy empty data frame
+df = data.frame(a = NA, b = NA, c = NA, d = NA)
+names(df) <- c("First Name", "Last Name", "Email Address", "Phone Number")
+
+library(janitor)
+
+# Using clean_names() to tidy up column names
+df <- clean_names(df)
+
+# Resulting column names
+names(df)
+# [1] "first_name" "last_name" "email_address" "phone_number"
+```
+
+**Why janitor Is Better:** The `clean_names()` function simplifies the entire process into one step, automatically applying a set of best practices to clean and standardize column names. This not only saves time but also reduces the chance of making errors in your code. By using `clean_names()`, you ensure that your column names are consistently formatted and ready for analysis, without the need for manual intervention.
+
+#### 2. tabyl and adorn_ Functions: Creating Frequency Tables and Adding Totals or Percentages
+
+**Problem:**\
+When analyzing categorical data, it's common to create frequency tables or cross-tabulations. Additionally, you might want to add totals or percentages to these tables to get a clearer picture of your data distribution.
+
+**Base R Solution:** Creating a frequency table and adding totals or percentages manually requires several steps. Here's an example using base R:
+
+```r
+# Sample data
+df <- data.frame(
+  gender = c("Male", "Female", "Female", "Male", "Female"),
+  age_group = c("18-24", "18-24", "25-34", "25-34", "35-44")
+)
+
+# Creating a frequency table using base R
+table(df$gender, df$age_group)
+
+#        18-24 25-34 35-44
+# Female     1     1     1
+# Male       1     1     0
+
+# Adding row totals
+addmargins(table(df$gender, df$age_group), margin = 1)
+
+#         18-24 25-34 35-44
+# Female     1     1     1
+# Male       1     1     0
+# Sum        2     2     1
+
+# Calculating percentages
+prop.table(table(df$gender, df$age_group), margin = 1) * 100
+
+#           18-24    25-34    35-44
+# Female 33.33333 33.33333 33.33333
+# Male   50.00000 50.00000  0.00000
+```
+
+This method involves creating tables, adding margins manually, and calculating percentages separately, which can become cumbersome, especially with larger datasets.
+
+**janitor Solution:** With the `janitor` package, you can create a frequency table and easily add totals or percentages using `tabyl()` and `adorn_*` functions:
+
+```r
+# Sample data
+df <- data.frame(
+  gender = c("Male", "Female", "Female", "Male", "Female"),
+  age_group = c("18-24", "18-24", "25-34", "25-34", "35-44")
+)
+
+library(janitor)
+
+# Piping all together
+table_df <- df %>%
+  tabyl(gender, age_group) %>%
+  adorn_totals("row") %>%
+  adorn_percentages("row") %>%
+  adorn_pct_formatting()
+
+table_df
+
+# gender 18-24 25-34 35-44
+# Female 33.3% 33.3% 33.3%
+#   Male 50.0% 50.0%  0.0%
+#  Total 40.0% 40.0% 20.0%
+```
+
+**Why janitor Is Better:** The `tabyl()` function automatically generates a clean frequency table, while `adorn_totals()` and `adorn_percentages()` easily add totals and percentages without the need for additional code. This approach is not only quicker but also reduces the complexity of your code. The `janitor` functions handle the formatting and calculations for you, making it easier to produce professional-looking tables that are ready for reporting or further analysis.
+
+#### 3. row_to_names(): Converting a Row of Data into Column Names
+
+**Problem:**\
+Sometimes, datasets are structured with the actual column names stored in one of the rows rather than the header. Before starting the analysis, you need to promote this row to be the header of the data frame.
+
+**Base R Solution:** Without `janitor`, converting a row to column names can be done with the following steps using base R:
+
+```r
+# Sample data with column names in the first row
+df <- data.frame(
+  X1 = c("Name", "John", "Jane", "Doe"),
+  X2 = c("Age", "25", "30", "22"),
+  X3 = c("Gender", "Male", "Female", "Male")
+)
+
+# Step 1: Extract the first row as column names
+colnames(df) <- df[1, ]
+
+# Step 2: Remove the first row from the data frame
+df <- df[-1, ]
+
+# Resulting data frame
+df
+```
+
+This method involves manually extracting the row, assigning it as the header, and then removing the original row from the data.
+
+**janitor Solution:** With `janitor`, this entire process is streamlined into a single function:
+
+```r
+# Sample data with column names in the first row
+df <- data.frame(
+  X1 = c("Name", "John", "Jane", "Doe"),
+  X2 = c("Age", "25", "30", "22"),
+  X3 = c("Gender", "Male", "Female", "Male")
+)
+
+df <- row_to_names(df, row_number = 1)
+
+# Resulting data frame
+df
+```
+
+**Why janitor Is Better:** The `row_to_names()` function from `janitor` simplifies this operation by directly promoting the specified row to the header in one go, eliminating the need for multiple steps. This function is more intuitive and reduces the chance of errors, allowing you to quickly structure your data correctly and move on to analysis.
+
+#### 4. remove_constant(): Identifying and Removing Columns with Constant Values
+
+**Problem:**\
+In some datasets, certain columns may contain the same value across all rows. These constant columns provide no useful information for analysis and can clutter your dataset. Removing them is essential for streamlining your data.
+
+**Base R Solution:** Identifying and removing constant columns without `janitor` requires writing a custom function or applying several steps. Here's an example using base R:
+
+```r
+# Sample data with constant and variable columns
+df <- data.frame(
+  ID = c(1, 2, 3, 4, 5),
+  Gender = c("Male", "Male", "Male", "Male", "Male"), # Constant column
+  Age = c(25, 30, 22, 40, 35)
+)
+
+# Identifying constant columns manually
+constant_cols <- sapply(df, function(col) length(unique(col)) == 1)
+
+# Removing constant columns
+df <- df[, !constant_cols]
+
+# Resulting data frame
+df
+
+  ID Age
+1  1  25
+2  2  30
+3  3  22
+4  4  40
+5  5  35
+```
+
+This method involves checking each column for unique values and then filtering out the constant ones, which can be cumbersome.
+
+**janitor Solution:** With `janitor`, you can achieve the same result with a simple, one-line function:
+
+```r
+df <- data.frame(
+  ID = c(1, 2, 3, 4, 5),
+  Gender = c("Male", "Male", "Male", "Male", "Male"), # Constant column
+  Age = c(25, 30, 22, 40, 35)
+)
+
+df <- remove_constant(df)
+
+  ID Age
+1  1  25
+2  2  30
+3  3  22
+4  4  40
+5  5  35
+```
+
+**Why janitor Is Better:** The `remove_constant()` function from `janitor` is a straightforward and efficient solution to remove constant columns. It automates the process, ensuring that no valuable time is wasted on writing custom functions or manually filtering columns. This function is particularly useful when working with large datasets, where manually identifying constant columns would be impractical.
+
+#### 5. remove_empty(): Eliminating Empty Rows and Columns
+
+**Problem:**\
+Datasets often contain rows or columns that are entirely empty, especially after merging or importing data from various sources. These empty rows and columns don't contribute any useful information and can complicate data analysis, so they should be removed.
+
+**Base R Solution:** Manually identifying and removing empty rows and columns can be done, but it requires multiple steps. Here's how you might approach it using base R:
+
+```r
+# Sample data with empty rows and columns
+df <- data.frame(
+  ID = c(1, 2, NA, 4, 5),
+  Name = c("John", "Jane", NA, NA,NA),
+  Age = c(25, 30, NA, NA, NA),
+  Empty_Col = c(NA, NA, NA, NA, NA) # An empty column
+)
+
+# Removing empty rows
+df <- df[rowSums(is.na(df)) != ncol(df), ]
+
+# Removing empty columns
+df <- df[, colSums(is.na(df)) != nrow(df)]
+
+# Resulting data frame
+df
+
+  ID Name Age
+1  1 John  25
+2  2 Jane  30
+4  4 <NA>  NA
+5  5 <NA>  NA
+```
+
+This method involves checking each row and column for completeness and then filtering out those that are entirely empty, which can be cumbersome and prone to error.
+
+**janitor Solution:** With `janitor`, you can remove both empty rows and columns in a single, straightforward function call:
+
+```r
+# Sample data with empty rows and columns
+df <- data.frame(
+  ID = c(1, 2, NA, 4, 5),
+  Name = c("John", "Jane", NA, NA,NA),
+  Age = c(25, 30, NA, NA, NA),
+  Empty_Col = c(NA, NA, NA, NA, NA) # An empty column
+)
+
+df <- remove_empty(df, which = c("cols", "rows"))
+
+df
+
+  ID Name Age
+1  1 John  25
+2  2 Jane  30
+4  4 <NA>  NA
+5  5 <NA>  NA
+```
+
+**Why janitor Is Better:** The `remove_empty()` function from `janitor` makes it easy to eliminate empty rows and columns with minimal effort. You can specify whether you want to remove just rows, just columns, or both, making the process more flexible and less error-prone. This one-line solution significantly simplifies the task and ensures that your dataset is clean and ready for analysis.
+
+#### 6. get_dupes(): Detecting and Extracting Duplicate Rows
+
+**Problem:**\
+Duplicate rows in a dataset can lead to biased or incorrect analysis results. Identifying and managing duplicates is crucial to ensure the integrity of your data.
+
+**Base R Solution:** Detecting and extracting duplicate rows manually can be done using base R with the following approach:
+
+```r
+# Sample data with duplicate rows
+df <- data.frame(
+  ID = c(1, 2, 3, 3, 4, 5, 5),
+  Name = c("John", "Jane", "Doe", "Doe", "Alice", "Bob", "Bob"),
+  Age = c(25, 30, 22, 22, 40, 35, 35)
+)
+
+# Identifying duplicate rows
+dupes <- df[duplicated(df) | duplicated(df, fromLast = TRUE), ]
+
+# Resulting data frame with duplicates
+dupes
+
+ID Name Age
+3  3  Doe  22
+4  3  Doe  22
+6  5  Bob  35
+7  5  Bob  35
+```
+
+This approach uses `duplicated()` to identify duplicate rows. While it's effective, it requires careful handling to ensure all duplicates are correctly identified and extracted, especially in more complex datasets.
+
+**janitor Solution:** With `janitor`, identifying and extracting duplicate rows is greatly simplified using the `get_dupes()` function:
+
+```r
+# Sample data with duplicate rows
+df <- data.frame(
+  ID = c(1, 2, 3, 3, 4, 5, 5),
+  Name = c("John", "Jane", "Doe", "Doe", "Alice", "Bob", "Bob"),
+  Age = c(25, 30, 22, 22, 40, 35, 35)
+)
+
+# Using get_dupes() to find duplicate rows
+dupes <- get_dupes(df)
+
+# Resulting data frame with duplicates
+dupes
+
+# It gives us additional info how many repeats of each row we have
+  ID Name Age dupe_count
+1  3  Doe  22          2
+2  3  Doe  22          2
+3  5  Bob  35          2
+4  5  Bob  35          2
+```
+
+**Why janitor Is Better:** The `get_dupes()` function from `janitor` not only identifies duplicate rows but also provides additional information, such as the number of times each duplicate appears, in an easy-to-read format. This functionality is particularly useful when dealing with large datasets, where even a straightforward method like `duplicated()` can become cumbersome. With `get_dupes()`, you gain a more detailed and user-friendly overview of duplicates, ensuring the integrity of your data.
+
+#### 7. round_half_up, signif_half_up, and round_to_fraction: Rounding Numbers with Precision
+
+**Problem:**\
+Rounding numbers is a common task in data analysis, but different situations require different types of rounding. Sometimes you need to round to the nearest integer, other times to a specific fraction, or you might need to ensure that rounding is consistent in cases like `5.5` rounding up to `6`.
+
+**Base R Solution:** Rounding numbers in base R can be done using `round()` or `signif()`, but these functions don\'t always handle edge cases or specific requirements like rounding half up or to a specific fraction:
+
+```r
+# Sample data
+numbers <- c(1.25, 2.5, 3.75, 4.125, 5.5)
+
+# Rounding using base R's round() function
+rounded <- round(numbers, 1)  # Rounds to one decimal place
+
+# Rounding to significant digits using signif()
+significant <- signif(numbers, 2)
+
+# Resulting rounded values
+
+rounded
+[1] 1.2 2.5 3.8 4.1 5.5
+
+significant
+[1] 1.2 2.5 3.8 4.1 5.5
+```
+
+While these functions are useful, they may not provide the exact rounding behavior you need in certain situations, such as consistently rounding half values up or rounding to specific fractions.
+
+**janitor Solution:** The `janitor` package provides specialized functions like `round_half_up()`, `signif_half_up()`, and `round_to_fraction()` to handle these cases with precision:
+
+```r
+# Using round_half_up() to round numbers with half up logic
+rounded_half_up <- round_half_up(numbers, 1)
+
+# Using signif_half_up() to round to significant digits with half up logic
+significant_half_up <- signif_half_up(numbers, 2)
+
+# Using round_to_fraction() to round numbers to the nearest fraction
+rounded_fraction <- round_to_fraction(numbers, denominator = 4)
+
+rounded_half_up
+[1] 1.3 2.5 3.8 4.1 5.5
+
+significant_half_up
+[1] 1.3 2.5 3.8 4.1 5.5
+
+rounded_fraction
+[1] 1.25 2.50 3.75 4.00 5.50
+```
+
+**Why janitor Is Better:** The `janitor` functions `round_half_up()`, `signif_half_up()`, and `round_to_fraction()` offer more precise control over rounding operations compared to base R functions. These functions are particularly useful when you need to ensure consistent rounding behavior, such as always rounding `5.5` up to `6`, or when rounding to the nearest fraction (e.g., quarter or eighth). This level of control can be critical in scenarios where rounding consistency affects the outcome of an analysis or report.
+
+#### 8. chisq.test() and fisher.test(): Simplifying Hypothesis Testing
+
+**Problem:**\
+When working with categorical data, it's often necessary to test for associations between variables using statistical tests like the Chi-squared test (`chisq.test()`) or Fisher's exact test (`fisher.test()`). Preparing your data and setting up these tests manually can be complex, particularly when dealing with larger datasets with multiple categories.
+
+**Base R Solution:** Here's how you might approach this using a more complex dataset with base R:
+
+```r
+# Sample data with multiple categories
+df <- data.frame(
+  Treatment = c("A", "A", "B", "B", "C", "C", "A", "B", "C", "A", "B", "C"),
+  Outcome = c("Success", "Failure", "Success", "Failure", "Success", "Failure",
+              "Success", "Success", "Failure", "Failure", "Success", "Failure"),
+  Gender = c("Male", "Female", "Male", "Female", "Male", "Female", "Male",
+             "Female", "Male", "Female", "Male", "Female")
+)
+
+# Creating a contingency table
+contingency_table <- table(df$Treatment, df$Outcome, df$Gender)
+
+# Performing Chi-squared test (on a 2D slice of the table)
+chisq_result <- chisq.test(contingency_table[,, "Male"])
+
+# Performing Fisher's exact test (on the same 2D slice)
+fisher_result <- fisher.test(contingency_table[,, "Male"])
+
+# Results
+chisq_result
+
+ Pearson's Chi-squared test
+
+data:  contingency_table[, , "Male"]
+X-squared = 2.4, df = 2, p-value = 0.3012
+
+fisher_result
+
+ Fisher's Exact Test for Count Data
+
+data:  contingency_table[, , "Male"]
+p-value = 1
+alternative hypothesis: two.sided
+```
+
+This approach involves creating a multidimensional contingency table and then slicing it to apply the tests. This can become cumbersome and requires careful management of the data structure.
+
+**janitor Solution:** Using `janitor`, you can achieve the same results with a more straightforward approach:
+
+```r
+# Sample data with multiple categories
+df <- data.frame(
+  Treatment = c("A", "A", "B", "B", "C", "C", "A", "B", "C", "A", "B", "C"),
+  Outcome = c("Success", "Failure", "Success", "Failure", "Success", "Failure",
+              "Success", "Success", "Failure", "Failure", "Success", "Failure"),
+  Gender = c("Male", "Female", "Male", "Female", "Male", "Female", "Male",
+             "Female", "Male", "Female", "Male", "Female")
+)
+
+library(janitor)
+
+# Creating a tabyl to perform Chi-squared and Fisher's exact tests for Male participants
+df_male <- df %>%
+  filter(Gender == "Male") %>%
+  tabyl(Treatment, Outcome)
+
+# Performing Chi-squared test
+chisq_result <- chisq.test(df_male)
+
+# Performing Fisher's exact test
+fisher_result <- fisher.test(df_male)
+
+# Results
+chisq_result
+
+ Pearson's Chi-squared test
+
+data:  df_male
+X-squared = 2.4, df = 2, p-value = 0.3012
+
+fisher_result
+
+ Fisher's Exact Test for Count Data
+
+data:  df_male
+p-value = 1
+alternative hypothesis: two.sided
+```
+
+**Why janitor Is Better:** The `janitor` approach simplifies the process by integrating the creation of contingency tables (`tabyl()`) with the execution of hypothesis tests (`chisq.test()` and `fisher.test()`). This reduces the need for manual data slicing and ensures that the data is correctly formatted for testing. This streamlined process is particularly advantageous when dealing with larger, more complex datasets, where manually managing the structure could lead to errors. The result is a faster, more reliable workflow for testing associations between categorical variables.
+
+### The Unsung Heroes of Data Science
+
+In both the physical world and the realm of data science, there are tasks that often go unnoticed but are crucial for the smooth operation of larger systems. Janitors, for example, quietly maintain the cleanliness and functionality of buildings, ensuring that everyone else can work comfortably and efficiently. Without their efforts, even the most well-designed spaces would quickly descend into chaos.
+
+Similarly, the *janitor* package in R plays an essential, yet often underappreciated, role in data science. Data cleaning might not be the most glamorous aspect of data analysis, but it's undoubtedly one of the most critical. Just as a building cannot function properly without regular maintenance, a data analysis project cannot yield reliable results without clean, well-prepared data.
+
+The functions provided by the `janitor` package --- whether it's tidying up column names, removing duplicates, or simplifying complex rounding tasks --- are the data science equivalent of the work done by janitors and handymen in the physical world. They ensure that the foundational aspects of your data are in order, allowing you to focus on the more complex, creative aspects of analysis and interpretation.
+
+Reliable data cleaning is not just about making datasets look neat; it's about ensuring the accuracy and integrity of the insights derived from that data. Inaccurate or inconsistent data can lead to flawed conclusions, which can have significant consequences in any field --- from business decisions to scientific research. By automating and simplifying the data cleaning process, the `janitor` package helps prevent such issues, ensuring that the results of your analysis are as robust and trustworthy as possible.
+
+In short, while the `janitor` package may work quietly behind the scenes, its impact on the overall success of data science projects is profound. It is the unsung hero that keeps your data --- and, by extension, your entire analysis --- on solid ground.
+
+Throughout this article, we've delved into how the *janitor* package in R serves as an indispensable tool for data cleaning, much like the often-overlooked but essential janitors and handymen in our daily lives. By comparing its functions to traditional methods using base R, we've demonstrated how `janitor` simplifies and streamlines tasks that are crucial for any data analysis project.
+
+The story of Will Hunting, the genius janitor, and the analogy of your school's "McGayver" highlight how unnoticed figures can make extraordinary contributions with their unique skills. Similarly, the `janitor` package, though it operates quietly in the background, has a significant impact on data preparation. It handles the nitty-gritty tasks --- cleaning column names, removing duplicates, rounding numbers precisely --- allowing data scientists to focus on generating insights and building models.
+
+We also explored how functions like `clean_names()`, `tabyl()`, `row_to_names()`, `remove_constants()`, `remove_empty()`, `get_dupes()`, and `round_half_up()` drastically reduce the effort required to prepare your data. These tools save time, ensure data consistency, and minimize errors, making them indispensable for any data professional.
+
+Moreover, we emphasized the critical role of data cleaning in ensuring reliable analysis outcomes. Just as no building can function without the janitors who maintain it, no data science workflow should be without tools like the `janitor` package. It is the unsung hero that ensures your data is ready for meaningful analysis, enabling you to trust your results and make sound decisions.
+
+In summary, the `janitor` package is more than just a set of utility functions --- it's a crucial ally in the data scientist's toolkit. By handling the essential, behind-the-scenes work of data cleaning, `janitor` helps ensure that your analyses are built on a solid foundation. So, if you haven't already integrated `janitor` into your workflow, now is the perfect time to explore its capabilities and see how it can elevate your data preparation process.
+
+Consider adding `janitor` to your R toolkit today. Explore its functions and experience firsthand how it can streamline your workflow and enhance the quality of your data analysis. Your data --- and your future analyses --- will thank you.
+
+[Canonical link](https://medium.com/@numbersaroundus/why-every-data-scientist-needs-the-janitor-package-da37e4dcfe24)
+
+Exported from [Medium](https://medium.com) on December 19, 2024.
