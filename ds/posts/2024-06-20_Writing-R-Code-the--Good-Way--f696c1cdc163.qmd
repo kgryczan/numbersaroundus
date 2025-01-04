@@ -1,0 +1,393 @@
+---
+title: "Writing R Code the 'Good Way'"
+author: "Numbers around us"
+date: "2024-06-20"
+format: html
+---
+
+### Embracing the Tidyverse Style Guide {#179e}
+
+![Image](images/good-style-r.jpg)
+
+Hey there, fellow R coder! When it comes to writing code in R, making it functional is just the beginning. Trust me, I've been there --- debugging code at 2 AM, wondering what I was thinking when I wrote that line. This is where the Tidyverse Style Guide comes to the rescue, transforming your functional code into a masterpiece of readability and maintainability.
+
+### Why Coding Style Matters {#cc7e}
+
+Imagine reading a book with no punctuation or structure. Nightmare, right? The same goes for code. Good coding style ensures that your future self and your colleagues can comprehend and extend your work. As they say, "Today I know and God knows, but in a week only God will know how this should work."
+
+### Files and Directories {#df77}
+
+#### **File Naming Conventions** {#d23e}
+
+Proper file naming is crucial. Imagine rummaging through a folder named "folder2" --- frustrating, right? Descriptive, meaningful names make it easier for others to understand the purpose of each file at a glance.
+
+**Good Example:**
+
+```r
+data_analysis.R
+```
+
+**Bad Example:**
+
+```r
+Data Analysis.R
+```
+
+***Pros:*** Clear, concise, and consistent naming conventions make files easy to understand and manage, enhancing collaboration and avoiding issues with operating systems.
+
+***Cons:*** Inconsistent naming can lead to confusion, errors, and inefficiencies in managing and collaborating on projects.
+
+#### Directory Structure {#fd90}
+
+A well-organized directory structure helps in navigating the project efficiently. It separates data, scripts, and results, making it easier to locate and manage files.
+
+**Good Example:**
+
+```r
+project/
+├── data/
+├── scripts/
+└── results/
+```
+
+**Bad Example:**
+
+```r
+project/
+├── folder1/
+├── folder2/
+└── random_folder/
+```
+
+***Pros:*** A clear directory structure improves readability, navigation, and file management. It enhances collaboration by providing a standardized layout.
+
+***Cons:*** Poor organization leads to confusion, difficulty in finding files, increased errors, and reduced collaboration efficiency.
+
+### Syntax {#03fb}
+
+#### Indentation and Spacing {#bd3e}
+
+Think of indentation and spacing as the grammar of your code. Proper indentation and spacing make your code more readable and maintainable. The tidyverse style guide recommends using two spaces per indentation level and avoiding tabs.
+
+**Good Example:**
+
+```r
+if (condition) {
+  do_something()
+}
+```
+
+**Bad Example:**
+
+```r
+if(condition){
+do_something()}
+```
+
+***Pros:*** Using consistent indentation and spacing enhances readability and ensures that your code looks clean and professional. It makes it easier for others to follow your logic.
+
+***Cons:*** Inconsistent indentation makes the code hard to read and understand, leading to potential errors and misinterpretations.
+
+#### Line Length and Breaks {#8431}
+
+Keeping lines under 80 characters and breaking lines after operators improve code readability, especially on smaller screens.
+
+**Good Example:**
+
+```r
+my_function <- function(arg1, arg2) {
+  long_expression <- arg1 + 
+    arg2
+  return(long_expression)
+}
+```
+
+**Bad Example:**
+
+```r
+my_function <- function(arg1, arg2) {
+  long_expression <- arg1 + arg2
+  return(long_expression)
+}
+```
+
+***Pros:*** Maintaining a maximum line length and breaking lines appropriately makes your code easier to read and prevents horizontal scrolling.
+
+***Cons:*** Ignoring this practice can lead to cramped and hard-to-follow code, making debugging and collaboration more challenging.
+
+#### Naming Conventions {#763d}
+
+Adopting consistent naming conventions, such as snake_case for object names and UpperCamelCase for function names, helps in making the code more predictable and easier to understand.
+
+**Good Example:**
+
+```r
+data_frame <- data.frame(x = 1:10, y = 10:1)
+```
+
+**Bad Example:**
+
+```r
+DataFrame <- data.frame(x = 1:10, y = 10:1)
+```
+
+***Pros:*** Consistent naming conventions enhance readability and maintainability by providing a clear and predictable structure to your code. ***Cons:*** Inconsistent naming can cause confusion and errors, making it harder for others (and your future self) to understand and work with the code.
+
+### Functions {#dd54}
+
+#### Writing Functions {#bd32}
+
+Functions should have clear, descriptive names and be designed to perform a single task. This improves readability and maintainability.
+
+**Good Example:**
+
+```r
+add_numbers <- function(a, b) {
+  return(a + b)
+}
+```
+
+**Bad Example:**
+
+```r
+addnumbers <- function(a,b){return(a+b)}
+```
+
+***Pros:*** Clear, descriptive names and single-task functions make code easier to understand and maintain.
+
+***Cons:*** Ambiguous names and multifunctional code increase complexity, making it harder to debug and extend.
+
+#### Function Arguments {#4e76}
+
+Use default arguments where appropriate and document all arguments and return values. This makes functions more flexible and easier to use.
+
+**Good Example:**
+
+```r
+plot_data <- function(data, x_col, y_col, color = "blue") {
+  plot(data[[x_col]], data[[y_col]], col = color)
+}
+```
+
+**Bad Example:**
+
+```r
+plot_data <- function(data, x_col, y_col, color) {
+  plot(data[[x_col]], data[[y_col]], col = color)
+}
+```
+
+***Pros:*** Default arguments provide flexibility and make functions easier to use. Proper documentation aids in understanding.
+
+***Cons:*** Lack of defaults and documentation can lead to misuse and confusion.
+
+#### Return Values {#53d1}
+
+Ensure functions always return a value and that the return type is consistent. This makes the behavior of functions predictable and easier to debug.
+
+**Good Example:**
+
+```r
+add_numbers <- function(a, b) {
+  return(a + b)
+}
+```
+
+**Bad Example:**
+
+```r
+add_numbers <- function(a, b) {
+  result <- a + b
+  # No return statement
+}
+```
+
+***Pros:*** Consistent return values make functions predictable and easier to integrate.
+
+***Cons:*** Inconsistent or missing return values create ambiguity, making debugging and integration challenging.
+
+### Pipes {#bcf9}
+
+#### Using Pipes {#0c14}
+
+Pipes, introduced by the magrittr package and widely used in the tidyverse, streamline code by chaining operations in a readable manner.
+
+**Good Example:**
+
+```r
+library(dplyr)
+data %>%
+  filter(x > 1) %>%
+  summarise(mean_y = mean(y))
+```
+
+**Bad Example:**
+
+```r
+library(dplyr)
+summarise(filter(data, x > 1), mean_y = mean(y))
+```
+
+***Pros:*** Pipes enhance readability by breaking down operations into clear, sequential steps, making complex data transformations easier to follow. ***Cons***: Without pipes, code becomes nested and harder to read, increasing the likelihood of errors and making debugging more difficult.
+
+#### Pipe Practices {#eae2}
+
+To ensure clarity, avoid performing complex operations within a single pipe chain. Instead, break down steps to maintain readability. This example is little bit exaggerated, because we have only 6 lines, but it is not unusual to have pipe made of 30 or more lines, and this rule should be used in that case.
+
+**Good Example:**
+
+```r
+data_cleaned <- data %>%
+  filter(!is.na(x)) %>%
+  mutate(z = x + y)
+
+result <- data_cleaned %>%
+  group_by(category) %>%
+  summarise(mean_z = mean(z))
+```
+
+**Bad Example:**
+
+```r
+result <- data %>%
+  filter(!is.na(x)) %>%
+  mutate(z = x + y) %>%
+  group_by(category) %>%
+  summarise(mean_z = mean(z))
+```
+
+***Pros:*** Breaking down pipe chains improves readability and makes each step understandable and debuggable.
+
+***Cons:*** Long, complex pipes can be difficult to follow and troubleshoot, reducing code clarity and increasing maintenance difficulty.
+
+### ggplot2 {#319a}
+
+#### Breaking Code on Operators {#36fc}
+
+Breaking code on operators enhances readability and maintains a clean structure. This practice is particularly useful when dealing with long lines of code.
+
+**Good Example:**
+
+```r
+ggplot(data, aes(x = x, y = y)) +
+  geom_point() +
+  theme_minimal() +
+  labs(title = "Scatter Plot", 
+       x = "X Axis", 
+       y = "Y Axis")
+```
+
+***Pros:*** Each operation is on a new line, making the code easier to read and modify.
+
+#### Proper Order of Layers {#8b98}
+
+Maintaining a proper order of layers in ggplot2 ensures that each layer is applied correctly, making the visualization more accurate and aesthetically pleasing.
+
+**Good Example:**
+
+```r
+ggplot(data, aes(x = x, y = y)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_minimal()
+```
+
+***Pros:*** The smoothing layer is applied on top of the points, and the theme is applied last, ensuring a clean and logical structure.
+
+### Documentation {#f579}
+
+#### In-Code Documentation {#a903}
+
+In-code documentation using comments helps others (and your future self) understand the logic and purpose of your code. It's important to strike a balance between too many and too few comments.
+
+**Good Example:**
+
+```r
+# Calculate the mean of a numeric vector
+calculate_mean <- function(x) {
+  mean(x)
+}
+```
+
+***Pros:*** Provides clear, concise information about the function's purpose.
+
+#### Roxygen2 for Functions {#4591}
+
+Using Roxygen2 for documenting functions ensures comprehensive, consistent, and machine-readable documentation. This is particularly useful for creating package documentation.
+
+**Good Example:**
+
+```r
+#’ Calculate the mean of a numeric vector
+#’
+#’ @param x A numeric vector
+#’ @return The mean of the vector
+#’ @export
+calculate_mean <- function(x) {
+  mean(x)
+}
+```
+
+***Pros:*** Provides a structured and detailed description, making it easy to generate documentation files automatically.
+
+Good in-code documentation and comprehensive function documentation using Roxygen2 enhance code readability, usability, and maintainability. Poor documentation leads to confusion, errors, and increased time spent understanding and debugging code.
+
+### Miscellaneous Style Guidelines {#30b8}
+
+#### Assignment Using <- Not = {#3acf}
+
+The assignment operator <- is preferred over = for clarity and consistency in R code.
+
+**Good Example:**
+
+```r
+x <- 10
+```
+
+***Pros:*** Clear distinction between assignment and equality checks.
+
+#### Proper Spacing {#1bc2}
+
+Using proper spacing, especially near operators, enhances code readability.
+
+**Good Example:**
+
+```r
+result <- a + b
+```
+
+**Pros:** Improves readability and reduces errors.
+
+#### Avoiding Reserved Names {#c348}
+
+Avoid using reserved names like c, T, or F as variable names to prevent conflicts with built-in functions and constants.
+
+**Good Example:**
+
+```r
+vec <- c(1, 2, 3)
+```
+
+***Pros:*** Avoids conflicts with the c() function.
+
+#### Code Organization {#d42f}
+
+Organizing code using empty lines and breaking long lines helps in maintaining a clean and readable structure.
+
+**Good Example:**
+
+```r
+calculate_sum <- function(a, b) {
+  result <- a + b
+  
+  return(result) 
+}
+```
+
+***Pros:*** Use of empty lines and line breaks improves readability and structure.
+
+### Conclusion {#9f5b}
+
+By embracing the Tidyverse Style Guide for R coding, you're not just writing code; you're crafting a readable, maintainable, and collaborative masterpiece. These guidelines will help you avoid those 2 AM debugging sessions and make your code a joy to work with. Consistent coding style reduces errors, improves project efficiency, and facilitates long-term maintenance. Embrace these guidelines to enhance your coding practices and project success. Happy coding, and remember, good style is the key to long-term coding happiness!
+
+PS. Ugly and unreadable code will work either way, but you will not like to work with this code.
