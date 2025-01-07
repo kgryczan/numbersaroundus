@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Numbers around us">
+<meta name="dcterms.date" content="2024-04-18">
+
+<title>Navigating the Data Pipes: An R Programming Journey with Mario Bros.&nbsp;– Numbers Around Us</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-cb71375167fd9ce754afb6fa31d3f44e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-1a65b4115a9519dac2c2f4ba2497ca08.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Numbers Around Us</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../challenges/index.html"> 
+<span class="menu-text">Challenges</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../bi/index.html"> 
+<span class="menu-text">Business Intelligence</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../ds/index.html"> 
+<span class="menu-text">Data Science</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../dp/index.html"> 
+<span class="menu-text">Date Philosophy</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <a href="https://github.com" title="Github" class="quarto-navigation-tool px-1" aria-label="Github"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Navigating the Data Pipes: An R Programming Journey with Mario Bros.</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Numbers around us </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">April 18, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="welcome-to-the-mushroom-kingdom" class="level3">
+<h3 class="anchored" data-anchor-id="welcome-to-the-mushroom-kingdom">Welcome to the Mushroom Kingdom</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/pipes.jpg" class="img-fluid figure-img"></p>
+<figcaption>Image</figcaption>
+</figure>
+</div>
+<p>In the vast and varied landscape of data analysis, navigating through complex datasets and transformation processes can often feel like an adventure through unknown lands. For those who embark on this journey using R, there’s a powerful tool at their disposal, reminiscent of the magical pipes found in the iconic Mushroom Kingdom of the Mario Bros.&nbsp;series: piping.</p>
+<p>Just as Mario relies on green pipes to travel quickly and safely across the kingdom, data scientists and analysts use piping in R to streamline their data processing workflows. Piping allows for the output of one function to seamlessly become the input of the next, creating a fluid and understandable sequence of data transformations. This method not only makes our code cleaner and more readable but also transforms the coding process into an adventure, guiding data from its raw state to insightful conclusions.</p>
+<p>The concept of piping in R, introduced through packages like <code>magrittr</code> and now embraced in base R with the <code>|&gt;</code> operator, is a game-changer. It simplifies the way we write and think about code, turning complex sequences of functions into a straightforward, linear progression of steps. Imagine, if you will, entering a green pipe with your raw data in hand, hopping from one transformation to the next, and emerging with insights as clear and vibrant as the flag at the end of a Mario level.</p>
+<p>In this journey, we’ll explore the tools and techniques that make such transformations possible, delve into the power-ups that enhance our piping strategies, and learn how to navigate the challenges and obstacles that arise along the way. So, let’s jump into that first green pipe and start our adventure through the data pipes of R programming.</p>
+</section>
+<section id="jumping-into-the-green-pipe" class="level3">
+<h3 class="anchored" data-anchor-id="jumping-into-the-green-pipe">Jumping Into the Green Pipe</h3>
+<section id="entering-the-world-of-r-piping" class="level4">
+<h4 class="anchored" data-anchor-id="entering-the-world-of-r-piping">Entering the World of R Piping</h4>
+<p>In the world of R programming, the journey through data analysis often begins with raw, unstructured data. Just as Mario stands at the entrance of a green pipe, pondering the adventures that lie ahead, so do we stand at the precipice of our data analysis journey, ready to transform our data into insightful conclusions. The tool that enables this seamless journey is known as piping. Piping, in R, is symbolized by operators such as <code>%&gt;%</code> from the <code>magrittr</code> package and the native <code>|&gt;</code> introduced in R version 4.1.0.</p>
+</section>
+<section id="the-basics-of-pipe-travel" class="level4">
+<h4 class="anchored" data-anchor-id="the-basics-of-pipe-travel">The Basics of Pipe Travel</h4>
+<p>To understand the power of piping, let’s start with a simple example using R’s built-in <code>mtcars</code> dataset. Imagine you want to calculate the average miles per gallon (MPG) for cars with different numbers of cylinders.</p>
+<p>Without piping, the code might look fragmented and harder to read:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(<span class="fu">subset</span>(mtcars, cyl <span class="sc">==</span> <span class="dv">4</span>)<span class="sc">$</span>mpg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>However, with the magic of the <code>%&gt;%</code> pipe, our code transforms into a clear and linear sequence:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(magrittr)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&gt;%</span> </span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subset</span>(cyl <span class="sc">==</span> <span class="dv">4</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  .<span class="sc">$</span>mpg <span class="sc">%&gt;%</span> </span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mean</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This sequence of operations, akin to Mario hopping from one platform to the next, is not only more readable but also easier to modify and debug.</p>
+</section>
+<section id="level-up-exploring-the-magrittr-and-base-r-pipes" class="level4">
+<h4 class="anchored" data-anchor-id="level-up-exploring-the-magrittr-and-base-r-pipes">Level Up: Exploring the <code>magrittr</code> and Base R Pipes</h4>
+<p>While the <code>%&gt;%</code> operator from the <code>magrittr</code> package has been widely celebrated for its clarity and functionality, the introduction of the native <code>|&gt;</code> pipe in base R offers a streamlined alternative. Let’s compare how each can be used to achieve similar outcomes:</p>
+<ul>
+<li><strong>Using magrittr’s <code>%&gt;%</code>:</strong></li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(magrittr)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&gt;%</span> </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(cyl <span class="sc">==</span> <span class="dv">6</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(mpg, wt) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><strong>Using base R’s <code>|&gt;</code>:</strong></li>
+</ul>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">|&gt;</span> </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subset</span>(cyl <span class="sc">==</span> <span class="dv">6</span>, <span class="at">select =</span> <span class="fu">c</span>(mpg, wt)) <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Each pipe has its context and advantages, and understanding both allows us to choose the best tool for our coding journey.</p>
+</section>
+</section>
+<section id="the-power-ups-enhancing-your-journey" class="level3">
+<h3 class="anchored" data-anchor-id="the-power-ups-enhancing-your-journey">The Power-Ups: Enhancing Your Journey</h3>
+<p>In the Mario Bros.&nbsp;universe, power-ups like mushrooms, fire flowers, and super stars provide Mario with the extra abilities he needs to navigate through the Mushroom Kingdom. Similarly, in the world of R programming, there are “power-ups” that enhance the functionality of our pipes, making our data analysis journey smoother and more efficient.</p>
+<section id="magrittrs-magic-mushrooms-additional-features" class="level4">
+<h4 class="anchored" data-anchor-id="magrittrs-magic-mushrooms-additional-features">Magrittr’s Magic Mushrooms: Additional Features</h4>
+<p>The <code>magrittr</code> package doesn’t just stop at the <code>%&gt;%</code> pipe operator; it offers several other functionalities that can significantly power up your data manipulation game. These include the compound assignment pipe operator <code>%&lt;&gt;%</code>, which allows you to update a dataset in place, and the tee operator <code>%T&gt;%</code>, which lets you branch out the pipeline for side operations. Think of these as the Super Mushrooms and Fire Flowers of your R scripting world, empowering you to tackle bigger challenges with ease.</p>
+<ul>
+<li><strong>Example of <code>%&lt;&gt;%</code>:</strong></li>
+</ul>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(magrittr)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>mtcars2 <span class="ot">=</span> mtcars </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&lt;&gt;%</span> </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transform</span>(<span class="at">mpg =</span> mpg <span class="sc">*</span> <span class="fl">1.60934</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://cdn-images-1.medium.com/max/800/1*u4kRy28-LopTjx1wdxAf3g.png" class="img-fluid figure-img"></p>
+<figcaption>Image</figcaption>
+</figure>
+</div>
+<ul>
+<li><strong>Example of <code>%T&gt;%</code>:</strong></li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(magrittr)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%T&gt;%</span> </span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(mpg <span class="sc">~</span> wt, <span class="at">data =</span> .) <span class="sc">%&gt;%</span> <span class="co"># We are generating plot "meanwhile", without changing process</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(cyl <span class="sc">==</span> <span class="dv">4</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(mpg, wt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="the-fire-flower-filtering-and-selecting-data" class="level4">
+<h4 class="anchored" data-anchor-id="the-fire-flower-filtering-and-selecting-data">The Fire Flower: Filtering and Selecting Data</h4>
+<p>Just as the Fire Flower gives Mario the ability to throw fireballs, the dplyr package (which integrates seamlessly with magrittr’s piping) equips us with powerful functions like <code>filter()</code> and <code>select()</code>. These functions allow us to narrow down our data to the most relevant pieces, throwing away what we don’t need and keeping what’s most useful.</p>
+<ul>
+<li><strong>Filtering data:</strong></li>
+</ul>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&gt;%</span> </span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(mpg <span class="sc">&gt;</span> <span class="dv">20</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(mpg, cyl, gear)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Keeps only cars with MPG greater than 20, selecting relevant columns.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This process of filtering and selecting is like navigating through a level with precision, avoiding obstacles and focusing on the goal.</p>
+</section>
+<section id="side-quest-joining-data-frames" class="level4">
+<h4 class="anchored" data-anchor-id="side-quest-joining-data-frames">Side Quest: Joining Data Frames</h4>
+<p>Our data analysis journey often requires us to merge different data sources, akin to Mario teaming up with Luigi or Princess Peach. The <code>dplyr</code> package provides several functions for this purpose, such as <code>inner_join()</code>, <code>left_join()</code>, and more, allowing us to bring together disparate data sets into a unified whole.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Assuming we have another data frame, car_details, with additional information on cars.</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&gt;%</span> </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(car_details, <span class="at">by =</span> <span class="st">"model"</span>) </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Combines data based on the "model" column.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="boss-level-grouped-operations" class="level4">
+<h4 class="anchored" data-anchor-id="boss-level-grouped-operations">Boss Level: Grouped Operations</h4>
+<p>Finally, much like facing a boss in a Mario game, grouped operations in R require a bit of strategy. Using the <code>group_by()</code> function from <code>dplyr</code>, we can perform operations on our data grouped by certain criteria, effectively handling what could otherwise be a daunting task.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&gt;%</span> </span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(cyl) <span class="sc">%&gt;%</span> </span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">avg_mpg =</span> <span class="fu">mean</span>(mpg)) </span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculates the average MPG for cars, grouped by cylinder count.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="avoiding-goombas-debugging-your-pipe" class="level3">
+<h3 class="anchored" data-anchor-id="avoiding-goombas-debugging-your-pipe">Avoiding Goombas: Debugging Your Pipe</h3>
+<p>In the realms of the Mushroom Kingdom, Mario encounters various obstacles, from Goombas to Koopa Troopas, each requiring a unique strategy to overcome. Similarly, as we navigate through our data analysis pipeline in R, we’re bound to run into issues — our own version of Goombas and Koopas — that can disrupt our journey. Debugging becomes an essential skill, allowing us to identify and address these challenges without losing our progress.</p>
+<section id="spotting-and-squashing-bugs" class="level4">
+<h4 class="anchored" data-anchor-id="spotting-and-squashing-bugs">Spotting and Squashing Bugs</h4>
+<p>Just as Mario needs to stay vigilant to spot Goombas on his path, we need to be observant of the potential errors in our pipeline. Errors can arise from various sources: incorrect data types, unexpected missing values, or simply syntax errors. To spot these issues, it’s crucial to test each segment of our pipeline independently, ensuring that each step produces the expected output.</p>
+<p>Consider using the <code>print()</code> or <code>View()</code> functions strategically to inspect the data at various stages of your pipeline. This approach is akin to Mario checking his surroundings carefully before making his next move.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&gt;%</span> </span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(mpg <span class="sc">&gt;</span> <span class="dv">20</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">View</span>()  <span class="co"># Inspect the filtered dataset</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="the-viewpipesteps-tool-your-map-through-the-mushroom-kingdom" class="level4">
+<h4 class="anchored" data-anchor-id="the-viewpipesteps-tool-your-map-through-the-mushroom-kingdom">The ViewPipeSteps Tool: Your Map Through the Mushroom Kingdom</h4>
+<p>The <code>ViewPipeSteps</code> package acts like a map through the Mushroom Kingdom, providing visibility into each step of our journey. By allowing us to view the output at each stage of our pipeline, it helps us identify exactly where things might be going wrong.</p>
+<p>To use <code>ViewPipeSteps</code>, you’d typically wrap your pipeline within the <code>print_pipe_steps()</code> function, which then executes each step interactively, printing the results so you can inspect the data at each point.</p>
+<p>Example:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ViewPipeSteps)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>diamonds <span class="sc">%&gt;%</span> </span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(color <span class="sc">==</span> <span class="st">"E"</span>, cut <span class="sc">==</span> <span class="st">"Ideal"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(carat, cut, price) <span class="sc">%&gt;%</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print_pipe_steps</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fl">1.</span> diamonds</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 53,940 × 10</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>   carat cut       color clarity depth table price     x     y     z</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>   <span class="sc">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>ord<span class="sc">&gt;</span>     <span class="er">&lt;</span>ord<span class="sc">&gt;</span> <span class="er">&lt;</span>ord<span class="sc">&gt;</span>   <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>dbl<span class="sc">&gt;</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a> <span class="dv">1</span>  <span class="fl">0.23</span> Ideal     E     SI2      <span class="fl">61.5</span>    <span class="dv">55</span>   <span class="dv">326</span>  <span class="fl">3.95</span>  <span class="fl">3.98</span>  <span class="fl">2.43</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a> <span class="dv">2</span>  <span class="fl">0.21</span> Premium   E     SI1      <span class="fl">59.8</span>    <span class="dv">61</span>   <span class="dv">326</span>  <span class="fl">3.89</span>  <span class="fl">3.84</span>  <span class="fl">2.31</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a> <span class="dv">3</span>  <span class="fl">0.23</span> Good      E     VS1      <span class="fl">56.9</span>    <span class="dv">65</span>   <span class="dv">327</span>  <span class="fl">4.05</span>  <span class="fl">4.07</span>  <span class="fl">2.31</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a> <span class="dv">4</span>  <span class="fl">0.29</span> Premium   I     VS2      <span class="fl">62.4</span>    <span class="dv">58</span>   <span class="dv">334</span>  <span class="fl">4.2</span>   <span class="fl">4.23</span>  <span class="fl">2.63</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a> <span class="dv">5</span>  <span class="fl">0.31</span> Good      J     SI2      <span class="fl">63.3</span>    <span class="dv">58</span>   <span class="dv">335</span>  <span class="fl">4.34</span>  <span class="fl">4.35</span>  <span class="fl">2.75</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a> <span class="dv">6</span>  <span class="fl">0.24</span> Very Good J     VVS2     <span class="fl">62.8</span>    <span class="dv">57</span>   <span class="dv">336</span>  <span class="fl">3.94</span>  <span class="fl">3.96</span>  <span class="fl">2.48</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a> <span class="dv">7</span>  <span class="fl">0.24</span> Very Good I     VVS1     <span class="dv">62</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>You can also use another feature of this package, its addin. You just need to select pipe you want to check, find and click addin’s function “View Pipe Chain Steps” and voila!</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://cdn-images-1.medium.com/max/800/1*s21K2yKvLmfmbD0lrCabag.png" class="img-fluid figure-img"></p>
+<figcaption>Image</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://cdn-images-1.medium.com/max/800/1*x3ssSMvqzEHru9gUO_DkoA.png" class="img-fluid figure-img"></p>
+<figcaption>Image</figcaption>
+</figure>
+</div>
+</section>
+<section id="navigating-complex-pipes-when-to-use-warp-pipes" class="level4">
+<h4 class="anchored" data-anchor-id="navigating-complex-pipes-when-to-use-warp-pipes">Navigating Complex Pipes: When to Use Warp Pipes</h4>
+<p>Sometimes, our data processing tasks are so complex that they feel like navigating through Bowser’s Castle. In these situations, breaking down our pipeline into smaller, manageable segments can be incredibly helpful. This approach is similar to finding secret Warp Pipes in Mario that allow you to bypass difficult levels, making the journey less daunting.</p>
+<p>For instance, if a particular transformation is complicated, consider isolating it into its own script or function. Test it thoroughly until you’re confident it works as expected, then integrate it back into your main pipeline. This method ensures that each part of your pipeline is robust and less prone to errors.</p>
+</section>
+</section>
+<section id="bowsers-castle-tackling-complex-data-challenges" class="level3">
+<h3 class="anchored" data-anchor-id="bowsers-castle-tackling-complex-data-challenges">Bowser’s Castle: Tackling Complex Data Challenges</h3>
+<p>As we near the end of our journey in the Mushroom Kingdom of R programming, we face the ultimate test of our skills: Bowser’s Castle. This chapter represents the complex data challenges that often seem as daunting as the fire-breathing dragon himself. However, just as Mario uses his skills, power-ups, and a bit of strategy to rescue Princess Peach, we’ll employ advanced piping techniques, performance considerations, and the power of collaboration to conquer these challenges.</p>
+<section id="advanced-piping-techniques" class="level4">
+<h4 class="anchored" data-anchor-id="advanced-piping-techniques">Advanced Piping Techniques</h4>
+<p>To navigate through Bowser’s Castle, Mario must leverage every skill and power-up acquired throughout his journey. Similarly, tackling complex data tasks requires a sophisticated understanding of piping and the ability to combine various R functions and packages seamlessly.</p>
+<ul>
+<li><strong>Using <code>purrr</code> for Functional Programming:</strong></li>
+</ul>
+<p>One way to enhance our piping strategies is by integrating the <code>purrr</code> package, which allows for functional programming. This approach can be particularly powerful when dealing with lists or performing operations on multiple columns or datasets simultaneously.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>mtcars <span class="sc">%&gt;%</span> </span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">split</span>(.<span class="sc">$</span>cyl) <span class="sc">%&gt;%</span> </span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="sc">~</span> .x <span class="sc">%&gt;%</span> <span class="fu">summarise</span>(<span class="at">avg_mpg =</span> <span class="fu">mean</span>(mpg), <span class="at">avg_hp =</span> <span class="fu">mean</span>(hp)))</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="sc">$</span><span class="st">`</span><span class="at">4</span><span class="st">`</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>   avg_mpg   avg_hp</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="fl">26.66364</span> <span class="fl">82.63636</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="sc">$</span><span class="st">`</span><span class="at">6</span><span class="st">`</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>   avg_mpg   avg_hp</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="fl">19.74286</span> <span class="fl">122.2857</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="sc">$</span><span class="st">`</span><span class="at">8</span><span class="st">`</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>  avg_mpg   avg_hp</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>    <span class="fl">15.1</span> <span class="fl">209.2143</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This example splits the <code>mtcars</code> dataset by cylinder count and then applies a summarization function to each subset, showcasing how <code>purrr</code> can work in tandem with <code>dplyr</code> and piping to handle complex data operations.</p>
+</section>
+<section id="boss-battle-performance-considerations" class="level4">
+<h4 class="anchored" data-anchor-id="boss-battle-performance-considerations">Boss Battle: Performance Considerations</h4>
+<p>In every final boss battle, efficiency is key. The same goes for our R scripts when facing large datasets or complex transformations. Here, the choice of tools and techniques can significantly impact performance.</p>
+<ul>
+<li><strong>Vectorization Over Loops</strong>: Whenever possible, use vectorized operations, which are typically faster and more efficient than loops.</li>
+<li><strong><code>data.table</code> for Large Data and <code>dtplyr</code> as a Secret Power-Up</strong>: The <code>data.table</code> package is renowned for its speed and efficiency with large datasets. But what if you could harness <code>data.table</code>’s power with <code>dplyr</code>’s syntax? Enter <code>dtplyr</code>, a bridge between these two worlds, allowing you to write <code>dplyr</code> code that is automatically translated into <code>data.table</code> operations behind the scenes. To use <code>dtplyr</code>, you’ll wrap your data.table in <code>lazy_dt()</code>, then proceed with <code>dplyr</code> operations as usual. The <code>dtplyr</code> package will translate these into <code>data.table</code> operations, maintaining the speed advantage without sacrificing the readability and familiarity of <code>dplyr</code> syntax.</li>
+</ul>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(data.table)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dtplyr)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert to a lazy data.table</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>lazy_dt_cars <span class="ot">&lt;-</span> mtcars <span class="sc">%&gt;%</span> </span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.table</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lazy_dt</span>()</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform dplyr operations</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>lazy_dt_cars <span class="sc">%&gt;%</span> </span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(cyl) <span class="sc">%&gt;%</span> </span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">avg_mpg =</span> <span class="fu">mean</span>(mpg), <span class="at">avg_hp =</span> <span class="fu">mean</span>(hp)) </span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>Source<span class="sc">:</span> local data table [<span class="dv">3</span> x <span class="dv">3</span>]</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>Call<span class="sc">:</span>   <span class="st">`</span><span class="at">_DT1</span><span class="st">`</span>[, .(<span class="at">avg_mpg =</span> <span class="fu">mean</span>(mpg), <span class="at">avg_hp =</span> <span class="fu">mean</span>(hp)), keyby <span class="ot">=</span> .(cyl)]</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>    cyl avg_mpg avg_hp</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>  <span class="sc">&lt;</span>dbl<span class="sc">&gt;</span>   <span class="er">&lt;</span>dbl<span class="sc">&gt;</span>  <span class="er">&lt;</span>dbl<span class="sc">&gt;</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>     <span class="dv">4</span>    <span class="fl">26.7</span>   <span class="fl">82.6</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>     <span class="dv">6</span>    <span class="fl">19.7</span>  <span class="fl">122.</span> </span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span>     <span class="dv">8</span>    <span class="fl">15.1</span>  <span class="fl">209.</span> </span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Use as.data.table()/as.data.frame()/as_tibble() to access results</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This approach can significantly reduce computation time, akin to finding a secret shortcut in Bowser’s Castle.</p>
+</section>
+<section id="the-final-power-up-collaboration-and-community" class="level4">
+<h4 class="anchored" data-anchor-id="the-final-power-up-collaboration-and-community">The Final Power-Up: Collaboration and Community</h4>
+<p>Mario rarely faces Bowser alone; he often has allies. In the world of data science and R programming, collaboration and community are equally valuable. Platforms like GitHub, Stack Overflow, and RStudio Community are akin to Mario’s allies, offering support, advice, and shared resources.</p>
+<p>Sharing your code, seeking feedback, and collaborating on projects can enhance your skills, broaden your understanding, and help you tackle challenges that might initially seem insurmountable.</p>
+</section>
+</section>
+<section id="lowering-the-flag-on-our-adventure" class="level3">
+<h3 class="anchored" data-anchor-id="lowering-the-flag-on-our-adventure">Lowering the Flag on Our Adventure</h3>
+<p>As our journey through the Mushroom Kingdom of R programming comes to a close, we lower the flag, signaling the end of a thrilling adventure. Along the way, we’ve navigated through green pipes of piping with <code>%&gt;%</code> and <code>|&gt;</code>, powered up our data transformation skills with <code>dplyr</code> and <code>purrr</code>, and avoided the Goombas of bugs with strategic debugging and the <code>ViewPipeSteps</code> tool. We’ve collected coins of insights through data visualization and summarization, tackled the complex challenges of Bowser’s Castle with <code>data.table</code> and <code>dtplyr</code>, and recognized the power of collaboration and community in our quest for data analysis mastery.</p>
+<p>Our expedition has shown us that, with the right tools and a bit of ingenuity, even the most daunting datasets can be transformed into valuable insights, much like Mario’s quest to rescue Princess Peach time and again proves that persistence, courage, and a few power-ups can overcome any obstacle.</p>
+<p>But every end in the Mushroom Kingdom is merely the beginning of a new adventure. The skills and techniques we’ve acquired are not just for one-time use; they are the foundation upon which we’ll build our future data analysis projects. The world of R programming is vast and ever-evolving, filled with new packages to explore, techniques to master, and data challenges to conquer.</p>
+<p>So, as we bid farewell to the Mushroom Kingdom for now, remember that in the world of data science, every question answered and every challenge overcome leads to new adventures. Keep exploring, keep learning, and above all, keep enjoying the journey.</p>
+<p>Thank you for joining me on this adventure. May your path through the world of R programming be as exciting and rewarding as a quest in the Mushroom Kingdom. Until our next adventure!</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = true;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>For everybody, not to be fooled by numbers</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

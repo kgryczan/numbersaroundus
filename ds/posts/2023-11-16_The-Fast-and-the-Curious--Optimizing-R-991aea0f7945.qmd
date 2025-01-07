@@ -1,0 +1,313 @@
+---
+title: "The Fast and the Curious: Optimizing R"
+author: "Numbers around us"
+date: "2023-11-16"
+format: html
+---
+
+### The Need for Speed in R
+
+![Image](images/Optimization.jpg)
+
+In the realm of data science, where the landscape is ever-changing and data volumes are incessantly swelling, speed and efficiency in processing aren't mere conveniences --- they're indispensable. As we unveil the second chapter of our series, we turn the spotlight onto a crucial yet often understated aspect of R programming: performance optimization. Our focal point remains the `data_quality_report()` function, which has already proven its mettle in dissecting datasets. But now, akin to a seasoned protagonist in an action-packed sequel, it faces a new, thrilling challenge: boosting its performance for heightened speed and enhanced memory efficiency.
+
+This journey into the optimization realm transcends mere code acceleration. It's a deep dive into the heart of R programming, unraveling the intricate layers of what makes code run faster, consume less memory, and perform at its peak. We're not just tweaking a function here and there; we're embarking on a quest to understand the very sinews and muscles of R's performance anatomy. It's about transforming our `data_quality_report()` from a reliable workhorse into a sleek, agile thoroughbred.
+
+As we embark on this adventure, we'll explore the intricate avenues of R's performance tuning, navigate through the complex terrains of memory management, and discover the art of writing code that not only does its job well but does it with remarkable efficiency. This article is not just for those who use our `data_quality_report()` function; it's a guide for every R programmer who yearns to see their scripts shedding the extra milliseconds, to make their analysis as swift as the wind. So, strap in and get ready; we're about to turbocharge our R functions!
+
+### Profiling Performance
+
+The first step in our optimization odyssey is akin to a strategic pause, a moment of introspection to assess the current state of affairs. In the world of high-performance cars, this would be the time spent in the pit stop, meticulously inspecting every component to shave off those crucial milliseconds on the track. Similarly, in R programming, this phase is all about profiling. Profiling is like our diagnostic toolkit, a means to peer into the inner workings of our function and pinpoint exactly where our computational resources are being expended the most.
+
+Enter `profvis`, R's equivalent of a high-tech diagnostic tool. It's not just about finding the slow parts of our code; it's about understanding the why and the how. By profiling our `data_quality_report()` function, we get a visual representation of where the function spends most of its time. Is it getting bogged down while calculating missing values? Are the outlier detection algorithms dragging their feet? Or is it the data type summarization that's adding those extra seconds?
+
+We'll begin our journey with the following simple yet powerful profiling exercise:
+
+```r
+library(profvis)
+
+# Profiling the data_quality_report function
+profvis({
+  data_quality_report(dummy_data)
+})
+```
+
+![Image](https://cdn-images-1.medium.com/max/800/1*qb6xycIj0H2v4wgjXVDYPA.png)
+
+This profiling run will lay it all bare in front of us, showcasing through an intuitive interface where our precious computational seconds are being spent. We might find surprises, functions or lines of code that are more resource-intensive than anticipated. This insight is our starting line, the baseline from which we leap into the world of optimization. We now have a map, a guide to focusing our efforts where they are needed the most.
+
+In the upcoming section, we'll dissect these profiling results. We will roll up our sleeves and delve into our first round of optimizations, where we will explore how `data.table` and `dplyr` can be harnessed to not just do things right, but to do them fast. Our `data_quality_report()` is about to get a serious performance makeover.
+
+### Efficient Data Processing with `data.table` and `dplyr`
+
+Optimizing with `data.table`: `data.table` is a powerhouse for handling large datasets efficiently in R. Its syntax is a bit different from `dplyr`, but it excels in speedy operations and memory efficiency. Let's optimize the missing values calculation and outlier detection using `data.table`.
+
+First, converting our dataset to a `data.table` object:
+
+```r
+library(data.table)
+
+# Converting the dataset to a data.table
+dt_data <- as.data.table(dummy_data)
+```
+
+Now, let's optimize the missing values calculation:
+
+```r
+# Optimized missing values calculation using data.table
+missing_values_dt <- dt_data[, lapply(.SD, function(x) sum(is.na(x))), .SDcols = names(dt_data)]
+```
+
+For outlier detection, `data.table` can also provide a significant speed-up:
+
+```r
+# Enhanced outlier detection using data.table
+outliers_dt <- dt_data[, lapply(.SD, function(x) {
+  if (is.numeric(x)) {
+    bounds <- quantile(x, probs = c(0.25, 0.75), na.rm = TRUE)
+    iqr <- IQR(x, na.rm = TRUE)
+    list(sum(x < (bounds[1] - 1.5 * iqr) | x > (bounds[2] + 1.5 * iqr), na.rm = TRUE))
+  } else {
+    NA_integer_
+  }
+}), .SDcols = names(dt_data)]
+```
+
+#### Enhancing with `dplyr`
+
+While `data.table` focuses on performance, `dplyr` offers a more readable and intuitive syntax. Let's utilize `dplyr` for the same tasks to compare:
+
+```r
+library(dplyr)
+
+# Using dplyr for missing values calculation
+missing_values_dplyr <- dummy_data %>%
+  summarize(across(everything(), ~sum(is.na(.)))) %>%
+  pivot_longer(cols = everything(), names_to = "column", values_to = "missing_values")
+
+# Using dplyr for outlier detection
+outliers_dplyr <- dummy_data %>%
+  summarize(across(where(is.numeric), ~list(
+    sum(. < (quantile(., 0.25, na.rm = TRUE) - 1.5 * IQR(., na.rm = TRUE)) | 
+        . > (quantile(., 0.75, na.rm = TRUE) + 1.5 * IQR(., na.rm = TRUE)), na.rm = TRUE)
+  ))) %>%
+  pivot_longer(cols = everything(), names_to = "column", values_to = "outliers")
+```
+
+These snippets illustrate how `data.table` and `dplyr` can be used for optimizing specific parts of the `data_quality_report()` function. The `data.table` approach offers a significant performance boost, especially with larger datasets, while `dplyr` maintains readability and ease of use.
+
+In the following sections, we'll explore memory management techniques and vectorization strategies to further enhance our function's performance.
+
+### Memory Management Techniques
+
+Optimizing for speed is one part of the equation; optimizing for memory usage is another crucial aspect, especially when dealing with large datasets. Efficient memory management in R can significantly reduce the risk of running into memory overflows and can speed up operations by reducing the need for frequent garbage collection.
+
+#### Understanding R's Memory Model
+
+R's memory model is inherently different from languages like Python or Java. It makes copies of objects often, especially in standard operations like subsetting or modifying data frames. This behavior can quickly lead to high memory usage. Being aware of this is the first step in writing memory-efficient R code.
+
+#### In-Place Modification with `data.table`
+
+`data.table` shines not only in speed but also in memory efficiency, primarily due to its in-place modification capabilities. Unlike data frames or `tibbles` in `dplyr`, which often create copies of the data, `data.table` modifies data directly in memory. This approach drastically reduces memory footprint.
+
+Let's modify the `data_quality_report()` function to leverage in-place modification for certain operations:
+
+```r
+# Adjusting the function for in-place modification using data.table
+data_quality_report_dt <- function(data) {
+  setDT(data) # Convert to data.table in place
+  
+  # In-place modification for missing values
+  missing_values <- data[, lapply(.SD, function(x) sum(is.na(x))), .SDcols = names(data)]
+  
+  # In-place modification for outlier detection
+  outliers <- data[, lapply(.SD, function(x) {
+    if (is.numeric(x)) {
+      bounds <- quantile(x, probs = c(0.25, 0.75), na.rm = TRUE)
+      iqr <- IQR(x, na.rm = TRUE)
+      sum(x < (bounds[1] - 1.5 * iqr) | x > (bounds[2] + 1.5 * iqr), na.rm = TRUE)
+    } else {
+      NA_integer_
+    }
+  }), .SDcols = names(data)] 
+
+  # Convert back to tibble if needed
+  as_tibble(list(MissingValues = missing_values, Outliers = outliers))
+}
+
+# Example use of the function
+optimized_report <- data_quality_report_dt(dummy_data)
+```
+
+#### Choosing the Right Data Structures
+
+Another approach to optimize memory usage is by using efficient data structures. For instance, using matrices or arrays instead of data frames for homogenous data can be more memory-efficient. Additionally, packages like `vctrs` offer efficient ways to build custom data types in R, which can be tailored for memory efficiency.
+
+#### Garbage Collection and Memory Pre-allocation
+
+R performs garbage collection automatically, but sometimes manual garbage collection can be useful, especially after removing large objects. Also, pre-allocating memory for objects, like creating vectors or matrices of the required size before filling them, can reduce the overhead of resizing these objects during data manipulation.
+
+By implementing these memory management techniques, the `data_quality_report()` function can become more efficient in handling large datasets without straining the system's memory.
+
+### Vectorization over Looping
+
+In the world of R programming, vectorization is often hailed as a cornerstone for writing efficient code. Vectorized operations are not only more concise but also significantly faster than their looped counterparts. This is because vectorized operations leverage optimized C code under the hood, reducing the overhead of repeated R function calls.
+
+#### Understanding Vectorization
+
+Vectorization refers to the method of applying a function simultaneously to multiple elements of an object, like a vector or a column of a dataframe. In R, many functions are inherently vectorized. For instance, arithmetic operations on vectors or columns are automatically vectorized.
+
+#### Applying Vectorization in `data_quality_report()`
+
+Let's apply vectorization to the `data_quality_report()` function. Our goal is to eliminate explicit loops or iterative `lapply()` calls, replacing them with vectorized alternatives where possible.
+
+For example, let's optimize the missing values calculation by vectorizing it:
+
+```r
+# Vectorized calculation of missing values
+vectorized_missing_values <- function(data) {
+  colSums(is.na(data))
+}
+
+missing_values_vectorized <- vectorized_missing_values(dummy_data)
+```
+
+Similarly, we can vectorize the outlier detection. However, outlier detection by nature involves conditional logic which can be less straightforward to vectorize. We'll need to carefully handle this part to ensure that we don't compromise readability:
+
+```r
+vectorized_outlier_detection <- function(data) {
+  # Filter only numeric columns
+  numeric_data <- data[, sapply(data, is.numeric), drop = FALSE]
+  
+  # Ensure numeric_data is a dataframe and has columns
+  if (!is.data.frame(numeric_data) || ncol(numeric_data) == 0) {
+    return(NULL) # or appropriate return value indicating no numeric columns or invalid input
+  }
+  
+  # Compute quantiles and IQR for numeric columns
+  bounds <- apply(numeric_data, 2, function(x) quantile(x, probs = c(0.25, 0.75), na.rm = TRUE))
+  iqr <- apply(numeric_data, 2, IQR, na.rm = TRUE)
+  
+  lower_bounds <- bounds["25%", ] - 1.5 * iqr
+  upper_bounds <- bounds["75%", ] + 1.5 * iqr
+  
+  sapply(seq_along(numeric_data), function(i) {
+    x <- numeric_data[[i]]
+    lower <- lower_bounds[i]
+    upper <- upper_bounds[i]
+    sum(x < lower | x > upper, na.rm = TRUE)
+  })
+}
+
+outliers_vectorized <- vectorized_outlier_detection(dummy_data)
+```
+
+#### Balancing Vectorization and Readability
+
+While vectorization is key for performance, it's crucial to balance it with code readability. Sometimes, overly complex vectorized code can be difficult to understand and maintain. Hence, it's essential to strike the right balance --- vectorize where it makes the code faster and more concise, but not at the cost of making it unreadable or unmaintainable.
+
+With these vectorized improvements, our `data_quality_report()` function is evolving into a more efficient tool. It's a testament to the saying in R programming: "Think vectorized."
+
+### Parallel Processing with `purrr` and `future`
+
+In the final leg of our optimization journey, we venture into the realm of parallel processing. R, by default, operates in a single-threaded mode, executing one operation at a time. However, modern computers are equipped with multiple cores, and we can harness this hardware capability to perform multiple operations simultaneously. This is where parallel processing shines, significantly reducing computation time for tasks that can be executed concurrently.
+
+#### Introducing Parallel Processing in R
+
+Parallel processing can be particularly effective for operations that are independent of each other and can be run simultaneously without interference. Our `data_quality_report()` function, with its distinct and independent calculations for missing values, outliers, and data types, is a prime candidate for this approach.
+
+#### Leveraging `purrr` and `future`
+
+The `purrr` package, a member of the tidyverse family, is known for its functions to iterate over elements in a clean and functional programming style. When combined with the `future` package, it allows us to easily apply these iterations in a parallel manner.
+
+Let's parallelize the computation in our function:
+
+```r
+library(furrr)
+library(dplyr)
+
+# Set up future to use parallel backends
+plan(multicore)
+
+# Complete Parallelized version of data_quality_report using furrr
+data_quality_report_parallel <- function(data) {
+  # Ensure data is a dataframe
+  if (!is.data.frame(data)) {
+    stop("Input must be a dataframe.")
+  }
+  
+  # Prepare a list of column names for future_map
+  column_names <- names(data)
+  
+  # Parallel computation for missing values
+  missing_values <- future_map_dfc(column_names, ~sum(is.na(data[[.x]])), .progress = TRUE) %>%
+    set_names(column_names) %>%
+    pivot_longer(cols = everything(), names_to = "column", values_to = "missing_values")
+  
+  # Parallel computation for outlier detection
+  outliers <- future_map_dfc(column_names, ~{
+    column_data <- data[[.x]]
+    if (is.numeric(column_data)) {
+      bounds <- quantile(column_data, probs = c(0.25, 0.75), na.rm = TRUE)
+      iqr <- IQR(column_data, na.rm = TRUE)
+      lower_bound <- bounds[1] - 1.5 * iqr
+      upper_bound <- bounds[2] + 1.5 * iqr
+      sum(column_data < lower_bound | column_data > upper_bound, na.rm = TRUE)
+    } else {
+      NA_integer_
+    }
+  }, .progress = TRUE) %>%
+    set_names(column_names) %>%
+    pivot_longer(cols = everything(), names_to = "column", values_to = "outlier_count")
+  
+  # Parallel computation for data types
+  data_types <- future_map_dfc(column_names, ~paste(class(data[[.x]]), collapse = ", "), .progress = TRUE) %>%
+    set_names(column_names) %>%
+    pivot_longer(cols = everything(), names_to = "column", values_to = "data_type")
+  
+  # Combine all the elements into a list
+  list(
+    MissingValues = missing_values,
+    Outliers = outliers,
+    DataTypes = data_types
+  )
+}
+
+# Example use of the function with dummy_data
+# Ensure dummy_data is defined and is a dataframe before running this
+parallel_report <- data_quality_report_parallel(dummy_data)
+```
+
+This function now uses parallel processing for each major computation, which should enhance performance, especially for larger datasets. Note that parallel processing is most effective on systems with multiple cores and for tasks that are significantly computationally intensive.
+
+Remember to test this function with your specific datasets and use cases to ensure that the parallel processing setup is beneficial for your scenarios.
+
+### Revised Conclusion
+
+As we wrap up our exploration in "The Fast and the Curious: Optimizing R," the results from our performance benchmarking present an intriguing narrative. While the `data.table`-optimized version, `data_quality_report_dt()`, showcased a commendable improvement in speed over the original, handling data operations more efficiently, our foray into parallel processing yielded surprising results. Contrary to our expectations, the parallelized version, `data_quality_report_parallel()`, significantly lagged behind, being over 100 times slower than its predecessors.
+
+```r
+library(microbenchmark)
+
+# dummy data with 1000 rows
+microbenchmark(
+  data_table = data_quality_report_dt(dummy_data),
+  prior_version = data_quality_report(dummy_data),
+  parallelized = data_quality_report_parallel(dummy_data),
+  times = 10
+)
+```
+
+```r
+Unit: milliseconds
+          expr       min        lq       mean    median        uq       max neval cld
+    data_table    3.8494    6.9226   13.36179    8.8422   17.2609   42.0615    10  a 
+ prior_version   51.9415   55.7101   61.26745   57.7909   66.5635   77.2151    10  a 
+  parallelized 2622.9041 2749.6199 2895.25921 2828.4161 2977.8426 3438.4195    10   b
+```
+
+This outcome serves as a crucial reminder of the complexities inherent in parallel computing, especially in R. Parallel processing is often seen as a silver bullet for performance issues, but this is not always the case. The overhead associated with managing multiple threads and the nature of the tasks being parallelized can sometimes outweigh the potential gains from parallel execution. This is particularly true for operations that are not inherently time-consuming or for datasets that are not large enough to justify the parallelization overhead.
+
+Such results emphasize the importance of context and the need to tailor optimization strategies to specific scenarios. What works for one dataset or function may not necessarily be the best approach for another. It's a testament to the nuanced nature of performance optimization in data analysis --- a balance between understanding the tools at our disposal and the unique challenges posed by each dataset.
+
+As we move forward in our series, these findings underscore the need to approach optimization with a critical eye. We'll continue to explore various facets of R programming, seeking not just to improve performance, but also to deepen our understanding of when and how to apply these techniques effectively.
