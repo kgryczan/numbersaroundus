@@ -1,0 +1,302 @@
+---
+title: "Organizing the Bookshelf: Mastering Categorical Variables with forcats"
+author: "Numbers around us"
+date: "2023-06-08"
+format: html
+---
+
+![Forcats is not only “for cats”](images/forcat.jpg)
+
+### Organizing the Bookshelf: Mastering Categorical Variables with forcats
+
+Imagine a library filled with books of different genres, each representing a categorical variable in your dataset. The librarian, `forcats`, gracefully navigates the shelves of this categorical library, providing structure and organization to these variables. Just as a librarian categorizes books into sections, `forcats` allows you to manage factor levels and sort them for easier analysis. It acts as the guardian of your categorical data, ensuring a smooth and efficient exploration of the library's contents.
+
+In the world of data analysis, categorical variables hold valuable information. They represent distinct categories or groups and provide insights into patterns, relationships, and trends. However, working with categorical variables can be challenging due to the unique characteristics they possess. This is where `forcats` comes into play.
+
+With `forcats`, you can think of each categorical variable as a bookshelf with different categories represented by books. The librarian's role is to ensure that each book is organized, properly labeled, and easily accessible. Similarly, `forcats` helps you manage the factor levels within categorical variables.
+
+Let's explore a practical example to understand how forcats brings order to the categorical library. We'll use the `diamonds` dataset from the `ggplot2` package, which contains information about various diamond characteristics:
+
+```r
+library(ggplot2)
+data(diamonds) 
+
+# Display a glimpse of the diamonds dataset
+head(diamonds)
+
+# A tibble: 6 × 10
+# carat cut       color clarity depth table price     x     y     z
+# <dbl> <ord>     <ord> <ord>   <dbl> <dbl> <int> <dbl> <dbl> <dbl>
+# 1  0.23 Ideal     E     SI2      61.5    55   326  3.95  3.98  2.43
+# 2  0.21 Premium   E     SI1      59.8    61   326  3.89  3.84  2.31
+# 3  0.23 Good      E     VS1      56.9    65   327  4.05  4.07  2.31
+# 4  0.29 Premium   I     VS2      62.4    58   334  4.2   4.23  2.63
+# 5  0.31 Good      J     SI2      63.3    58   335  4.34  4.35  2.75
+# 6  0.24 Very Good J     VVS2     62.8    57   336  3.94  3.96  2.48
+```
+
+By running the code snippet, we can view the first few rows of the dataset, which include columns like `cut`, `color`, `clarity`, and more. Each of these columns represents a categorical variable.
+
+Now, let's say we want to gain insights into the distribution of diamond cuts in the dataset. `forcats` provides a function called `table()` that allows us to summarize the number of occurrences for each factor level. In this case, it helps us understand the frequency of each type of diamond cut:
+
+```r
+library(forcats)
+
+# Count the frequency of each diamond cut
+cut_counts <- table(diamonds$cut)
+cut_counts
+
+# Fair      Good Very Good   Premium     Ideal 
+# 1610      4906     12082     13791     21551 
+```
+
+Upon executing the code snippet, you'll obtain a table that displays the frequency of each diamond cut category. The librarian, `forcats`, has successfully organized the diamond cuts, providing you with a clear understanding of the distribution.
+
+The `forcats` package offers various other functions to further manipulate and analyze factor levels. You can reorder factor levels based on their frequency, customize the order according to your preferences, or collapse levels into more meaningful categories.
+
+In summary, just as a librarian diligently categorizes and organizes books, `forcats` diligently manages and structures categorical variables in your dataset. It ensures that factor levels are well-organized, facilitating efficient analysis and interpretation. In the next chapter, we'll dive deeper into how `forcats` helps us manage factor levels within categorical variables.
+
+### Dusting Off the Books: Managing Factor Levels
+
+As you walk through the library of categorical variables, you notice some books with torn pages and illegible titles. This is where `forcats` comes to the rescue. With its expertise in managing factor levels, `forcats` ensures that they are clean, relevant, and informative. It takes on the role of a diligent librarian, ready to organize and mend the tattered pages of your categorical variables. You can reorder, recode, and rename factor levels, just like rearranging the books on your shelves. By employing `forcats`' powerful functions, you can revitalize your categorical data, making it more representative and conducive to meaningful analysis.
+
+Let's continue our exploration using the `diamonds` dataset. Suppose we want to examine the color distribution of diamonds. The `color` column in the dataset represents the color grade of each diamond, ranging from "D" (colorless) to "J" (slightly tinted).
+
+To gain insights into the distribution of colors, `forcats` offers the `fct_count()` function. This function not only counts the frequency of each factor level but also arranges them in descending order. Let's see it in action:
+
+```r
+# Count the frequency of each diamond color and arrange in descending order
+color_counts <- fct_count(diamonds$color)
+color_counts
+
+# f         n
+# <ord> <int>
+# 1 D      6775
+# 2 E      9797
+# 3 F      9542
+# 4 G     11292
+# 5 H      8304
+# 6 I      5422
+# 7 J      2808
+```
+
+By running the code snippet, you'll obtain a table displaying the frequency of each diamond color grade, arranged from highest to lowest. The librarian, `forcats`, has carefully organized the books based on their popularity, providing you with a clearer picture of the color distribution.
+
+In addition to arranging factor levels, `forcats` allows you to recode and rename them. This is particularly useful when you want to group similar categories or give them more meaningful labels. Let's say we want to recode the diamond cuts to group "Fair" and "Good" cuts as "Lower Quality" and "Very Good" and "Premium" cuts as "Higher Quality". We can achieve this with the `fct_collapse()` function:
+
+```r
+# Recode factor levels of ‘cut’ column
+recoded_cut <- fct_collapse(diamonds$cut, 
+                            "Lower Quality" = c("Fair", "Good"),
+                            "Higher Quality" = c("Very Good", "Premium")) 
+
+# Count the frequency of each recoded cut category
+recoded_cut_counts <- fct_count(recoded_cut)
+recoded_cut_counts
+
+# A tibble: 3 × 2
+# f                  n
+# <ord>          <int>
+# 1 Lower Quality   6516
+# 2 Higher Quality 25873
+# 3 Ideal          21551
+```
+
+By executing the code snippet, you'll obtain a revised table displaying the frequency of the recoded cut categories. The librarian, forcats, has skillfully grouped the diamond cuts into meaningful quality categories, allowing for a more insightful analysis.
+
+In summary, forcats acts as a meticulous librarian, ensuring that your categorical variables are well-organized and informative. By employing functions like `fct_count()` and `fct_collapse()`, you can efficiently manage factor levels, rearrange categories, and create meaningful groupings. In the next chapter, we'll explore how forcats simplifies sorting and ordering of categorical data.
+
+### The Sorting Chronicles
+
+Within the vast expanse of the categorical library, there's a need to sort and arrange the books to facilitate exploration. Like a librarian skillfully arranging books alphabetically or by genre, forcats enables you to sort and order your categorical data effortlessly. It ensures your insights flow seamlessly by arranging factor levels based on their inherent properties or custom criteria. By utilizing forcats' sorting capabilities, you gain a clearer perspective on the patterns and trends hidden within your categorical variables. The librarian guides you through the labyrinth of possibilities, leading you to valuable discoveries.
+
+Let's continue our journey through the categorical library using the `diamonds` dataset. Suppose we want to examine the distribution of diamond clarity levels. The `clarity` column contains various levels ranging from "I1" (included) to "IF" (internally flawless).
+
+To explore the clarity levels in a sorted manner, forcats provides the `fct_infreq()` function. This function arranges factor levels by their frequency, placing the most frequent levels at the top. Let's see how it works:
+
+```r
+# Sort factor levels of ‘clarity’ column by frequency
+sorted_clarity <- fct_infreq(diamonds$clarity)
+
+# Count the frequency of each clarity level
+sorted_clarity_counts <- fct_count(sorted_clarity)
+sorted_clarity_counts
+
+# A tibble: 8 × 2
+# f         n
+# <ord> <int>
+# 1 SI1   13065
+# 2 VS2   12258
+# 3 SI2    9194
+# 4 VS1    8171
+# 5 VVS2   5066
+# 6 VVS1   3655
+# 7 IF     1790
+# 8 I1      741
+```
+
+By executing the code snippet, you'll obtain a table displaying the frequency of each clarity level, sorted in descending order of frequency. The librarian, forcats, has expertly sorted the books based on popularity, revealing the most common clarity levels and providing insights into their distribution.
+
+In addition to sorting by frequency, forcats allows you to sort factor levels based on custom criteria. Suppose you want to sort the diamond colors from "D" to "J" in reverse alphabetical order. The `fct_relevel()` function comes to your aid:
+
+```r
+# Sort factor levels of ‘color’ column in reverse alphabetical order
+reversed_color <- fct_relevel(diamonds$color, rev(levels(diamonds$color)))
+
+# Count the frequency of each reversed color level
+reversed_color_counts <- fct_count(reversed_color)
+reversed_color_counts
+
+# A tibble: 7 × 2
+# f         n
+# <ord> <int>
+# 1 J      2808
+# 2 I      5422
+# 3 H      8304
+# 4 G     11292
+# 5 F      9542
+# 6 E      9797
+# 7 D      6775
+```
+
+By running the code snippet, you'll obtain a table displaying the frequency of each color level, sorted in reverse alphabetical order. The librarian, forcats, has skillfully rearranged the books, allowing you to analyze the diamond colors in a different perspective.
+
+Sorting and ordering categorical data is vital for various data visualization and analysis tasks. By leveraging forcats' sorting capabilities, you can gain a better understanding of the underlying patterns and make more informed decisions based on your categorical variables.
+
+In summary, forcats acts as a wise librarian, simplifying the sorting and ordering of your categorical data. Whether you need to sort by frequency or apply custom sorting criteria, forcats enables you to effortlessly arrange factor levels, guiding you toward valuable insights. In the next chapter, we'll explore how forcats assists in handling missing values within categorical variables.
+
+### Mending Tattered Pages: Handling Missing Values
+
+In every library, there are books with missing pages or incomplete chapters. Similarly, categorical variables often have missing values that can hinder analysis. forcats steps in as the librarian-restorer, equipping you with tools to handle missing values gracefully. It understands the importance of preserving the integrity of your categorical data and offers functions to help fill in the gaps. By employing `forcats`' capabilities, you can restore the completeness of your categorical variables, ensuring that no valuable information is lost in the analysis.
+
+Let's continue our exploration using the `diamonds` dataset. Suppose we discover that the `clarity` column has missing values. It's essential to address these missing values to maintain the accuracy and reliability of our analysis.
+
+forcats provides the `fct_na_value_to_level()` function, which allows you to explicitly define missing values within a factor. This function assigns a specific level to represent missing values, making it easier to identify and handle them. Let's see how it works:
+
+```r
+# Assign ‘NA’ as the level for missing values in the ‘clarity’ column
+clarity_with_na <- fct_na_value_to_level(diamonds$clarity, level = "Missing")
+
+# Count the frequency of each clarity level, including missing values
+clarity_counts_with_na <- fct_count(clarity_with_na)
+clarity_counts_with_na
+
+# A tibble: 9 × 2
+# f           n
+# <ord>   <int>
+# 1 I1        741
+# 2 SI2      9194
+# 3 SI1     13065
+# 4 VS2     12258
+# 5 VS1      8171
+# 6 VVS2     5066
+# 7 VVS1     3655
+# 8 IF       1790
+# 9 Missing     0
+```
+
+By executing the code snippet, you'll obtain a table displaying the frequency of each clarity level, including the explicitly defined "Missing" level for missing values. The librarian, forcats, has successfully labeled and accounted for the missing values, ensuring a complete picture of the clarity distribution.
+
+In addition to handling missing values, forcats offers functions to detect and drop unused factor levels. These functions help you clean up your categorical data, ensuring that you only work with relevant and informative levels. For example, the `fct_drop()` function allows you to drop levels that have zero frequency:
+
+```r
+# Drop unused factor levels in the ‘cut’ column
+cut_without_unused_levels <- fct_drop(diamonds$cut) 
+
+# Count the frequency of each cut level after dropping unused levels
+cut_counts_without_unused_levels <- fct_count(cut_without_unused_levels)
+cut_counts_without_unused_levels
+
+# A tibble: 5 × 2
+# f             n
+# <ord>     <int>
+# 1 Fair       1610
+# 2 Good       4906
+# 3 Very Good 12082
+# 4 Premium   13791
+# 5 Ideal     21551
+```
+
+By running the code snippet, you'll obtain a table displaying the frequency of each cut level, excluding any unused levels. The librarian, forcats, has skillfully organized the books, removing any irrelevant or unused categories from the analysis.
+
+Handling missing values and eliminating unused factor levels are crucial steps in ensuring the quality and accuracy of your categorical data analysis. forcats provides the necessary tools to address these challenges, allowing you to work with complete and relevant information.
+
+In summary, forcats serves as the diligent librarian-restorer, mending the tattered pages of your categorical variables. By employing functions like `fct_na_value_to_level()` and `fct_drop()`, forcats helps you handle missing values and eliminate unused levels, ensuring the integrity and reliability of your categorical data. In the next chapter, we'll explore the hidden knowledge and advanced techniques that forcats brings to the categorical library.
+
+### The Librarian's Hidden Knowledge
+
+As you continue your journey through the categorical library, the librarian reveals a hidden treasure trove of advanced techniques in forcats. You encounter the remarkable `fct_reorder()` function, which allows you to prioritize factor levels based on their importance. This advanced technique uncovers new insights and reveals patterns that might have otherwise remained hidden. The librarian imparts this valuable knowledge, empowering you to take your analysis to the next level. With forcats, you have the tools to unlock the full potential of your categorical data.
+
+Let's dive deeper into the capabilities of forcats with the `diamonds` dataset. Suppose we want to explore the relationship between diamond prices and their cut quality. We can utilize the `fct_reorder()` function to reorder the cut levels based on their median prices. This allows us to visualize the impact of cut quality on diamond prices more effectively.
+
+```r
+# Reorder factor levels of ‘cut’ column based on median prices
+reordered_cut <- fct_reorder(diamonds$cut, diamonds$price, .fun = median)
+levels(diamonds$cut)
+# [1] "Fair"      "Good"      "Very Good" "Premium"   "Ideal" 
+
+levels(reordered_cut)
+# [1] "Ideal"     "Very Good" "Good"      "Premium"   "Fair" 
+
+# Visualize the relationship between cut quality and median prices
+library(ggplot2)
+ggplot(diamonds, aes(x = reordered_cut, y = price)) +
+ geom_boxplot() +
+ labs(x = "Cut Quality", y = "Price") +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+![Boxplot](https://cdn-images-1.medium.com/max/800/1*Yuf0cr9fJ6ecqDw3rL3K_w.jpeg)
+
+The librarian, `forcats`, has rearranged the cut levels based on their median prices, allowing you to observe the impact of cut quality on diamond prices more intuitively.
+
+The `fct_reorder()` function is a powerful tool for uncovering hidden patterns within categorical variables. By prioritizing factor levels based on a chosen variable, such as median prices in this example, you can reveal insights that may not be apparent with a traditional ordering.
+
+In addition to `fct_reorder()`, forcats offers a range of other advanced functions. Let's explore the `fct_lump()` function as an example. Suppose we have a categorical variable representing the countries of origin for a dataset of products. Some countries have very few occurrences, making it challenging to visualize them individually. In such cases, we can use `fct_lump()` to group infrequent levels into a single "Other" category:
+
+```r
+# Generate a dataset with country of origin
+countries <- c("USA", "Canada", "Germany", "Japan", "China", "India", "Mexico", "Brazil", "France")
+
+# Randomly assign countries to products
+set.seed(123)
+product_countries <- sample(countries, 1000, replace = TRUE)
+
+# Create a factor with original levels
+factor_countries <- factor(product_countries, levels = countries)
+
+# Lump infrequent levels into “Other” category
+lumped_countries <- fct_lump(factor_countries, n = 4)
+
+# Count the frequency of each lumped country level
+table(factor_countries)
+
+factor_countries
+# USA  Canada Germany   Japan   China   India  Mexico  Brazil  France 
+# 100     101     124      98     101     103     133     117     123 
+
+lumped_counts <- table(lumped_countries)
+lumped_counts
+
+lumped_countries
+# Germany  Mexico  Brazil  France   Other 
+# 124     133     117     123     503 
+```
+
+By executing the code snippet, you'll obtain a table displaying the frequency of each lumped country level. The librarian, forcats, has grouped infrequent countries into a single "Other" category, reducing clutter and providing a more concise summary of the data.
+
+The librarian's hidden knowledge in forcats empowers you to unlock the full potential of your categorical data. By employing advanced techniques like `fct_reorder()` and `fct_lump()`, you can prioritize factor levels, uncover hidden patterns, simplify complex variables, and gain deeper insights into your categorical data.
+
+In summary, forcats acts as the wise librarian, sharing its hidden knowledge and advanced techniques to help you uncover valuable insights within your categorical data. By leveraging functions like `fct_reorder()` and `fct_lump()`, you can prioritize factor levels based on importance, simplify complex categorical variables, and reveal patterns that may have remained hidden.
+
+In the world of data analysis, evolution and improvement are constants. Just as libraries adapt to the changing needs of readers, forcats continues to evolve. Its development team diligently works on enhancements and new features, keeping it at the forefront of categorical variable analysis. As you conclude your exploration of the library, you join a vibrant community of forcats enthusiasts, eagerly anticipating the future releases. Together, you shape the future of categorical data analysis, building upon the foundation laid by the diligent librarian, forcats.
+
+Throughout this journey, forcats has acted as the meticulous librarian, organizing and managing categorical variables with precision. It has enabled you to handle factor levels, sort and order data, handle missing values, and unlock hidden patterns within your categorical data. By employing forcats' powerful functions, you have gained valuable insights, made informed decisions, and uncovered knowledge that might have remained hidden otherwise.
+
+As you look ahead, you can expect the categorical library to expand further. The development team behind forcats is dedicated to improving its capabilities and adding new features that cater to the evolving needs of data analysts and researchers. You become an integral part of this future, contributing your ideas, feedback, and expertise to shape the next generation of categorical variable analysis.
+
+Together with forcats, you embark on a journey of continuous learning, exploration, and discovery. As the field of data analysis advances, forcats will continue to be the trusted guide, empowering you to unravel the mysteries hidden within your categorical data.
+
+In conclusion, forcats acts as the librarian of categorical variables, ensuring their organization, cleanliness, and accessibility. It simplifies the management of factor levels, provides efficient sorting and ordering mechanisms, handles missing values gracefully, and uncovers hidden patterns. By leveraging forcats' capabilities, you become a skilled explorer in the categorical library, unearthing valuable insights and paving the way for the future of categorical data analysis.
+
+So, embrace the power of forcats, join the community, and be a part of shaping the future of categorical variable analysis!

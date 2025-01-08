@@ -1,0 +1,237 @@
+---
+title: "Time Weavers: Reign over Spinning Wheels of Time with lubridate"
+author: "Numbers around us"
+date: "2023-06-26"
+format: html
+---
+
+![](images/lubridate.jpg)
+
+In the realm of data analysis, we often find ourselves standing at the shores of vast seas of data. Much of this data is marked by the fingerprints of time, carrying within it the rhythm of days, months, and years. To make sense of these temporal patterns and uncover the tales they hold, we need to deftly navigate through the waves of dates and times. Yet, as any seasoned data analyst would attest, working with date and time data can sometimes feel like trying to catch water with a sieve. Time comes in many forms and formats, each with its own nuances and complexities. The challenge of synchronizing the multiple tick-tocks of time --- 24-hour clocks, 12-hour clocks, time zones, daylight saving time, leap years, and more --- can make us feel like we're lost in a temporal labyrinth.
+
+Enter `lubridate`, a potent package in R that arms us with the tools to masterfully weave the threads of time. With `lubridate`, we can transform from being mere observers of time's relentless march to becoming time weavers, bending and shaping time to our will. Whether it's parsing a jumbled string into a neat date-time format, performing arithmetic operations with dates and times, handling the perplexity of time zones, or working with time intervals and periods, `lubridate` offers us the loom to elegantly weave our way through these tasks. By the end of this journey, you'll have gained a reign over the spinning wheels of time, unlocking the stories they tell and harnessing them for insightful data analysis.
+
+The world of `lubridate` awaits. Let's begin our journey.
+
+## The Time Weavers' Tools: Understanding `lubridate` Functions
+
+Imagine standing in front of a grand tapestry, woven with the threads of time. Each thread represents a moment, each color a unit of time --- years in the shade of deep blue, months painted with the hues of a verdant green, and days glowing with the golden brilliance of sunlight. To weave such a tapestry, the weaver needs not just dexterity but also the right set of tools. In our case, as time weavers, these tools come in the form of the various functions that `lubridate` provides us.
+
+Our first tool, `ymd()`, and its variations like `dmy()`, `mdy()`, and more, are akin to the loom itself. These functions take the raw threads --- dates and times in various text formats --- and deftly weave them into structured, recognizable forms. For example, let's take the date '23rd April, 2022' in a string format. We can transform this into a date object in R using `dmy()`:
+
+```r
+library(lubridate)
+date <- dmy("23rd April, 2022")
+print(date)
+
+# [1] "2022-04-23"
+```
+
+Our second set of tools, the extractor functions such as `year()`, `month()`, and `day()`, are like the magnifying glass that lets us examine each thread, each unit of time, in detail. Let's say we want to extract the year from the above date:
+
+```r
+year_of_date <- year(date)
+print(year_of_date)
+
+# [1] 2022
+```
+
+The arithmetic operators in `lubridate`, our third toolset, allow us to stretch or shorten the threads of time, adding or subtracting units of time as needed. They're like the weaver's shuttle, moving back and forth to add or remove threads:
+
+```r
+one_year_later <- date + years(1)
+print(one_year_later)
+
+# [1] "2023-04-23"
+```
+
+There are many more tools in our time weaver's toolkit: functions to handle time zones, to work with intervals and periods, to round off dates and times, and more. Each of these `lubridate` functions gives us greater control and flexibility over our time-based data, turning us into skilled artisans of time. Armed with these tools, we're ready to step onto the loom and start weaving. Let's unravel the threads of time together.
+
+## First Threads: Basic Date and Time Manipulation
+
+The first threads of our temporal tapestry are spun from raw data, transforming unwieldy date and time strings into well-structured and usable date-time objects. `lubridate` provides us with an arsenal of functions to make this transformation effortless, letting us smoothly transition from jumbled threads to neat spools of date-time data.
+
+The `ymd()`, `mdy()`, `dmy()` and their variations (such as `ymd_hms()` for including hours, minutes, and seconds) are our primary tools here. Like the skilled hands of a weaver selecting the perfect threads for the loom, these functions pick out the year, month, and day from a string and spin them into an ordered date-time object.
+
+Let's consider a string, '2022-10-01'. With `ymd()`, we can parse this string into a date object as follows:
+
+```r
+date <- ymd("2022-10-01")
+print(date)
+
+# [1] "2022-10-01"
+
+class(date)
+# [1] "Date"
+```
+
+But our capabilities do not stop at creating these date-time objects. Using the extractor functions such as `year()`, `month()`, and `day()`, we can pluck out specific threads from our woven date-time object, examining the individual components that give it shape. It's akin to picking out the threads of a particular color from our tapestry to appreciate their individual contribution to the grand design.
+
+```r
+year_of_date <- year(date)
+month_of_date <- month(date)
+day_of_date <- day(date)
+print(paste("Year:", year_of_date, ", Month:", month_of_date, ", Day:", day_of_date))
+
+# [1] "Year: 2022 , Month: 10 , Day: 1"
+```
+
+In this manner, the first threads of our temporal tapestry take shape. From chaotic jumbles of strings to organized and usable date-time objects, we have made our first steps in weaving the patterns of time. The rhythm of the loom beats on, and with it, we move to the next phase of our weaving.
+
+## Spinning the Wheels: Arithmetic with Dates and Times
+
+Having spun the first threads of our temporal tapestry and examined their individual strands, we now find ourselves ready to manipulate these threads further, adjusting their length and pattern to create more complex designs. This is where arithmetic operations with dates and times come into play. Like a weaver adding or removing threads to create intricate patterns, we use `lubridate`'s arithmetic capabilities to modify our date and time data.
+
+Let's consider a simple operation: adding or subtracting units of time from a date. Suppose you've started a project on '2022-01-01', and you know that it'll take precisely 180 days to complete. With `lubridate`, you can easily calculate the end date:
+
+```r
+start_date <- ymd("2022-01-01")
+end_date <- start_date + days(180)
+print(end_date)
+
+# [1] "2022-06-30"
+```
+
+Or perhaps you're analyzing historical data, and you need to go back 5 years from today's date. With `lubridate`, stepping back in time is as simple as:
+
+```r
+today <- today()
+five_years_back <- today - years(5)
+print(five_years_back)
+
+# [1] "2018-06-26"
+```
+
+These arithmetic operations are like the wheels of a loom, spinning to add or remove threads and create the desired pattern. But as any master weaver knows, the pattern isn't always linear. Time has a rhythm of its own, marked by different time zones, daylight saving time, and more. To weave these complex patterns accurately, we need to handle these variations adeptly --- a task for our next phase of weaving. With `lubridate`, we'll find these seemingly daunting tasks to be as simple as the spin of a wheel. Onward we weave, the rhythm of the loom echoing with the pulse of time.
+
+## Adjusting the Tension: Working with Time Zones
+
+As we continue our journey of weaving the temporal tapestry, we encounter a rather intricate pattern: the variation of time zones. Time isn't a single, unchanging thread; rather, it stretches and shrinks around the globe, each geographical location spinning its unique rhythm. Like a weaver adjusting the tension in the threads to create different patterns, we need to handle time zone adjustments to ensure that our date and time data accurately reflects the context.
+
+Working with different time zones might seem as complex as weaving a tapestry with threads of varying tension, but `lubridate` equips us with the necessary tools. The `with_tz()` function allows us to view a particular date-time in a different time zone without altering the original object, while `force_tz()` changes the time zone without modifying the actual time.
+
+Let's consider an example. You have a date-time, '2022-01-01 12:00:00', in the 'America/New_York' time zone, and you want to view it in 'Europe/London' time:
+
+```r
+new_york_time <- ymd_hms("2022-01-01 12:00:00", tz = "America/New_York")
+london_time <- with_tz(new_york_time, "Europe/London")
+print(london_time)
+
+# [1] "2022-01-01 17:00:00 GMT"
+```
+
+Or maybe you want to change the time zone of the 'new_york_time' object to 'Europe/London', keeping the time same:
+
+```r
+london_time_force <- force_tz(new_york_time, "Europe/London")
+print(london_time_force)
+
+# [1] "2022-01-01 12:00:00 GMT"
+```
+
+With these functions, handling time zones becomes as simple as adjusting the tension in a thread on the loom. Our temporal tapestry grows richer, its patterns reflecting the many rhythms of time across the globe. As we continue weaving, we find the rhythm of our loom syncing with the pulse of the world, each beat echoing the stories that time has to tell.
+
+## Weaving Patterns: Intervals, Durations, and Periods
+
+Our temporal tapestry is taking shape, its threads imbued with the rhythms of different time zones and the flexibility of date-time arithmetic. But as we weave deeper into the fabric of time, we encounter the need for more complex patterns: intervals, durations, and periods.
+
+In `lubridate`, these three concepts provide us with distinct ways of representing spans of time. Like different weaving techniques --- interlacing, twining, or looping --- they give us the flexibility to depict time in a way that best suits our analysis.
+
+An interval, created with the `%--%` operator or the `interval()` function, represents a span of time between two specific date-time points. It's like a thread stretched between two points on the loom, the tension of its length reflecting the exact duration of the interval. For instance, let's consider the interval between New Year's Day and the start of spring in 2023:
+
+```r
+new_years_day <- ymd("2023-01-01")
+spring_starts <- ymd("2023-03-20")
+winter_interval <- new_years_day %--% spring_starts
+print(winter_interval)
+
+# [1] 2023-01-01 UTC--2023-03-20 UTC
+```
+
+A duration, on the other hand, is a precise measure of time, counted in seconds. If an interval is a thread on the loom, a duration is its length measured with a ruler, regardless of the twists and turns the thread may take due to leap years, daylight saving time, or time zones:
+
+```r
+two_weeks_duration <- dweeks(2)
+print(two_weeks_duration)
+
+# [1] "1209600s (~2 weeks)"
+```
+
+Finally, a period represents a span of time in human units --- years, months, days, and so on. It's like measuring a thread not with a rigid ruler, but by the pattern it weaves on the loom. A month-long period, for example, doesn't equate to an exact number of seconds but to the human concept of a 'month':
+
+```r
+one_month_period <- months(1)
+print(one_month_period)
+
+# [1] "1m 0d 0H 0M 0S"
+```
+
+With intervals, durations, and periods, our temporal tapestry grows richer, its patterns reflecting the complex dance of time. Whether we're measuring time by the rhythm of our lives or by the relentless tick-tock of a clock, `lubridate` equips us to weave these patterns with ease. The dance of time continues, and so does our weaving, each thread adding to the symphony of our temporal tapestry.
+
+## Creating Complex Designs: Rounding Dates
+
+As we further our mastery over the loom of `lubridate`, we encounter an important technique to embellish our tapestry: rounding dates. Sometimes, in the grand design of our temporal tapestry, we want to simplify our patterns by aligning the threads to a common point. This technique is similar to rounding a floating-point number to the nearest integer, but here, we round dates to the nearest day, month, or year.
+
+With `lubridate`, this process becomes as straightforward as setting a warp thread on the loom. The functions `floor_date()`, `ceiling_date()`, and `round_date()` allow us to round down, round up, or round to the nearest unit of time, respectively. This manipulation gives our tapestry a pleasing symmetry, aligning our data to create clearer, more understandable patterns.
+
+For example, let's consider a date-time object at '2023-04-26 15:30:00', and you wish to round this to the nearest day:
+
+```r
+date_time <- ymd_hms("2023-04-26 15:30:00")
+rounded_date <- round_date(date_time, unit = "day")
+print(rounded_date)
+
+# [1] "2023-04-27 UTC"
+```
+
+Or perhaps you're analyzing monthly sales data, and you need to round up a date to the nearest month:
+
+```r
+sales_date <- ymd("2023-04-26")
+end_of_month <- ceiling_date(sales_date, unit = "month")
+print(end_of_month)
+
+# [1] "2023-05-01"
+```
+
+With rounding, our temporal tapestry becomes neater, its patterns more discernible. The threads align in harmony, marking the rhythm of time with pleasing symmetry. The loom's rhythm beats on, each weave adding to the richness of our tapestry, as we gain mastery over the spinning wheels of time.
+
+## Mastering the Loom: Advanced Lubridate Functions
+
+Having woven intricate patterns using basic and intermediate tools, we now find ourselves prepared to master the loom of `lubridate`. The advanced functions of this package let us play with time, in ways as innovative and complex as a master weaver creating their masterpiece.
+
+The `lubridate` function `parse_date_time()` allows us to convert strings into date-time objects when the standard `ymd()`-like functions aren't enough. This function is like a multi-faceted tool that adapts to the specific texture and pattern of the thread you're working with. For instance, if you're given a vector of dates in different formats:
+
+```r
+dates_vector <- c("January 1, 2022 5PM", "2022/02/02 16:00", "03-03-2022 17:00")
+parsed_dates <- parse_date_time(dates_vector, orders = c("md, Y H", "Ymd HM", "dmY HM"))
+print(parsed_dates)
+
+# [1] "2022-01-01 05:00:00 UTC" "2022-02-02 16:00:00 UTC" "2022-03-03 17:00:00 UTC"
+```
+
+Another useful function is `update()`, which allows us to change specific components of a date-time object. It's like a precise needle that alters a thread's course without disturbing the rest of the tapestry.
+
+For instance, if you have a date of '2023-04-26' and you want to change the year to 2022 and the month to January:
+
+```r
+date <- ymd("2023-04-26")
+new_date <- update(date, year = 2022, month = 1)
+print(new_date)
+
+# [1] "2022-01-26"
+```
+
+These functions and more help us master the art of weaving with time. The rhythm of the loom merges with the rhythm of time, each thread of our temporal tapestry creating a symphony that tells stories of the past, captures moments of the present, and envisions the possibilities of the future. With `lubridate`, we aren't just weavers, we're masters of the loom, the spinning wheels of time dancing under our deft control.
+
+## Conclusion
+
+As our temporal tapestry nears completion, we find ourselves taking a step back, appreciating the intricacy of the patterns woven through our journey with `lubridate`. The raw threads of time have been spun into organized date-time objects, manipulated through arithmetic, stretched across time zones, measured as intervals, durations, periods, rounded for simplicity, and altered through advanced functions.
+
+With every warp and weft, we've not only gained mastery over the package but also discovered the rhythms of time itself --- its ebb and flow, its dance across time zones, and its patterns across intervals, durations, and periods. We've learned to control its course, round it to simplicity, and even change its texture with advanced functions.
+
+But our journey doesn't end here. With `lubridate`, we've merely scratched the surface of what's possible in the grand loom of data science. There are many more threads to explore, patterns to discover, and techniques to master. The world of R programming offers a rich array of tools, each unique in its capabilities, all waiting to be woven into our growing tapestry of knowledge.
+
+In the end, we are not just weavers or data scientists. We are Time Weavers, reigning over the spinning wheels of time. As we pull the final weave tight and cut the thread, we are ready to begin anew, exploring other tools, other packages, and other techniques, ever expanding our mastery over the vast loom of data science.
+
+The rhythm of the loom merges with the pulse of time, and as we watch our completed tapestry sway gently, we know — this is just the beginning.
