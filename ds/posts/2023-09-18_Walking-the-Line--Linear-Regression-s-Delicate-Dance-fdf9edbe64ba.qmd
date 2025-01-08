@@ -1,0 +1,126 @@
+---
+title: "Walking the Line: Linear Regression's Delicate Dance"
+author: "Numbers around us"
+date: "2023-09-18"
+format: html
+---
+
+
+![](images/linear.jpg)
+*Photo by Marcelo Moreira*
+
+In the vast, bustling circus of data science, linear regression emerges as a tightrope walker. Poised and elegant, it teeters on a slender thread of predictions, each step deftly adjusted according to the pull of underlying data points. As spectators, we're transfixed, not just by the spectacle, but by the precision and balance that makes this act so captivating. This high-wire act of statistics, grounded in centuries of mathematical thought, now takes center stage. Come, let's take a closer look.
+
+## Laying the Rope: Basics of Linear Regression
+
+Every performance begins with laying down the stage. In linear regression, our stage is the regression line. This line, characterized by its equation *y*=*mx*+*b*, where *m* is the slope and *b* is the y-intercept, represents the predicted values of our outcome based on input features.
+
+Using `tidymodels`, this foundational step is a breeze. Consider the `mtcars` dataset, an iconic dataset available in R:
+
+```r
+library(tidymodels)
+data(mtcars)
+
+linear_model_spec <- linear_reg() %>% 
+ set_engine("lm")
+
+fit <- fit(linear_model_spec, mpg ~ wt, data = mtcars)
+```
+
+Here, we're trying to predict the fuel efficiency (`mpg`) of various car models based on their weight (`wt`). This establishes our rope's foundation.
+
+## Gravity's Influence: The Weight of Data Points
+
+Gravity, an unseen yet ever-present force, dictates how our tightrope walker moves. Similarly, data points guide the path of our regression line. Each point exerts its pull, determining the trajectory of our predictions. The closer a point to our line, the stronger its influence.
+
+To visualize this tug of data on our model:
+
+```r
+library(ggplot2)
+
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+ geom_point() +
+ geom_smooth(method = "lm", se = FALSE, color = "red")
+```
+
+![](https://cdn-images-1.medium.com/max/800/1*HUTA1gB7fb2g_YJujfQFXw.png)
+
+This plot paints a picture: The red line gracefully navigates through the data, with each point acting as a force guiding its path.
+
+## Steps and Adjustments: Optimizing the Model
+
+Our tightrope walker doesn't merely walk. With each step, there's a recalibration, a minor adjustment to maintain balance. In the realm of data science, our model undergoes similar refinements. Every iteration aims to make predictions that tread even more closely to the truth.
+
+Within `tidymodels`, optimization unfolds seamlessly:
+
+```r
+library(tidymodels)
+
+# Splitting the data
+set.seed(123)
+car_split <- initial_split(mtcars, prop = 0.75)
+car_train <- training(car_split)
+car_test <- testing(car_split)
+
+# Linear regression model specification
+linear_spec <- linear_reg() %>% 
+ set_engine("lm")
+
+# Creating a workflow
+car_workflow <- workflow() %>% 
+ add_model(linear_spec) %>% 
+ add_formula(mpg ~ .)
+
+# 10-fold cross-validation
+cv_folds <- vfold_cv(car_train, v = 10)
+
+# Resampling using the cross-validated folds
+fit_resampled <- fit_resamples(car_workflow, resamples = cv_folds)
+```
+
+Data partitioning and resampling mimic the walker's practice sessions, ensuring when the performance truly begins, every step is as accurate as possible.
+
+## Safety Nets: Evaluating Model Accuracy
+
+No matter how skilled, every tightrope walker values a safety net. For our linear regression model, this net is woven from metrics. These figures catch any missteps, offering insights into where balance was lost and where it was maintained.
+
+After resampling, we can evaluate our model's performance across the folds:
+
+```r
+rmse_val <- metric_set(rmse)
+results <- fit_resampled %>% collect_metrics()
+average_rmse <- results %>% filter(.metric == "rmse") %>% pull(mean)
+
+print(average_rmse)
+# 4.129034
+```
+
+In this evaluation, RMSE quantifies our model's average deviations. The RMSE value we extract provides an insight into the model's performance. Specifically, the RMSE represents the average difference between the observed known values of the outcome and the predicted value by the model. A smaller RMSE indicates that our model has a better predictive accuracy. Conversely, a large RMSE hints at potential areas of improvement. Given the context of the `mtcars` dataset, if our RMSE hovers around 5, it suggests that our predictions deviate from the actual values by about 5 miles per gallon on average. This serves as a gauge of our model's precision and reliability.
+
+Linear regression, at its heart, is a dance --- a balance between art and science. It's about understanding the past, predicting the future, and finding the delicate equilibrium between data and decisions. As we harness the prowess of tools like `tidymodels`, this dance becomes even more nuanced, more graceful. Let's celebrate this age-old statistical performer, and may our data always find its balance.
+
+## Gift at the end
+
+### 5 Real-Life Cases Where You Can Use Linear Regression
+
+#### Real Estate Pricing:
+
+*Description:* Realtors often use linear regression to predict the selling price of homes based on various features such as the number of bedrooms, area of the lot, proximity to amenities, age of the property, and more. By analyzing historical data, they can provide more accurate price estimates for sellers and buyers.
+
+#### Stock Market Forecasting:
+
+*Description:* Financial analysts might employ linear regression to predict future stock prices based on past performance, economic indicators, or other relevant variables. It aids in making more informed investment decisions.
+
+#### Demand Forecasting in Retail:
+
+*Description:* Retail businesses can predict future product demand based on historical sales data and other factors like marketing spend, seasonal trends, and competitor pricing. This helps in inventory management and optimizing supply chain operations.
+
+#### Healthcare Outcome Prediction:
+
+*Description:* In healthcare, linear regression can be used to predict patient outcomes based on various metrics. For instance, doctors could predict a patient's blood sugar level based on diet, medication dosage, and physical activity, aiding in personalized treatment planning.
+
+#### Salary Predictions:
+
+*Description:* HR departments often leverage linear regression to understand and predict the relationship between years of experience and salary, ensuring they offer competitive packages to retain and attract talent.
+
+
