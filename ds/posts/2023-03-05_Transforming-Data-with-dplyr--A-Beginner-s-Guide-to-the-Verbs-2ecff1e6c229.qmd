@@ -1,0 +1,265 @@
+---
+title: "Transforming Data with dplyr: A Beginner's Guide to the Verbs"
+author: "Numbers around us"
+date: "2023-03-05"
+format: html
+---
+
+![dplyr](images/dplyr.jpg)
+
+### Introduction to dplyr and the Grammar of Data Manipulation
+
+Data manipulation is a critical skill for any data scientist, and dplyr is one of the most powerful and intuitive tools available for this task. Working with data often involves cleaning, reshaping, and aggregating it to extract the information we need. These operations can quickly become complicated and unwieldy, especially when working with large or messy datasets. dplyr provides a set of "verbs" that allow you to easily select, filter, mutate, and summarize your data in a way that is both concise and readable. By using these verbs, you can efficiently perform complex data manipulation operations with minimal code. The dplyr package follows a consistent syntax, making it easy to chain verbs together into complex operations. Additionally, dplyr is designed to work seamlessly with other popular packages in the R ecosystem, such as ggplot2 and tidyr, allowing for a streamlined data analysis workflow. In this post, we'll provide a beginner's guide to the key verbs in the dplyr toolbox, and show how you can use them to transform your data with ease.
+
+### Selecting Columns with select()
+
+The `select()` function is a powerful tool for manipulating data frames in R, allowing you to extract, rename, and reorder columns in your data set. One of the most common use cases for `select()` is to extract a subset of columns from a data frame. For example, if you have a data frame with many columns, you can use `select()` to extract only the columns that are relevant to your analysis, like so:
+
+```r
+# Create a sample data frame
+df <- data.frame(x = 1:5, y = 6:10, z = 11:15)
+
+# Extract only the ‘x’ and ‘y’ columns
+df %>% select(x, y)
+```
+
+This will return a new data frame that only contains the 'x' and 'y' columns:
+
+```r
+  x y
+1 1 6
+2 2 7
+3 3 8
+4 4 9
+5 5 10
+```
+
+In addition to selecting specific columns, you can also use `select()` to exclude columns you don't need. For example, if you have a data frame with many columns and only need a few, you can use the `-` operator to exclude the columns you don't need, like so:
+
+```r
+# Exclude the ‘z’ column
+df %>% select(-z)
+```
+
+This will return a new data frame that only contains the 'x' and 'y' columns:
+
+```r
+  x y
+1 1 6
+2 2 7
+3 3 8
+4 4 9
+5 5 10
+```
+
+Another powerful feature of `select()` is its ability to manipulate column names using a range of built-in helpers. For example, you can use `matches()` to select columns that match a specific regular expression pattern, or use `starts_with()` and `ends_with()` to select columns that start or end with a specific character string. Here's an example:
+
+```r
+# Create a sample data frame with complex column names
+df <- data.frame("my id" = 1:5, "my variable y" = 6:10, "my other variable z" = 11:15)
+
+# Select columns that contain the word “variable”
+df %>% select(matches("variable"))
+```
+
+This will return a new data frame that only contains the 'my variable y' and 'my other variable z' columns:
+
+```r
+  my.variable.y my.other.variable.z
+1             6                  11
+2             7                  12
+3             8                  13
+4             9                  14
+5            10                  15
+```
+
+You can also use `starts_with()` and `ends_with()` to select columns that start or end with a specific character string. For example:
+
+```r
+# Select columns that start with “my”
+df %>% select(starts_with("my"))
+```
+
+This will return a new data frame that only contains the 'my id', 'my variable y', and 'my other variable z' columns:
+
+```r
+  my.id my.variable.y my.other.variable.z
+1     1             6                  11
+2     2             7                  12
+3     3             8                  13
+4     4             9                  14
+5     5            10                  15
+```
+
+As you can see, the `select()` function is a versatile tool that can be used to extract, rename, reorder, and create columns in your data frames. With a little practice, you'll be able to use it to efficiently transform your data sets and prepare them for analysis.
+
+### Filtering Rows with filter()
+
+Another important data transformation verb in `dplyr` is `filter()`, which allows you to extract rows from your data frame based on certain conditions. The basic syntax of `filter()` is similar to `select()`, with the first argument specifying the input data frame, and the subsequent arguments specifying the conditions to filter by. You can use any combination of comparison operators (`<`, `>`, `<=`, `>=`, `==`, `!=`) to create complex conditions that evaluate to logical values (TRUE or FALSE).
+
+For example, if you have a data frame with 'gender' and 'score' columns, and you want to extract only the rows where the score is greater than 80 and the gender is 'Female', you can use the following code:
+
+```r
+# Create a sample data frame with ‘gender’ and ‘score’ columns
+df <- data.frame(gender = c("Male", "Female", "Male", "Female", "Male"), 
+                 score = c(75, 82, 90, 68, 95))
+
+# Use filter() and select() to extract the rows where the score is greater than 80 and the gender is ‘Female’
+df %>% filter(score > 80 & gender == "Female") %>% select(gender, score)
+```
+
+In this example, we use the `&` operator to combine the two conditions into one logical expression. This will return a new data frame that contains only the 'gender' and 'score' columns for the rows where the score is greater than 80 and the gender is 'Female':
+
+```r
+  gender score
+1 Female    82
+```
+
+As you can see, `filter()` allows you to create complex conditions to extract specific rows from your data frame. By combining it with other verbs like `select()`, you can perform powerful data transformations that extract only the information you need.
+
+### Mutating Data with mutate()
+
+`mutate()` is another important verb in `dplyr` that allows you to create new columns based on existing ones. The basic syntax of `mutate()` is similar to the other `dplyr` verbs, with the first argument specifying the input data frame, and the subsequent arguments specifying the new columns to create. You can use any function that takes a vector of values and returns a single value, such as `round()`, `log()`, `sqrt()`, and so on.
+
+One of the strengths of `mutate()` is that it allows you to create new columns based on complex calculations that involve multiple columns. For example, if you have a data frame with 'age' and 'income' columns, and you want to create a new column called 'income_per_age' that represents the income per year of age, you can use the following code:
+
+```r
+# Create a sample data frame with ‘age’ and ‘income’ columns
+df <- data.frame(age = c(35, 42, 27, 38, 45), income = c(50000, 65000, 40000, 75000, 80000))
+
+# Use mutate() to create a new column based on a complex calculation
+df <- df %>% mutate(income_per_age = income/age)
+```
+
+In this example, we use `mutate()` to create a new column called 'income_per_age' that represents the income per year of age. We simply divide the 'income' column by the 'age' column to get this value. The result is a new data frame with three columns: 'age', 'income', and 'income_per_age':
+
+```r
+  age income income_per_age
+1  35  50000       1428.571
+2  42  65000       1547.619
+3  27  40000       1481.481
+4  38  75000       1973.684
+5  45  80000       1777.778
+```
+
+Another useful feature of `mutate()` is that it allows you to create new columns based on conditional statements. For example, if you have a data frame with 'score' column, and you want to create a new column called 'pass_fail' that indicates whether the score is passing or failing based on a threshold value, you can use the following code:
+
+```r
+# Create a sample data frame with ‘score’ column
+df <- data.frame(score = c(75, 82, 90, 68, 95))
+
+# Use mutate() to create a new column based on a conditional statement
+df <- df %>% mutate(pass_fail = ifelse(score >= 70, "Pass", "Fail"))
+```
+
+In this example, we use `mutate()` to create a new column called 'pass_fail' that indicates whether the score is passing or failing based on a threshold value of 70. We use the `ifelse()` function to apply the condition and return either "Pass" or "Fail" depending on the result. The result is a new data frame with two columns: 'score' and 'pass_fail':
+
+```r
+  score pass_fail
+1    75      Pass
+2    82      Pass
+3    90      Pass
+4    68      Fail
+5    95      Pass
+```
+
+As you can see, `mutate()` is a versatile verb that allows you to create new columns based on simple or complex calculations, making it a valuable tool for data analysis.
+
+### Aggregating Data with summarise()
+
+`summarise()` is an essential verb in `dplyr` that allows you to perform powerful data aggregations on your data. The basic syntax of `summarise()` is similar to the other `dplyr` verbs, with the first argument specifying the input data frame, and the subsequent arguments specifying the summary statistics to calculate. You can use any function that takes a vector of values and returns a single value, such as `mean()`, `median()`, `min()`, `max()`, and so on.
+
+One of the strengths of `summarise()` is that it allows you to calculate multiple summary statistics at once. For example, if you have a data frame with 'gender' and 'score' columns, and you want to calculate the mean, median, and maximum score for each gender, you can use the following code:
+
+```r
+# Create a sample data frame with ‘gender’ and ‘score’ columns
+df <- data.frame(gender = c("Male", "Female", "Male", "Female", "Male"), score = c(75, 82, 90, 68, 95))
+
+# Use summarise() to calculate multiple summary statistics for each gender
+df %>% group_by(gender) %>% summarise(mean_score = mean(score), median_score = median(score), max_score = max(score))
+```
+
+In this example, we group the data by 'gender', and then we use `summarise()` to calculate the mean, median, and maximum score for each group. This will return a new data frame with four columns: 'gender', 'mean_score', 'median_score', and 'max_score', containing the summary statistics for each gender:
+
+```r
+  gender mean_score median_score max_score
+1 Female   75.00000          75         82
+2   Male   86.66667          90         95
+```
+
+Another useful feature of `summarise()` is that it allows you to create list-columns by using the `list()` function. For example, if you have a data frame with 'gender' and 'score' columns, and you want to create a list-column that contains all the scores for each gender, you can use the following code:
+
+```r
+# Use summarise() to create a list-column of all scores for each gender
+df %>% group_by(gender) %>% summarise(score_list = list(score))
+```
+
+In this example, we group the data by 'gender', and then we use `summarise()` to create a list-column called 'score_list' that contains all the scores for each group. This will return a new data frame with two columns: 'gender' and 'score_list', where the 'score_list' column is a list of scores for each gender:
+
+```r
+  gender score_list
+1 Female       <dbl [2]>
+2   Male       <dbl [3]>
+```
+
+As you can see, `summarise()` is a powerful verb that allows you to perform complex data aggregations and create list-columns, making it an indispensable tool for data analysis.
+
+### Chaining Verbs with %>%
+
+One of the most powerful features of `dplyr` is the ability to chain multiple operations together using the `%>%` operator. Chaining allows you to write code that is both concise and easy to read, by eliminating the need to create intermediate variables.
+
+For example, suppose you have a data frame with columns 'age', 'income', and 'gender', and you want to filter it to only include rows where the 'age' column is greater than 30, then calculate the mean income for each gender, and finally select only the 'gender' and 'mean_income' columns. You can achieve this using chaining as follows:
+
+```r
+# Use chaining to filter, group, summarise, and select data in a single step
+df %>%
+ filter(age > 30) %>%
+ group_by(gender) %>%
+ summarise(mean_income = mean(income)) %>%
+ select(gender, mean_income)
+```
+
+Here, we use `filter()` to remove any rows where the 'age' column is less than or equal to 30. Next, we group the remaining rows by the 'gender' column using `group_by()`. Then, we calculate the mean income for each gender using `summarise()`. Finally, we select only the 'gender' and 'mean_income' columns using `select()`.
+
+Alternatively, you could use intermediate variables to achieve the same result:
+
+```r
+# Use intermediate variables to filter, group, summarise, and select data
+df_filtered <- filter(df, age > 30)
+df_grouped <- group_by(df_filtered, gender)
+df_summarised <- summarise(df_grouped, mean_income = mean(income))
+df_selected <- select(df_summarised, gender, mean_income)
+```
+
+Here, we create four intermediate variables, each containing the result of one operation, before finally selecting only the 'gender' and 'mean_income' columns.
+
+Another way to achieve the same result is by nesting operations inside parentheses:
+
+```r
+select( summarise( group_by( filter(df, age > 30), gender ), mean_income = mean(income) ), gender, mean_income )
+```
+
+The resulting code can be more difficult to read and understand compared to the previous two examples. Overall, `dplyr` provides a variety of options for manipulating data, allowing you to choose the approach that works best for your needs.
+
+### Other Important Functions
+
+`dplyr` provides a wide range of functions that can help you to manipulate data in various ways. Here are some other commonly used functions:
+
+- `arrange()`: Sort rows by one or more columns using ascending or descending order.
+- `distinct()`: Remove duplicate rows based on selected columns.
+- `slice()`: Extract a subset of rows based on their position in the data frame.
+- `glimpse()`: Display a compact summary of a data frame, showing the variable names, data types, and some example values.
+- `rename()`: Change the names of columns in a data frame.
+- `group_by()`: Group data by one or more columns, enabling you to perform calculations on each group separately.
+- `bind_rows()`: Combine multiple data frames vertically into a single data frame.
+- `between()`: Filter rows based on whether a value is between two given values.
+- `case_when()`: Create a new variable based on multiple conditions, similar to a switch statement in other programming languages.
+- `if_else()`: Create a new variable based on a single condition, returning one value if the condition is true, and another value if it is false.
+- `lag()`: Calculate the value of a variable for the previous row.
+- `lead()`: Calculate the value of a variable for the next row.
+
+These functions can be used in combination with the `mutate()`, `summarise()`, `filter()`, and other functions to perform a wide variety of data manipulations. By using `dplyr` and its accompanying packages, you can greatly simplify and streamline your data analysis workflow.
+
+### Unlocking the Potential of Your Data
+
+`dplyr` is a powerful and flexible tool for data transformation and manipulation. The `verbs` provided by `dplyr` allow you to express data manipulations in a concise and easy-to-read way, making it easier to perform complex operations on your data. In this post, we have covered some of the most commonly used `verbs` in `dplyr`, including `select()`, `filter()`, `summarise()`, `mutate()`, and `arrange()`, as well as some other useful functions. However, this is just the tip of the iceberg when it comes to `dplyr`'s capabilities. In future posts, we will explore more advanced topics such as joins, window functions, and more. Overall, `dplyr` is an essential tool for any data scientist or analyst working with R, and mastering it can greatly improve your productivity and efficiency in data analysis.
