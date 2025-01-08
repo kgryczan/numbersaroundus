@@ -1,0 +1,218 @@
+---
+title: "From Hanger to Sky: Taking Flight with glue, janitor, and dbplyr"
+author: "Numbers around us"
+date: "2023-07-02"
+format: html
+---
+
+![](images/glue.jpg)
+
+The world of data science is much akin to an intricate art form, resembling the detailed craftsmanship that goes into assembling a model airplane. Each piece, no matter how minuscule or large, carries weight, contributing to the balance, design, and ultimate flight of the model. In the realm of data science, this level of meticulous detailing is manifested through the selection and implementation of specific tools, each adding nuance and capability to the process.
+
+In the sprawling hanger of data science, amidst the hum of complex algorithms and the scurry of vast datasets, lie the unsung heroes, the tools that may not grab the spotlight, yet contribute significantly to the flight of our projects. They are not the roaring jet engines or the glossy exteriors that catch the eye, but the smaller, more precise tools that help refine the model to perfection. They are the equivalent of the precision screwdrivers, the high-grit sandpaper, the modeling glue that, in the hands of a skilled modeler, can turn a piece of plastic into a soaring warbird.
+
+Among these are three packages in R that stand as testament to this fact: `glue`, `janitor`, and `dbplyr`. The `glue` package, true to its namesake, holds together various parts of your data plane, offering an easy and efficient way to manage strings. The `janitor` package, just like a diligent custodian, sweeps through your datasets, cleaning and tidying up, transforming raw data into something neat and workable. Then there's `dbplyr`, which acts as the control tower in our aviation metaphor, coordinating smooth interactions between your R environment and databases, providing efficient data manipulation capabilities that save both time and computational resources.
+
+Today, we will dive deep into the hangar, working our way through bolts and nuts, wires and codes. Together, we'll explore how to master these tools and prepare our data airplane for take-off. From the initial preparation of the runway (data cleaning) to managing air traffic control (database interactions), we'll get a closer look at how these tools function individually and collaboratively. By the end of this journey, you'll be equipped to see your own data science projects soar into the expansive sky of knowledge and insights. So, fasten your seat belts, ensure your seats are in the upright position, and let's take off on this data science flight together!
+
+## Glue: The Binding Material of Dynamic Reports
+
+The art of model aircraft building places considerable emphasis on the strength and reliability of adhesive. It serves as a unifying force, merging disparate parts into a cohesive whole, ready to endure the winds of flight. A similar adhesive force underpins the success of many data science projects --- the `glue` package in R.
+
+`glue` effortlessly "sticks" your data together, providing dynamic and flexible string manipulation capabilities. It forms the bonds that hold together your data analysis, enabling you to bring disparate pieces of data into a coherent whole, just as a reliable adhesive strengthens an aircraft model.
+
+Imagine you're drafting a dynamic report, where the title needs to be updated based on the current month. Without an efficient method, the process could be arduous. With `glue`, however, the task becomes a smooth glide:
+
+```r
+library(glue)
+
+current_month <- format(Sys.Date(), "%B %Y")
+title <- glue("Sales Report for {current_month}")
+
+print(title)
+# Sales Report for July 2023
+```
+
+Here, `glue` seamlessly integrates the current month into your title, enabling dynamic content in your strings. It acts just like an excellent adhesive that creates a smooth and seamless surface for our model airplane.
+
+But `glue` isn't confined to simple string integrations. It spreads its wings into more specific areas with functions like `glue_data()` and `glue_sql()`. Let's explore:
+
+```r
+# glue_data
+data <- data.frame(name = c("John", "Sally"), age = c(30, 25))
+print(data)
+#    name age
+# 1  John  30
+# 2 Sally  25
+
+message <- glue_data(data, "The person named {name} is {age} years old.")
+print(message)
+# The person named John is 30 years old.
+# The person named Sally is 25 years old.
+```
+
+```r
+# glue_sql
+library(DBI)
+con <- dbConnect(RSQLite::SQLite(), ":memory:")
+name <- "John"
+safe_sql <- glue_sql("SELECT * FROM table WHERE name = {name}", .con = con)
+
+print(safe_sql)
+# <SQL> SELECT * FROM table WHERE name = 'John'
+```
+
+`glue_data()` references variables directly from a dataframe without needing an explicit declaration. On the other hand, `glue_sql()` provides a safe way to create SQL queries within R, defending against SQL injection attacks by safely interpolating values.
+
+But what if we want to input a list of values into a SQL query? Here's how you can do it:
+
+```r
+names <- c("John", "Sally", "David")
+safe_sql_list <- glue_sql("SELECT * FROM table WHERE name IN ({names*})", .con = con)
+
+print(safe_sql_list)
+# <SQL> SELECT * FROM table WHERE name IN ('John', 'Sally', 'David')
+```
+
+The `{names*}` notation allows us to interpolate a list of values securely within our SQL query, thus offering greater flexibility when dealing with multiple values.
+
+As we venture further, we'll see how `glue` contributes to more complex data assembly processes. Just like a dependable adhesive in aircraft modeling, `glue` assures that every piece finds its rightful place in our data science projects. So, grab your tube of `glue`, and let's continue our journey through the hangar of data science.
+
+## Janitor: Keeping the Runway Clear for Takeoff
+
+Just as a model aircraft prepares for takeoff, its path needs to be clear, free of any obstacles that might impede its flight. Similarly, in the realm of data analysis, we must clear our 'runway' --- the dataset --- of any unwanted distractions that could disrupt our exploration. This is where `janitor`, our data custodian, comes into play.
+
+Imagine an aircraft hangar, where each plane's takeoff is contingent on a clean, obstacle-free runway. `janitor` offers us a similar assurance --- a streamlined dataset that boosts the accuracy and efficiency of our data analysis. By removing unnecessary information, identifying duplications, handling outliers, and swiftly generating tabulations, `janitor` ensures our data is always 'flight-ready'.
+
+Let's consider a few examples. Suppose we have a dataframe that has column names with trailing white spaces, different cases, or symbols. `janitor` provides the `clean_names()` function to easily standardize these column names:
+
+```r
+# an untidy dataframe
+untidy_df <- data.frame("First Name " = c("John", "Jane"), AGE = c(25, 30))
+print(untidy_df)
+#   First.Name. AGE
+# 1        John  25
+# 2        Jane  30
+
+# use janitor to clean names
+library(janitor)
+tidy_df <- untidy_df %>% clean_names()
+print(tidy_df)
+#   first_name age
+# 1       John  25
+# 2       Jane  30
+```
+
+In the above example, `clean_names()` removes the leading/trailing spaces, converts all characters to lowercase, and replaces any symbols with an underscore, leading to tidy, uniform column names.
+
+On the other hand, the `get_dupes()` function highlights any duplicated rows in your dataset:
+
+```r
+# a dataframe with duplicate rows
+dup_df <- data.frame(name = c("John", "Jane", "John"), age = c(30, 25, 30))
+print(dup_df)
+#   name age
+# 1 John  30
+# 2 Jane  25
+# 3 John  30
+
+# use janitor to find duplicates
+dupes <- dup_df %>% get_dupes(name, age)
+print(dupes)
+#   name age dupe_count
+# 1 John  30          2
+# 2 John  30          2
+```
+
+In this case, `get_dupes()` flags the duplicate entries for "John", allowing us to make informed decisions about how to handle these duplications.
+
+`janitor` also includes the function `tabyl()`, which is useful for quickly generating frequency tables. For instance:
+
+```r
+# a simple dataframe
+df <- data.frame(color = c("blue", "red", "blue", "green", "red"))
+
+# create a frequency table
+freq_table <- df %>% tabyl(color) %>% adorn_pct_formatting(digits = 1)
+print(freq_table)
+#  color n percent
+#   blue 2  40.0%
+#  green 1  20.0%
+#    red 2  40.0%
+```
+
+`tabyl()` creates a frequency table of the 'color' column, and `adorn_pct_formatting()` then formats the percentage to one decimal place, providing a clean, easy-to-read table. Check other adorn functions as well to see what other things can be described in frequency tables.
+
+Additional `janitor` functions like `remove_empty()` and `remove_constant()` further clean your data by removing any empty rows/columns or constant columns, respectively. These functions can prove especially useful when dealing with large datasets where manually scanning for such issues isn't feasible.
+
+With `janitor` in our toolbox, we're ready to ensure our data analysis takes off smoothly and accurately, unhindered by the common disruptions in our dataset runway. So, let's buckle up, clear the runway, and get ready for our data analysis flight!
+
+## dbplyr: The Control Tower Coordinating Database Communication
+
+In the world of aviation, the control tower is the central hub of communication. It orchestrates the careful ballet of takeoffs, landings, and in-flight maneuvers that is the daily life of an airport. Similarly, `dbplyr` is the control tower of our data analysis landscape --- it deftly manages communication between R and our databases, enabling us to work with data directly from the source.
+
+Just as air traffic controllers use their systems and protocols to manage air traffic, `dbplyr` leverages the syntax and functions we're familiar with from `dplyr` and translates them into SQL queries. This seamless translation allows us to interact with databases as if they were local data frames. So, even if our SQL skills aren't as polished as our R abilities, we're still in command.
+
+Let's imagine we have a database of flight records, and we want to work with the data in R. With `dbplyr`, we don't have to import the entire database --- we can query it directly from R.
+
+Here's how it works:
+
+```r
+library(DBI)
+library(dbplyr)
+library(nycflights13)
+library(tidyverse) 
+
+# Connect to an SQLite database
+con <- dbConnect(RSQLite::SQLite(), ":memory:") 
+
+# Copy the flights data to the SQLite database
+copy_to(con, flights, "flights") 
+
+# Use dbplyr to query the flights table directly
+flights_db <- tbl(con, "flights") 
+
+# Filter flights based on some conditions, all done on the database side
+long_flights <- flights_db %>%
+ filter(distance > 2000, air_time > 300) 
+
+# Examine the query
+show_query(long_flights) 
+# <SQL>
+# SELECT *
+# FROM `flights`
+# WHERE (`distance` > 2000.0) AND (`air_time` > 300.0)
+
+# Get data from database
+long_flights %>%
+ select(carrier, origin, dest, tailnum, distance, air_time) %>%
+ head() %>%
+ collect()
+# # A tibble: 6 × 6
+#   carrier origin dest  tailnum distance air_time
+#   <chr>   <chr>  <chr> <chr>      <dbl>    <dbl>
+# 1 UA      JFK    LAX   N29129      2475      345
+# 2 UA      EWR    SFO   N53441      2565      361
+# 3 UA      EWR    LAS   N76515      2227      337
+# 4 UA      JFK    SFO   N532UA      2586      366
+# 5 US      EWR    PHX   N807AW      2133      342
+# 6 US      JFK    PHX   N535UW      2153      330
+```
+
+In this code, we first connect to our SQLite database with `dbConnect()`. We then use `copy_to()` to load the `flights` data frame from the `nycflights13` package into our database. Using `tbl()`, we make a reference to this table in the database. We then construct a query to filter the flights based on distance and air_time directly on the database, not in R. We use `show_query()` to print the SQL query that `dbplyr` has composed on our behalf.
+
+It's like speaking to the control tower in our native language, while they communicate our instructions to the aircraft in the aviation-specific language of air traffic control. With `dbplyr` guiding our database communications, we're ready to navigate the complex airspace of database-backed data analysis. Buckle up and stay tuned as we delve further into the ways `dbplyr` helps us direct our data analysis flight!
+
+## Conclusion
+
+As we descend from our data analysis journey, we reflect on the tools that have propelled our voyage. `glue`, `janitor`, and `dbplyr`, each with their distinct functions, have collectively assembled our model aircraft, enabling us to navigate the vast skies of data analysis.
+
+`glue` is the strong adhesive, stringing together our operations and bridging the gaps in our commands. It streamlines the process of crafting complex strings, making it easy to substitute variable values within text, akin to a pilot efficiently adjusting the throttle in response to the ever-changing flying conditions.
+
+`janitor`, our diligent ground crew, ensures the integrity of our data by keeping it clean and presentable. It tidies our column names, checks for duplicated data, and provides insightful tabulations of our data frame. It's an essential asset that helps maintain the clarity of our data, similar to how a maintenance crew keeps an aircraft in peak flying condition.
+
+And `dbplyr`, our control tower, seamlessly communicates between R and our databases. It turns our familiar `dplyr` syntax into efficient SQL queries, just as an air traffic controller translates a pilot's request into a precise series of actions.
+
+The combination of these three packages, like the components of our model aircraft, each contribute uniquely to the task at hand, but it's their synergy that creates a smooth, efficient data analysis process. They streamline our operations, reduce redundancies, and enable us to focus on what truly matters: unveiling the stories hidden within our data.
+
+As we taxi down the runway after a successful data exploration flight, it's clear that with `glue`, `janitor`, and `dbplyr` in our toolkit, we're equipped to handle any data analysis challenge with poise and precision. Just like model aircraft builders, we're ready to construct, refine, and pilot our projects, knowing we're backed by powerful, reliable tools. The skies of data analysis are wide open, ready for us to chart our next journey.
