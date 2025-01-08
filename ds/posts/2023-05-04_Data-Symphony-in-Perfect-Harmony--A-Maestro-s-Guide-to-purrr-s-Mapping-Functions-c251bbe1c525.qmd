@@ -1,0 +1,417 @@
+---
+title: "Data Symphony in Perfect Harmony: A Maestro's Guide to purrr's Mapping Functions"
+author: "Numbers around us"
+date: "2023-05-04"
+format: html
+---
+
+![Data Symphony](images/data-symphony.jpg)
+
+### Data Symphony in Perfect Harmony: A Maestro's Guide to purrr's Mapping Functions
+
+As I continue to dive into the intricacies of ggplot2 in my current series, I couldn't help but notice the overwhelming response to my recent post on the basics of the `purrr` package. It seems that many of you are eager to unlock the full potential of functional programming in R. So, in the spirit of mixing things up and keeping things fresh, I've decided to alternate between the two topics: one post about ggplot2, and one about `purrr`. In this post, we'll be taking a deep dive into the world of mapping functions within the `purrr` package. These functions are like master keys, opening up new possibilities and granting you the power to reshape and manipulate your data with incredible ease. So, join me on this journey as we explore the secrets of mapping functions and learn how to put them to work for you.
+
+#### The Basics of Mapping Functions
+
+Imagine yourself in a room full of unique objects, and your task is to apply a specific transformation to each one of them. You could manually go around and perform the transformation one by one, but wouldn't it be more efficient if you could wave a magic wand and have the transformation applied to all objects at once? Mapping functions in `purrr` are akin to that magic wand, allowing you to apply a function to each element of a list, vector, or data frame in a concise and elegant manner.
+
+In `purrr`, there are several mapping functions that cater to different scenarios and data structures. The four primary ones are `map`, `map2`, `pmap`, and `imap`. Each has its own strengths and purposes:
+
+- `map`: The basic mapping function that applies a given function to each element of a list or vector.
+- `map2`: A mapping function that allows you to work with two inputs simultaneously, applying a given function element-wise to both inputs.
+- `pmap`: A generalization of `map2`, this function is designed to work with multiple inputs, applying a given function to corresponding elements from each input.
+- `imap`: A specialized mapping function that not only applies a given function to each element of a list or vector but also takes into account the index of each element.
+
+Let's look at a simple example for each of these functions:
+
+```r
+library(purrr)
+
+# Using map
+squared <- map(1:5, function(x) x^2)
+print(squared)
+# [[1]]
+# [1] 1
+# [[2]]
+# [1] 4
+# [[3]]
+# [1] 9
+# [[4]]
+# [1] 16
+# [[5]]
+# [1] 25
+
+# Using map2
+sums <- map2(1:5, 6:10, function(x, y) x + y)
+print(sums)
+# [[1]]
+# [1] 7
+# [[2]]
+# [1] 9
+# [[3]]
+# [1] 11
+# [[4]]
+# [1] 13
+# [[5]]
+# [1] 15
+
+# Using pmap
+products <- pmap(list(1:5, 6:10, 11:15), function(x, y, z) x * y * z)
+print(products)
+# [[1]]
+# [1] 66
+# [[2]]
+# [1] 168
+# [[3]]
+# [1] 312
+# [[4]]
+# [1] 504
+# [[5]]
+# [1] 750
+
+# Using imap
+indexed <- imap(letters[1:5], function(index, value) paste(index, value))
+print(indexed)
+# [[1]]
+# [1] "a 1"
+# [[2]]
+# [1] "b 2"
+# [[3]]
+# [1] "c 3"
+# [[4]]
+# [1] "d 4"
+# [[5]]
+# [1] "e 5"
+```
+
+Each mapping function has its own unique abilities, and understanding when to use each one can help you write more efficient and elegant code. In the following sections, we'll explore these functions in more depth and examine how they can be used with different types of data and functions.
+
+#### Using Mapping Functions with Different Types of Data
+
+As data scientists and programmers, we often find ourselves working with various data structures like vectors, lists, and data frames. The beauty of mapping functions in `purrr` lies in their versatility, as they can be effortlessly applied to different types of data, making them a powerful ally in your data manipulation arsenal.
+
+To demonstrate this, let's explore how each of the primary mapping functions can be applied to different data structures:
+
+*Vectors*:
+
+```r
+# Using map with a numeric vector
+squared_vector <- map_dbl(1:5, function(x) x^2)
+print(squared_vector)
+# [1]  1  4  9 16 25
+
+# Using imap with a character vector
+indexed_vector <- imap_chr(letters[1:5], function(index, value) paste(index, value))
+print(indexed_vector)
+# [1] "a 1" "b 2" "c 3" "d 4" "e 5"
+```
+
+*Lists*:
+
+```r
+# Using map with a list
+input_list <- list(a = 1:3, b = 4:6, c = 7:9)
+sum_list <- map(input_list, sum)
+print(sum_list)
+# $a
+# [1] 6
+# $b
+# [1] 15
+# $c
+# [1] 24
+
+# Using imap with a list
+indexed_list <- imap(input_list, function(value, index) paste(index, sum(value)))
+print(indexed_list)
+# $a
+# [1] "a 6"
+# $b
+# [1] "b 15"
+# $c
+# [1] "c 24"
+```
+
+*Data frames*:
+
+```r
+library(tidyverse)
+
+# Sample data frame
+data_frame <- tibble(
+  x = 1:5,
+  y = 6:10
+)
+print(data_frame)
+# A tibble: 5 × 2
+#       x     y
+#   <int> <int>
+# 1     1     6
+# 2     2     7
+# 3     3     8
+# 4     4     9
+# 5     5    10
+
+# Using map with a data frame
+sums_dataframe <- data_frame %>%
+  map_dbl(sum)
+print(sums_dataframe)
+#  x  y 
+# 15 40 
+
+# Using imap with a data frame
+indexed_dataframe <- data_frame %>%
+  imap_chr(function(value, index) paste(index, sum(value)))
+print(indexed_dataframe)
+#      x      y 
+# "x 15" "y 40" 
+```
+
+By adapting these mapping functions to work with various data structures, you'll be able to harness their power and unlock new possibilities for efficient data manipulation. In the upcoming sections, we'll delve into how to use anonymous functions with mapping functions and how to leverage the `as_mapper` function for increased flexibility and readability.
+
+#### Utilizing Anonymous Functions with Mapping Functions
+
+When working with mapping functions, it's common to require a custom function that performs a specific task for your data transformation. While you can always define these functions separately, anonymous functions allow you to create these custom functions on-the-fly, making your code more concise and easier to read. Picture anonymous functions as the perfect tool for small, one-time tasks — they come into existence when you need them and vanish once their job is done.
+
+To illustrate the power and flexibility of anonymous functions, let's use them with our primary mapping functions:
+
+*Using anonymous functions with `map`*:
+
+```r
+# Squaring each element in a numeric vector
+squared <- map_dbl(1:5, ~ .x^2)
+print(squared)
+# [1]  1  4  9 16 25
+
+# Adding a prefix to each element in a character vector
+prefixed <- map_chr(letters[1:5], ~ paste("prefix", .x))
+print(prefixed)
+# [1] "prefix a" "prefix b" "prefix c" "prefix d" "prefix e"
+```
+
+*Using anonymous functions with `map2`*:
+
+```r
+# Summing elements from two numeric vectors
+sums <- map2_dbl(1:5, 6:10, ~ .x + .y)
+print(sums)
+# [1]  7  9 11 13 15
+
+# Concatenating elements from two character vectors
+concatenated <- map2_chr(letters[1:5], LETTERS[1:5], ~ paste(.x, .y, sep = ""))
+print(concatenated)
+# [1] "aA" "bB" "cC" "dD" "eE"
+```
+
+*Using anonymous functions with `pmap`*:
+
+```r
+# Calculating the product of elements from three numeric vectors
+products <- pmap_dbl(list(1:5, 6:10, 11:15), ~ ..1 * ..2 * ..3)
+print(products)
+# [1]  66 168 312 504 750
+
+# Creating full names from three character vectors (first, middle, and last names)
+full_names <- pmap_chr(list(letters[1:5], letters[6:10], LETTERS[1:5]), ~ paste(..1, ..2, ..3))
+print(full_names)
+# [1] "a f A" "b g B" "c h C" "d i D" "e j E"
+```
+
+*Using anonymous functions with `imap`*:
+
+```r
+# Adding index to each element in a numeric vector
+indexed <- imap_dbl(1:5, ~ .y * .x)
+print(indexed)
+# [1]  1  4  9 16 25
+
+# Combining index and value for each element in a character vector
+indexed_letters <- imap_chr(letters[1:5], ~ paste(.y, .x))
+print(indexed_letters)
+# [1] "1 a" "2 b" "3 c" "4 d" "5 e"
+```
+
+Anonymous functions not only enhance the readability of your code but also allow you to create custom functions with ease. In the next section, we'll explore the `as_mapper` function and learn how to combine it with mapping functions for increased flexibility and readability.
+
+#### Exploring the as_mapper Function
+
+The `as_mapper` function in `purrr` can be seen as the Swiss Army knife of mapping functions, providing you with the flexibility to convert a function or formula into a mapper function. This magical transformation enables you to use the resulting mapper function seamlessly with other mapping functions, leading to cleaner and more readable code.
+
+To showcase the versatility of `as_mapper`, let's see how it can be used with the different types of inputs:
+
+*Using `as_mapper` with a function*:
+
+```r
+library(purrr)
+
+# Define a custom function
+double_and_sum <- function(x) {
+  2 * sum(x)
+}
+
+# Use as_mapper to create a mapper function
+double_and_sum_mapper <- as_mapper(double_and_sum)
+
+# Apply the mapper function to a list using map
+input_list <- list(a = 1:3, b = 4:6, c = 7:9)
+result <- map_dbl(input_list, double_and_sum_mapper)
+print(result)
+#  a  b  c 
+# 12 30 48 
+```
+
+*Using `as_mapper` with a formula*:
+
+```r
+# Use as_mapper to create a mapper function from a formula
+square_mapper <- as_mapper(~ .x^2)
+
+# Apply the mapper function to a numeric vector using map
+squared <- map_dbl(1:5, square_mapper)
+print(squared)
+# [1]  1  4  9 16 25
+```
+
+By combining `as_mapper` with other mapping functions, you can effortlessly adapt your code to various situations, making it more readable and easier to maintain. In the next section, we'll cover some advanced mapping techniques that will further enhance your data manipulation skills.
+
+#### Advanced Mapping Techniques
+
+As you become more comfortable with mapping functions in `purrr`, you might want to explore some advanced techniques that can further simplify your code and improve its readability. In this section, we'll discuss the use of the `.f` notation and the `..1` notation in mapping functions.
+
+*Using the `.f` notation*:
+
+The `.f` notation allows you to directly specify the function you want to apply in the mapping function call. This can make your code more concise and easier to understand. Here's an example:
+
+```r
+library(purrr)
+
+# Using .f notation to apply the `mean` function
+input_list <- list(a = 1:3, b = 4:6, c = 7:9)
+means <- map_dbl(input_list, .f = mean)
+print(means)
+# a b c 
+# 2 5 8 
+```
+
+*Using the `..1` notation*:
+
+The `..1` notation is particularly useful when working with functions like `pmap` that deal with multiple inputs. It allows you to refer to the first input, `..2` refers to the second input, and so on. This can make your code more readable when using anonymous functions with multiple inputs. Here's an example:
+
+```r
+# Using ..1, ..2, and ..3 to refer to inputs in a pmap call
+input1 <- 1:5
+input2 <- 6:10
+input3 <- 11:15
+
+products <- pmap_dbl(list(input1, input2, input3), ~ ..1 * ..2 * ..3)
+print(products)
+# [1]  66 168 312 504 750
+```
+
+By incorporating these advanced techniques in your code, you'll be able to write more efficient and readable scripts when working with mapping functions in `purrr`. In the final section, we'll explore some real-world applications that demonstrate the power and usefulness of mapping functions in data analysis.
+
+#### Real-World Applications of Mapping Functions
+
+Now that we've explored the different mapping functions in `purrr` and some advanced techniques, let's take a look at how they can be applied in real-world data analysis scenarios. These examples will demonstrate the power and flexibility of mapping functions in handling complex data manipulation tasks.
+
+*Data cleaning and transformation*:
+
+Suppose you have a list of data frames, each containing similar columns but with varying levels of data quality. You can use mapping functions to apply a series of cleaning and transformation steps to each data frame in a concise and efficient manner.
+
+```r
+library(purrr)
+library(dplyr)
+
+# Sample list of data frames
+data_frames <- list(
+  data_frame1 = tibble(x = 1:5, y = 6:10),
+  data_frame2 = tibble(x = 11:15, y = 16:20),
+  data_frame3 = tibble(x = 21:25, y = 26:30)
+)
+
+# Define a custom cleaning function
+clean_data <- function(df) {
+  df %>%
+    mutate(z = x * y) %>%
+    filter(z > 30)
+}
+
+# Use map to apply the cleaning function to each data frame in the list
+cleaned_data_frames <- map(data_frames, clean_data)
+
+print(cleaned_data_frames)
+# $data_frame1
+# # A tibble: 2 × 3
+#       x     y     z
+#   <int> <int> <int>
+# 1     4     9    36
+# 2     5    10    50
+# 
+# $data_frame2
+# # A tibble: 5 × 3
+#       x     y     z
+#   <int> <int> <int>
+# 1    11    16   176
+# 2    12    17   204
+# 3    13    18   234
+# 4    14    19   266
+# 5    15    20   300
+# 
+# $data_frame3
+# # A tibble: 5 × 3
+#       x     y     z
+#   <int> <int> <int>
+# 1    21    26   546
+# 2    22    27   594
+# 3    23    28   644
+# 4    24    29   696
+# 5    25    30   750
+```
+
+*Applying custom transformations to a data frame*:
+
+In some cases, you might want to apply custom transformations to specific columns of a data frame. By using `imap`, you can achieve this in a concise and efficient way.
+
+```r
+library(purrr)
+library(dplyr)
+library(tibble) 
+
+data_frame <- tibble(
+  x = 1:5,
+  y = 6:10,
+  z = 11:15
+)
+
+# Define a custom transformation function
+transform_column <- function(value, index) {
+  if (index == "x") {
+    return(value * 2)
+  } else {
+    return(value + 10)
+  }
+}
+
+# Use imap to apply the custom transformation to each column in the data frame
+transformed_data_frame <- data_frame %>%
+  imap_dfc(~transform_column(.x, .y))
+
+print(transformed_data_frame)
+# # A tibble: 5 × 3
+#       x     y     z
+#   <dbl> <dbl> <dbl>
+# 1     2    16    21
+# 2     4    17    22
+# 3     6    18    23
+# 4     8    19    24
+# 5    10    20    25
+```
+
+These real-world examples showcase the power of mapping functions in `purrr` and how they can simplify complex data manipulation tasks. By mastering mapping functions, you can elevate your R programming skills and tackle a wide range of data analysis challenges with ease and efficiency.
+
+Throughout this deep dive into the world of mapping functions in `purrr`, we've explored a variety of techniques and concepts that can help you manipulate and transform data with ease. From the basics of mapping functions like `map`, `map2`, and `pmap`, to more advanced techniques involving anonymous functions, the `as_mapper` function, and the `.f` and `..1` notations, we've seen how these tools can significantly improve your data analysis workflow.
+
+By applying these concepts to real-world scenarios, such as data cleaning and custom data frame transformations, we've demonstrated the power and flexibility that mapping functions bring to the table. The more you practice and experiment with these functions, the more confident you'll become in handling complex data manipulation tasks.
+
+As you continue to develop your R programming skills, consider integrating the concepts and techniques from this series into your work. By doing so, you'll be well on your way to becoming a more efficient and effective data analyst or data scientist.
+
+Remember, the journey of mastering R and the `purrr` package is an ongoing one. Keep exploring, experimenting, and learning, and you'll find that the world of R programming is a truly rewarding and exciting place to be!

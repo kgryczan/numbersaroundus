@@ -1,0 +1,272 @@
+---
+title: "Choreographing Data with Precision: Mastering purrr's Predicates for Elegant R Performances"
+author: "Numbers around us"
+date: "2023-05-11"
+format: html
+---
+
+![](images/predicates.jpg){fig-align="left"}
+
+Imagine you're a skilled conductor, expertly leading a grand orchestra composed of countless musicians, each with their own unique instrument. In the world of data manipulation and analysis, the `purrr` package serves as your conductor's baton, deftly guiding the Tidyverse Orchestra in R. As you wield this powerful tool, you'll find a wealth of techniques and functions at your disposal, enabling you to create a symphony of data transformations that resonate with clarity and precision.
+
+In our previous articles, we have explored the harmonious melodies of mapping functions in the purrr package. However, an essential aspect of any great composition is the ability to carefully control the ebb and flow of the music, shaping it to evoke the desired emotions and tell a story. In the realm of data manipulation, this artful control often takes the form of applying conditions to filter, select, or modify data based on specific criteria.
+
+In this article, we'll dive into the world of predicates and predicate functions in purrr, which allow you to apply conditions with finesse, like a maestro directing the orchestra to perform intricate crescendos and delicate diminuendos. Together, we'll explore the various predicate functions available in purrr, learn how to combine them for more complex conditions, and see how they can be used in conjunction with other purrr functions to create a masterful performance of data analysis.
+
+So, ready your conductor's baton and prepare to embark on a journey through the world of predicates in purrr, where we'll turn the cacophony of raw data into a beautifully orchestrated masterpiece.
+
+#### Understanding Predicates and Predicate Functions
+
+In the symphony of data analysis, predicates play a vital role in shaping the dynamics of your composition. Just as a conductor might instruct the string section to play pianissimo or the brass section to deliver a fortissimo burst, predicates in R programming help you dictate which data elements should take center stage and which should fade into the background.
+
+*Predicates* are functions that return a Boolean value, either `TRUE` or `FALSE`, based on specific conditions. Like the discerning ear of a maestro listening for the perfect pitch, predicates help you determine whether an element meets the desired criteria or not. In R, predicate functions are often used to filter, select, or modify data based on these conditions.
+
+*Predicate functions* in `purrr` are designed to work seamlessly with the Tidyverse ecosystem and provide a consistent interface for applying conditions to your data. These functions are like the conductor's precise hand gestures, guiding the various sections of the orchestra to perform in perfect harmony.
+
+By incorporating predicate functions in your data manipulation repertoire, you can artfully craft a compelling narrative that showcases the most relevant and impactful elements of your dataset, creating a performance that resonates with your audience.
+
+#### Exploring Basic Predicate Functions in `purrr`
+
+As a conductor, your baton can elicit a wide array of expressions and techniques from the musicians in your orchestra. Similarly, the `purrr` package offers a diverse selection of predicate functions to help you shape your data analysis performance. Let's explore some of the fundamental predicate functions in `purrr` that allow you to filter, select, and modify data with the grace of a virtuoso.
+
+*`detect`*: Find the first element that satisfies a condition
+
+Imagine you're searching for a soloist to play a particular melody. The `detect` function helps you find the first element in a list or vector that meets your criteria, much like identifying the first musician capable of performing the solo.
+
+``` r
+library(purrr)
+
+# Find the first even number in the list
+numbers <- list(3, 5, 7, 8, 10, 12)
+first_even <- detect(numbers, ~ . %% 2 == 0)
+print(first_even)
+# [1] 8
+```
+
+*`keep`*: Filter elements that satisfy a condition
+
+Picture yourself selecting a group of musicians to play a specific part in your composition. The `keep` function filters a list or vector based on a given condition, retaining only the elements that meet the criteria, akin to choosing the musicians who can deliver the performance you desire.
+
+``` r
+library(purrr)
+
+# Keep only even numbers in the list
+numbers <- list(3, 5, 7, 8, 10, 12)
+even_numbers <- keep(numbers, ~ . %% 2 == 0)
+print(even_numbers)
+# [[1]]
+# [1] 8
+# [[2]]
+# [1] 10
+# [[3]]
+# [1] 12
+```
+
+*`discard`*: Filter out elements that satisfy a condition
+
+At times, you may need to remove certain elements from your data, just as a conductor might decide to exclude specific instruments from a passage. The `discard` function filters a list or vector based on a condition, removing the elements that meet the criteria and preserving the rest.
+
+``` r
+library(purrr)
+
+# Discard even numbers from the list
+numbers <- list(3, 5, 7, 8, 10, 12)
+odd_numbers <- discard(numbers, ~ . %% 2 == 0)
+print(odd_numbers)
+# [[1]]
+# [1] 3
+# [[2]]
+# [1] 5
+# [[3]]
+# [1] 7
+```
+
+*`every`*: Check if every element satisfies a condition
+
+In some cases, you might need to ensure that all elements in your data meet a specific condition, much like a conductor verifying that every musician is in tune before the performance begins. The `every` function checks if all elements in a list or vector satisfy the given condition, returning `TRUE` if they do and `FALSE` otherwise.
+
+``` r
+library(purrr)
+
+# Check if all numbers in the list are even
+numbers <- list(3, 5, 7, 8, 10, 12)
+all_even <- every(numbers, ~ . %% 2 == 0)
+print(all_even)
+# [1] FALSE
+```
+
+*`some`*: Check if at least one element satisfies a condition
+
+Occasionally, you may be interested in knowing whether at least one element in your data meets a certain condition, akin to a conductor checking if any musician can perform a challenging solo. The `some` function verifies if at least one element in a list or vector satisfies the given condition, returning `TRUE` if it does and `FALSE` otherwise.
+
+``` r
+library(purrr)
+
+# Check if there's at least one even number in the list
+numbers <- list(3, 5, 7, 8, 10, 12)
+has_even <- some(numbers, ~ . %% 2 == 0)
+print(has_even)
+# [1] TRUE
+```
+
+These basic predicate functions in `purrr` serve as the building blocks for applying conditions to your data, allowing you to weave intricate patterns of expression and dynamics in your data analysis performance.
+
+#### Combining Predicate Functions for More Complex Conditions
+
+As a skilled conductor, you know that the most memorable performances often involve a complex interplay of themes, harmonies, and rhythms. Likewise, in data manipulation, you may need to apply multiple conditions to your data to create the desired result. Combining predicate functions in `purrr` enables you to apply multiple criteria to your dataset, much like a composer layering different motifs to create a rich tapestry of sound.
+
+*Using multiple predicate functions together*
+
+To illustrate how predicate functions can be combined, let's consider a scenario where we want to filter a list of numbers based on two conditions: being divisible by 2 (even) and greater than 5. We can use the `keep` function along with two predicates to achieve this.
+
+``` r
+library(purrr)
+
+numbers <- list(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+even_and_greater_than_five <- keep(numbers, ~ . %% 2 == 0 & . > 5)
+print(even_and_greater_than_five)
+# [[1]]
+# [1] 6
+# [[2]]
+# [1] 8
+# [[3]]
+# [1] 10
+```
+
+*Creating custom predicate functions*
+
+Sometimes, you may want to create a custom predicate function to better suit your specific needs. To do so, you can define a new function that returns a Boolean value based on the desired conditions. This custom function can then be used with `purrr` predicate functions, just like any built-in predicate.
+
+``` r
+library(purrr)
+
+numbers <- list(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+# Define a custom predicate function
+is_even_and_greater_than_five <- function(x) {
+  x %% 2 == 0 & x > 5
+}
+
+# Use the custom predicate function with `keep`
+custom_result <- keep(numbers, is_even_and_greater_than_five)
+print(custom_result)
+# [[1]]
+# [1] 6
+# [[2]]
+# [1] 8
+# [[3]]
+# [1] 10
+```
+
+*Examples of combined predicate functions in action*
+
+Let's explore another example where we have a list of names and want to filter those that start with the letter "A" and are longer than 4 characters. We can create a custom predicate function and use it with `keep` to achieve this.
+
+``` r
+library(purrr)
+
+names <- list("Alice", "Ava", "Bob", "Catherine", "David", "Eva")
+starts_with_A_and_longer_than_4 <- function(name) {
+  substr(name, 1, 1) == "A" & nchar(name) > 4
+}
+
+filtered_names <- keep(names, starts_with_A_and_longer_than_4)
+print(filtered_names)
+# [[1]]
+# [1] "Alice"
+```
+
+By combining predicate functions in `purrr`, you can apply multiple conditions to your data, crafting a nuanced and compelling narrative that reveals the most relevant and interesting aspects of your dataset.
+
+#### Using Predicate Functions with Other purrr Functions
+
+In a great symphony, every instrument and section of the orchestra contributes to the overall performance, each playing its part to create a harmonious blend of sound and emotion. Similarly, the true power of `purrr` predicates can be unlocked by using them in conjunction with other purrr functions, such as mapping functions, `reduce`, and `accumulate`. By combining these techniques, you can create a data manipulation performance that resonates with depth and complexity.
+
+*Combining predicate functions with mapping functions*
+
+Mapping functions in `purrr` can be enhanced by incorporating predicates to selectively apply transformations to elements of a list or vector based on specific conditions. For instance, let's say we want to square all even numbers in a list while leaving the odd numbers unchanged. We can use `map_if` with a predicate function to achieve this.
+
+``` r
+library(purrr)
+
+numbers <- list(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+square_if_even <- map_if(numbers, ~ . %% 2 == 0, ~ .^2)
+print(square_if_even)
+# [[1]]
+# [1] 1
+# [[2]]
+# [1] 4
+# [[3]]
+# [1] 3
+# [[4]]
+# [1] 16
+# [[5]]
+# [1] 5
+# [[6]]
+# [1] 36
+# [[7]]
+# [1] 7
+# [[8]]
+# [1] 64
+# [[9]]
+# [1] 9
+# [[10]]
+# [1] 100
+```
+
+*Utilizing predicate functions alongside `reduce` and `accumulate`*
+
+`reduce` and `accumulate` functions in `purrr` can also benefit from the use of predicate functions. For example, let's consider a scenario where we have a list of numbers and want to find the product and sum of all even numbers. We can use `reduce` along with a custom predicate function to accomplish this.
+
+``` r
+library(purrr)
+
+numbers <- list(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+even_product <- reduce(keep(numbers, ~ . %% 2 == 0), `*`)
+even_sum <- reduce(keep(numbers, ~ . %% 2 == 0), `+`)
+
+print(even_product)
+# [1] 3840
+
+print(even_sum)
+# [1] 30
+```
+
+*Examples of predicate functions used with other `purrr` functions*
+
+Let's explore another example where we have a list of data frames, each containing information about different fruits. We want to combine these data frames, but only include rows where the fruit's price is less than 5 dollars. We can use a predicate function with `map` and `bind_rows` to achieve this.
+
+``` r
+library(purrr)
+library(dplyr)
+
+df1 <- data.frame(
+  fruit = c("apple", "banana", "cherry"),
+  price = c(3, 2, 6)
+)
+df2 <- data.frame(
+  fruit = c("orange", "grape", "kiwi"),
+  price = c(4, 7, 3)
+)
+
+fruit_data <- list(df1, df2)
+
+filtered_fruits <- fruit_data %>%
+  map(~ filter(., price < 5)) %>%
+  bind_rows()
+
+print(filtered_fruits)
+#    fruit price
+# 1  apple     3
+# 2 banana     2
+# 3 orange     4
+# 4   kiwi     3
+```
+
+By integrating predicate functions with other `purrr` functions, you can create a cohesive and expressive data manipulation performance that not only tells a captivating story but also highlights the most meaningful and insightful aspects of your dataset.
+
+As we conclude our journey through the world of predicates and predicate functions in `purrr`, it's clear that they play a pivotal role in the data manipulation symphony. Like a master conductor, you can now expertly wield your purrr conductor's baton to guide the Tidyverse Orchestra in R, shaping the dynamics and expressions of your data analysis performance with grace and precision.
+
+By harnessing the power of basic predicate functions, combining them for more complex conditions, and using them alongside other purrr functions, you can transform the raw cacophony of data into a beautifully orchestrated masterpiece that resonates with clarity and insight.
+
+Embrace the artistry of predicate functions in purrr and watch your data manipulation performances come alive, captivating your audience and revealing the most compelling stories hidden within your dataset. And remember, the stage is yours — let your creativity and imagination guide you as you continue to explore the vast potential of the purrr package and the Tidyverse ecosystem.
