@@ -1,0 +1,210 @@
+---
+title: "Decisions at the Door: Understanding Logistic Regression with Tidymodels"
+author: "Numbers around us"
+date: "2023-09-23"
+format: html
+---
+
+![](images/logreg.jpg)
+
+Welcome back to the "Metaphors in Motion" series! Today, we're stepping into the bustling world of nightclubs, where a discerning door bouncer stands, meticulously vetting each individual against a list of criteria. The air is charged with anticipation, the line is long, and the decision is binary: you're either in or you're out. This is the vibrant metaphor we'll use to understand Logistic Regression, a fundamental algorithm in machine learning.
+
+Logistic Regression is akin to this attentive bouncer, examining features and deciding the class or category to which an observation should belong, basing the decision on the probability resulting from a sigmoid function. Throughout this article, we'll explore how this classification algorithm makes its decisions, assesses probabilities, and how we can implement and interpret it using Tidymodels in R. So, let's dive into the clamor of features and probabilities and see who gets past the velvet rope!
+
+## Meet the Bouncer: Logistic Regression Defined
+
+Picture a lively nightclub, pulsating with music and lit with myriad colors. At its entrance stands our metaphorical bouncer, the logistic regression model. The model's task is binary, much like the bouncer's: it sifts through the influx of data points, deciding which ones "get in" and which ones don't, based on a set of features or criteria.
+
+Logistic Regression is a classification algorithm, used predominantly when the Y variable is binary. In essence, it predicts the probability that a given instance belongs to a particular category. If we equate our model to the bouncer, then the binary outcomes are the possible decisions: allow entry (1) or deny access (0). It's the mathematical expression of the sigmoid function that translates the decision boundary and computes these probabilities, creating a space where every point, every feature, has its calculated odds of being granted access.
+
+It's crucial to note that logistic regression isn't about strict yes/no decisions. It's more nuanced; it deals with probability scores, delivering a value between 0 and 1. This value reflects the likelihood of an instance belonging to the positive class. If the probability is above a predetermined threshold, typically 0.5, the model predicts the positive class --- just like the bouncer allowing a person entry if they meet the sufficient criteria.
+
+## Setting Up Criteria: Defining the Model's Inputs
+
+Our meticulous bouncer, akin to a logistic regression model, makes judicious choices to admit club-goers, evaluating each on set criteria. Our club is symbolized by a dataset, `club_data`, a collection of 50 points, each detailing features like `demeanor`, `attire`, `guest_list`, and `vip_list`, dictating the structured and discerning admission process.
+
+```r
+# Viewing the first few rows of the dataset
+head(club_data)
+```
+
+This dataset isn't a medley of randomness, but a compilation of structured and realistically distributed observations. It's a reflection of real-life scenarios where admission isn't capricious but is linked to clear and measurable attributes. The logistic regression model, symbolizing our bouncer, sifts through this information, considering each feature to make informed decisions on admittance, continuously refining its method for subsequent instances.
+
+```r
+# Splitting the data
+data_split <- initial_split(club_data, prop = 0.75)
+train_data <- training(data_split)
+test_data <- testing(data_split)
+
+# Forming and training the logistic regression model
+logistic_model <- logistic_reg() %>%
+ set_engine("glm") %>%
+ fit(admit ~ ., data = train_data)
+
+# Extracting and viewing the model’s coefficients
+logistic_model$fit$coefficients
+
+# (Intercept) demeanorHostile demeanorNeutral    attireFormal   guest_listYes     vip_listYes 
+# 69.18704        46.01282        46.62902       -46.21548       -45.28532      -139.58966 
+```
+
+Here, we split our `club_data` into training and testing datasets, allowing our model to learn from the training data before making predictions on the unseen testing data. The coefficients extracted from our logistic model serve as the bouncer's discerning eye, attributing weights to the features and facilitating the decision-making process on who is deemed worthy of entering the club.
+
+## Decisions at the Door: Implementing the Model
+
+Each individual approaching the club is meticulously assessed by the bouncer, our logistic regression model, with every feature undergoing close scrutiny. The ultimate decision --- admittance or rejection --- is a calculated culmination of these evaluations.
+
+In the world of machine learning, this decision is manifested through the model's predictions. Armed with the knowledge acquired from the training data, our model evaluates the test data, gauging each observation against the learned coefficients. This process is akin to our bouncer appraising each club-goer against the established criteria.
+
+```r
+# Making predictions on the test data
+predictions <- logistic_model %>% 
+ predict(test_data) %>%
+ bind_cols(test_data)
+
+# Viewing predictions and test data
+predictions
+
+# A tibble: 13 × 6
+# .pred_class demeanor attire guest_list vip_list admit
+# <fct>       <chr>    <chr>  <chr>      <chr>    <fct>
+# 1 No          Neutral  Casual No         No       No   
+# 2 No          Hostile  Formal Yes        No       No   
+# 3 No          Neutral  Casual Yes        No       No   
+# 4 No          Hostile  Formal Yes        No       No   
+# 5 Yes         Hostile  Casual No         Yes      Yes  
+# 6 Yes         Friendly Formal Yes        No       Yes  
+# 7 Yes         Neutral  Formal No         Yes      Yes  
+# 8 Yes         Neutral  Casual No         Yes      Yes  
+# 9 Yes         Friendly Formal Yes        No       Yes  
+# 10 Yes        Hostile  Casual No         Yes      Yes  
+# 11 Yes        Hostile  Formal No         Yes      Yes  
+# 12 No         Friendly Casual Yes        No       No   
+# 13 No         Neutral  Formal Yes        No       No  
+```
+
+In this code snippet, the predictions, corresponding to the decisions made at the club's door, are generated for the test data, providing a glimpse into the bouncer's discerning evaluations. By comparing these predictions with the actual outcomes, we get insights into the accuracy and reliability of our bouncer's judgments, elucidating whether the right decisions were made and where there's room for improvement.
+
+## Evaluating Decisions: Measuring Accuracy with a Disclaimer
+
+With the bouncer's decisions unveiled, we are at a juncture to reflect on the accuracy of his judgments. The real question looms --- did he adhere strictly to the club's criteria? Were the undesirables kept out and the right patrons allowed in? The need to answer these questions is imperative, and it is here that we dissect the model's predictions meticulously.
+
+However, a word of caution: the dataset used here is deliberately constructed and does not depict real-life club scenarios. It's a concoction of arbitrary features and outcomes, meaning the model's predictions are not indicative of any realistic bouncer decision-making processes. The dataset serves purely illustrative purposes, aiding in the understanding of logistic regression within the tidymodels framework.
+
+In tidymodels, we appraise the model's predictions using various metrics, each unveiling a different aspect of the decision-making process:
+
+```r
+# Evaluating the model’s accuracy and other metrics
+eval_metrics <- logistic_model %>% 
+ predict(test_data, type = "class") %>%
+ bind_cols(test_data) %>%
+ metrics(truth = admit, estimate = .pred_class)
+
+eval_metrics
+
+# A tibble: 2 × 3
+# .metric  .estimator .estimate
+# <chr>    <chr>          <dbl>
+# 1 accuracy binary             1
+# 2 kap      binary             1
+
+# Our model is 100% accurate :D It is rarely truth in real life.
+# This club has genius bouncer.
+```
+
+Here, `eval_metrics` will hold the computed metrics, allowing us to delve deep into the model's decisions and accuracy. This exploration is analogous to reviewing the bouncer's nightly decisions, gauging his strictness or leniency, and identifying potential areas for improvement.
+
+## Fine-tuning the Bouncer: Model Optimization
+
+Just as a bouncer might need some feedback and training to refine his decision-making skills, our logistic regression model can benefit from fine-tuning to optimize its performance. This process involves adjusting the model's parameters to minimize the error in its predictions, ensuring the best possible decision boundaries are established.
+
+In the context of the tidymodels framework, this optimization can be achieved using `tune_grid()`, which evaluates the model's performance at various parameter values, enabling the selection of the optimal set.
+
+For our illustrative example, let's suppose we are interested in fine-tuning our model:
+
+```r
+# Define the model specification with a model that has tunable parameters
+logistic_spec <- logistic_reg(penalty = tune(), mixture = 1) %>%
+ set_engine("glmnet")
+
+# Set up a 5-fold cross-validation
+cv_folds <- vfold_cv(train_data, v = 5)
+
+# Define a grid of potential penalty values to tune over
+penalty_grid <- tibble(penalty = 10^seq(-6, -1, length.out = 10))
+
+# Perform the tuning over the grid
+tuned_results <- tune_grid(
+ logistic_spec,
+ admit ~ .,
+ resamples = cv_folds,
+ grid = penalty_grid
+)
+
+# Extract the best parameters
+best_params <- tuned_results %>%
+ select_best("accuracy")
+
+best_params
+
+# A tibble: 1 × 2
+# penalty .config              
+# <dbl> <chr>                
+# 1  0.0278 Preprocessor1_Model09
+```
+
+In this snippet, `best_params` will hold the optimal parameter values determined by the tuning process. With these optimal values, the model's predictive accuracy can be maximized, mirroring a bouncer who has refined his criteria to make the most accurate judgments.
+
+## Scrutinizing the Bouncer's Decisions: Evaluating the Model
+
+Having adjusted our bouncer's decision-making process, it's vital to see how his newly tuned judgments align with the club's exclusive standards. Our model's metrics are the final verdict, showcasing the proficiency of its decisions --- whether it's correctly identifying the elite and the unwelcome.
+
+However, do note that our dataset is entirely random and simulated. This means that any correlation or lack thereof between features and the admission decision is purely coincidental. The intention here is to understand the mechanics of logistic regression rather than derive any actual insights from the data.
+
+```r
+# Evaluate the model’s accuracy
+logistic_model_tuned <- logistic_spec %>%
+ finalize_model(best_params) %>%
+ fit(admit ~ ., data = train_data)
+
+# Extracting metrics
+metrics <- logistic_model_tuned %>%
+ predict(test_data, type = "class") %>%
+ bind_cols(test_data) %>%
+ metrics(truth = admit, estimate = .pred_class)
+
+metrics
+# A tibble: 2 × 3
+# .metric  .estimator .estimate
+# <chr>    <chr>          <dbl>
+# 1 accuracy binary         0.846
+# 2 kap      binary         0.698
+```
+
+With this block of code, we're evaluating the adjusted decisions of our logistic bouncer. We calculate the final metrics with the tuned parameters to examine whether the new finesse in decision-making has led to improved judgments or whether there's more room for refinement.
+
+Remember, the metrics here, due to the randomness of our data, are not indicative of real-world scenarios or practical applications of logistic regression. They are presented to illustrate how one would evaluate a logistic regression model's performance using a more relevant and logically constructed dataset.
+
+Our journey with the logistic regression model, symbolized as a diligent bouncer at an elite club, has been intriguing. This metaphor allowed us to delve into the mechanics of logistic regression in an engaging and intuitive manner, illustrating how it sifts through the features and makes binary decisions based on the established criteria.
+
+This model, like our bouncer, holds the responsibility of making pivotal decisions --- deciding who gets to enter the esteemed club and who remains outside. By tuning and refining this model, we ensure that it aligns seamlessly with the club's standards, making accurate and informed decisions. And by evaluating its decisions, we keep it in check, ensuring its judgments are reliable and consistent.
+
+It is crucial, however, to remember that the dataset used in this illustration is random and hypothetical. The decisions made by our logistic bouncer do not reflect any real-world correlations or logical relationships between the features and the admission results. The emphasis here is on understanding the methodology, the tuning, and the evaluation rather than deriving actual insights from the dataset.
+
+Finally, this metaphor aims to simplify the complexities of logistic regression, providing a more relatable and comprehendible approach to learning and applying this statistical method in real-world scenarios. It's a step towards demystifying the world of machine learning and making it more accessible and approachable for everyone.
+
+Let's anticipate more enlightening metaphors in our upcoming posts, exploring and unraveling the mysteries of different machine learning models in our continued series, Metaphors in Motion.
+
+Would you like to dive deeper into any specific part of logistic regression, or is there another machine learning model you are curious about? Feel free to share your thoughts and stay tuned for more metaphors in motion!
+
+## Practical Applications of Logistic Regression
+
+1.  Credit Scoring: Logistic regression can be applied in the financial sector for credit scoring, where it helps in predicting the probability of a customer defaulting on a loan based on various features like income, age, loan amount, etc.
+2.  Healthcare: In healthcare, logistic regression can predict the likelihood of a patient having a specific disease or medical condition based on their symptoms, medical history, and other relevant features.
+3.  Marketing: Marketing professionals use logistic regression to predict whether a customer will make a purchase or not based on their interactions with marketing campaigns, their buying history, and other behavioral features.
+4.  Human Resources: HR departments can employ logistic regression to anticipate whether an employee will leave the company or not, based on features such as job satisfaction levels, salary, the number of projects, etc.
+5.  Political Campaigning: Logistic regression is used in political campaigns to predict whether a voter will vote for a particular candidate or not, using features like age, income, political affiliation, and opinion on various issues.
+
+Remember, while logistic regression is powerful, it is also essential to understand its limitations and ensure that the assumptions of logistic regression are met for reliable and valid results.
+
+Would you like to explore more practical scenarios where logistic regression is applicable? Share your interests and stay engaged with our Metaphors in Motion series for more insights and applications!

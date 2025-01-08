@@ -1,0 +1,161 @@
+---
+title: "Boosting Your Data Weights: Training Accurate Models with tidymodels"
+author: "Numbers around us"
+date: "2023-10-12"
+format: html
+---
+
+![](images/xgboost.jpg)
+
+In the captivating realm of machine learning, myriad techniques continually evolve to enhance predictive accuracy, offering innovative pathways for problem-solving. One such dynamic method is "boosting." Imagine, if you will, the rigorous regimen of weightlifting. Each session targets heavier weights, challenging the lifter to push past previous limits. In a similar spirit, boosting pinpoints the underperformers, particularly the misclassified data points, and relentlessly strives to uplift them with each iteration. This metaphorical approach aptly embodies the essence of the final installment in our "Metaphors in Motion" series. Within the extensive `tidymodels` framework in R, the power of boosting is efficiently encapsulated by the `boost_tree` function, with XGBoost acting as its powerful engine. This article aims to delve deep into this function, highlighting its nuanced capabilities and drawing parallels with our chosen metaphor.
+
+## The Weightlifting Analogy
+
+The discipline of weightlifting is not merely about lifting heavy objects but about understanding one's strengths, honing techniques, and constantly pushing boundaries. Each session serves as an iteration to strengthen weaker muscles, and over time, the individual becomes capable of lifting weights previously deemed too heavy. This journey of constant improvement mirrors the principles of boosting in machine learning. With every boosting cycle, our model identifies the misclassified data points, giving them added weight in subsequent iterations, almost like a weightlifter giving extra attention to weaker muscles. This ensures that the model, over time, becomes better attuned to predicting these challenging data points correctly. Using `boost_tree` with the XGBoost engine, this iterative weight adjustment is managed seamlessly, ensuring our models are not just strong but are continuously evolving to be stronger.
+
+## Getting Started with `boost_tree`
+
+Venturing into the domain of `boost_tree` within `tidymodels` might seem daunting at first, much like a rookie weightlifter eyeing a loaded barbell for the first time. But with the right guidance and foundational knowledge, one can quickly find their rhythm and make significant strides. The first step, of course, involves setting up your R environment to harness the power of `tidymodels`.
+
+```r
+install.packages("tidymodels")
+library(tidymodels)
+```
+
+Once the package is installed and loaded, the stage is set to explore the intricacies of boosting. As a beginner, starting with an accessible dataset, say the `mtcars` dataset available within R, can provide a solid ground. This dataset, comprising various car attributes, can be a playground for predicting miles-per-gallon (mpg) based on other features.
+
+```r
+data(mtcars)
+```
+
+Now, to infuse the essence of boosting, one would set up the `boost_tree` model, specifying XGBoost as the engine. This is akin to a weightlifter choosing a specific regimen tailored to their goals.
+
+```r
+boosted_model <- boost_tree() %>%
+ set_engine("xgboost") %>%
+ set_mode("regression")
+```
+
+With the model defined, the next steps involve splitting the data, training the model, and iterating to improve upon its predictions, analogous to the continuous training cycles in weightlifting.
+
+## Deep Dive into Boosting with `boost_tree`
+
+Just as a seasoned weightlifter delves into the intricacies of form, balance, and nutrition, a data scientist should plunge deep into the nitty-gritty of the `boost_tree` model to truly harness its capabilities. One of the crucial aspects to comprehend is the parameters and their significance.
+
+For instance, with the XGBoost engine under the hood, parameters like `eta` (learning rate), `max_depth` (maximum depth of a tree), and `nrounds` (number of boosting rounds) come to the forefront. The learning rate, similar to a weightlifter's pace, determines how quickly our model adjusts to errors. A smaller learning rate means slower progress, but possibly a more nuanced model, while a larger rate might speed up the learning but risk overshooting the optimal solution.
+
+```r
+boosted_model <- boost_tree(
+ mode = "regression", 
+ engine = "xgboost", 
+ trees = 1000, 
+ min_n = 10, 
+ tree_depth = 5, 
+ learn_rate = 0.01
+)
+```
+
+Another intricate facet is how boosting iteratively improves the model. With each boosting cycle, as previously emphasized, the algorithm re-weights misclassified data points. In our weightlifting analogy, this is comparable to a lifter emphasizing on weaker muscle groups in subsequent training sessions, ensuring a holistic development.
+
+Furthermore, visualizations like feature importance plots can be pivotal. They highlight which variables (or 'features') have the most significant impact on predictions. In weightlifting, this would be akin to understanding which exercises contribute most to one's overall strength and muscle development.
+
+Before we can explore feature importance or any predictions, our model needs to be trained with the data at hand. Using our `mtcars` dataset, we can demonstrate this:
+
+```r
+library(xgboost)
+importance_matrix <- xgb.importance(model = fit_model$fit)
+xgb.plot.importance(importance_matrix)
+```
+
+![](https://cdn-images-1.medium.com/max/800/1*LIymbXBQTeApEYJ58G8Rkw.png)
+
+Training, assessing, and refining based on the insights from the model form the core iterative loop of data science, much like the feedback loop an athlete relies on to perfect their technique and performance.
+
+## Fine-tuning Your Model: Tips and Tricks
+
+In the intricate dance of machine learning, hyperparameter tuning is a pivotal step, akin to a weightlifter perfecting their form to maximize results. With boosting, especially in the framework of `boost_tree`, this tuning holds the key to unlocking the model's potential.
+
+Now, we initialize our `boost_tree` model:
+
+```r
+boosted_model <- boost_tree(
+ mode = "regression", 
+ engine = "xgboost", 
+ trees = 1000, 
+ min_n = 10, 
+ tree_depth = 5, 
+ learn_rate = 0.01
+) %>% 
+ set_engine("xgboost") %>%
+ set_mode("regression")
+```
+
+Before diving into tuning, we need to establish a workflow combining our model with the formula:
+
+```r
+boost_workflow <- workflow() %>%
+ add_model(boosted_model) %>%
+ add_formula(mpg ~ .)
+```
+
+With this workflow in place, we can now explore hyperparameter tuning:
+
+```r
+# Setting up the tuning grid
+tune_grid <- grid_max_entropy(
+ tree_depth(),
+ learn_rate(),
+ min_n(),
+ size = 20
+)
+
+# Hyperparameter tuning
+tuned_results <- tune_grid(
+ boost_workflow,
+ resamples = bootstraps(train_data, times = 5),
+ grid = tune_grid
+)
+
+best_params <- select_best(tuned_results, metric = "rmse")
+```
+
+Post-tuning, we evaluate the model's prowess on our test data, ensuring its predictions hold weight in real-world scenarios:
+
+```r
+final_workflow <- boost_workflow %>% 
+ finalize_workflow(best_params)
+
+# Train the finalized workflow
+trained_workflow <- final_workflow %>% 
+ fit(data = train_data)
+
+# Making predictions on the test set
+predictions <- predict(trained_workflow, test_data) %>% 
+  bind_cols(test_data)
+
+library(yardstick)
+# Assessing the model's accuracy
+metrics <- metric_set(rmse, rsq)
+model_performance <- metrics(data = predictions, truth = mpg, estimate = .pred)
+
+print(model_performance)
+# A tibble: 2 × 3
+#    .metric .estimator .estimate
+#    <chr>   <chr>          <dbl>
+# 1  rmse    standard       2.98 
+# 2  rsq     standard       0.568
+```
+
+Remember, striking the right balance is crucial. Overfitting might make a model a champion on the training ground, but it can stumble when faced with the real-world challenge of unseen data. Regular checks, validations, and cross-validations are our safeguards in this modeling journey.
+
+Much like a weightlifter who perfects their form over countless hours in the gym, the journey of refining a machine learning model demands perseverance, precision, and a touch of artistry. We've ventured through the intricacies of `boost_tree` in `tidymodels`, drawing parallels to weightlifting, and hopefully painting a clearer picture of this intricate technique.
+
+As we close the final chapter of our "Metaphors in Motion" series, it's paramount to emphasize the real-world implications of our learnings. Here are five scenarios where boosting, and particularly `boost_tree`, can prove invaluable:
+
+1. **Financial Forecasting**: By leveraging the intricate patterns in historical financial data, boosting can play a pivotal role in predicting stock market trends, currency fluctuations, or credit risks.
+2. **Healthcare Diagnostics**: In the realm of medicine, early and accurate disease diagnosis can be life-saving. Boosting algorithms can enhance the prediction accuracy by amalgamating insights from numerous weak predictors.
+3. **E-commerce Recommendations**: For online retail giants, personalized product recommendations can significantly boost sales. Here, boosting can optimize recommendation engines by continuously refining predictions based on user behavior.
+4. **Smart Cities and Infrastructure**: As urban centers become increasingly digitized, boosting can aid in optimizing traffic flow, predicting infrastructure failures, or enhancing energy consumption patterns.
+5. **Natural Language Processing (NLP)**: From sentiment analysis to chatbots, boosting can add an edge by refining text classification models, ensuring more nuanced and accurate understanding of human language.
+
+Thank you for accompanying us on this enlightening journey through "Metaphors in Motion." We're confident that the insights gleaned will aid in your future data science endeavors. Until next time, keep learning, iterating, and, most importantly, keep boosting your knowledge!

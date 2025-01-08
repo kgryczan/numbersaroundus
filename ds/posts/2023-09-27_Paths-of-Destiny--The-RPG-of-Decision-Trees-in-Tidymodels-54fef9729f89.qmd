@@ -1,0 +1,100 @@
+---
+title: "Paths of Destiny: The RPG of Decision Trees in Tidymodels"
+author: "Numbers around us"
+date: "2023-09-27"
+format: html
+---
+
+![](images/decitree.jpg)
+
+Embark on a journey through the intricate realms of machine learning where decision trees emerge as mystical entities, whispering the secrets of the unknown. They weave intricate tales of destiny, unfurling their branches to narrate the saga of categorical choices and numerical consequences. Welcome, intrepid explorer, to the enchanting journey of "Paths of Destiny: The RPG of Decision Trees in Tidymodels," the third chapter in our "Metaphors in Motion" miniseries. Here, we delve into the captivating parallels between the labyrinthine worlds of Role-Playing Games (RPGs) and the mysterious structures of decision trees. Both teem with riveting quests and varied destinies, allowing us to explore the essential core of decision-making in predictive modeling. Our journey with the `tidymodels` package in R has previously unveiled the linear harmonies and logistic enigmas of regression realms; now, we traverse the intricate tapestry of decision trees to unlock the myriad paths leading to diverse outcomes.
+
+## Setting the Stage: Understanding the Basics
+
+In the fantastical worlds of RPGs, adventurers embark on heroic quests, standing at the crossroads of destiny, each choice paving the way towards myriad conclusions. Similarly, the decision trees within the enchanted lands of `tidymodels` unveil nodes of decisions, branches of paths, and leaves of outcomes. Understanding these basic elements is akin to learning the ancient runes of a forgotten language, allowing the seekers of knowledge to decrypt the hidden messages and comprehend the esoteric wisdom enclosed within the decision trees. The nodes are the questions asked by the tree, the branches are the choices made, and the leaves are the various outcomes achieved, each whispering the tales of different destinies. The enchantment lies in unveiling these tales, interpreting the murmurs of the leaves, and understanding the significance of each branching path, thus enabling us to embrace the profound wisdom enveloped within.
+
+## Embarking on the Quest: Building a Decision Tree with tidymodels
+
+As we delve deeper into our metaphoric adventure, we harness the illustrious Boston dataset as our guide, an atlas filled with tales of housing values in the suburbs of Boston. Our meticulous inscriptions of code become the mystical scrolls, channeling the harmonious energies of `tidymodels` to unveil our illustrious tree, sketching its elaborate branches and deciphering the enigmatic murmurs of its leaves. The Boston dataset, with its detailed chronicles of housing attributes, serves as the perfect compass guiding us through the intricate landscapes of decision trees.
+
+```r
+# Loading necessary libraries and the Boston dataset
+library(tidymodels)
+library(MASS)
+boston <- as_tibble(Boston)
+
+# Creating a decision tree with tidymodels
+tree_model <- decision_tree(mode = "regression") %>% 
+ set_engine("rpart") %>% 
+ fit(medv ~ ., data = boston)
+```
+
+In scribing each line of code, we weave the profound energies of `tidymodels`, journeying through multifaceted paths, unraveling the mysteries of various nodes, and interpreting the silent whispers of countless leaves, each revealing different fragments of the elaborate tapestry of housing values in Boston.
+
+## Interpreting the Runes: Analyzing the Decision Tree
+
+As we gaze upon the unfurling branches of our decision tree, it's akin to a seasoned explorer deciphering ancient runes, delving deep into the heart of the enigma. Each node and leaf of our tree holds secrets, whispering the tales of the unseen patterns and untold narratives shaping the Boston housing market, acting as the narrators of the enigmatic dance between the varying features and the final housing values.
+
+```r
+# Visualizing the Decision Tree
+library(rpart.plot)
+rpart.plot(tree_model$fit, yesno = 2, type = 3, roundint = FALSE)
+```
+
+![](https://cdn-images-1.medium.com/max/800/1*Kf8x70cySe4jHNnTIaPNJg.png)
+
+Our journey through the enigmatic branches is not just an expedition but a conversation, a harmonic dialogue with each branch, each leaf, translating the silent whispers into discernible tales, revealing the influences, uncovering the impact, and understanding the interplay of myriad factors shaping the housing values in Boston. It's a meticulous dance of exploration and interpretation, deciphering the encoded sagas within our tree, tuning into the harmonious symphony of the latent patterns, and unraveling the interwoven tales within each node and each leaf, each a piece of the puzzle, a fragment of the grand tapestry depicting the dynamic landscape of Boston's housing market.
+
+## Enchantments and Enhancements: Tuning the Decision Tree
+
+Immersing ourselves in the refinement of our decision tree is akin to an RPG protagonist engrossing in honing their abilities and optimizing their equipment. The interplay of elemental forces is orchestrated harmoniously, bringing the latent energies within our tree into alignment with the symphonic attributes of our dataset.
+
+```r
+# Split the data into training and testing sets
+set.seed(123)
+data_split <- initial_split(boston, prop = 0.75)
+train_data <- training(data_split)
+test_data <- testing(data_split)
+
+# Define model specification
+spec <- decision_tree() %>%
+ set_engine("rpart") %>%
+ set_mode("regression")
+
+# Define a grid of tuning parameters
+grid <- tibble(cp = seq(0.01, 0.1, by = 0.01))
+
+# Create resamples
+set.seed(234)
+boston_resamples <- bootstraps(train_data, times = 30)
+
+# Tuning the decision tree model
+tuned_tree_results <- tune_grid(
+ spec,
+ medv ~ .,
+ resamples = boston_resamples,
+ grid = grid
+)
+
+# Selecting the best tuned model
+best_tree <- tuned_tree_results %>%
+ select_best("rmse")
+```
+
+The labyrinth of possibilities unveils itself as we delve deeper into the nuanced calibration of our mystical tree, orchestrating the intricate dance of elements within its branches and leaves, refining its alignment with the multifaceted narratives of Boston's housing values. The symphony of alignment and adjustment resonates through the myriad layers of our dataset, painting a more nuanced portrait of the intricate interplay, allowing our tree to resonate with the unspoken harmonies and silent symphonies of Boston's housing landscape.
+
+## Conclusion
+
+Our journey, encompassing the meticulous crafting and insightful interpretation of decision trees, was akin to an exhilarating odyssey through enchanted lands, with the Boston dataset as our treasure map and the `tidymodels` package as our magical tome. We navigated through the labyrinthine branches of knowledge, interpreting the runes and decrypting the encoded sagas, each revealing fragments of the hidden harmonies and unspoken symphonies governing the housing values in the lands of Boston.
+
+This intertwining dance between the realms of RPG and the mystical structures of decision trees illuminated unseen corridors of understanding and unveiled uncharted territories of knowledge. The metaphor of an RPG journey, laden with quests and discoveries, acted as a guiding light, an enlightening beacon revealing the intricate choreographies and harmonious symphonies within the decision tree, broadening our horizons and deepening our insights into the mesmerizing world of machine learning.
+
+In this reflective amalgamation of conclusion and introspection, we see how the metaphorical intertwining of RPG elements and decision trees has been a harmonious blend of insights and metaphors, unveiling the silent narratives and the latent harmonies within the Boston dataset, enriching our odyssey through the mystical realms of machine learning with heightened understanding and profound insights.
+
+## Practical Applications of Decision Trees
+
+1. **Urban Planning:** In the sprawling landscapes of urban development, decision trees serve as the compasses, guiding architects and urban planners in deciphering the myriad factors influencing housing values, enabling them to weave cities that resonate with the harmonic dance of socio-economic dynamics.
+2. **Real Estate Investment:** Like a trusted sage in the lands of investments, decision trees whisper the hidden correlations and latent patterns to the ears of investors, illuminating the paths leading to wise investments and fruitful returns in the real estate domain.
+3. **Housing Policy Design:** Within the realms of policy-making, decision trees emerge as wise counselors, assisting policymakers in untangling the intricate web of housing market dynamics, allowing them to craft policies that echo the needs and aspirations of the citizens.
+4. **Market Analysis:** In the bustling marketplaces of Boston, decision trees unfold the layered tapestries of market trends and consumer behaviors, enabling analysts to peer into the core of market dynamics and to sculpt strategies that align with the rhythmic flows of the market.
+5. **Housing Loan Approvals:** In the intricate dance of loan approvals, decision trees are the choreographers, synchronizing the steps of applicants and lenders, ensuring a harmonious ballet of risk assessment and financial viability, allowing for the creation of balanced and equitable lending frameworks.

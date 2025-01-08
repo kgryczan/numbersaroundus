@@ -1,0 +1,132 @@
+---
+title: "From Standstill to Momentum: MLP as Your First Gear in tidymodels"
+author: "Numbers around us"
+date: "2023-10-10"
+format: html
+---
+
+![](images/mlp.jpg)
+
+Embarking on a machine learning journey often feels like being handed the keys to a high-end sports car. The possibilities seem endless, the power under the hood palpable, and the anticipation of speed, exhilarating. But anyone familiar with cars knows that no matter how advanced or powerful the vehicle might be, every journey starts with the same step: engaging the first gear. This initiation is essential; it sets the pace, determines the start, and introduces the driver to the larger capabilities of the car. Similarly, in the intricate and vast world of neural networks, the Multi-layer Perceptron (MLP) symbolizes this foundational step. It's the initial touchpoint, the preliminary interface between raw data and transformative insights. As data scientists and enthusiasts, our first experience with MLP is akin to revving up a car for the first time, feeling its potential, and prepping for the thrilling ride ahead. Before diving deep into complex algorithms and sprawling network architectures, it's vital to appreciate this beauty of starting simple, of understanding the essence of MLP as the indispensable 'first gear' in our neural network journey.
+
+## The Mechanics of the First Gear: Understanding MLP
+
+Tracing the lineage of the Multi-layer Perceptron (MLP) is akin to exploring the history of automobile engineering. Just as early car models set the stage for today's advanced vehicles, MLPs laid the foundational bricks for the skyscrapers of modern neural networks. Born several decades ago, the MLP emerged from the early throes of computational neuroscience and artificial intelligence, a testament to the pioneering efforts of those who envisioned machines that could 'think' and 'learn'.
+
+An MLP, in its simplest form, resembles a meticulously arranged network of streets and junctions. It's composed of layers, much like road levels in a multi-tiered expressway. The input layer welcomes the initial data, much like an entrance ramp invites cars onto the expressway. Then, there might be one or more hidden layers, the intricate interlinking roads that navigate and process this data, refining and transforming it as it courses through. Finally, we arrive at the output layer, the exit ramp that delivers the final predictions or classifications, a culmination of the journey the data undertook.
+
+But what drives this journey? What propels the data forward and guides its transformation? Enter weights and activation functions, the heart and soul of an MLP. These weights, much like the precise calibrations in an automobile's engine, adjust and tune themselves iteratively. They learn from the data, refining their values to minimize errors and optimize predictions. Activation functions, on the other hand, dictate how data is transformed as it moves from one neuron to another, akin to traffic signals guiding cars through junctions. Together, these elements coalesce to ensure that our MLP runs smoothly, efficiently, and accurately, navigating the complex terrains of data patterns and delivering insights with precision.
+
+## Tidymodels: Your Vehicle's Control Panel
+
+When you settle into the driver's seat of a modern car, one of the first things you're likely to notice is the dashboard. This centralized panel, glowing with indicators, dials, and touchscreens, provides you with all the essential information and controls to drive the vehicle smoothly and safely. It's a harmonious amalgamation of function and design, streamlining various subsystems into one cohesive interface. This dashboard is to the driver what `tidymodels` is to a data scientist working in R.
+
+The R programming ecosystem is vast, teeming with packages and functions that cater to almost every nuance of data analysis and modeling. However, navigating this vast landscape can sometimes feel like trying to control a car with a dozen different steering wheels. Enter `tidymodels`: a unifying suite designed to streamline and harmonize these diverse functionalities. Think of it as the latest in-car infotainment system, integrating radio, GPS, and other controls into one touch-friendly interface.
+
+`tidymodels` doesn't just unify; it elevates. It's the sophisticated GPS that not only shows the way but also predicts traffic and suggests optimal routes. With `tidymodels`, the processes of data preprocessing, model training, validation, and evaluation are integrated seamlessly. It anticipates challenges, offers solutions, and ensures that the user remains in the driving seat, in control, and informed.
+
+For the neural network enthusiast, the beauty of `tidymodels` truly shines when implementing networks like MLP. Instead of grappling with disparate packages or functions, `tidymodels` offers a streamlined approach, ensuring that creating an MLP feels as smooth and intuitive as driving a car with a state-of-the-art control panel.
+
+## Hands on the Wheel: Implementing MLP with tidymodels
+
+Starting a car, feeling the vibration of the engine, and beginning a journey is analogous to the exhilaration of implementing a machine learning model. The raw data is your starting point, the open road ahead filled with learning and insights. And when it comes to bringing an MLP to life within the R ecosystem, `tidymodels` ensures a journey as smooth as a luxury sedan.
+
+After setting up your environment and loading the `Iris` dataset, as mentioned before:
+
+```r
+library(tidymodels)
+data(iris)
+```
+
+The first step in our MLP implementation journey is to split our data into training and testing sets. Think of this as designating a path for practice driving before hitting the highway:
+
+```r
+set.seed(123)
+data_split <- initial_split(iris, prop = 0.75)
+train_data <- training(data_split)
+test_data <- testing(data_split)
+```
+
+With our data prepped and ready, let's define our MLP model. This is akin to setting our car's driving mode, adjusting for the terrain and conditions ahead:
+
+```r
+mlp_model <- mlp() %>% 
+ set_engine("nnet") %>% 
+ set_mode("classification")
+```
+
+Next, we'll specify our recipe, which details how our data will be processed. Think of this as fine-tuning our car's settings, ensuring optimum performance:
+
+```r
+mlp_recipe <- recipe(Species ~ ., data = train_data) %>%
+ step_normalize(all_predictors())
+```
+
+With our recipe in place, we're all set to train our model:
+
+```r
+mlp_fit <- workflow() %>%
+ add_model(mlp_model) %>%
+ add_recipe(mlp_recipe) %>%
+ fit(data = train_data)
+```
+
+After the model is trained, akin to having practiced on our designated path, it's time to test its performance on the open road (our test data):
+
+```r
+mlp_results <- mlp_fit %>%
+ predict(test_data) %>%
+ bind_cols(test_data) %>%
+ metrics(truth = Species, estimate = .pred_class)
+```
+
+With `tidymodels`, each step in this journey feels intuitive. The package's design and capabilities ensure that from data preparation to model evaluation, every aspect of the MLP implementation is as streamlined and efficient as possible.
+
+## Beyond the Horizon: MLP's Role in Modern Machine Learning
+
+Imagine cruising down a historic route lined with milestones that speak to the evolution of the automobile. From the first combustion engine vehicles to the futuristic electric and autonomous cars of today, the journey paints a vivid picture of progress and innovation. Similarly, when we traverse the timeline of artificial intelligence, the Multi-layer Perceptron (MLP) stands tall as a significant marker, heralding the dawn of neural networks and deep learning.
+
+Though considered basic when juxtaposed against the deep and convolutional neural networks of today, MLPs, much like vintage cars, possess an intrinsic charm and value. They symbolize the nascent stages of a revolution in machine learning, where the idea of mimicking the human brain's neuron interactions in a machine was born. In essence, MLP was the first real attempt to move from linear models and embrace complexity, giving machines a glimpse of cognitive capabilities.
+
+Today, while the world is enamored by transformers, GANs, and reinforcement learning models, it's crucial to recognize that all these advanced architectures trace their lineage back to MLPs. Just as the principles of internal combustion still play a part in the hybrid cars of today, the foundational concepts of MLPs --- the layers, the weights, the activations --- are embedded in the DNA of every deep learning model.
+
+Moreover, in specific scenarios, especially when the dataset is not exceedingly complex, MLPs serve as an optimal choice. They offer a balance, ensuring efficiency without overwhelming computational overheads. Just as there are situations where a classic car might be more suitable than a modern sports vehicle, there are datasets and problems where the MLP shines, proving that simplicity, when wielded right, can be powerful.
+
+Through the lens of `tidymodels`, working with MLPs becomes a nostalgic drive down memory lane, appreciating the milestones while leveraging them for contemporary challenges.
+
+Every car enthusiast knows that while the allure of the latest models with their cutting-edge technology and design is undeniable, there's an unparalleled charm to classic cars. Their timeless elegance, the stories they carry, and the foundations they've laid for modern innovations give them an esteemed place in automotive history. The Multi-layer Perceptron (MLP) shares a similar status in the annals of machine learning.
+
+While the field of artificial intelligence has surged forward with deeper and more intricate neural network architectures, the humble MLP remains a testament to the beginnings of this transformative journey. It's a reminder of the first steps taken to emulate the human brain's intricate web of neurons, sparking a revolution that would redefine the boundaries of computation and cognition.
+
+The `tidymodels` package in R, with its intuitive interface and comprehensive toolkit, amplifies the allure of working with MLPs. It streamlines the complexities, ensuring that even as you engage with a foundational neural network model, the experience is seamless, efficient, and insightful. The package serves as the perfect bridge, connecting the storied past of MLPs with the dynamic present of R's data science ecosystem.
+
+As we steer forward into the expansive horizons of machine learning and artificial intelligence, pausing to appreciate and understand the origins --- the classic MLPs --- enriches our journey. With tools like `tidymodels` at our disposal, we're not just looking back with nostalgia but actively integrating the past's wisdom into the present's endeavors.
+
+Thank you for joining this ride through the lanes of neural network history with `tidymodels` as our trusted vehicle. May your data science journeys be as enlightening as they are exciting!
+
+## 5 real-life scenarios of usage
+
+### Handwritten Digit Recognition:
+
+- **Scenario**: A postal service wants to automate the sorting of mail by reading postal codes from handwritten addresses on envelopes.
+- **MLP Application**: An MLP can be trained on a dataset of handwritten digits, such as the MNIST dataset, to recognize and classify each digit. Once trained, the system can automatically read and interpret postal codes, streamlining the mail sorting process.
+
+### Credit Approval:
+
+- **Scenario**: A bank wants to expedite its credit card approval process by assessing the creditworthiness of applicants based on their financial and personal details.
+- **MLP Application**: An MLP can be trained on historical data of past applicants (with features like annual income, employment status, previous credit history, etc.) to predict the likelihood of a new applicant defaulting. Based on this prediction, the bank can decide whether to approve or decline the credit card application.
+
+### Medical Diagnosis:
+
+- **Scenario**: A hospital aims to enhance the accuracy of diagnosing certain diseases by analyzing patients' medical test results.
+- **MLP Application**: An MLP can be trained on a dataset where patient medical test results are features, and the diagnosis (e.g., presence or absence of a specific disease) is the target outcome. Once the network is trained, it can assist doctors by providing a preliminary diagnosis based on new test results.
+
+### Stock Market Prediction:
+
+- **Scenario**: An investment firm wants to predict stock market trends based on historical stock prices and related financial indicators.
+- **MLP Application**: By feeding historical stock market data into an MLP, the neural network can learn patterns associated with rising and falling stock prices. The trained model can then be used to make short-term predictions about stock price movements, aiding in investment decisions.
+
+### Voice Command Recognition:
+
+- **Scenario**: A tech company is developing a smart home system that operates based on voice commands. The system needs to recognize and differentiate between commands like "turn on the lights," "play music," or "set the temperature to 22 degrees."
+- **MLP Application**: An MLP can be trained on a dataset of voice recordings, where each recording is associated with a specific command label. Once trained, the system can identify and execute commands in real-time when users speak to the smart home device.
