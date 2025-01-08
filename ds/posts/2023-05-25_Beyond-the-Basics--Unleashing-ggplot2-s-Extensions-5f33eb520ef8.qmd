@@ -1,0 +1,154 @@
+---
+title: "Beyond the Basics: Unleashing ggplot2's Extensions"
+author: "Numbers around us"
+date: "2023-05-25"
+format: html
+---
+
+![Beyond the Basics](images/extensions.jpg)
+
+Just as an astronomer gazes at the night sky, teeming with stars and galaxies far beyond our own, a data scientist often finds themselves marveling at the endless possibilities of data visualization. With the power of ggplot2, we've been charting the cosmos of our data, revealing constellations of insights and guiding our journey of understanding. But the ggplot2 universe does not end here. Much like the cosmos, it expands beyond what meets the eye, courtesy of a diverse array of extensions.
+
+In this post, we are voyagers embarking on an expedition to the far reaches of this visualization cosmos — the world of ggplot2 extensions. These are not mere add-ons, but powerful telescopes that enhance our vision, helping us see the unseen and comprehend the complex. They extend the core ggplot2 functionality, enabling us to paint our data stories in more vivid and innovative ways.
+
+Like stardust that gives birth to stars, extensions enrich the ggplot2 universe, opening up new dimensions of exploration. So, get ready to fasten your seatbelts as we set off on this exciting journey beyond the basics. From assembling the pieces of our data story with patchwork, unraveling complex set intersections with ggupset, sketching our data's portrait with esquisse, to breathing life into our plots with gganimate — there's a lot to discover and learn. Let's go!
+
+#### patchwork: Weaving a Tapestry of Visualizations
+
+The first destination on our intergalactic voyage is the vibrant patchwork galaxy. Here, patchwork, an extension of ggplot2, is the loom upon which we weave an intricate tapestry of our data stories. Each individual plot is a thread of a different hue, carrying a distinct fragment of our data's narrative. With patchwork, we can weave these threads together into a cohesive fabric, presenting our insights with visual harmony and contextual richness.
+
+To dip our toes into the patchwork cosmos, let's create two simple plots from the `mtcars` dataset and then fuse them together. Just as a loom interlaces threads, patchwork interlaces plots with simple mathematical operators, weaving them into a seamless piece.
+
+```r
+library(ggplot2)
+library(patchwork)
+
+# Plot 1: Miles Per Gallon vs. Displacement
+p1 <- ggplot(mtcars, aes(x=mpg, y=disp)) +
+  geom_point() +
+  theme_minimal() +
+  labs(title="MPG vs Displacement")
+
+# Plot 2: Miles Per Gallon vs. Horsepower
+p2 <- ggplot(mtcars, aes(x=mpg, y=hp)) +
+  geom_point() +
+  theme_minimal() +
+  labs(title="MPG vs Horsepower")
+
+# Combine the plots
+p1 + p2
+```
+
+![Patchwork Example](https://cdn-images-1.medium.com/max/800/1*IMpf-hUGBwhqwNkKp9vZpg.jpeg)
+
+```r
+# Stacked plots
+stacked_plot <- p1 / p2
+print(stacked_plot)
+
+# Nested plots with defined relative sizes
+nested_plot <- (p1 | p2) / p1
+nested_plot <- nested_plot + plot_layout(heights = c(2, 1))
+print(nested_plot)
+```
+
+![Nested Plot Example](https://cdn-images-1.medium.com/max/800/1*mFa2gWJuh88qHurbmYRanw.jpeg)
+
+In this artistic process, the plus operator '+' is our weaver, merging the individual plots into a unified diptych, juxtaposing two perspectives on the same canvas.
+
+But patchwork doesn't stop at simple side-by-side placement. Much like a skilled weaver who plays with different textures and patterns, patchwork allows you to customize the layout of your tapestry. You can stack plots vertically with '/', or nest them with '()'. Additionally, you can define the relative sizes of your plots.
+
+With patchwork, you are the artisan, creating an intricately designed fabric of visualizations. But our journey doesn't stop here. We've just started stitching together the vast cosmos of ggplot2 extensions. Up next, we delve into the complex intersections of sets with ggupset. Fasten your seatbelts as we continue our voyage into the depths of ggplot2 extensions.
+
+#### Jigsaw Puzzles in Your Data: Unveiling Intersections with UpSetR
+
+Just as the branches of a tree reach out in their unique ways yet connect back to the same trunk, data sets often contain diverse elements with interconnected attributes. These intersections can be especially intriguing to visualize and dissect, much like working through a complex jigsaw puzzle. Let's reach for a package that lends ggplot2 the finesse to work with such data puzzles — `UpSetR`.
+
+Say you've just launched your own movie production house. To gain a competitive edge, you decide to delve into historical movie data, analyzing genre trends to determine the most appealing genre combination for your debut movie. However, as you start exploring, you realize that many movies belong to multiple genres, making your data a large, multi-genre jigsaw puzzle.
+
+Here, `UpSetR` steps in as your invaluable puzzle-solving assistant. It seamlessly integrates with ggplot2, allowing you to visualize intersections in your data in a clear, comprehensible manner. Let's take a peek at how it can help you piece together your movie-genre puzzle:
+
+```r
+# Install and load the necessary packages
+library(tidyverse)
+library(UpSetR)
+
+# Distinct movie data and plot genre intersections
+tidy_movies %>%
+  distinct(title, year, length, .keep_all=TRUE) %>%
+  ggplot(aes(x=Genres)) +
+  geom_bar() +
+  scale_x_upset(n_intersections = 20)
+```
+
+With this code, `UpSetR` charts out the intersections of genres within your movie data. It simultaneously paints the picture of individual genre popularity with a bar plot and highlights the shared space among genres with the UpSet plot. By using the `n_intersections = 20` parameter, you can choose the number of genre intersections you wish to display.
+
+As you step back and admire the completed puzzle, you see not just the patterns of individual genres, but also their intriguing intersections. This unveils a whole new depth to your data, showing you the popular genre combinations, and helping you make an informed decision for your debut movie production.
+
+Having solved this puzzle with `UpSetR`, let's now move on to another exciting `ggplot2` extension — the `esquisse` package.
+
+#### Interactive Crafting with Esquisse
+
+Imagine being an artist, standing in front of a blank canvas. A palette of colors in one hand, a brush in the other, you're about to bring to life a vibrant painting. That's how `esquisse` feels like. It places the brush of data visualization in your hands and allows you to interactively paint your data stories on the canvas of `ggplot2`.
+
+`Esquisse` adds a user-friendly GUI to `ggplot2`, making it ideal for beginners or those who prefer a more interactive approach. It's a boon for exploratory data analysis, as it enables quick, intuitive plot creation and modification. Plus, you can export the generated `ggplot2` code for later use or modification. Let's paint a picture with `esquisse` using the `iris` dataset:
+
+```r
+# Install and load the necessary packages
+library(esquisse)
+
+# Open the esquisse interface
+esquisser(iris)
+```
+
+![Esquisse Interface](https://cdn-images-1.medium.com/max/800/1*FPU2sZ1ApUL9P8t3tmLdJw.jpeg)
+
+As soon as you run `esquisser(iris)`, a new window will open up, displaying the esquisse interface. On the left, you'll see the 'iris' dataset in a tabular format, while the right side contains the interactive plotting interface. Simply drag and drop your variables into different plot dimensions and see your data story unfold in real-time.
+
+Once you're happy with your plot, you can export it as an image or retrieve the `ggplot2` code used to create it. So, whether you're experimenting with different plots for a presentation or you're teaching a newbie the joys of data visualization, `esquisse` can be your go-to interactive toolbox.
+
+Having interactively painted our data story with `esquisse`, let's proceed to add a dash of motion to our plots with the `gganimate` package.
+
+#### Breathing Life into Plots with gganimate
+
+Animation is an essential part of storytelling. The turning pages of a book, the progression of a plot, a character's journey — it's all about movement. Similarly, `gganimate` brings a new dimension of life and time into our static ggplot2 visualizations, allowing us to narrate our data stories with a dynamic flair.
+
+By adding the fourth dimension, time, to our data, `gganimate` gives us the power to illustrate how data evolves. From showing changing trends over time, to visualizing the progression of an event, `gganimate` provides an engaging and intuitive method of data visualization. Let's breathe life into the 'gapminder' dataset:
+
+```r
+# Install and load the necessary packages
+library(gganimate)
+
+# Load the gapminder dataset
+data(gapminder, package = "gapminder")
+
+# Create a basic animated scatter plot
+p <- ggplot(gapminder, aes(gdpPercap, lifeExp, size = pop, color = continent)) +
+  geom_point() +
+  scale_x_log10() +
+  labs(title = 'Year: {frame_time}', x = 'GDP per capita', y = 'Life expectancy', size = 'Population') +
+  theme_minimal() +
+  transition_time(year) +
+  ease_aes('linear')
+
+# Render the animation
+animate(p, duration = 5, fps = 10, width = 800, height = 600)
+```
+
+![gganimate Example](https://cdn-images-1.medium.com/max/800/1*wIxUThoqk3613yFvZzbVtQ.gif)
+
+With `gganimate`, each frame of our animation represents a year in the `gapminder` dataset, displaying how life expectancy and GDP per capita have evolved over time. Each dot is a country, its size is determined by the population, and the color distinguishes the continent.
+
+With the flick of a brush, we have transformed a static scatter plot into a dynamic journey through time. As the frames progress, we can observe the evolving interplay between life expectancy, GDP per capita, and population over the years.
+
+With that, we have covered a diverse range of `ggplot2` extensions that can take your data visualization skills to the next level. The world of `ggplot2` is vast and brimming with possibilities. So, continue exploring, continue learning, and let your creativity shine through your data visualizations.
+
+Charting the constellations of data points and navigating the sea of graphs is no easy feat. But with the guiding light of `ggplot2` and its extensions, we can uncover the hidden treasures in our data. The extensions we've explored today are just the tip of the iceberg. There is a whole universe of `ggplot2` extensions out there waiting to be discovered, each opening up new horizons of data exploration and visualization.
+
+The `patchwork` package weaves different plots into a cohesive tapestry of information. `ggupset` revolutionizes the way we represent intersecting sets, bringing clarity to complexity. With `esquisse`, creating stunning visualizations is as intuitive as sketching on a canvas. Finally, `gganimate` breathes life into our static plots, transforming them into dynamic narratives of our data.
+
+So, don't stop here. Dive deeper into the ocean of `ggplot2` extensions. Each of them is a tool that can help you tell your unique data story. Learn them, master them, and then, break the rules. Play with them, experiment with them, and create something uniquely yours.
+
+Remember, data visualization is an art as much as it is a science. So, let your creativity fly high and your imagination run wild. Because the only limit to what you can create with `ggplot2` and its extensions is the sky. Let's continue this journey together in our upcoming posts, as we uncover more hidden gems in the `ggplot2` ecosystem.
+
+Keep plotting, keep exploring, and let the power of `ggplot2` extensions elevate your data stories to new heights.

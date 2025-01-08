@@ -1,0 +1,275 @@
+---
+title: "The Sound of Silence: An Exploration of purrr's walk Functions"
+author: "Numbers around us"
+date: "2023-05-21"
+format: html
+---
+
+![The Sound of Silence](images/silence.jpg)
+
+In the symphony of data analysis, each function and package plays its own unique part, contributing to the harmonious end result. However, there are moments in this music when silence, or more specifically, the absence of a return value, is golden. These pauses, far from being empty, often provide the necessary balance and structure to the whole composition. Similarly, in R programming, these are called "side-effects". The term might sound a little ominous, but it's simply a way to describe functions that do something useful without returning a meaningful value, such as printing to the console, plotting, or writing to a file. This exploration of the quieter moments in our data performance will provide us with another essential tool in our conductor's toolkit. So, let's embrace the sound of silence and delve into purrr's walk functions.
+
+#### Tuning into Silence: Understanding purrr's walk functions
+
+Imagine you're in a recording studio. Your instruments, your data, are poised and ready, waiting for your direction. Yet, sometimes the music is not meant for the album; sometimes, it is played for the sheer act of rehearsal or the joy of the sound itself. This is where purrr's `walk` functions come into play.
+
+In the realm of R's purrr package, `walk` functions serve as the rehearsal directors, leading the instruments through their paces, performing actions and changes, yet not making a sound on the record. That's because `walk` functions, unlike their `map` counterparts, do not return any transformed data. They operate silently, performing actions purely for their side effects, not for the output they produce.
+
+This may seem counterintuitive at first. After all, in the world of data analysis, we're usually interested in results, not just actions. However, there are times when the act itself is the goal, such as when we're creating plots, writing to a database, or printing to a console. In these situations, the sound of the melody is in the action, not the echo, and that's where `walk` functions truly shine.
+
+```r
+library(purrr)
+
+# Simple walk function that prints elements
+walk(1:5, print)
+
+# [1] 1
+# [1] 2
+# [1] 3
+# [1] 4
+# [1] 5
+```
+
+In the above code, we're not interested in capturing the output. Instead, we want to perform an action --- in this case, printing each element of the vector. It's a simple demonstration, but it's just the beginning of our exploration into the silent symphony of `walk` functions. The music is about to get more intricate, so let's get ready to dive deeper into the sound of silence.
+
+#### The Silence of the Basics: walk()
+
+When first stepping onto the stage of purrr's `walk` functions, the star of the show is the basic `walk()` function. `walk()` is the unsung hero in our silent symphony, performing its tasks quietly, but with precise direction.
+
+Imagine `walk()` as the conductor, directing each of the instrumentalists, or elements in a vector, to perform a certain action. Yet, unlike a conductor who wants to create a harmonious output, `walk()` is more focused on the act of playing itself. In this way, `walk()` embodies the principle of 'process over product'. It doesn't care for an audience; it doesn't create a melody to be recorded. Its beauty lies in the action, in the moment of creation.
+
+Let's see `walk()` in action with an example from the `mtcars` dataset available in the datasets package:
+
+```r
+library(purrr)
+library(datasets)
+
+# Define a simple side-effect function that prints the mean of a column
+print_mean <- function(x) {
+  print(mean(x, na.rm = TRUE))
+}
+
+# Apply this function to each numeric column in mtcars
+walk(mtcars, print_mean)
+
+# [1] 20.09062
+# [1] 6.1875
+# [1] 230.7219
+# [1] 146.6875
+# [1] 3.596563
+# [1] 3.21725
+# [1] 17.84875
+# [1] 0.4375
+# [1] 0.40625
+# [1] 3.6875
+# [1] 2.8125
+```
+
+This code computes and prints the mean of each column in `mtcars`, one by one. We're not storing these means, just observing them as they appear on our console - a silent rehearsal, if you will.
+
+In essence, when `walk()` is on the podium, it's all about the performance, not the applause. Yet, as we'll soon discover, the purrr package has a whole ensemble of `walk` functions ready to play their part in this symphony of silence.
+
+#### Extended Silences: walk2(), pwalk()
+
+Now that we're comfortable with our maestro `walk()`, let's introduce more players to this silent orchestra. Meet `walk2()` and `pwalk()`, the duet performers in the purrr package. These functions allow us to direct more complex performances, involving multiple vectors or lists.
+
+Think of `walk2()` and `pwalk()` as a piano and violin playing in tandem. They harmonize the actions on two or more vectors or lists, respectively, each playing off the other's notes. But remember, the beauty here lies in the harmony of their actions, not in the melody they produce.
+
+Let's demonstrate this with an example. Suppose we want to print custom messages for each combination of gear and carburetor type in the `mtcars` dataset:
+
+```r
+library(purrr)
+library(datasets)
+
+# Create a function that prints a custom message
+print_custom_message <- function(gear, carb) {
+  print(paste("Cars with", gear, "gears and", carb, "carburetors are awesome!"))
+}
+
+# Use walk2 to apply this function to the gear and carb columns
+walk2(mtcars$gear, mtcars$carb, print_custom_message)
+
+# [1] "Cars with 4 gears and 4 carburetors are awesome!"
+# [1] "Cars with 4 gears and 4 carburetors are awesome!"
+# [1] "Cars with 4 gears and 1 carburetors are awesome!"
+# [1] "Cars with 3 gears and 1 carburetors are awesome!"
+# [1] "Cars with 3 gears and 2 carburetors are awesome!"
+# [1] "Cars with 3 gears and 1 carburetors are awesome!"
+# [1] "Cars with 3 gears and 4 carburetors are awesome!"
+# [1] "Cars with 4 gears and 2 carburetors are awesome!"
+# and so on…
+```
+
+In this example, `walk2()` guides the performance of our `print_custom_message` function on each pair of gear and carburetor values. It's like listening to a harmonized duet, where each note is a specific combination of gear and carburetor.
+
+But what if we want to involve more members in our performance, conduct a silent symphony with three, four, or more instruments? That's where `pwalk()` takes the stage. Consider `pwalk()` as the conductor for larger orchestras, directing the harmonized performance of a list of vectors or lists.
+
+With `walk2()` and `pwalk()`, the symphony of purrr's `walk` functions grows richer, yet remains beautifully silent, reverberating only in the echoes of the actions they conduct. And as we dive deeper, we'll discover that even silence can be tailored to our needs.
+
+#### Silencing the Complex: walk() with list-columns and complex data structures
+
+Even as our symphony grows in complexity, the maestro `walk()` functions continue their silent performance, unfazed. When dealing with more intricate compositions, such as list-columns and complex data structures, `walk()` functions showcase their true versatility.
+
+Think of these data structures as the multi-instrumentalists of our orchestra. Just as a pianist might switch to the harpsichord or a percussionist may reach for the xylophone, these structures contain various types of data within themselves. Despite their complexity, the `walk()` function directs them just as smoothly, maintaining its graceful silence.
+
+Let's illustrate this with an example, where we use `walk()` to iterate over a list-column in the `mtcars` dataset:
+
+```r
+library(purrr)
+library(datasets)
+library(dplyr)
+library(tibble)
+
+# Convert mtcars to a tibble and create a list-column
+mtcars_tbl <- mtcars %>%
+  rownames_to_column(var = "car_name") %>%
+  mutate(car_name = strsplit(car_name, " ")) %>%
+  mutate(car_name = map(car_name, ~ .x[1]))
+
+# Define a side-effect function that prints the first element of a list
+print_first <- function(x) {
+  print(x[[1]])
+}
+
+# Apply this function to our list-column
+walk(mtcars_tbl$car_name, print_first)
+
+# [1] "Mazda"
+# [1] "Mazda"
+# [1] "Datsun"
+# [1] "Hornet"
+# [1] "Hornet"
+# [1] "Valiant"
+# [1] "Duster"
+# [1] "Merc"
+# [1] "Merc"
+# [1] "Merc"
+# [1] "Merc"
+# [1] "Merc"
+# [1] "Merc"
+# [1] "Merc"
+# [1] "Cadillac"
+# [1] "Lincoln"
+# [1] "Chrysler"
+# … and so on.
+```
+
+In this example, the `walk()` function efficiently conducts the `print_first` function over each element of the list-column `car_name`, regardless of its complexity.
+
+Whether our orchestra consists of a single instrumentalist or an ensemble of multi-instrumentalists, `walk()` functions conduct their performance with unwavering composure, providing us with a silent yet versatile tool in our data analysis repertoire.
+
+But as we shall soon discover, even this silence can be tuned to our needs.
+
+#### Tuning the Silence: Modifying output with .f and .x
+
+Just as a skilled conductor can bring out different tones and rhythms from the same instrument, we can also tune our `walk` functions by altering the output function (.f) and the input vector (.x). This flexibility of purrr's `walk` functions allows us to create a unique composition, tailored to our specific needs.
+
+Consider the output function (.f) as the sheet music for our orchestra. By altering this, we can change what the orchestra plays. Similarly, the input vector (.x) can be thought of as the instruments themselves. Different instruments will render the same sheet music differently.
+
+Let's illustrate this with an example:
+
+```r
+library(purrr)
+
+# A new function that prints the square of a number
+print_square <- function(x) {
+  print(x^2)
+}
+
+# Use walk to apply this function to a vector
+walk(1:5, print_square)
+
+# [1] 1
+# [1] 4
+# [1] 9
+# [1] 16
+# [1] 25
+
+# Changing the function
+print_cube <- function(x) {
+  print(x^3)
+}
+
+# Use walk to apply this new function to the same vector
+walk(1:5, print_cube)
+
+# [1] 1
+# [1] 8
+# [1] 27
+# [1] 64
+# [1] 125
+```
+
+In this example, we've changed the function (.f) from `print_square` to `print_cube`. The `walk` function alters its performance according to this new function, just as an orchestra would change its tune according to new sheet music.
+
+Now, let's try changing the input vector (.x):
+
+```r
+library(purrr)
+
+# Use walk to apply print_cube to a different vector
+walk(c(2, 4, 6, 8, 10), print_cube)
+
+# [1] 8
+# [1] 64
+# [1] 216
+# [1] 512
+# [1] 1000
+```
+
+Here, we've changed the input vector from `1:5` to `c(2, 4, 6, 8, 10)`. Notice how the performance of `walk` changes in response, akin to how different instruments would render the same music in unique ways.
+
+By tuning the output function and the input vector, we can ensure that our silent `walk` performance resonates exactly as we need it to. But as any maestro would tell you, a good performance isn't just about playing the notes; it's also about avoiding the wrong ones. Let's explore some best practices to keep our silent symphony harmonious.
+
+#### Mastering the Silent Composition: Best Practices for walk functions
+
+In our symphony of data, `walk` functions serve as our silent performers, deftly executing their parts without seeking the limelight. They perform actions but ask for no applause, returning no values but leaving the stage changed nonetheless. This subtlety and grace are what make them so effective, yet they require a maestro who appreciates their quiet skill.
+
+You, the maestro, can conduct `walk` functions to perform a wide variety of tasks, from generating plots for each variable in your dataset to rendering separate R Markdown reports for different groups of data. Think of the `walk` function as the percussionist in your orchestra, keeping time and adding emphasis without playing the main melody.
+
+Let's consider the case of generating multiple plots:
+
+```r
+library(ggplot2)
+library(purrr)
+library(rlang)
+
+# A function that generates a histogram for a variable
+plot_hist <- function(var) {
+  ggplot(mtcars, aes(!!sym(var))) +
+    geom_histogram() +
+    ggtitle(paste("Histogram of", var))
+}
+
+# Use walk to apply this function to a vector of variable names
+walk(c("mpg", "hp", "wt"), plot_hist)
+```
+
+![Histogram of mpg](https://cdn-images-1.medium.com/max/800/1*kZw5qCJMFSzi0ajPibT1ZQ.jpeg)
+![Histogram of hp](https://cdn-images-1.medium.com/max/800/1*SUKVxO2IfpzACXabV68GNQ.jpeg)
+![Histogram of wt](https://cdn-images-1.medium.com/max/800/1*vvbhZmjJLdMNX25TTKw2DA.jpeg)
+
+In this script, we've created a function `plot_hist` that generates a histogram for a given variable in the `mtcars` dataset. We then use `walk` to apply this function to a vector of variable names, thus generating multiple plots silently and efficiently.
+
+The beauty of `walk` is that it leaves no trace of its actions---no returned values to clutter your workspace, only the side-effects of its performance. This is why it's so essential to remember that if you're looking for a returned value, `walk` may not be your best choice. There, you may want to use one of purrr's `map` functions.
+
+As a conductor, you need to be aware of all the sounds in your orchestra. In the realm of `walk` functions, these are the side-effects. Whether it's creating plots, rendering reports, or modifying global variables, you need to be aware of and plan for these effects. Unintended side-effects can lead to a discordant performance, like an unexpected cymbal crash in a quiet symphony.
+
+Lastly, remember that the `walk` functions are all about iteration. They're like the repeating motifs in your music, providing structure and form to your data analysis. If your task doesn't involve repetition, another function might better suit your needs.
+
+With these tips in hand, you are ready to master the silent composition of purrr's `walk` functions. Like a maestro in tune with their orchestra, you can make the most of these powerful tools to conduct your own symphony of data.
+
+As with any composition, the beauty of `walk` functions lies in the harmony they create in your code. They ensure that your script runs smoothly, allowing each note of your data symphony to play out without creating any unnecessary noise.
+
+There are a few tips and tricks to make sure you're conducting your `walk` functions to their fullest potential:
+
+1. **Be aware of the 'silence'**: The `walk` functions are designed to work silently without returning any output. While this makes for a cleaner console, it also means you need to be aware of what's happening in the background. Ensure you know what side effects your function is supposed to have and check that these are occurring as expected.
+2. **Use the right variant:** Remember, each variant of `walk` is tuned for a specific type of input. Ensure you choose the right one to maintain the harmony in your data orchestra. For example, `walk2` and `pwalk` are designed to work with two and more inputs respectively.
+3. **Error handling:** As with any R function, errors can occur. Make sure to handle errors properly. You might consider wrapping your function in `safely` or `possibly` to provide default values or log errors when they occur.
+4. **Take advantage of other purrr functions**: `walk` works harmoniously with other functions in the purrr package. This is part of the power of the tidyverse - different functions are designed to work together. For example, use `map` to create a list of outputs that you can then walk through.
+
+The `walk` functions are the conductors of your data orchestra, ensuring that each element plays out perfectly in time, creating a symphony of well-arranged and harmonious data analysis. Like a conductor, they work silently, letting the music--- or in this case, the data--- speak for itself.
+
+Mastering these functions takes time and practice, but it's well worth the effort. Once you understand their power and subtlety, they can truly transform the way you handle side effects in R, making your data analysis process more streamlined and elegant.
+
+Continue practicing and exploring these functions, and soon you'll find yourself conducting your own grand data symphonies with ease and finesse. Until our next composition, happy coding!
