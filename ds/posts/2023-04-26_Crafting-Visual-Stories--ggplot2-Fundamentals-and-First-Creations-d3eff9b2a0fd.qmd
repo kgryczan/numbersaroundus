@@ -1,0 +1,105 @@
+---
+title: "Crafting Visual Stories: ggplot2 Fundamentals and First Creations"
+author: "Numbers around us"
+date: "2023-04-26"
+format: html
+---
+
+![Looking at it do not think about pie chart. Only layers matters :D](images/tort.jpg)
+
+Welcome to the world of data visualization, where we transform raw data into compelling visual stories that unravel the mysteries hidden within vast seas of information. In this artistic journey, ggplot2 will be our trusted paintbrush, allowing us to create intricate, informative, and beautiful visualizations with ease. As one of the most popular and powerful R packages, ggplot2 has become an indispensable tool for data scientists, researchers, and analysts alike, enabling them to present complex data in a manner that is both accessible and engaging.
+
+At the heart of ggplot2 lies the Grammar of Graphics, a set of principles that forms the foundation of our visual storytelling. Developed by Leland Wilkinson, the Grammar of Graphics is a systematic approach to data visualization that allows us to construct a wide variety of plots by combining basic elements or "geoms" (short for geometric objects), like points, lines, and bars, in a structured and consistent manner. Just as a writer uses grammar to construct meaningful sentences, we use the Grammar of Graphics to build insightful and coherent plots that highlight the patterns, trends, and relationships hidden within our data.
+
+With ggplot2 and the Grammar of Graphics, we can think of our data as the canvas, and our plotting commands as the brushstrokes that bring our stories to life. As we embark on this journey, we will learn to harness the power of ggplot2 to create captivating visual narratives that not only inform but also inspire.
+
+So, prepare your palette and grab your brush, for it is time to dive into the enchanting realm of data visualization with ggplot2, where every plot is a masterpiece waiting to unfold.
+
+### Crafting Your First Plot
+
+Embarking on our visual storytelling journey, we'll start with crafting a simple yet elegant scatter plot using ggplot2. Scatter plots are like constellations in the night sky, revealing the relationships between two variables by mapping each data point as a star in a two-dimensional space.
+
+#### Loading Data
+
+Before we start painting our data canvas, we need to load a dataset into R. For our first creation, we'll use the built-in `mtcars` dataset, which contains information about various car models, such as miles per gallon (mpg) and horsepower (hp).
+
+```r
+# Load the mtcars dataset
+data(mtcars)
+```
+
+#### The `ggplot()` Function
+
+With our dataset in hand, it's time to set the stage for our visualization. The `ggplot()` function is like the easel that holds our canvas, providing a base for our visual masterpiece. It initializes a ggplot object, to which we will add layers representing different aspects of our plot.
+
+```r
+# Load the ggplot2 package
+library(ggplot2)
+
+# Initialize a ggplot object using the mtcars dataset
+p <- ggplot(data = mtcars, aes(x = mpg, y = hp))
+
+# Render plot
+p
+```
+
+![Scatter Plot](https://cdn-images-1.medium.com/max/800/1*bVwFaqRmqK0IRdd8QgHODg.jpeg)
+
+In the code snippet above, we first load the ggplot2 package, and then initialize a ggplot object `p` using the `mtcars` dataset. The `aes()` function defines the aesthetic mappings, linking the `mpg` variable to the x-axis and the `hp` variable to the y-axis.
+
+#### Adding Geometries
+
+Now that we have our canvas and easel ready, it's time to bring our scatter plot to life with a splash of geometry. In ggplot2, geometries or "geoms" are the building blocks that define the visual elements of our plot. For a scatter plot, we'll use the `geom_point()` layer.
+
+```r
+# Add a geom_point() layer to create a scatter plot
+p + geom_point()
+
+### Really important!!! We are using "+" instead of pipe in this grammar.
+### Think about it as of "adding new layer"
+```
+
+![Scatter Plot with Points](https://cdn-images-1.medium.com/max/800/1*MO7B7T-SpujVPOnuim66HA.jpeg)
+
+By adding the `geom_point()` layer to our ggplot object `p`, we unveil a scatter plot that reveals the relationship between miles per gallon and horsepower in our `mtcars` dataset. Like stars in the night sky, each point represents a car model, inviting us to explore the intricate dance between fuel efficiency and power.
+
+### A Glimpse into Customization: Aesthetics and Colors
+
+As we continue our artistic exploration, it's important to remember that every great masterpiece is a delicate balance of form and function. In the world of data visualization, this means enhancing our plots with customization to make them not only visually appealing but also informative. Just as an artist chooses colors to convey emotions or set the tone, we can customize the aesthetics of our plot to emphasize certain aspects of our data.
+
+For a sneak peek into customization, let's play with colors to breathe new life into our scatter plot. We'll color the points based on the number of cylinders (cyl) in each car model, adding a new dimension to our visual story.
+
+```r
+# Customize the scatter plot by coloring points based on the number of cylinders
+p + geom_point(aes(color = factor(cyl)))
+```
+
+![Scatter Plot with Colors](https://cdn-images-1.medium.com/max/800/1*AQET164z-2QWe5P9Glz0hg.jpeg)
+
+In the code snippet above, we modify the `aes()` function within the `geom_point()` layer to map the `cyl` variable to the color aesthetic. By converting `cyl` into a factor, ggplot2 automatically assigns a distinct color to each level, allowing us to differentiate car models with different numbers of cylinders at a glance.
+
+This colorful preview is just the tip of the iceberg when it comes to the customization possibilities offered by ggplot2. As we progress through our visual storytelling journey, we'll discover how to fine-tune our plots with aesthetics, scales, labels, and legends, turning them into true masterpieces that captivate and inform our audience.
+
+### Saving and Exporting Your Plot
+
+As we near the completion of our first ggplot2 creation, it's crucial to know how to preserve and share our visual stories with the world. Whether it's showcasing our work in a presentation or embedding it in a report, ggplot2 makes it easy to save and export our plots in various formats, like PNG or PDF, ensuring that our masterpiece reaches its intended audience in all its glory.
+
+To save our scatter plot, we can use the `ggsave()` function, which automatically saves the last plot created or accepts a ggplot object as an argument.
+
+```r
+# Save the customized scatter plot as a PNG file
+ggsave("scatter_plot.png", width = 6, height = 4, dpi = 300)
+```
+
+In the code snippet above, we save our customized scatter plot as a high-resolution PNG file with a width of 6 inches and a height of 4 inches. The `dpi` parameter controls the resolution, ensuring that our plot remains crisp and clear even when printed or displayed on high-resolution screens.
+
+With our masterpiece saved, we can now share our visual stories far and wide, sparking curiosity, facilitating understanding, and inspiring new discoveries.
+
+### Conclusion and Next Steps
+
+Congratulations! We've taken our first steps into the enchanting world of data visualization with ggplot2, crafting a simple yet elegant scatter plot that unveils the intricate dance between fuel efficiency and power in various car models. Along the way, we've glimpsed the vast potential of ggplot2's customization capabilities, allowing us to transform our plots into true visual masterpieces that captivate and inform.
+
+But our journey has only just begun. As we venture deeper into the realm of ggplot2, we will learn to harness the full power of aesthetics, scales, labels, and legends, refining our visual stories to convey even more complex and nuanced information. With each new technique, our artistic prowess will grow, enabling us to create increasingly sophisticated and informative visualizations that not only reveal the hidden patterns within our data but also inspire new insights and understanding.
+
+So, as we prepare to embark on the next stage of our visual storytelling adventure, remember that with ggplot2 as our trusted guide, the possibilities are as boundless as our imagination. Together, we will continue to explore the captivating world of data visualization, unlocking the secrets hidden within our data, one beautiful plot at a time.
+

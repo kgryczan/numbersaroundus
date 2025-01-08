@@ -1,0 +1,151 @@
+---
+title: "Tidyr: The Physics of Data Transformation"
+author: "Numbers around us"
+date: "2023-03-13"
+format: html
+---
+
+Are you tired of working with messy and disorganized data? Do you find yourself spending hours cleaning and manipulating your datasets just to get them into a usable format? If so, you're not alone. Data can be tricky to work with, but with the right tools and techniques, it's possible to transform it into something that's both beautiful and useful.
+
+![Tidyr](images/tidyr.jpg)
+
+One such tool is tidyr, which is like physics in that it allows us to change the state of data. Just as matter can exist in different states, such as solid, liquid, and gas, data can also exist in different formats. Tidyr provides us with a set of principles and tools for reshaping our data into different formats, making it easier to analyze and visualize.
+
+If you're not familiar with tidyr, it's a data manipulation package for R that's designed to help you clean, organize, and reshape your data. It provides a set of functions that allow you to convert data between wide and long formats, separate and unite columns, and fill in missing values. In short, tidyr helps you to transform your data into a format that's more suitable for analysis and visualization.
+
+To understand why tidyr is such a valuable tool, let's consider an example. Imagine that you have a dataset that contains information about customer orders. Each row of the dataset represents a single order, and each column represents a different piece of information, such as the order date, customer name, and product purchased.
+
+However, the dataset is in a wide format, which means that each order is represented by multiple columns, one for each product. This can make it difficult to analyze the data, as you may need to perform calculations across multiple columns to get the information you need.
+
+This is where tidyr comes in. Using tidyr's pivot_longer function, you can convert the dataset into a long format, where each row represents a single order and each column represents a single product. This makes it much easier to analyze the data, as you can perform calculations and visualizations on a per-order basis.
+
+In conclusion, tidyr is a powerful tool for reshaping and organizing your data. By using tidyr, you can transform your data into a format that's more suitable for analysis and visualization, making it easier to uncover insights and draw conclusions. Whether you're a data analyst, a scientist, or just someone who works with data on a regular basis, tidyr is a must-have tool in your data toolbox.
+
+### From Solid to Liquid: Pivoting Data with tidyr
+
+One of the most powerful functions in tidyr is pivot_longer, which allows you to convert data from a wide format to a long format. This is particularly useful when you have multiple columns that contain related information, as it allows you to collapse those columns into a single column. For example, imagine you have a dataset that contains information about students, including their name, age, and test scores for three different subjects: math, science, and English. The dataset might look something like this:
+
+```markdown
+student_name | age | math_score | science_score | english_score
+-------------|-----|------------|---------------|---------------
+Alice         | 18  | 85         | 92            | 80
+Bob           | 17  | 92         | 78            | 88
+Charlie       | 16  | 78         | 85            | 91
+```
+
+This dataset is in a wide format, which means that each subject has its own column. However, if you wanted to perform calculations on the test scores, it would be much easier if the data were in a long format, where each row represents a single student and each column represents a single subject. You can achieve this using the pivot_longer function, like so:
+
+```r
+library(tidyr)
+
+long_data <- pivot_longer(wide_data,
+ cols = c("math_score", "science_score", "english_score"),
+ names_to = "subject",
+ values_to = "score")
+```
+
+In this code, we're telling pivot_longer to convert the columns math_score, science_score, and english_score into a single column called score, and to create a new column called subject to store the subject names. The resulting dataset would look like this:
+
+```r
+student_name age subject score
+------------ --- ------- -----
+Alice         18  math    85
+Alice         18  science 92
+Alice         18  english 80
+Bob           17  math    92
+Bob           17  science 78
+Bob           17  english 88
+Charlie       16  math    78
+Charlie       16  science 85
+Charlie       16  english 91
+```
+
+In addition to pivot_longer, tidyr also provides a pivot_wider function that allows you to convert data from a long format to a wide format. This is useful when you have data in a long format, but you want to separate out certain columns into their own columns. For example, let's say you have a dataset that contains information about sales, including the date of the sale, the product sold, and the sales amount. The dataset might look like this:
+
+```yaml
+date       product sales_amount
+---------- ------- ------------
+2022-01-01 A       1000
+2022-01-01 B       2000
+2022-01-02 A       1500
+2022-01-02 B       2500
+```
+
+This dataset is in a long format, which means that each observation (i.e., each row) contains a value for a single variable (i.e., either date, product, or sales_amount). However, let's say we wanted to create a new dataset that had the sales amounts for each product broken out by date, like this:
+
+```r
+date       A_sales B_sales
+---------- ------- -------
+2022-01-01 1000    2000
+2022-01-02 1500    2500
+```
+
+We could accomplish this using the pivot_wider function:
+
+```r
+wide_data <- pivot_wider(long_data, 
+                          names_from = "product", 
+                          values_from = "sales_amount")
+```
+
+In this code, we're telling pivot_wider to create a new column for each unique value in the "product" column (i.e., A and B), and to use the values in the "sales_amount" column as the values for those new columns. The resulting dataset would look like the one shown above.
+
+As you can see, pivot_longer and pivot_wider are powerful functions that allow you to transform your data into different shapes depending on your needs. Whether you need to reshape your data for analysis or visualization purposes, tidyr has you covered.
+
+### Going Deeper with tidyr: Combining Nesting Functions for Advanced Data Reshaping
+
+Data often come in complex formats with multiple levels of hierarchy. In such cases, it is important to understand how to work with nested data. Nested data can be thought of as data that is organized into multiple levels of subgroups or categories. Tidyr's `nest()` function is a powerful tool that allows you to work with nested data in R.
+
+The `nest()` function takes a data frame and a grouping variable as input and returns a new data frame where the grouping variable has been removed and replaced with a column of nested data. The nested data column contains a list of data frames, where each data frame represents a group in the original data.
+
+For example, let's say we have a data set that contains information about different types of fruits and their attributes, such as color, weight, and taste. The data set looks like this:
+
+```r
+| Fruit  | Color  | Weight | Taste |
+|--------|--------|--------|-------|
+| Apple  | Red    | 0.3    | Sweet |
+| Apple  | Green  | 0.2    | Tart  |
+| Orange | Orange | 0.5    | Tangy |
+| Orange | Yellow | 0.6    | Sweet |
+| Banana | Yellow | 0.4    | Sweet |
+| Banana | Green  | 0.3    | Tart  |
+```
+
+To nest this data by the fruit type, we can use the `nest()` function as follows:
+
+```r
+nested_data <- nest(fruit_data, data = -Fruit)
+```
+
+In this code, we're telling the `nest()` function to group the data by the `Fruit` column and create a new column called `data` that contains the nested data. The resulting nested data set would look like this:
+
+```r
+Fruit  | data
+-------|-----------------
+Apple  | <tibble [2 × 3]>
+Orange | <tibble [2 × 3]>
+Banana | <tibble [2 × 3]>
+```
+
+As you can see, the original data has been nested by the `Fruit` column, and each nested data frame contains the attributes for each fruit.
+
+Once the data has been nested, you can use the `unnest()` function to extract the nested data into its own data frame. This is useful when you want to perform analyses or create visualizations on the nested data.
+
+In summary, the `nest()` function is a powerful tool for working with nested data in R. It allows you to group data by a specific variable and create a nested data frame containing the attributes for each group. This makes it easier to analyze and visualize complex data sets with multiple levels of hierarchy.
+
+### Building Your Data Armory with tidyr's Separating, Uniting, and Completing Functions
+
+Tidying messy data is an essential part of data wrangling, and the `tidyr` package in R provides a wide range of functions to help with this task. The `separate()` function can be used to split a single column of data into multiple columns, based on a separator or a fixed position. Conversely, the `unite()` function can be used to combine multiple columns into a single column, with a separator in between.
+
+The `fill()` function is useful when there are missing values in a dataset. It can be used to fill in missing values with the previous or next value in the same column. The `expand_grid()` function is used to create a new data frame by taking all possible combinations of values from two or more vectors. This is useful when creating a lookup table or when trying to generate all possible scenarios.
+
+The `complete()` function is used to ensure that a data frame contains all possible combinations of values from a set of columns. This function can be particularly useful when working with time-series data, as it ensures that all possible time intervals are represented in the data frame.
+
+Overall, the `separate()`, `unite()`, `fill()`, `expand_grid()`, and `complete()` functions in `tidyr` are powerful tools for tidying messy data and can help save time and improve the accuracy of data analysis.
+
+### Tidyr's Recap: Your Go-To Package for Data Transformation
+
+`tidyr` is an essential package in R for any data analyst or scientist, providing a range of functions to help transform and reshape messy data into a clean and tidy format. By using these functions, analysts can save time and improve the accuracy of their analysis, ultimately leading to better decision-making and more impactful insights. Whether you're working with time-series data or trying to tidy up a messy dataset, `tidyr`'s functions provide a robust and reliable solution. So if you're looking to expand your data armory, `tidyr` is an essential addition.
+
+### Get ready to take your R programming skills to the next level with the upcoming post on purrr package! Learn how to simplify complex code with its powerful functions for iterating and manipulating data.
+
