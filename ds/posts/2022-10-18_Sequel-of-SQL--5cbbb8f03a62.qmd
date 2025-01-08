@@ -1,0 +1,37 @@
+---
+title: "Sequel of SQL..."
+author: "Numbers around us"
+date: "2022-10-18"
+format: html
+---
+
+There are a lot publishing analysts, data scientists and other technical freaks who are not only using knowledge about databases, but also share it. And usually beginnings are exactly the same: SELECT * FROM Table.
+
+And only few paragraphs later (or maybe 1--2 posts) there is a warning not to do it. What exactly? Do not use asterisk unless it is really necessary. That is why I want to warn you in the first post. Asterisk have its purpose, but newbies tend too overuse it. They always want to see ALL.
+
+If you're using databases it will take only time and stress, but there are some services (BigQuery as first in a row) that also cost for data volume which comes from query. Then this simple and friendly asterisk can be really expensive.
+
+After few years using SQL I have also one topic I would be grateful if somebody told me about earlier. That order of executing query is not the same as writing it. And of course first thing to learn is always syntax and then deeper ideas behind it, but I consider execution order is really intuitive as well.
+
+Let compare this two orders:
+
+Syntax:
+
+> **SELECT (opt. DISTINCT) -> FROM -> (opt. JOINs) -> WHERE -> (opt. GROUP BY -> HAVING -> ORDER BY -> LIMIT)**  
+> And in human language:  
+> Take distinct value of this/these fields from that table but connected to other tables, then filter something out and you can also group your data, filter again but using grouped aggregates, then put it in certain order and cut specific number of values. --- PRETTY SPAGHETTI
+
+Execution order:
+
+> **FROM (opt. JOINs) -> WHERE -> GROUP BY -> HAVING -> SELECT -> DISTINCT -> ORDER BY -> LIMIT**
+
+> And in less machine way:  
+> We are looking in table, but we know that some info is in other tables so we need to join it. We know that not everything is necessary to get so now is the time for filtering. After filtering we can do some stuff not only on row level, but also on groups, which can be again filtered. Now we have our big table in which everything should be included so get to details. I only need this, this and those fields, and one aggregate (for example average, I can do it because I grouped data before). If there are doubles/duplicates I'm getting rid off them with distinct, then put it specific order and maybe limit its numbers. And I have for example 5 cashiers with highest sales last week.
+
+Maybe description is longer, but I feel like this order could represent/reflect my own way of thinking. Sometimes I know what exactly I want to get from tables, but sometimes it is just exploration and execution order is much more natural in mind flow.
+
+Frankly, it is I think only case when my mind is closer to technical depth of language then its actual syntax.
+
+Next stop in world of SQL will be logic of sets, which mean exactly... JOINS.  
+Have a good time reading.
+
