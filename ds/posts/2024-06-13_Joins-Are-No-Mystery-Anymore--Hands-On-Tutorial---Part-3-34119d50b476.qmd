@@ -1,0 +1,546 @@
+---
+title: "Joins Are No Mystery Anymore: Hands-On Tutorial --- Part 3"
+author: "Numbers around us"
+date: "2024-06-13"
+format: html
+---
+
+![](images/join3.jpg)
+
+Welcome back to the final installment of our series, "Joins Are No Mystery Anymore: Hands-On Tutorial." In the previous weeks, we covered the foundational and advanced join techniques, including Inner Join, Left Join, Right Join, Full Join, Semi Join, Anti Join, Cross Join, Natural Join, Self Join, and Equi Join. We've seen how these joins can be applied to real-life scenarios to solve various data problems.
+
+Today, we'll dive even deeper into the world of data joins by exploring Non-Equi Joins, Rolling Joins, Overlap Joins, and Fuzzy Joins. These specialized joins will help you handle more complex data scenarios, such as matching based on non-equality conditions, finding the nearest matches, and dealing with approximate or fuzzy data.
+
+Let's get started with our first join of the day: **Non-Equi Join**.
+
+### Non-Equi Join
+
+A Non-Equi Join is used to join tables based on non-equality conditions, such as greater than (>) or less than (<). This type of join is particularly useful when dealing with ranges or thresholds.
+
+#### Explanation of the Scenario
+
+In this scenario, we have sales and targets. We want to find sales that exceeded the targets. This helps in identifying successful sales that met or surpassed the set goals.
+
+#### Description of the Datasets
+
+We will use two datasets:
+
+-   `sales`: Contains information about sales.
+-   Columns: `sale_id`, `amount`, `date`
+-   `targets`: Contains information about sales targets.
+-   Columns: `target_id`, `target_amount`, `target_date`
+
+#### Step-by-Step Code Examples
+
+**Loading the datasets:**
+
+```r
+# Load the necessary libraries
+library(dplyr)
+library(data.table)
+
+# Load the datasets
+load("non_equi_join_data.RData")
+
+# Display the datasets
+print(sales)
+
+# A tibble: 20 × 3
+   sale_id amount date      
+     <int>  <int> <date>    
+ 1       1    178 2024-01-01
+ 2       2    219 2024-01-02
+ 3       3    111 2024-01-03
+ 4       4    266 2024-01-04
+ 5       5    208 2024-01-05
+ 6       6    231 2024-01-06
+ 7       7    296 2024-01-07
+ 8       8    242 2024-01-08
+ 9       9    149 2024-01-09
+10      10    245 2024-01-10
+11      11    137 2024-01-11
+12      12    175 2024-01-12
+13      13    209 2024-01-13
+14      14    133 2024-01-14
+15      15    256 2024-01-15
+16      16    128 2024-01-16
+17      17    107 2024-01-17
+18      18    220 2024-01-18
+19      19    295 2024-01-19
+20      20    235 2024-01-20
+
+print(targets)
+
+# A tibble: 10 × 3
+   target_id target_amount target_date
+       <int>         <dbl> <date>     
+ 1         1           100 2024-01-01 
+ 2         2           120 2024-01-06 
+ 3         3           140 2024-01-11 
+ 4         4           160 2024-01-16 
+ 5         5           180 2024-01-21 
+ 6         6           200 2024-01-26 
+ 7         7           220 2024-01-31 
+ 8         8           240 2024-02-05 
+ 9         9           260 2024-02-10 
+10        10           280 2024-02-15 
+```
+
+**Performing the Non-Equi Join**
+
+```r
+# Convert to data.table
+sales_dt <- as.data.table(sales)
+targets_dt <- as.data.table(targets)
+
+# Perform the non-equi join
+successful_sales <- sales_dt[targets_dt, on = .(amount > target_amount), nomatch = 0]
+
+# Display the result
+print(successful_sales)
+
+     sale_id amount       date target_id target_date
+       <int>  <int>     <Date>     <int>      <Date>
+  1:       1    100 2024-01-01         1  2024-01-01
+  2:       2    100 2024-01-02         1  2024-01-01
+  3:       3    100 2024-01-03         1  2024-01-01
+  4:       4    100 2024-01-04         1  2024-01-01
+  5:       5    100 2024-01-05         1  2024-01-01
+ ---                                                 
+106:       4    260 2024-01-04         9  2024-02-10
+107:       7    260 2024-01-07         9  2024-02-10
+108:      19    260 2024-01-19         9  2024-02-10
+109:       7    280 2024-01-07        10  2024-02-15
+110:      19    280 2024-01-19        10  2024-02-15
+```
+
+**Explanation of the Code:**
+
+-   We first load the datasets using the `load` function.
+-   We then convert the `sales` and `targets` datasets to data.tables for efficient non-equi joins.
+-   We perform the non-equi join using the `on` argument to specify the non-equality condition (`amount > target_amount`).
+-   The `nomatch = 0` argument ensures that only rows with matches are included in the result.
+-   Finally, we display the result to see which sales exceeded the targets.
+
+#### Interpretation of Results
+
+The resulting dataset `successful_sales` contains only the rows from the `sales` dataset where the `amount` exceeds the `target_amount` from the `targets` dataset.
+
+#### Homework for Readers
+
+In the same `non_equi_join_data.RData` file, there is another set of datasets for a more creative scenario. You will find:
+
+-   `students`: Contains information about students.
+-   Columns: `student_id`, `name`, `grade`
+-   `scholarship_thresholds`: Contains information about scholarship thresholds.
+-   Columns: `threshold_id`, `min_grade`
+
+Your task is to perform a non-equi join on these datasets to match students with scholarship thresholds they exceed. Use the `grade` and `min_grade` columns for the non-equality condition.
+
+### Rolling Join
+
+A Rolling Join is used to join two tables based on a key column, with the ability to match the nearest value when an exact match is not found. This is particularly useful for time series data or any scenario where you need to find the closest preceding or following value.
+
+#### Explanation of the Scenario
+
+In this scenario, we have stock prices and company events. We want to join these tables to match stock prices with the nearest company events. This helps in understanding how company events might have influenced stock prices.
+
+#### Description of the Datasets
+
+We will use two datasets:
+
+-   `stock_prices`: Contains information about stock prices.
+-   Columns: `date`, `stock_id`, `price`
+-   `events`: Contains information about company events.
+-   Columns: `event_id`, `stock_id`, `event_date`, `description`
+
+#### Step-by-Step Code Examples
+
+**Loading the datasets:**
+
+```r
+# Load the necessary libraries
+library(dplyr)
+library(data.table)
+
+# Load the datasets
+load("rolling_join_data.RData")
+
+# Display the datasets
+print(stock_prices)
+
+# A tibble: 20 × 3
+   date       stock_id price
+   <date>        <dbl> <int>
+ 1 2024-01-01        1   106
+ 2 2024-01-02        1   106
+ 3 2024-01-03        1   108
+ 4 2024-01-04        1   103
+ 5 2024-01-05        1   103
+ 6 2024-01-06        1   109
+ 7 2024-01-07        1   101
+ 8 2024-01-08        1   104
+ 9 2024-01-09        1   107
+10 2024-01-10        1   101
+11 2024-01-11        1   108
+12 2024-01-12        1   102
+13 2024-01-13        1   107
+14 2024-01-14        1   108
+15 2024-01-15        1   101
+16 2024-01-16        1   100
+17 2024-01-17        1   104
+18 2024-01-18        1   104
+19 2024-01-19        1   104
+20 2024-01-20        1   101
+
+print(events)
+
+# A tibble: 3 × 4
+  event_id stock_id event_date description      
+     <int>    <dbl> <date>     <chr>            
+1        1        1 2024-01-05 Quarterly Meeting
+2        2        1 2024-01-15 Product Launch   
+3        3        1 2024-01-25 Earnings Call 
+```
+
+**Performing the Rolling Join**
+
+```r
+# Convert to data.table
+stock_prices_dt <- as.data.table(stock_prices)
+events_dt <- as.data.table(events)
+
+# Set keys for rolling join
+setkey(stock_prices_dt, stock_id, date)
+setkey(events_dt, stock_id, event_date)
+
+# Perform the rolling join
+stock_events <- events_dt[stock_prices_dt, roll = "nearest", on = .(stock_id, event_date = date)]
+
+# Display the result
+print(stock_events)
+
+Key: <stock_id, event_date>
+    event_id stock_id event_date       description price
+       <int>    <num>     <Date>            <char> <int>
+ 1:        1        1 2024-01-01 Quarterly Meeting   106
+ 2:        1        1 2024-01-02 Quarterly Meeting   106
+ 3:        1        1 2024-01-03 Quarterly Meeting   108
+ 4:        1        1 2024-01-04 Quarterly Meeting   103
+ 5:        1        1 2024-01-05 Quarterly Meeting   103
+ 6:        1        1 2024-01-06 Quarterly Meeting   109
+ 7:        1        1 2024-01-07 Quarterly Meeting   101
+ 8:        1        1 2024-01-08 Quarterly Meeting   104
+ 9:        1        1 2024-01-09 Quarterly Meeting   107
+10:        1        1 2024-01-10 Quarterly Meeting   101
+11:        2        1 2024-01-11    Product Launch   108
+12:        2        1 2024-01-12    Product Launch   102
+13:        2        1 2024-01-13    Product Launch   107
+14:        2        1 2024-01-14    Product Launch   108
+15:        2        1 2024-01-15    Product Launch   101
+16:        2        1 2024-01-16    Product Launch   100
+17:        2        1 2024-01-17    Product Launch   104
+18:        2        1 2024-01-18    Product Launch   104
+19:        2        1 2024-01-19    Product Launch   104
+20:        2        1 2024-01-20    Product Launch   101
+    event_id stock_id event_date       description price
+```
+
+**Explanation of the Code:**
+
+-   We first load the datasets using the `load` function.
+-   We then convert the `stock_prices` and `events` datasets to data.tables for efficient rolling joins.
+-   We set the keys for the rolling join using the `setkey` function on the `stock_id` and `date` columns for `stock_prices`, and `stock_id` and `event_date` columns for `events`.
+-   We perform the rolling join using the `roll` argument set to `"nearest"`, which finds the closest match in terms of date.
+-   Finally, we display the result to see the stock prices matched with the nearest company events.
+
+#### Interpretation of Results
+
+The resulting dataset `stock_events` contains the rows from the `stock_prices` dataset matched with the nearest preceding or following event from the `events` dataset based on the `date` and `event_date` columns.
+
+#### Homework for Readers
+
+In the same `rolling_join_data.RData` file, there is another set of datasets for a more creative scenario. You will find:
+
+-   `weather_records`: Contains information about weather records.
+-   Columns: `record_id`, `date`, `temperature`
+-   `weather_events`: Contains information about significant weather events.
+-   Columns: `event_id`, `event_date`, `event_description`
+
+Your task is to perform a rolling join on these datasets to match weather records with the nearest significant weather events. Use the `date` and `event_date` columns for the rolling join.
+
+### Overlap Join
+
+An Overlap Join is used to join tables based on overlapping ranges of values. This type of join is particularly useful for scenarios where you need to find overlapping time periods or other ranges.
+
+#### Explanation of the Scenario
+
+In this scenario, we have hotel bookings and we want to find overlapping bookings. This helps in identifying potential overbookings and managing reservations effectively.
+
+#### Description of the Datasets
+
+We will use one dataset:
+
+-   `bookings`: Contains information about hotel bookings.
+-   Columns: `booking_id`, `room_id`, `start_date`, `end_date`
+
+#### Step-by-Step Code Examples
+
+**Loading the dataset:**
+
+```r
+# Load the necessary libraries
+library(dplyr)
+library(fuzzyjoin)
+
+# Load the dataset
+load("overlap_join_data.RData")
+
+# Display the dataset
+print(bookings)
+
+# A tibble: 20 × 4
+   booking_id room_id start_date end_date  
+        <int>   <int> <date>     <date>    
+ 1          1     109 2024-01-01 2024-01-05
+ 2          2     111 2024-01-03 2024-01-07
+ 3          3     118 2024-01-05 2024-01-09
+ 4          4     104 2024-01-07 2024-01-11
+ 5          5     103 2024-01-09 2024-01-13
+ 6          6     103 2024-01-11 2024-01-15
+ 7          7     101 2024-01-13 2024-01-17
+ 8          8     101 2024-01-15 2024-01-19
+ 9          9     101 2024-01-17 2024-01-21
+10         10     103 2024-01-19 2024-01-23
+11         11     101 2024-01-21 2024-01-25
+12         12     116 2024-01-23 2024-01-27
+13         13     111 2024-01-25 2024-01-29
+14         14     116 2024-01-27 2024-01-31
+15         15     104 2024-01-29 2024-02-02
+16         16     103 2024-01-31 2024-02-04
+17         17     110 2024-02-02 2024-02-06
+18         18     114 2024-02-04 2024-02-08
+19         19     111 2024-02-06 2024-02-10
+20         20     102 2024-02-08 2024-02-12
+```
+
+**Performing the Overlap Join**
+
+```r
+# Perform the overlap join
+overlapping_bookings <- fuzzy_left_join(
+  bookings, bookings,
+  by = c("room_id" = "room_id", "start_date" = "end_date", "end_date" = "start_date"),
+  match_fun = list(`==`, `<=`, `>=`)
+) %>%
+filter(booking_id.x != booking_id.y)
+
+# Display the result
+print(overlapping_bookings)
+
+# A tibble: 12 × 8
+   booking_id.x room_id.x start_date.x end_date.x booking_id.y room_id.y start_date.y end_date.y
+          <int>     <int> <date>       <date>            <int>     <int> <date>       <date>    
+ 1            5       103 2024-01-09   2024-01-13            6       103 2024-01-11   2024-01-15
+ 2            6       103 2024-01-11   2024-01-15            5       103 2024-01-09   2024-01-13
+ 3            7       101 2024-01-13   2024-01-17            8       101 2024-01-15   2024-01-19
+ 4            7       101 2024-01-13   2024-01-17            9       101 2024-01-17   2024-01-21
+ 5            8       101 2024-01-15   2024-01-19            7       101 2024-01-13   2024-01-17
+ 6            8       101 2024-01-15   2024-01-19            9       101 2024-01-17   2024-01-21
+ 7            9       101 2024-01-17   2024-01-21            7       101 2024-01-13   2024-01-17
+ 8            9       101 2024-01-17   2024-01-21            8       101 2024-01-15   2024-01-19
+ 9            9       101 2024-01-17   2024-01-21           11       101 2024-01-21   2024-01-25
+10           11       101 2024-01-21   2024-01-25            9       101 2024-01-17   2024-01-21
+11           12       116 2024-01-23   2024-01-27           14       116 2024-01-27   2024-01-31
+12           14       116 2024-01-27   2024-01-31           12       116 2024-01-23   2024-01-27
+```
+
+**Explanation of the Code:**
+
+-   We first load the dataset using the `load` function.
+-   We then use the `fuzzy_left_join` function from the `fuzzyjoin` package to perform the overlap join. The `by` argument specifies the columns to join on, and the `match_fun` argument specifies the matching conditions for each column.
+-   We filter the results to exclude self-joins by ensuring `booking_id.x` is not equal to `booking_id.y`.
+-   Finally, we display the result to see the overlapping bookings.
+
+#### Interpretation of Results
+
+The resulting dataset `overlapping_bookings` contains pairs of rows from the `bookings` dataset where the bookings overlap based on the `room_id`, `start_date`, and `end_date` columns.
+
+#### Homework for Readers
+
+In the same `overlap_join_data.RData` file, there is another set of datasets for a more creative scenario. You will find:
+
+-   `projects`: Contains information about projects.
+-   Columns: `project_id`, `project_name`, `start_date`, `end_date`
+
+Your task is to perform an overlap join on these datasets to find overlapping project timelines. Use the `start_date` and `end_date` columns for the overlap join.
+
+### Fuzzy Join
+
+A Fuzzy Join is used to join tables based on approximate or "fuzzy" matching of key columns. Unlike traditional joins, which require exact matches between columns, fuzzy joins allow for matches based on similarity, proximity, or other non-exact criteria. This is particularly useful when dealing with data that has inconsistencies, such as typos, different naming conventions, or slight variations in values.
+
+Fuzzy joins can be used in various scenarios, such as:
+
+-   Merging customer records from different sources where names or addresses might be slightly different.
+-   Matching products from different databases where product names might vary.
+-   Combining historical documents with different naming conventions.
+
+Fuzzy joins leverage different methods of similarity measurement, such as string distance (e.g., Levenshtein distance), numeric proximity, or custom matching functions, to find the best possible matches between rows.
+
+#### Explanation of the Scenario
+
+In this scenario, we have customer records from two different sources. We want to join these tables to combine records that refer to the same customers, even if there are slight differences in the names or addresses. This helps in consolidating customer data from multiple sources into a single, unified view.
+
+#### Description of the Datasets
+
+We will use two datasets:
+
+-   `customer_records_A`: Contains customer information from source A.
+-   Columns: `customer_id`, `name`, `address`
+-   `customer_records_B`: Contains customer information from source B.
+-   Columns: `customer_id`, `name`, `address`
+
+#### Step-by-Step Code Examples
+
+**Loading the datasets:**
+
+```r
+# Load the necessary libraries
+library(dplyr)
+library(fuzzyjoin)
+
+# Load the datasets
+load("fuzzy_join_data.RData")
+
+# Display the datasets
+print(customer_records_A)
+
+                Name                Address ID
+1        Terry Welsh       5028 Paddock Way  1
+2        Robin Lewis      3415 Photinia Ave  2
+3      Tyrone Carter         5697 Smokey Ln  3
+4        Noah Fuller      4028 Northaven Rd  4
+5     Heather Barnes      5530 First Street  5
+6          Alex Peck  7132 Mockingbird Hill  6
+7   Alfredo Martinez         8920 Smokey Ln  7
+8     Adrian Morales         6567 Nowlin Rd  8
+9       Melvin Paine        8310 Fincher Rd  9
+10     Harry Edwards    8848 Valley View Ln 10
+11 Esther Williamson          2644 Daisy Dr 11
+12   Stella Campbell   9021 E Sandy Lake Rd 12
+13    Lawrence Grant      3221 First Street 13
+14       Vivan Perez        996 Wycliff Ave 14
+15        Eli Brewer  7344 Wheeler Ridge Dr 15
+16     Edward Wagner      7174 W Sherman Dr 16
+17        Dwayne Day 2115 Groveland Terrace 17
+18      Erika Flores         3566 Nowlin Rd 18
+19   Nicholas Nelson           7867 Dane St 19
+20       Wade Willis    8608 Pecan Acres Ln 20
+
+print(customer_records_B)
+
+               Name                Address ID
+1       Terry Welch       5028 Paddock Way  1
+2  Courtney Elliott        6526 Cackson St  2
+3      Tyron Carter         5697 Smokey Ln  3
+4      Noah Fueller      4028 Northaven Rd  4
+5     Jesus Herrera       722 Hillcrest Rd  5
+6        Isaac Neal     308 W Campbell Ave  6
+7      Annette Carr      2087 Photinia Ave  7
+8      Rebecca Boyd      7584 Homestead Rd  8
+9      Melvin Payne        8310 Fincher Rd  9
+10      Irma Bowman      9065 Valwood Pkwy 10
+11  Heather Wallace         95 Railroad St 11
+12      Janice West        1545 W Pecan St 12
+13    Dianne Chavez        326 Robinson Rd 13
+14     Vivian Perez        996 Wycliff Ave 14
+15      Dustin Wood 2677 Groveland Terrace 15
+16     Calvin Jones      5859 Samaritan Dr 16
+17     Tara Carroll  2215 Rolling Green Rd 17
+18  Francis Gardner         1242 Sunset St 18
+19  Bryan Henderson      5781 Ranchview Dr 19
+20    Michelle Bell     9072 Westheimer Rd 20
+```
+
+**Performing the Fuzzy Join**
+
+```r
+# Perform the fuzzy join
+customer_matches <- stringdist_left_join(
+  customer_records_A, customer_records_B,
+  by = "Name",
+  max_dist = 2,
+  distance_col = "dist"
+) %>% 
+  filter(dist < 2)
+
+# Display the result
+print(customer_matches)
+
+         Name.x         Address.x ID.x       Name.y         Address.y ID.y dist
+1   Terry Welsh  5028 Paddock Way    1  Terry Welch  5028 Paddock Way    1    1
+2 Tyrone Carter    5697 Smokey Ln    3 Tyron Carter    5697 Smokey Ln    3    1
+3   Noah Fuller 4028 Northaven Rd    4 Noah Fueller 4028 Northaven Rd    4    1
+4  Melvin Paine   8310 Fincher Rd    9 Melvin Payne   8310 Fincher Rd    9    1
+5   Vivan Perez   996 Wycliff Ave   14 Vivian Perez   996 Wycliff Ave   14    1
+```
+
+**Explanation of the Code:**
+
+-   We first load the datasets using the `load` function.
+-   We then use the `stringdist_left_join` function from the `fuzzyjoin` package to perform the fuzzy join. The `by` argument specifies the column to join on (`name`), and the `max_dist` argument specifies the maximum allowable distance for matches (2 in this case).
+-   The `distance_col` argument adds a column to the result showing the computed distance between the matched names.
+-   Finally, we display the result to see which customer records were matched based on fuzzy name matching.
+
+#### Interpretation of Results
+
+The resulting dataset `customer_matches` contains rows from `customer_records_A` matched with the closest approximate rows from `customer_records_B` based on the `name` column. The `dist` column shows the computed distance between the matched names.
+
+In this final installment of our series, "Joins Are No Mystery Anymore: Hands-On Tutorial," we've taken a deep dive into specialized join techniques that are essential for handling more complex data scenarios. We've covered:
+
+-   **Non-Equi Join**: Matching rows based on non-equality conditions, useful for comparing ranges or thresholds.
+-   **Rolling Join**: Joining tables to find the nearest matches when an exact match is not found, ideal for time series data.
+-   **Overlap Join**: Identifying overlapping ranges, such as booking dates or project timelines.
+-   **Fuzzy Join**: Combining tables based on approximate matches, invaluable for dealing with inconsistent data.
+
+Through practical examples and detailed code walkthroughs, we demonstrated how these advanced joins can solve real-world data problems. We've also provided homework tasks to reinforce your learning and give you hands-on experience with these techniques.
+
+#### What's Next?
+
+In the bonus section, "Anatomy of a Basic Joining Function," we'll explore the different arguments in joining functions, explaining what each one does and how they change the output. This deep dive will enhance your understanding and give you even greater control over your data analysis.
+
+Stay tuned as we uncover the intricacies of joining functions and provide you with the tools to master data joins in R. Thank you for joining us on this journey, and happy coding!
+
+### Anatomy of Basic Join Functions (from dplyr)
+
+In this section, we'll delve into the anatomy of basic joining functions in the `dplyr` package. We'll explain the different arguments you can use, how they affect the output, and provide examples to illustrate their usage.
+
+#### 1. `by`
+
+Specifies the columns to join by. If not provided, `dplyr` will join by columns with the same name in both tables.
+
+#### 2. `suffix`
+
+Determines the suffixes added to duplicate column names from the left and right tables. By default, it is set to `c(".x", ".y")`.
+
+#### 3. `copy`
+
+A logical argument that allows joining of data frames located in different databases. By default, it is set to `FALSE`.
+
+#### 4. `keep`
+
+An argument in `full_join` that keeps the join columns in the output.
+
+**Example**
+
+```r
+# Example of different arguments in a join function
+joined_data <- left_join(
+  x = df1, 
+  y = df2, 
+  by = "id", 
+  suffix = c("_left", "_right"), 
+  copy = TRUE, 
+  keep = TRUE
+)
+```
