@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Numbers around us">
+<meta name="dcterms.date" content="2024-03-07">
+
+<title>Mastering the Arcane: Advanced RMarkdown for Magical Data Science – Numbers Around Us</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-cb71375167fd9ce754afb6fa31d3f44e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-1a65b4115a9519dac2c2f4ba2497ca08.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<link href="../../site_libs/selectize-0.15.2/css/selectize.bootstrap3.css" rel="stylesheet">
+
+<script src="../../site_libs/selectize-0.15.2/js/selectize.min.js"></script>
+
+<script src="../../site_libs/selectize-0.15.2/accessibility/js/selectize-plugin-a11y.min.js"></script>
+
+<link href="../../site_libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
+
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Numbers Around Us</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../challenges/index.html"> 
+<span class="menu-text">Challenges</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../bi/index.html"> 
+<span class="menu-text">Business Intelligence</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../ds/index.html"> 
+<span class="menu-text">Data Science</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../dp/index.html"> 
+<span class="menu-text">Date Philosophy</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <a href="https://github.com" title="Github" class="quarto-navigation-tool px-1" aria-label="Github"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Mastering the Arcane: Advanced RMarkdown for Magical Data Science</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Numbers around us </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 7, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><img src="images/arcane.jpg" class="img-fluid"></p>
+<p>Welcome to the next chapter in our exploration through the Enchanted Forest of Data, where the path becomes less trodden and the magic, more profound. As we delve deeper into the arcane arts of RMarkdown, we uncover tools and spells capable of transforming the complex into the captivating, the overwhelming into the understandable. Our journey begins with the crafting of living narratives through Dynamic Documents, a realm where data and text dance in responsive harmony.</p>
+<section id="dynamic-documents-crafting-living-narratives" class="level2">
+<h2 class="anchored" data-anchor-id="dynamic-documents-crafting-living-narratives">Dynamic Documents: Crafting Living Narratives</h2>
+<p>In the heart of the Enchanted Forest lies a grove known as Dynamic Documents, where the trees whisper to those who listen, changing their tales with the winds of inquiry. Here, RMarkdown is not just a scribe but a sorcerer, casting documents that breathe, react, and engage with the reader in a living conversation.</p>
+<section id="the-essence-of-interactive-documents" class="level3">
+<h3 class="anchored" data-anchor-id="the-essence-of-interactive-documents">The Essence of Interactive Documents</h3>
+<p>Dynamic documents bring your data analysis to life. Unlike static reports, these documents invite the reader to interact, explore, and even alter the narrative’s course, leading to personalized insights and discoveries. This magic is woven through the integration of R Markdown with <code>shiny</code>, an R package that creates web applications directly within your RMarkdown files.</p>
+</section>
+<section id="casting-the-first-spell-shiny-in-rmarkdown" class="level3">
+<h3 class="anchored" data-anchor-id="casting-the-first-spell-shiny-in-rmarkdown">Casting the First Spell: Shiny in RMarkdown</h3>
+<p>To begin, let us conjure a simple interactive plot using R’s built-in <code>mtcars</code> dataset. This spell requires the <code>shiny</code> package alongside RMarkdown, transforming static observations into dynamic explorations.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">title</span><span class="kw">:</span><span class="at"> </span><span class="st">"Interactive Exploration of the mtcars Dataset"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">output</span><span class="kw">:</span><span class="at"> html_document</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">runtime</span><span class="kw">:</span><span class="at"> shiny</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="at">:</span><span class="fu">:</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at">.cell</span><span class="kw">}</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="at">:</span><span class="fu">:</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at">.cell-output .cell-output-stderr</span><span class="kw">}</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="at">```</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">Warning</span><span class="kw">:</span><span class="at"> pakiet 'shiny' został zbudowany w wersji R 4.4.2</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="at">```</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="at">:</span><span class="fu">:</span><span class="kw">:</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="at">:</span><span class="fu">:</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at">.cell-output-display</span><span class="kw">}</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="at">```{=html}</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="at">&lt;div class="form-group shiny-input-container"&gt;</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="at">&lt;label class="control-label" id="xvar-label" for="xvar"&gt;Choose an x-axis variable:&lt;/label&gt;</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="at">&lt;div&gt;</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="at">&lt;select id="xvar" class="shiny-input-select"&gt;&lt;option value="mpg" selected&gt;mpg&lt;/option&gt;</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="at">&lt;option value="cyl"&gt;cyl&lt;/option&gt;</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="at">&lt;option value="disp"&gt;disp&lt;/option&gt;</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="at">&lt;option value="hp"&gt;hp&lt;/option&gt;</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="at">&lt;option value="drat"&gt;drat&lt;/option&gt;</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="at">&lt;option value="wt"&gt;wt&lt;/option&gt;</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="at">&lt;option value="qsec"&gt;qsec&lt;/option&gt;</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="at">&lt;option value="vs"&gt;vs&lt;/option&gt;</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="at">&lt;option value="am"&gt;am&lt;/option&gt;</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="at">&lt;option value="gear"&gt;gear&lt;/option&gt;</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="at">&lt;option value="carb"&gt;carb&lt;/option&gt;&lt;/select&gt;</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="at">&lt;script type="application/json" data-for="xvar" data-nonempty=""&gt;{"plugins":["selectize-plugin-a11y"]}&lt;/script&gt;</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="at">&lt;/div&gt;</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="at">&lt;/div&gt;</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="at">```</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="at">:</span><span class="fu">:</span><span class="kw">:</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="at">:</span><span class="fu">:</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at">.cell-output-display</span><span class="kw">}</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="at">```{=html}</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="at">&lt;div class="shiny-plot-output html-fill-item" id="out437e054022c011ea" style="width:100%;height:400px;"&gt;&lt;/div&gt;</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a><span class="at">```</span></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a><span class="at">:</span><span class="fu">:</span><span class="kw">:</span></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a><span class="at">:</span><span class="fu">:</span><span class="kw">:</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="https://cdn-images-1.medium.com/max/800/1*ieMVWYnjVYk6od9bgHN4ZQ.png" class="img-fluid"></p>
+<p>This incantation embeds a Shiny application within the RMarkdown document, allowing readers to select different variables from the <code>mtcars</code> dataset for the x-axis of a scatter plot, dynamically updating to reflect their choice. The document thus becomes a living entity, responsive to the reader’s curiosity.</p>
+</section>
+<section id="the-power-of-responsiveness" class="level3">
+<h3 class="anchored" data-anchor-id="the-power-of-responsiveness">The Power of Responsiveness</h3>
+<p>The real magic of dynamic documents lies in their ability to adapt — the figures, tables, and analyses they contain can change based on user input. This interactivity transforms the reader’s role from passive observer to active participant, deepening their engagement and understanding.</p>
+</section>
+<section id="crafting-your-own-living-narratives" class="level3">
+<h3 class="anchored" data-anchor-id="crafting-your-own-living-narratives">Crafting Your Own Living Narratives</h3>
+<p>Creating dynamic documents in RMarkdown opens a realm of possibilities:</p>
+<ol type="1">
+<li><strong>Educational Tools:</strong> Develop interactive tutorials that adapt to the learner’s pace and interests.</li>
+<li><strong>Data Exploration Interfaces:</strong> Allow users to explore datasets, applying filters and viewing different statistical analyses or visualizations based on their choices.</li>
+<li><strong>Personalized Reporting:</strong> Generate reports that adjust their content based on user-specific parameters or selections.</li>
+</ol>
+<p>In the Dynamic Documents grove, the narrative is not fixed but fluid, changing with each reader’s journey through the data. This chapter marks the beginning of our advanced exploration into RMarkdown, where the documents we craft are not just read but experienced.</p>
+<p>As we venture forth from the grove of Dynamic Documents, our path through the Enchanted Forest of Data takes us toward even more complex magics and functionalities. Each step reveals new capabilities of RMarkdown, promising to transform not only our data but also the stories we tell with it. Stay with us as we continue to unravel the mysteries and master the arcane art of advanced RMarkdown.</p>
+</section>
+</section>
+<section id="parametrized-reports-tailoring-your-magic" class="level2">
+<h2 class="anchored" data-anchor-id="parametrized-reports-tailoring-your-magic">Parametrized Reports: Tailoring Your Magic</h2>
+<p>Beyond the dynamic interactions of living documents lies the realm of Parametrized Reports, a powerful sorcery that allows a single document to transform and adapt, creating personalized narratives for each reader. This magic empowers your documents to respond not just to interactions within the document itself but to inputs specified even before the document is conjured.</p>
+<section id="the-spell-of-customization" class="level3">
+<h3 class="anchored" data-anchor-id="the-spell-of-customization">The Spell of Customization</h3>
+<p>Parametrized reports leverage the YAML front matter in an RMarkdown document to define parameters that can be dynamically passed to the document at runtime. This enables the creation of a single, flexible template that can generate a multitude of reports tailored to specific needs, questions, or audiences.</p>
+</section>
+<section id="crafting-a-parametrized-potion" class="level3">
+<h3 class="anchored" data-anchor-id="crafting-a-parametrized-potion">Crafting a Parametrized Potion</h3>
+<p>Let’s create a simple spell that demonstrates the power of parametrization, using R’s built-in <code>iris</code> dataset. We will allow the reader (or the sorcerer preparing the document) to choose which species of iris to focus on in the report.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">title</span><span class="kw">:</span><span class="at"> </span><span class="st">"Parametrized Report on Iris Species"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">output</span><span class="kw">:</span><span class="at"> html_document</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">params</span><span class="kw">:</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">species</span><span class="kw">:</span><span class="at"> </span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">label</span><span class="kw">:</span><span class="at"> </span><span class="st">"Select a Species:"</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">value</span><span class="kw">:</span><span class="at"> </span><span class="st">"setosa"</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">input</span><span class="kw">:</span><span class="at"> select</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">choices</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">setosa</span><span class="kw">,</span><span class="at"> versicolor</span><span class="kw">,</span><span class="at"> virginica</span><span class="kw">]</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="at">:</span><span class="fu">:</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at">.cell</span><span class="kw">}</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="at">:</span><span class="fu">:</span><span class="kw">:</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="https://cdn-images-1.medium.com/max/600/1*Qr4PqbmuaSwAxW9XeVgSCQ.png" class="img-fluid"> <img src="https://cdn-images-1.medium.com/max/400/1*VlLN8S8QwohGxE8L5XvH9g.png" class="img-fluid"> <img src="https://cdn-images-1.medium.com/max/600/1*RtsJlOXvyWMJUSUIIh6EUw.png" class="img-fluid"></p>
+</section>
+<section id="the-alchemy-of-parametrization" class="level3">
+<h3 class="anchored" data-anchor-id="the-alchemy-of-parametrization">The Alchemy of Parametrization</h3>
+<p>The true power of parametrized reports lies in their alchemy, turning the base metal of data into the gold of personalized insight. This capability is particularly potent in environments where reports need to be generated for different segments, conditions, or criteria regularly. Applications include:</p>
+<ul>
+<li><strong>Educational Assessments:</strong> Generating student-specific reports based on performance and learning needs.</li>
+<li><strong>Business Intelligence:</strong> Tailoring financial or operational reports to different departments or managerial levels.</li>
+<li><strong>Research and Development:</strong> Creating detailed analysis reports for different study groups or experimental conditions.</li>
+</ul>
+</section>
+<section id="weaving-your-spells" class="level3">
+<h3 class="anchored" data-anchor-id="weaving-your-spells">Weaving Your Spells</h3>
+<p>To master the art of parametrized reports, one must learn to weave together the elements of RMarkdown with the parameters defined in the YAML header, creating documents that are not just informative but transformative. The spellbook of RMarkdown, combined with the sorcerer’s insight into the needs of their audience, can conjure documents that speak directly to the reader, offering a personalized journey through the data.</p>
+</section>
+</section>
+<section id="the-alchemy-of-language-polyglot-potions-in-rmarkdown" class="level2">
+<h2 class="anchored" data-anchor-id="the-alchemy-of-language-polyglot-potions-in-rmarkdown">The Alchemy of Language: Polyglot Potions in RMarkdown</h2>
+<p>In the diverse ecosystem of data science, wisdom is not confined to a single language. Just as a master alchemist draws upon various elements to create powerful potions, a skilled data sorcerer must harness multiple languages to uncover the deepest insights. RMarkdown, with its polyglot capabilities, allows us to write in multiple languages within a single document, creating a rich tapestry of analysis and insight.</p>
+<section id="speaking-in-tongues-r-python-sql-and-stan" class="level3">
+<h3 class="anchored" data-anchor-id="speaking-in-tongues-r-python-sql-and-stan">Speaking in Tongues: R, Python, SQL, and Stan</h3>
+<p>RMarkdown’s enchantment lies in its ability to understand and execute code in languages beyond R, including Python for machine learning, SQL for database queries, and Stan for statistical modeling. This multilingual feature is enabled through the magic of the <code>knitr</code> package and its engines, which interpret and execute the code chunks written in these languages.</p>
+</section>
+<section id="conjuring-python-magic" class="level3">
+<h3 class="anchored" data-anchor-id="conjuring-python-magic">Conjuring Python Magic</h3>
+<p>To weave Python spells within an RMarkdown document, one must first invoke the Python engine. This is done by specifying the language in the code chunk header. Here’s how you can summon a Python serpent to perform a simple incantation:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">title</span><span class="kw">:</span><span class="at"> </span><span class="st">"Parametrized Report on Iris Species"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">output</span><span class="kw">:</span><span class="at"> html_document</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="at">:</span><span class="fu">:</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at">.cell</span><span class="kw">}</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="at">```{.python .cell-code}</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co"># A simple Python spell</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="at">import numpy as np</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="at">np.random.seed(42)</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="at">np.random.normal(0, 1, 5)</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="at">```</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="at">:</span><span class="fu">:</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at">.cell-output .cell-output-stdout</span><span class="kw">}</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="at">```</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="at">array([ 0.49671415, -0.1382643 ,  0.64768854,  1.52302986, -0.23415337])</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="at">```</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="at">:</span><span class="fu">:</span><span class="kw">:</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="at">:</span><span class="fu">:</span><span class="kw">:</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="https://cdn-images-1.medium.com/max/800/1*W8sfg_Ku9JL_NTn1vBt2sQ.png" class="img-fluid"></p>
+</section>
+<section id="sql-incantations-for-data-summoning" class="level3">
+<h3 class="anchored" data-anchor-id="sql-incantations-for-data-summoning">SQL Incantations for Data Summoning</h3>
+<p>For those who draw their power from the vast databases of the realm, SQL incantations allow direct communication with these sources. By specifying an SQL engine and a connection to your database, you can query data directly into your document:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> magical_creatures <span class="kw">WHERE</span> habitat <span class="op">=</span> <span class="st">'forest'</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="stan-divining-the-future" class="level3">
+<h3 class="anchored" data-anchor-id="stan-divining-the-future">Stan: Divining the Future</h3>
+<p>Stan, a language for statistical modeling and Bayesian inference, allows sorcerers to peer into the future, making predictions and uncovering hidden truths. Integrating Stan with RMarkdown, one can document and share complex statistical models:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>```<span class="co">// {stan output.var="model"}</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">// A Stan model for divination</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; N;</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> y[N];</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> mu;</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  y ~ normal(mu, <span class="dv">1</span>);</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="the-polyglots-codex-best-practices" class="level3">
+<h3 class="anchored" data-anchor-id="the-polyglots-codex-best-practices">The Polyglot’s Codex: Best Practices</h3>
+<p>Integrating multiple languages into an RMarkdown document bestows great power but also requires careful consideration:</p>
+<ul>
+<li><strong>Environment Harmony</strong>: Ensure that your computational environment is properly configured to support all the languages you intend to use, with necessary packages, libraries, and database connections in place.</li>
+<li><strong>Language Flow</strong>: Maintain a logical flow between code chunks of different languages, especially when passing data or results from one language to another.</li>
+<li><strong>Narrative Cohesion</strong>: The inclusion of multiple languages should enhance, not hinder, the narrative flow of your document. Use each language to its strengths, ensuring that the story you tell is cohesive and comprehensible.</li>
+</ul>
+</section>
+</section>
+<section id="automating-insights-enchanted-scrolls-and-parallel-prophecies" class="level2">
+<h2 class="anchored" data-anchor-id="automating-insights-enchanted-scrolls-and-parallel-prophecies">Automating Insights: Enchanted Scrolls and Parallel Prophecies</h2>
+<p>In the deeper reaches of the Enchanted Forest of Data, sorcerers and data alchemists alike seek ways to expedite their spellcasting. The creation of reports, a task both mundane and mystical, can be arduous when done by hand for each inquiry or audience. Yet, with the ancient arts of automation and the clever harnessing of parallel processing spirits, we can conjure multiple reports at once, each tailored to different ends, without sacrificing the personal touch that makes each scroll unique.</p>
+<section id="the-spell-of-automation" class="level3">
+<h3 class="anchored" data-anchor-id="the-spell-of-automation">The Spell of Automation</h3>
+<p>Automation in RMarkdown is akin to conjuring a series of intricate spells in quick succession, each perfectly executed and precisely aimed. By utilizing the <code>rmarkdown::render()</code> function, we can automate the generation of reports from a single template, passing different parameters or datasets to create a multitude of narratives from a single source of power.</p>
+</section>
+<section id="creating-an-automated-alchemy-lab" class="level3">
+<h3 class="anchored" data-anchor-id="creating-an-automated-alchemy-lab">Creating an Automated Alchemy Lab</h3>
+<p>Consider a scenario where we wish to generate customized reports for each species in the <code>iris</code> dataset. Instead of laboriously crafting each report by hand, we employ the following incantation:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the species to report on</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>species_list <span class="ot">&lt;-</span> <span class="fu">unique</span>(iris<span class="sc">$</span>Species)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Automate the creation of species-specific reports using loop</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># This code generate report with species name like "Versicolor Report.html"</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># basing on template file "Species_Report.Rmd"</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rmarkdown)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (species <span class="cf">in</span> species_list) {</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">render</span>(<span class="st">"Species_Report.Rmd"</span>, </span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>          <span class="at">output_file =</span> <span class="fu">paste</span>(species, <span class="st">"Report.html"</span>), </span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>          <span class="at">params =</span> <span class="fu">list</span>(<span class="at">species =</span> species))</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="parallel-prophecies-conjuring-many-at-once" class="level3">
+<h3 class="anchored" data-anchor-id="parallel-prophecies-conjuring-many-at-once">Parallel Prophecies: Conjuring Many at Once</h3>
+<p>While automation accelerates our work, invoking parallel processing allows us to transcend the bounds of time further, casting multiple spells simultaneously across the threads of reality. The <code>doParallel</code> package calls forth spirits of computation from the ether, enabling us to perform our automated tasks in parallel, thus drastically reducing the time required to generate a multitude of reports.</p>
+</section>
+<section id="summoning-the-parallel-familiars" class="level3">
+<h3 class="anchored" data-anchor-id="summoning-the-parallel-familiars">Summoning the Parallel Familiars</h3>
+<p>To harness the power of parallel processing for our reports, we first must summon and bind the computational spirits:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(doParallel)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">registerDoParallel</span>(<span class="at">cores =</span> <span class="fu">detectCores</span>())</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co"># A list to hold our parallel tasks</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>tasks <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Populate the tasks with report generation spells</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (species <span class="cf">in</span> species_list) {</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  tasks[[species]] <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">render</span>(<span class="st">"Species_Report.Rmd"</span>, <span class="at">output_file =</span> <span class="fu">paste</span>(species, <span class="st">"Report.html"</span>), <span class="at">params =</span> <span class="fu">list</span>(<span class="at">species =</span> species))</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Command the spirits to execute the tasks in parallel</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="fu">foreach</span>(<span class="at">task =</span> tasks) <span class="sc">%dopar%</span> {</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">task</span>()</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Using this approach you can not only generate 3, 4 report one after another</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="co"># but also have 3 or even more reports at once on neighbouring cores.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="best-practices-in-parallel-spellcasting" class="level3">
+<h3 class="anchored" data-anchor-id="best-practices-in-parallel-spellcasting">Best Practices in Parallel Spellcasting</h3>
+<p>When wielding such potent magic, caution must be exercised:</p>
+<ul>
+<li><strong>Mind the Limits</strong>: Understand the limits of your computational familiars. Summoning too many can overwhelm your system, leading to chaos and disarray.</li>
+<li><strong>Task Segregation</strong>: Ensure that tasks suitable for parallel execution are independent, lest their magics interfere with one another, corrupting the data and sowing confusion.</li>
+<li><strong>Resource Allocation</strong>: Be mindful of the resources required for each task, allocating your computational spirits where they are most needed to avoid inefficiency and waste.</li>
+</ul>
+</section>
+</section>
+<section id="beyond-the-veil-custom-formats-and-templates" class="level2">
+<h2 class="anchored" data-anchor-id="beyond-the-veil-custom-formats-and-templates">Beyond the Veil: Custom Formats and Templates</h2>
+<p>In the enchanted world of RMarkdown, the magic extends beyond mere content generation, venturing into the realm of custom formats and templates. This domain is where data sorcerers tailor not just documents but artifacts of knowledge, meticulously crafted for those deemed worthy to gaze upon them.</p>
+<section id="the-craft-of-custom-formats" class="level3">
+<h3 class="anchored" data-anchor-id="the-craft-of-custom-formats">The Craft of Custom Formats</h3>
+<p>Custom formats in RMarkdown allow us to elevate our reports into presentations and documents that transcend the mundane, marrying the precision of data science with the finesse of graphic design. This union ensures that our artifacts are not merely consumed but experienced, leaving an indelible mark on the beholder.</p>
+</section>
+<section id="enchanting-with-latex-and-htmlcss" class="level3">
+<h3 class="anchored" data-anchor-id="enchanting-with-latex-and-htmlcss">Enchanting with LaTeX and HTML/CSS</h3>
+<p>For adepts of the LaTeX path, customization lies in the complex weave of commands and packages that dictate the document’s layout, style, and structure. For the HTML/CSS wizards, their craft involves stylesheets and scripts, enchanting documents to dance and dazzle on digital canvases.</p>
+</section>
+<section id="the-lore-of-templates" class="level3">
+<h3 class="anchored" data-anchor-id="the-lore-of-templates">The Lore of Templates</h3>
+<p>Templates in RMarkdown act as the ancient grimoires from which countless reports are conjured. They provide the blueprints from which documents of various forms can emerge, each adhering to the aesthetic and structural edicts laid out by the template’s creator.</p>
+</section>
+<section id="crafting-your-own-template" class="level3">
+<h3 class="anchored" data-anchor-id="crafting-your-own-template">Crafting Your Own Template</h3>
+<p>The creation of a custom template is akin to charting a map of unexplored lands. It demands foresight into the journey that others will undertake through your document, ensuring clarity, highlighting wonders, and cautioning against pitfalls.</p>
+<ul>
+<li>For LaTeX adepts, crafting a template might involve designing a <code>.tex</code> file that lays out the document’s overall look, feel, and structural guidelines.</li>
+<li>HTML/CSS conjurers might create a set of web templates and stylesheets, dictating the visual presentation of content in web browsers.</li>
+</ul>
+</section>
+<section id="the-power-of-personalization" class="level3">
+<h3 class="anchored" data-anchor-id="the-power-of-personalization">The Power of Personalization</h3>
+<p>The essence of utilizing custom formats and templates lies in their capacity to personalize the storytelling experience. By shaping documents that resonate on both a visual and structural level, data scientists ensure that their insights are not just comprehended but deeply felt, fostering a profound connection between the narrative and the audience.</p>
+<ul>
+<li><strong>Branding</strong>: Incorporating organizational or personal branding into reports reinforces the identity and authority of the content.</li>
+<li><strong>Accessibility</strong>: Designing with accessibility in mind guarantees that insights are accessible to a broad audience, regardless of individual challenges.</li>
+<li><strong>Engagement</strong>: The creation of visually appealing documents captivates the audience’s attention, enhancing engagement with the material presented.</li>
+</ul>
+<p>As we conclude our foray into the realm of custom formats and templates, we’re reminded that the art of data science extends beyond uncovering insights — it’s about sharing those insights in a manner that is both informative and inspiring. Our exploration of RMarkdown’s advanced functionalities continues to reveal tools and techniques that empower us to illuminate data’s hidden truths with knowledge, creativity, and style. The path ahead beckons with untold potential for those brave enough to traverse it.</p>
+</section>
+</section>
+<section id="the-grand-library-of-extensions-packages-that-enhance-rmarkdown" class="level2">
+<h2 class="anchored" data-anchor-id="the-grand-library-of-extensions-packages-that-enhance-rmarkdown">The Grand Library of Extensions: Packages that Enhance RMarkdown</h2>
+<p>Within the vast halls of the Grand Library, each book, scroll, and arcane artifact represents an R package designed to augment the power of RMarkdown. These packages enable sorcerers of data to weave richer tales, incorporating interactive elements, complex layouts, and multimedia content into their documents, transforming them into living, breathing entities that captivate the audience’s imagination.</p>
+<section id="bookdown-crafting-tomes-and-manuals" class="level3">
+<h3 class="anchored" data-anchor-id="bookdown-crafting-tomes-and-manuals">Bookdown: Crafting Tomes and Manuals</h3>
+<p>The <code>bookdown</code> package is a powerful spell for those seeking to compile their insights into comprehensive books or lengthy reports. It extends RMarkdown to support the creation of multi-chapter documents, complete with cross-references, citations, and unique formatting options, turning a collection of analyses into a cohesive narrative.</p>
+</section>
+<section id="blogdown-distill-scribing-for-the-web" class="level3">
+<h3 class="anchored" data-anchor-id="blogdown-distill-scribing-for-the-web">Blogdown &amp; Distill: Scribing for the Web</h3>
+<p>For the modern data storyteller, the web is a vibrant canvas for sharing insights. The <code>blogdown</code> and <code>distill</code> packages empower sorcerers to publish their findings as interactive websites or blogs, seamlessly blending code, results, and narratives in a format that’s accessible to a global audience. With these tools, the presentation of data becomes an interactive journey, inviting readers to explore, discover, and learn.</p>
+</section>
+<section id="xaringan-conjuring-interactive-presentations" class="level3">
+<h3 class="anchored" data-anchor-id="xaringan-conjuring-interactive-presentations">Xaringan: Conjuring Interactive Presentations</h3>
+<p>When the time comes to share wisdom in the halls of academia or the chambers of commerce, the <code>xaringan</code> package summons presentations that transcend the mundane. Built on the powers of web technologies, it allows for the creation of dynamic, interactive slideshows that engage and inform, turning every presentation into an enchantment.</p>
+</section>
+<section id="pagedown-scrolls-of-the-printed-realm" class="level3">
+<h3 class="anchored" data-anchor-id="pagedown-scrolls-of-the-printed-realm">Pagedown: Scrolls of the Printed Realm</h3>
+<p>Even in an age of digital wonders, the need for printed documents persists. The <code>pagedown</code> package bridges the worlds of web and print, enabling the creation of beautifully formatted PDFs, reports, and letters directly from RMarkdown, ensuring that the magicof data can be captured in a form that’s tangible and permanent.</p>
+</section>
+<section id="the-art-of-choosing-your-extensions" class="level3">
+<h3 class="anchored" data-anchor-id="the-art-of-choosing-your-extensions">The Art of Choosing Your Extensions</h3>
+<p>In the Grand Library, the sheer number of available packages can be overwhelming. The key to harnessing this wealth of resources lies in choosing the right tools for the tale you wish to tell. Consider the audience, the medium, and the message of your narrative when selecting your extensions, and remember that the most powerful magic is that which serves the story.</p>
+</section>
+<section id="a-world-of-possibilities" class="level3">
+<h3 class="anchored" data-anchor-id="a-world-of-possibilities">A World of Possibilities</h3>
+<p>As we emerge from the Grand Library, our satchels heavy with new knowledge and our minds alight with possibilities, we realize the journey through the advanced realms of RMarkdown is not just about mastering a tool — it’s about unlocking a world of storytelling potential. With these extensions at our fingertips, we can craft documents that not only inform but inspire, engage, and transform.</p>
+</section>
+</section>
+<section id="conjuring-the-future-predictive-modelling-and-machine-learning-in-rmarkdown" class="level2">
+<h2 class="anchored" data-anchor-id="conjuring-the-future-predictive-modelling-and-machine-learning-in-rmarkdown">Conjuring the Future: Predictive Modelling and Machine Learning in RMarkdown</h2>
+<p>As data sorcerers, our quest for knowledge leads us inevitably toward the future, seeking to divine the unseen and prepare for what lies ahead. RMarkdown, with its versatile magic, offers a crystal ball through which the mists of uncertainty part, allowing us to glimpse the potential outcomes of our actions and decisions.</p>
+<section id="the-crystal-ball-integrating-predictive-models" class="level3">
+<h3 class="anchored" data-anchor-id="the-crystal-ball-integrating-predictive-models">The Crystal Ball: Integrating Predictive Models</h3>
+<p>Predictive modelling and machine learning — these are the spells and incantations that allow us to peer into the future, using the data of the past and present to forecast what has yet to come. RMarkdown integrates seamlessly with R’s vast array of predictive modelling and machine learning libraries, enabling us to embed these powerful analyses directly within our documents.</p>
+<p>—- markdown — yaml title: “Parametrized Report on Iris Species”<br>
+output: html_document</p>
+<hr>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] setosa setosa setosa setosa setosa setosa
+Levels: setosa versicolor virginica</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="2024-03-07_Mastering-the-Arcane--Advanced-RMarkdown-for-Magical-Data-Science-c6c434780765_files/figure-html/viz-forecast-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Predicted Trends</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+<p>This incantation, a simple example using the caret package and the irisdataset, demonstrates how RMarkdown can serve as a medium for not only documenting our predictive endeavors but also for sharing these foresights, weaving them into the narrative of our data-driven tales.</p>
+</section>
+<section id="visualizing-the-path-ahead" class="level3">
+<h3 class="anchored" data-anchor-id="visualizing-the-path-ahead">Visualizing the Path Ahead</h3>
+<p>Beyond mere prediction, the true art lies in interpreting and visualizing these forecasts, turning raw numbers into insights that can be understood and acted upon. RMarkdown’s integration with visualization libraries allows us to conjure vivid, compelling visuals that illuminate the predicted trends and patterns, making the future not just known, but seen.</p>
+<p><img src="https://miro.medium.com/v2/resize:fit:4800/format:webp/1*qTFD6XDVyBIDK4xgfx5iHQ.png" class="img-fluid"></p>
+</section>
+<section id="the-art-of-future-crafting" class="level3">
+<h3 class="anchored" data-anchor-id="the-art-of-future-crafting">The Art of Future-Crafting</h3>
+<p>Crafting predictions within RMarkdown documents transforms the role of the data scientist from mere analyst to oracle, offering a blend of science and storytelling that engages the audience with what might be, rather than just what is. This forward-looking perspective is essential for strategic decision-making, policy development, and personal planning.</p>
+</section>
+<section id="a-new-dawn" class="level3">
+<h3 class="anchored" data-anchor-id="a-new-dawn">A New Dawn</h3>
+<p>As we conclude this chapter, the dawn of a new day breaks over the Enchanted Forest of Data. Armed with the predictive powers of RMarkdown, we are no longer mere passengers on the journey through time but navigators, steering toward futures we have foreseen and shaped with our own hands.</p>
+<p>Our exploration of the advanced capabilities of RMarkdown, from the crafting of dynamic, interactive documents to the weaving of predictions into the fabric of our narratives, reveals a tool of unparalleled depth and versatility. With each chapter, we uncover new layers of possibility, new magics to master, and new stories to tell.</p>
+<p>The journey through the realms of data is unending, and the mysteries it holds are boundless. But with RMarkdown as our guide, we move forward with confidence, ready to face the challenges of tomorrow and illuminate the path for those who follow.</p>
+<p>As we conclude our expedition through the advanced functionalities of RMarkdown, it’s clear we’ve journeyed far from where we began, crossing from the realm of mere documentation into the vast and varied landscape of dynamic, interactive, and predictive storytelling. We’ve explored the depths of custom formats, the intricacies of polyglot programming, and the power of parallel processing, each step revealing new ways to enrich our narratives and share our insights.</p>
+<p>This guide, “Mastering the Arcane: Advanced RMarkdown for Magical Data Science,” has not only unveiled the robust capabilities of RMarkdown but has also inspired us to think differently about data storytelling. The journey through RMarkdown’s advanced features — from dynamic documents and parametrized reports to the integration of predictive modeling — demonstrates the platform’s incredible versatility and power to transform raw data into compelling narratives that inform, persuade, and inspire.</p>
+<p>Yet, as with all journeys through enchanted realms, the path does not end here. The world of data science is ever-evolving, with new spells to learn, new territories to explore, and new stories to tell. As sorcerers of data, our quest for knowledge and mastery is unending, fueled by curiosity and the relentless pursuit of insight.</p>
+<p>Let this exploration serve as both a foundation and a beacon, guiding your way as you delve deeper into the mysteries of data and the art of storytelling. May the magic of RMarkdown empower you to illuminate the unknown, to reveal truths hidden within data, and to share the wonder of discovery with the world.</p>
+<p>The adventure continues, and with RMarkdown as your companion, the possibilities are as limitless as your imagination.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = true;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>For everybody, not to be fooled by numbers</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

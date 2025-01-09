@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Numbers around us">
+<meta name="dcterms.date" content="2024-04-04">
+
+<title>Achieving Reporting Excellence: R Packages for Consistency and Diverse Outputs – Numbers Around Us</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-cb71375167fd9ce754afb6fa31d3f44e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-1a65b4115a9519dac2c2f4ba2497ca08.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Numbers Around Us</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../challenges/index.html"> 
+<span class="menu-text">Challenges</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../bi/index.html"> 
+<span class="menu-text">Business Intelligence</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../ds/index.html"> 
+<span class="menu-text">Data Science</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../dp/index.html"> 
+<span class="menu-text">Date Philosophy</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <a href="https://github.com" title="Github" class="quarto-navigation-tool px-1" aria-label="Github"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Achieving Reporting Excellence: R Packages for Consistency and Diverse Outputs</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Numbers around us </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">April 4, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><img src="images/outputpackages.jpg" class="img-fluid"></p>
+<p>In the era of data-driven decision making, the ability of businesses to communicate complex information effectively has never been more critical. Yet, as companies navigate through vast oceans of data, the challenge of not just analyzing but also presenting this data in a coherent, consistent, and compelling manner is a hurdle many stumble upon. The art of reporting, therefore, transcends mere data presentation; it is about crafting a narrative that resonates, informs, and influences.</p>
+<p>While foundational tools like Quarto and R Markdown have revolutionized how data professionals create and share their analyses, pushing the envelope further requires a deeper dive into the arsenal of R packages specifically designed to enhance reporting consistency and flexibility across various output formats. This article builds on our previous discussions about enriching reports through Quarto and R Markdown, turning the spotlight on the pivotal role of additional R packages in achieving reporting excellence. We’ll explore how packages like <code>officer</code>, <code>officedown</code>, <code>openxlsx</code>, <code>openxlsx2</code>, <code>bookdown</code>, <code>blogdown</code>, and <code>mscharts</code> not only streamline the reporting process but also elevate the standards of business reporting to new heights.</p>
+<p>The goal? To arm you with the tools and knowledge to ensure that every report — be it a financial summary, a market analysis, or a technical document — stands out for its clarity, consistency, and communicative power. Whether you’re aiming to impress stakeholders with sleek PowerPoint slides, share insights through interactive HTML documents, or distribute detailed analyses in Excel or PDF formats, the journey to mastering these versatile R packages begins here.</p>
+<section id="the-consistency-conundrum-in-business-reporting" class="level2">
+<h2 class="anchored" data-anchor-id="the-consistency-conundrum-in-business-reporting">The Consistency Conundrum in Business Reporting</h2>
+<p>Consistency in reporting is not just about maintaining uniformity in the look and feel of reports; it’s about ensuring that every piece of communication reflects the professionalism and reliability of your organization. Despite its importance, achieving this level of consistency across various report formats presents a unique set of challenges:</p>
+<ol type="1">
+<li><strong>Varied Formats, Varied Problems</strong>: Different stakeholders may require information in different formats — from PowerPoint presentations for board meetings to detailed Excel spreadsheets for financial audits. Each format comes with its own design and structural nuances, complicating the consistency equation.</li>
+<li><strong>Branding Guidelines</strong>: Adhering to strict branding guidelines across reports, including logos, fonts, and color schemes, can be tedious and time-consuming, especially when dealing with a multitude of document types.</li>
+<li><strong>Time Constraints</strong>: In the fast-paced business environment, time is a luxury. Manually ensuring each report meets all consistency and quality benchmarks is often impractical.</li>
+<li><strong>Technical Barriers</strong>: The technical skills required to customize and automate reports can be a significant barrier for many, leading to a reliance on default templates that lack a personalized touch.</li>
+</ol>
+<p>Given these challenges, the need for tools that can streamline the reporting process while ensuring consistency is clear. Enter R packages designed for reporting — our knights in shining armor.</p>
+<p>R, primarily known for its prowess in statistical analysis and data visualization, also offers a treasure trove of packages for enhancing reporting quality and efficiency. Let’s illustrate a simple example of how R can help in maintaining consistency, starting with a basic task of creating a branded report using a built-in dataset.</p>
+<p>Consider the <code>mtcars</code> dataset, a staple in R examples, and imagine we’re tasked with generating a summary report that adheres to our company’s branding guidelines. Here’s how we might begin with the <code>officer</code> package to create a Word document:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(officer)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>doc <span class="ot">&lt;-</span> <span class="fu">read_docx</span>()</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>doc <span class="ot">&lt;-</span> <span class="fu">body_add_par</span>(doc, <span class="st">"Title"</span>, <span class="at">style =</span> <span class="st">"heading 1"</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>doc <span class="ot">&lt;-</span> <span class="fu">body_add_par</span>(doc, <span class="st">""</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>table_data <span class="ot">&lt;-</span> <span class="fu">head</span>(mtcars)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>doc <span class="ot">&lt;-</span> <span class="fu">body_add_table</span>(doc, table_data, <span class="at">style =</span> <span class="st">"table_template"</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(doc, <span class="at">target =</span> <span class="st">"output.docx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="https://cdn-images-1.medium.com/max/800/1*s9UKOwr-w2fnUEOhP6iR4A.png" class="img-fluid"></p>
+<p>In this snippet, we’ve started the journey towards a standardized reporting process. The <code>officer</code> package allows us to automate the inclusion of elements like titles and tables, aligning them with our branding requirements (e.g., font size and color). This example is just a glimpse of what’s possible; as we delve deeper into each package, we’ll uncover more advanced techniques for enhancing report consistency and format versatility.</p>
+</section>
+<section id="r-packages-to-the-rescue-ensuring-uniformity-across-reports" class="level2">
+<h2 class="anchored" data-anchor-id="r-packages-to-the-rescue-ensuring-uniformity-across-reports">R Packages to the Rescue: Ensuring Uniformity Across Reports</h2>
+<p>To achieve uniformity and uphold branding standards across different types of reports, leveraging the capabilities of several R packages can be transformative. Each package brings unique strengths to the table, from simplifying document creation to enhancing data visualization. Let’s delve into how these packages can be utilized to maintain consistency across various reporting formats.</p>
+<section id="officer-officedown-your-reporting-allies" class="level3">
+<h3 class="anchored" data-anchor-id="officer-officedown-your-reporting-allies">Officer &amp; Officedown: Your Reporting Allies</h3>
+<p>The <code>officer</code> package allows for the manipulation of Microsoft Word and PowerPoint documents from R, making it invaluable for creating professionally branded reports. Coupled with <code>officedown</code>, which extends R Markdown’s functionality to leverage <code>officer</code>’s features, they provide a powerful toolkit for generating dynamic, branded documents.</p>
+<p>Imagine you need to create a presentation slide showcasing the summary of the <code>mtcars</code> dataset for a stakeholder meeting. Here’s how you could use <code>officer</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(officer)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>ppt <span class="ot">&lt;-</span> <span class="fu">read_pptx</span>()</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>ppt <span class="ot">&lt;-</span> <span class="fu">add_slide</span>(ppt, <span class="at">layout =</span> <span class="st">"Title and Content"</span>, <span class="at">master =</span> <span class="st">"Office Theme"</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>ppt <span class="ot">&lt;-</span> <span class="fu">ph_with</span>(ppt, <span class="at">type =</span> <span class="st">"title"</span>, <span class="at">value =</span> <span class="st">"MTCars Dataset Summary"</span>, <span class="at">location =</span> <span class="fu">ph_location_type</span>(<span class="at">type =</span> <span class="st">"title"</span>))</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>ppt <span class="ot">&lt;-</span> <span class="fu">ph_with</span>(ppt, <span class="at">value =</span> flextable<span class="sc">::</span><span class="fu">qflextable</span>(mtcars_summary), <span class="at">location =</span> <span class="fu">ph_location_type</span>(<span class="at">type =</span> <span class="st">"body"</span>))</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(ppt, <span class="at">target =</span> <span class="st">"mtcars_summary_presentation.pptx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="https://cdn-images-1.medium.com/max/800/1*aHZ0yTreHB4CpexySCYjVw.png" class="img-fluid"></p>
+</section>
+<section id="openxlsx-openxlsx2-excel-reporting-made-easy" class="level3">
+<h3 class="anchored" data-anchor-id="openxlsx-openxlsx2-excel-reporting-made-easy">Openxlsx &amp; Openxlsx2: Excel Reporting Made Easy</h3>
+<p>For Excel aficionados, <code>openxlsx</code> and its next iteration, <code>openxlsx2</code>, simplify the process of creating and styling Excel workbooks. They support operations like writing data to worksheets, styling cells, and adding formulas without needing Excel installed, making them perfect for automated report generation.</p>
+<p>Here’s a snippet for generating an Excel report with the <code>mtcars</code> dataset, showcasing basic styling:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(openxlsx)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>wb <span class="ot">&lt;-</span> <span class="fu">createWorkbook</span>()</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">addWorksheet</span>(wb, <span class="st">"MTCars Summary"</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">writeData</span>(wb, <span class="at">sheet =</span> <span class="st">"MTCars Summary"</span>, <span class="at">x =</span> <span class="fu">head</span>(mtcars, <span class="dv">10</span>), <span class="at">startCol =</span> <span class="dv">1</span>, <span class="at">startRow =</span> <span class="dv">2</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>headerStyle <span class="ot">&lt;-</span> <span class="fu">createStyle</span>(<span class="at">fontColour =</span> <span class="st">"#FFFFFF"</span>, <span class="at">fgFill =</span> <span class="st">"#4F81BD"</span>, <span class="at">halign =</span> <span class="st">"center"</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">addStyle</span>(wb, <span class="at">sheet =</span> <span class="st">"MTCars Summary"</span>, <span class="at">style =</span> headerStyle, <span class="at">rows =</span> <span class="dv">2</span>, <span class="at">gridExpand =</span> <span class="cn">TRUE</span>, <span class="at">cols =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">NCOL</span>(mtcars))</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="fu">saveWorkbook</span>(wb, <span class="st">"mtcars_summary.xlsx"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="https://cdn-images-1.medium.com/max/800/1*XIaSTpzPtePXcVOoaKfN-A.png" class="img-fluid"></p>
+</section>
+<section id="bookdown-blogdown-documenting-insights-online" class="level3">
+<h3 class="anchored" data-anchor-id="bookdown-blogdown-documenting-insights-online">Bookdown &amp; Blogdown: Documenting Insights Online</h3>
+<p><code>bookdown</code> and <code>blogdown</code> extend R Markdown to support the production of books and blogs, respectively. They are especially useful for sharing insights and reports online, allowing for interactive content and engaging visualizations.</p>
+<p>To keep the focus sharp, we’ll not dive into a code example here but mention that <code>blogdown</code> utilizes Hugo, a powerful and fast static site generator, to turn R Markdown documents into beautifully formatted websites.</p>
+</section>
+<section id="mscharts-elevating-data-visualization" class="level3">
+<h3 class="anchored" data-anchor-id="mscharts-elevating-data-visualization">Mscharts: Elevating Data Visualization</h3>
+<p>Finally, <code>mscharts</code> allows for the creation of Microsoft Office charts directly from R, offering a range of chart types and customization options. It integrates seamlessly with <code>officer</code>, enabling the inclusion of complex visualizations in Word and PowerPoint reports.</p>
+<p>While <code>mscharts</code> is powerful, its usage is more nuanced and integrated within <code>officer</code> workflows, focusing on enhancing reports with visual data representation.</p>
+</section>
+</section>
+<section id="mastering-multiple-formats-versatility-of-r-packages" class="level2">
+<h2 class="anchored" data-anchor-id="mastering-multiple-formats-versatility-of-r-packages">Mastering Multiple Formats — Versatility of R Packages</h2>
+<p>In this digital age, where data storytelling becomes a pivotal aspect of business communication, the ability to produce reports across multiple formats without losing the thread of consistency is invaluable. The R packages we’ve discussed provide a robust framework for achieving such versatility. This chapter focuses on integrating these tools into your reporting workflows, ensuring that consistency in branding and format is maintained, whether your report is destined for a printout, a web page, or a slide deck.</p>
+<section id="integrating-officer-and-officedown-for-word-and-powerpoint-reports" class="level3">
+<h3 class="anchored" data-anchor-id="integrating-officer-and-officedown-for-word-and-powerpoint-reports">Integrating Officer and Officedown for Word and PowerPoint Reports</h3>
+<p>The <code>officer</code> and <code>officedown</code> packages are instrumental in creating Word and PowerPoint reports that adhere to your company’s branding guidelines. <code>officedown</code> works with R Markdown, offering an enhanced markdown experience tailored for Office documents, allowing for dynamic content generation with a consistent layout.</p>
+<p><strong>Workflow Tip</strong>: Develop a set of Word and PowerPoint templates that incorporate your branding elements (logos, fonts, colors). Use these templates as the base for your <code>officer</code> documents to ensure consistency across all reports.</p>
+</section>
+<section id="utilizing-openxlsx-and-openxlsx2-for-excel-workflows" class="level3">
+<h3 class="anchored" data-anchor-id="utilizing-openxlsx-and-openxlsx2-for-excel-workflows">Utilizing Openxlsx and Openxlsx2 for Excel Workflows</h3>
+<p><code>openxlsx</code> and <code>openxlsx2</code> are powerful for Excel report generation, providing a high level of control over cell styling, formulas, and workbook structure. They allow for the automation of Excel report creation, ensuring that data is presented consistently and in line with branding standards.</p>
+<p><strong>Workflow Tip</strong>: Automate recurrent reports by creating R scripts that generate Excel files, complete with formatted tables and charts. Schedule these scripts to run at specific intervals, ensuring stakeholders receive timely updates in a familiar format.</p>
+</section>
+<section id="leveraging-bookdown-and-blogdown-for-digital-publishing" class="level3">
+<h3 class="anchored" data-anchor-id="leveraging-bookdown-and-blogdown-for-digital-publishing">Leveraging Bookdown and Blogdown for Digital Publishing</h3>
+<p>For reports and insights that are meant to be shared online, <code>bookdown</code> and <code>blogdown</code> offer solutions for creating interactive, engaging content. These packages allow data scientists and analysts to publish their findings in a format that’s accessible to a broader audience, from technical reports to thought leadership pieces.</p>
+<p><strong>Workflow Tip</strong>: Use <code>bookdown</code> for in-depth reports, white papers, and ebooks that require a structured, multi-chapter format. Opt for <code>blogdown</code> when sharing timely insights, updates, and tutorials in a more informal, blog-style format.</p>
+</section>
+<section id="enhancing-reports-with-mscharts-for-visual-storytelling" class="level3">
+<h3 class="anchored" data-anchor-id="enhancing-reports-with-mscharts-for-visual-storytelling">Enhancing Reports with Mscharts for Visual Storytelling</h3>
+<p>Charts and graphs are often at the heart of data stories. The <code>mscharts</code> package allows users to create Microsoft Office-compatible charts that can be directly embedded into Word and PowerPoint documents created with <code>officer</code>, ensuring visual elements are both informative and visually consistent with the overall report design.</p>
+<p><strong>Workflow Tip</strong>: Standardize the types of charts used for specific data storytelling purposes within your organization. For instance, decide on specific chart styles for financial data, customer feedback, market trends, etc., and create templates or R functions that generate these charts with mscharts to ensure consistency.</p>
+<section id="streamlining-reporting-processes" class="level4">
+<h4 class="anchored" data-anchor-id="streamlining-reporting-processes">Streamlining Reporting Processes</h4>
+<p>Integrating these R packages into your workflow involves more than just learning how to use them; it’s about creating a seamless process from data analysis to report generation. Consider adopting version control systems like Git to manage and collaborate on report generation scripts. Additionally, explore RStudio’s project management features to organize your reporting workflows efficiently.</p>
+<p>In this digital age, where data storytelling becomes a pivotal aspect of business communication, the ability to produce reports across multiple formats without losing the thread of consistency is invaluable. The R packages we’ve discussed provide a robust framework for achieving such versatility. This chapter focuses on integrating these tools into your reporting workflows, ensuring that consistency in branding and format is maintained, whether your report is destined for a printout, a web page, or a slide deck.</p>
+</section>
+<section id="integrating-officer-and-officedown-for-word-and-powerpoint-reports-1" class="level4">
+<h4 class="anchored" data-anchor-id="integrating-officer-and-officedown-for-word-and-powerpoint-reports-1">Integrating Officer and Officedown for Word and PowerPoint Reports</h4>
+<p>The officer and officedown packages are instrumental in creating Word and PowerPoint reports that adhere to your company’s branding guidelines. Officedown works with R Markdown, offering an enhanced markdown experience tailored for Office documents, allowing for dynamic content generation with a consistent layout.</p>
+<p>Workflow Tip: Develop a set of Word and PowerPoint templates that incorporate your branding elements (logos, fonts, colors). Use these templates as the base for your officer documents to ensure consistency across all reports.</p>
+</section>
+<section id="utilizing-openxlsx-and-openxlsx2-for-excel-workflows-1" class="level4">
+<h4 class="anchored" data-anchor-id="utilizing-openxlsx-and-openxlsx2-for-excel-workflows-1">Utilizing Openxlsx and Openxlsx2 for Excel Workflows</h4>
+<p>Openxlsx and openxlsx2 are powerful for Excel report generation, providing a high level of control over cell styling, formulas, and workbook structure. They allow for the automation of Excel report creation, ensuring that data is presented consistently and in line with branding standards.</p>
+<p>Workflow Tip: Automate recurrent reports by creating R scripts that generate Excel files, complete with formatted tables and charts. Schedule these scripts to run at specific intervals, ensuring stakeholders receive timely updates in a familiar format.</p>
+</section>
+<section id="leveraging-bookdown-and-blogdown-for-digital-publishing-1" class="level4">
+<h4 class="anchored" data-anchor-id="leveraging-bookdown-and-blogdown-for-digital-publishing-1">Leveraging Bookdown and Blogdown for Digital Publishing</h4>
+<p>For reports and insights that are meant to be shared online, bookdown and blogdown offer solutions for creating interactive, engaging content. These packages allow data scientists and analysts to publish their findings in a format that’s accessible to a broader audience, from technical reports to thought leadership pieces.</p>
+<p>Workflow Tip: Use bookdown for in-depth reports, white papers, and ebooks that require a structured, multi-chapter format. Opt for blogdown when sharing timely insights, updates, and tutorials in a more informal, blog-style format.</p>
+</section>
+<section id="enhancing-reports-with-mscharts-for-visual-storytelling-1" class="level4">
+<h4 class="anchored" data-anchor-id="enhancing-reports-with-mscharts-for-visual-storytelling-1">Enhancing Reports with Mscharts for Visual Storytelling</h4>
+<p>Charts and graphs are often at the heart of data stories. The mscharts package allows users to create Microsoft Office-compatible charts that can be directly embedded into Word and PowerPoint documents created with officer, ensuring visual elements are both informative and visually consistent with the overall report design.</p>
+<p>Workflow Tip: Standardize the types of charts used for specific data storytelling purposes within your organization. For instance, decide on specific chart styles for financial data, customer feedback, market trends, etc., and create templates or R functions that generate these charts with mscharts to ensure consistency.</p>
+</section>
+<section id="streamlining-reporting-processes-1" class="level4">
+<h4 class="anchored" data-anchor-id="streamlining-reporting-processes-1">Streamlining Reporting Processes</h4>
+<p>Integrating these R packages into your workflow involves more than just learning how to use them; it’s about creating a seamless process from data analysis to report generation. Consider adopting version control systems like Git to manage and collaborate on report generation scripts. Additionally, explore RStudio’s project management features to organize your reporting workflows efficiently.</p>
+</section>
+</section>
+</section>
+<section id="committing-to-advanced-reporting-standards" class="level2">
+<h2 class="anchored" data-anchor-id="committing-to-advanced-reporting-standards">Committing to Advanced Reporting Standards</h2>
+<p>Embracing advanced reporting standards with R packages requires a commitment to continuous improvement, learning, and adaptation. This chapter outlines how organizations can fully integrate these tools into their reporting processes, ensuring not only consistency across various formats but also a significant enhancement in the quality and impact of their reports.</p>
+<section id="step-1-conduct-a-reporting-audit" class="level3">
+<h3 class="anchored" data-anchor-id="step-1-conduct-a-reporting-audit">Step 1: Conduct a Reporting Audit</h3>
+<p>Begin by evaluating your current reporting processes and outputs. Identify inconsistencies, areas where manual processes can be automated, and opportunities for improving report aesthetics and accessibility. This audit will highlight where the R packages discussed can be most effectively applied.</p>
+<p><strong>Actionable Tip</strong>: Create a checklist of common reporting criteria, such as branding consistency, data visualization standards, and format variety. Use this checklist to evaluate a sample of reports from different departments.</p>
+</section>
+<section id="step-2-define-your-reporting-standards" class="level3">
+<h3 class="anchored" data-anchor-id="step-2-define-your-reporting-standards">Step 2: Define Your Reporting Standards</h3>
+<p>Based on the audit, establish a set of reporting standards that all future reports must adhere to. These standards should cover aspects like layout and design, branding elements, data visualization practices, and preferred formats for different types of reports.</p>
+<p><strong>Actionable Tip</strong>: Develop a reporting style guide that outlines these standards. Include examples and templates where possible, making it easier for report creators to adhere to these guidelines.</p>
+</section>
+<section id="step-3-train-your-team" class="level3">
+<h3 class="anchored" data-anchor-id="step-3-train-your-team">Step 3: Train Your Team</h3>
+<p>Invest in training for your team to get up to speed with the R packages required to meet your new reporting standards. This might involve formal training sessions, online courses, or workshops focused on practical applications of <code>officer</code>, <code>openxlsx</code>, <code>bookdown</code>, <code>blogdown</code>, and <code>mscharts</code>.</p>
+<p><strong>Actionable Tip</strong>: Organize regular “lunch and learn” sessions where team members can share tips, challenges, and successes they’ve encountered while using these R packages in their reporting tasks.</p>
+</section>
+<section id="step-4-implement-a-reporting-workflow" class="level3">
+<h3 class="anchored" data-anchor-id="step-4-implement-a-reporting-workflow">Step 4: Implement a Reporting Workflow</h3>
+<p>Design a reporting workflow that integrates these R packages from the outset. This workflow should encompass data collection, analysis, report drafting, review, and distribution. Ensure that the workflow is documented and accessible, encouraging consistency and efficiency.</p>
+<p><strong>Actionable Tip</strong>: Utilize project management tools to map out each step of the reporting process. Assign roles and responsibilities, set deadlines, and track progress through these tools to keep everyone on track.</p>
+</section>
+<section id="step-5-review-and-iterate" class="level3">
+<h3 class="anchored" data-anchor-id="step-5-review-and-iterate">Step 5: Review and Iterate</h3>
+<p>Finally, reporting processes and standards should not be static. Regularly review the effectiveness of your reports, soliciting feedback from stakeholders and report users. Use this feedback to iterate on and improve your reporting standards and processes.</p>
+<p><strong>Actionable Tip</strong>: Schedule bi-annual reviews of your reporting processes and standards. Prepare to adapt and update your approaches based on new requirements, feedback, and technological advancements.</p>
+</section>
+</section>
+<section id="success-stories-transformations-achieved" class="level2">
+<h2 class="anchored" data-anchor-id="success-stories-transformations-achieved">Success Stories: Transformations Achieved</h2>
+<p>Adopting advanced reporting standards with the help of R packages doesn’t just streamline processes; it transforms how organizations communicate their data insights, leading to better-informed decisions, enhanced stakeholder engagement, and ultimately, improved business outcomes. This chapter explores hypothetical success stories, illustrating the profound impact that consistent, high-quality reporting can have on an organization.</p>
+<section id="story-1-the-financial-services-firm" class="level3">
+<h3 class="anchored" data-anchor-id="story-1-the-financial-services-firm">Story 1: The Financial Services Firm</h3>
+<p>A mid-sized financial services firm struggled with monthly and quarterly reporting. Reports were inconsistent and time-consuming to produce, leading to delays and frustration. After auditing their processes, they decided to implement a suite of R packages, including <code>officer</code> for Word and PowerPoint reports, <code>openxlsx</code> for Excel spreadsheets, and <code>mscharts</code> for enhanced data visualizations.</p>
+<p><strong>Transformation Achieved</strong>:</p>
+<ul>
+<li><strong>Time Savings</strong>: Automated report generation reduced the time spent on monthly and quarterly reports by 60%.</li>
+<li><strong>Consistency</strong>: Standardized templates and styles ensured that every report reflected the firm’s branding and met their high-quality standards.</li>
+<li><strong>Decision-Making</strong>: Clearer, more engaging reports improved the decision-making process, enabling the firm to respond more swiftly to market changes.</li>
+</ul>
+</section>
+<section id="story-2-the-non-profit-organization" class="level3">
+<h3 class="anchored" data-anchor-id="story-2-the-non-profit-organization">Story 2: The Non-Profit Organization</h3>
+<p>A non-profit focused on environmental conservation faced challenges in sharing their research findings with a broader audience. Their reports were technical, dense, and difficult for non-experts to understand. They turned to <code>bookdown</code> and <code>blogdown</code> to create accessible, interactive online reports and articles.</p>
+<p><strong>Transformation Achieved</strong>:</p>
+<ul>
+<li><strong>Engagement</strong>: Interactive visualizations and a more engaging narrative style helped to significantly increase public engagement with their reports.</li>
+<li><strong>Awareness</strong>: Enhanced online presence led to increased awareness of their cause, contributing to a 20% uptick in donations and volunteer sign-ups.</li>
+<li><strong>Collaboration</strong>: Easier access to reports fostered collaboration with other organizations, amplifying their impact.</li>
+</ul>
+</section>
+<section id="story-3-the-tech-startup" class="level3">
+<h3 class="anchored" data-anchor-id="story-3-the-tech-startup">Story 3: The Tech Startup</h3>
+<p>A tech startup was preparing for its series A funding round but found that their data was siloed, making it challenging to present a comprehensive view of their market position and growth potential. By utilizing <code>officer</code>, <code>openxlsx</code>, and <code>mscharts</code>, they were able to consolidate data from various sources into a compelling investment deck and detailed financial projections.</p>
+<p><strong>Transformation Achieved</strong>:</p>
+<ul>
+<li><strong>Investor Confidence</strong>: The clarity and professionalism of their reports and presentations increased investor confidence, leading to a successful funding round.</li>
+<li><strong>Operational Efficiency</strong>: Automated, standardized reporting processes saved countless hours, allowing the team to focus on growth and product development.</li>
+<li><strong>Data-Driven Culture</strong>: The ease of generating insightful reports fostered a data-driven culture, empowering teams across the startup to leverage data in their decision-making processes.</li>
+</ul>
+<p>These success stories highlight the transformative power of adopting advanced reporting standards through R packages. While hypothetical, they reflect realistic outcomes based on the capabilities of the tools discussed.</p>
+</section>
+</section>
+<section id="the-new-paradigm-of-professional-reporting" class="level2">
+<h2 class="anchored" data-anchor-id="the-new-paradigm-of-professional-reporting">The New Paradigm of Professional Reporting</h2>
+<p>The journey through the capabilities of R packages for professional reporting underscores a pivotal shift in how businesses approach data analysis and presentation. This new paradigm, characterized by efficiency, consistency, and versatility, doesn’t just change the way reports are created; it transforms them into strategic tools that can significantly influence decision-making and stakeholder engagement. As we conclude, let’s reinforce the value of these R packages and outline the steps your organization can take to embrace this transformative approach to reporting.</p>
+<section id="embrace-efficiency" class="level3">
+<h3 class="anchored" data-anchor-id="embrace-efficiency">Embrace Efficiency</h3>
+<p>The automation capabilities of <code>officer</code>, <code>openxlsx</code>, <code>bookdown</code>, <code>blogdown</code>, and <code>mscharts</code> significantly reduce the time required to produce reports. By embracing these tools, businesses can allocate their valuable resources to deeper analysis and strategic initiatives rather than the mechanics of report generation.</p>
+<p><strong>Next Steps</strong>:</p>
+<ul>
+<li>Automate routine reports.</li>
+<li>Invest time in setting up templates and scripts that align with your reporting standards.</li>
+</ul>
+</section>
+<section id="ensure-consistency" class="level3">
+<h3 class="anchored" data-anchor-id="ensure-consistency">Ensure Consistency</h3>
+<p>Consistency in reporting enhances brand integrity and credibility. Utilizing the discussed R packages allows for a standardized reporting process that upholds your organization’s visual and narrative brand across all formats and platforms.</p>
+<p><strong>Next Steps</strong>:</p>
+<ul>
+<li>Develop a comprehensive style guide for reports.</li>
+<li>Utilize templates and custom styles in <code>officer</code> and <code>openxlsx</code> to maintain consistency.</li>
+</ul>
+</section>
+<section id="achieve-versatility" class="level3">
+<h3 class="anchored" data-anchor-id="achieve-versatility">Achieve Versatility</h3>
+<p>The ability to produce reports across a range of formats — from interactive web pages with <code>blogdown</code> to comprehensive printed documents with <code>bookdown</code> — ensures that your insights reach and resonate with all segments of your audience.</p>
+<p><strong>Next Steps</strong>:</p>
+<ul>
+<li>Identify the preferred report formats for different stakeholder groups.</li>
+<li>Leverage the specific strengths of each R package to cater to these preferences.</li>
+</ul>
+</section>
+<section id="foster-a-data-driven-culture" class="level3">
+<h3 class="anchored" data-anchor-id="foster-a-data-driven-culture">Foster a Data-Driven Culture</h3>
+<p>High-quality, accessible reports encourage a broader engagement with data across the organization. This engagement fosters a data-driven culture where decisions are informed by insights, amplifying the impact of your analysis and reporting efforts.</p>
+<p><strong>Next Steps</strong>:</p>
+<ul>
+<li>Share reports widely within your organization.</li>
+<li>Encourage feedback on report formats and content to continuously refine your approach.</li>
+</ul>
+<p>The journey toward reporting excellence is ongoing and evolving. As new challenges and technologies emerge, the tools and strategies we rely on to communicate our insights will also change. However, the foundation built on the principles of efficiency, consistency, versatility, and a data-driven culture will remain central to effective reporting.</p>
+<p>The R packages discussed in this article — <code>officer</code>, <code>openxlsx</code>, <code>bookdown</code>, <code>blogdown</code>, and <code>mscharts</code> — offer a powerful starting point for any organization ready to enhance its reporting capabilities. By committing to the adoption and mastery of these tools, you can ensure that your reports not only convey information but also tell a compelling story that drives action.</p>
+<p>As you move forward, remember that the true value of reporting lies not in the process of creation but in the insights shared and the decisions they inform. In embracing these advanced reporting standards, you’re not just improving your reports; you’re elevating your organization’s ability to navigate the complexities of today’s business landscape with clarity and confidence.</p>
+<p>PS: While our exploration has primarily focused on leveraging R packages to enhance and standardize reporting processes, it’s important to recognize the wealth of other tools at our disposal that can achieve similar, if not enhanced, outcomes. Python, with its extensive libraries for data analysis and visualization (such as <code>Pandas</code>, <code>Matplotlib</code>, and <code>Seaborn</code>), offers a robust alternative for data science tasks. Similarly, dedicated data visualization and business intelligence platforms like Tableau and Power BI provide user-friendly interfaces and powerful analytics capabilities, making them accessible to a broader audience beyond those with programming expertise.</p>
+<p>The principles and strategies discussed — automation of reports, maintaining consistency across formats, ensuring versatility in output, and fostering a data-driven culture — are not exclusive to R. They are transferable and applicable across a myriad of tools and technologies in the data reporting and visualization landscape. By exploring and integrating these tools alongside R, organizations can further enrich their reporting capabilities, tailoring their approach to fit the unique needs and skill sets of their teams. Whether through coding in Python, designing dashboards in Tableau, or developing reports in Power BI, the ultimate goal remains the same: to communicate data insights in the most effective, efficient, and engaging manner possible.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = true;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>For everybody, not to be fooled by numbers</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

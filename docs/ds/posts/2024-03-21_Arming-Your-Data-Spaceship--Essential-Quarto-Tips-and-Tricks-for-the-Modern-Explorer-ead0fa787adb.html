@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Numbers around us">
+<meta name="dcterms.date" content="2024-03-21">
+
+<title>Arming Your Data Spaceship: Essential Quarto Tips and Tricks for the Modern Explorer – Numbers Around Us</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-cb71375167fd9ce754afb6fa31d3f44e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-1a65b4115a9519dac2c2f4ba2497ca08.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<link href="../../site_libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
+
+<script src="../../site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+
+<script src="../../site_libs/d3-bundle-5.16.0/d3-bundle.min.js"></script>
+
+<script src="../../site_libs/d3-lasso-0.0.5/d3-lasso.min.js"></script>
+
+<script src="../../site_libs/save-svg-as-png-1.4.17/save-svg-as-png.min.js"></script>
+
+<script src="../../site_libs/flatbush-4.4.0/flatbush.min.js"></script>
+
+<link href="../../site_libs/ggiraphjs-0.8.10/ggiraphjs.min.css" rel="stylesheet">
+
+<script src="../../site_libs/ggiraphjs-0.8.10/ggiraphjs.min.js"></script>
+
+<script src="../../site_libs/girafe-binding-0.8.11/girafe.js"></script>
+
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Numbers Around Us</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../challenges/index.html"> 
+<span class="menu-text">Challenges</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../bi/index.html"> 
+<span class="menu-text">Business Intelligence</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../ds/index.html"> 
+<span class="menu-text">Data Science</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../dp/index.html"> 
+<span class="menu-text">Date Philosophy</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <a href="https://github.com" title="Github" class="quarto-navigation-tool px-1" aria-label="Github"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Arming Your Data Spaceship: Essential Quarto Tips and Tricks for the Modern Explorer</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Numbers around us </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 21, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><img src="images/quarto2.jpg" class="img-fluid"></p>
+<p>In the boundless expanse of the data universe, the quest for the ultimate tool to navigate the complexities of information has led us to Quarto, the newest starship in our fleet. This vessel is not just an upgrade to our previous crafts but a revolutionary leap forward, designed for the modern data explorer. With its sleek design and advanced capabilities, Quarto promises to take us further into the unknown realms of data storytelling than ever before.</p>
+<p>This article is your comprehensive guide to outfitting this powerful starship. As we prepare to journey through the cosmic ocean of data science, this article serves as the blueprint to arm your vessel with the most advanced tools, equipment, and weaponry — each tip and trick a device engineered to enhance your exploration and ensure your mission’s success.</p>
+<p>Whether charting new galaxies of information or navigating through asteroid fields of complex analysis, the insights shared here will equip you with the necessary arsenal to face any challenge. Let this guide illuminate the path as you pilot your Quarto-equipped starship, pushing the boundaries of what’s possible in the universe of data science communication.</p>
+<p>As we embark on this interstellar voyage together, remember, the power of Quarto lies not just in its advanced features but in how you wield them to discover, inform, and inspire. Join us as we explore the depths of the data cosmos, armed with Quarto, ready to unlock new worlds of storytelling and insight.</p>
+<p>Let’s start an adventure of discovering functionalities available in Quarto, that can change a way we work.</p>
+<section id="creating-tabs-in-quarto-html-output" class="level2">
+<h2 class="anchored" data-anchor-id="creating-tabs-in-quarto-html-output">Creating Tabs in Quarto HTML Output</h2>
+<section id="preparing-for-lift-off-in-rstudio" class="level3">
+<h3 class="anchored" data-anchor-id="preparing-for-lift-off-in-rstudio">Preparing for Lift-Off in RStudio</h3>
+<p>Before we embark, ensure your RStudio is updated and Quarto is installed. Begin by launching RStudio and creating a new Quarto document:</p>
+<ol type="1">
+<li>Go to <code>File</code> &gt; <code>New File</code> &gt; <code>Quarto Document</code> &gt; <code>HTML</code>.</li>
+<li>Save your new file with a meaningful name, such as <code>stellar-tabs.qmd</code>.</li>
+</ol>
+</section>
+<section id="step-1-charting-the-tabs" class="level3">
+<h3 class="anchored" data-anchor-id="step-1-charting-the-tabs">Step 1: Charting the Tabs</h3>
+<p>Quarto uses simple markdown enhancements to create tabs, allowing you to neatly package diverse content types under individual headings within your HTML document. To initiate your tabbed content, follow this structure:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>::: {.panel-tabset}</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu"># Galaxy Exploration</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>This tab might contain an overview of your data exploration endeavors, perhaps some narrative on the galaxies you've charted.</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu"># Star Analysis</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>Here, delve into the analysis of star compositions. This could be an excellent place for a visual plot or detailed statistical breakdown.</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu"># Planetary Data</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>In this tab, present your findings on various planets. Interactive charts or data tables could be particularly illuminating here.</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>:::</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="https://cdn-images-1.medium.com/max/800/1*3ucDFyofwuSCGp8ZBwjIdA.png" class="img-fluid"></p>
+<p>In this syntax, <code>::: {.panel-tabset}</code> denotes the beginning of the tabbed section, and <code>:::</code> indicates its end. Each heading (<code>#</code>) represents a new tab, with the content following it populating that tab.</p>
+</section>
+<section id="step-2-embedding-cosmic-content" class="level3">
+<h3 class="anchored" data-anchor-id="step-2-embedding-cosmic-content">Step 2: Embedding Cosmic Content</h3>
+<p>Tabs can contain a vast array of content types, from textual narratives to dynamic visualizations. For example, to include a plot using R within one of your tabs, simply insert an R code chunk as you normally would:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- inside the structure from last chunk --&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu"># Nebulae Visualization</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>Visualizing the intricate structures of various nebulae encountered.</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>::: {.cell}</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="in">```{.r .cell-code}</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="in">library(ggplot2)</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="in">ggplot(nebulae_data, aes(x=position, y=light_intensity)) + geom_point()</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>:::</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="https://cdn-images-1.medium.com/max/800/1*UXdFO--VQEwVs_dxn8bkSA.png" class="img-fluid"></p>
+<p>This code chunk, placed within a tab, seamlessly integrates an R-generated plot into your tabbed document structure.</p>
+</section>
+<section id="step-3-launching-your-document" class="level3">
+<h3 class="anchored" data-anchor-id="step-3-launching-your-document">Step 3: Launching Your Document</h3>
+<p>With your document structured and content in place, it’s time to compile and preview your work:</p>
+<ul>
+<li>Click the <code>Render</code> button in RStudio to transform your <code>.qmd</code> file into a polished HTML document.</li>
+<li>Upon rendering, RStudio will automatically open a preview of your document, showcasing your neatly organized tabs filled with rich content.</li>
+</ul>
+</section>
+<section id="navigating-the-data-cosmos" class="level3">
+<h3 class="anchored" data-anchor-id="navigating-the-data-cosmos">Navigating the Data Cosmos</h3>
+<p>Congratulations, you’ve successfully harnessed the power of tabs in Quarto within RStudio, creating a document that not only effectively organizes information but also enhances the reader’s journey through your data narrative. This is just one of many tools Quarto offers to elevate your storytelling, providing your audience with a clear and engaging path through your analyses.</p>
+<p>As we continue to explore the vast possibilities of Quarto, remember that each feature, like each star in the cosmos, offers unique opportunities to illuminate your data in new and exciting ways. Stay tuned for further explorations into Quarto’s capabilities, where we’ll uncover more tricks and tips to enhance your data storytelling adventures.</p>
+</section>
+</section>
+<section id="illuminating-the-cosmos-interactive-visualizations-with-ggiraph-in-quarto" class="level2">
+<h2 class="anchored" data-anchor-id="illuminating-the-cosmos-interactive-visualizations-with-ggiraph-in-quarto">Illuminating the Cosmos: Interactive Visualizations with <code>ggiraph</code> in Quarto</h2>
+<section id="preparing-your-spacecraft-installing-ggiraph" class="level3">
+<h3 class="anchored" data-anchor-id="preparing-your-spacecraft-installing-ggiraph">Preparing Your Spacecraft: Installing <code>ggiraph</code></h3>
+<p>Before embarking on our journey to create interactive visualizations, ensure your Quarto environment is ready and equipped with the <code>ggiraph</code> package. Launch RStudio, open your Quarto document, and prepare to install <code>ggiraph</code> if you haven’t already:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Install ggiraph package</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">install.packages</span><span class="er">(</span><span class="st">"ggiraph"</span><span class="kw">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="crafting-interactive-constellations" class="level3">
+<h3 class="anchored" data-anchor-id="crafting-interactive-constellations">Crafting Interactive Constellations</h3>
+<p>The <code>ggiraph</code> package enhances <code>ggplot2</code> visualizations by making them interactive. You can add tooltips, clickable actions, and hover effects, transforming static plots into engaging experiences. Let’s create a simple interactive plot:</p>
+<ol type="1">
+<li><strong>Load Necessary Libraries</strong>: Begin by loading the <code>ggplot2</code> and <code>ggiraph</code> packages in your Quarto document.</li>
+</ol>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="sc">:::</span> {.cell}</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="sc">:::</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ol start="2" type="1">
+<li><strong>Create a ggplot Object</strong>: Craft your plot using <code>ggplot2</code>, as you typically would. For this example, let’s visualize the <code>mtcars</code> dataset:</li>
+</ol>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="sc">:::</span> {.cell}</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="sc">:::</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Notice the use of <code>geom_point_interactive()</code> instead of the usual <code>geom_point()</code>. This is where <code>ggiraph</code> works its magic, making the points interactive with <code>tooltip</code> and <code>data_id</code> arguments.</p>
+<ol start="3" type="1">
+<li><strong>Render the Interactive Plot</strong>: Use the <code>girafe()</code> function from <code>ggiraph</code> to render your interactive plot within the Quarto document.</li>
+</ol>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="sc">:::</span> {.cell}</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="sc">:::</span> {.cell<span class="sc">-</span>output<span class="sc">-</span>display}</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="st">```</span><span class="at">{=html}</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="at">&lt;div class="girafe html-widget html-fill-item" id="htmlwidget-b0f7e3661d22d6022156" style="width:100%;height:464px;"&gt;&lt;/div&gt;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="at">&lt;script type="application/json" data-for="htmlwidget-b0f7e3661d22d6022156"&gt;{"x":{"html":"&lt;?xml version=</span><span class="sc">\"</span><span class="at">1.0</span><span class="sc">\"</span><span class="at"> encoding=</span><span class="sc">\"</span><span class="at">UTF-8</span><span class="sc">\"</span><span class="at">?&gt;</span><span class="sc">\n</span><span class="at">&lt;svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' class='ggiraph-svg' role='graphics-document' id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791' viewBox='0 0 504 360'&gt;</span><span class="sc">\n</span><span class="at"> &lt;defs id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_defs'&gt;</span><span class="sc">\n</span><span class="at">  &lt;clipPath id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_c1'&gt;</span><span class="sc">\n</span><span class="at">   &lt;rect x='0' y='0' width='504' height='360'/&gt;</span><span class="sc">\n</span><span class="at">  &lt;\/clipPath&gt;</span><span class="sc">\n</span><span class="at">  &lt;clipPath id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_c2'&gt;</span><span class="sc">\n</span><span class="at">   &lt;rect x='33.14' y='5.48' width='465.38' height='323.02'/&gt;</span><span class="sc">\n</span><span class="at">  &lt;\/clipPath&gt;</span><span class="sc">\n</span><span class="at"> &lt;\/defs&gt;</span><span class="sc">\n</span><span class="at"> &lt;g id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_rootg' class='ggiraph-svg-rootg'&gt;</span><span class="sc">\n</span><span class="at">  &lt;g clip-path='url(#svg_85fd72f3_8f97_4485_a4f1_8e353a331791_c1)'&gt;</span><span class="sc">\n</span><span class="at">   &lt;rect x='0' y='0' width='504' height='360' fill='#FFFFFF' fill-opacity='1' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.75' stroke-linejoin='round' stroke-linecap='round' class='ggiraph-svg-bg'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;rect x='0' y='0' width='504' height='360' fill='#FFFFFF' fill-opacity='1' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='round'/&gt;</span><span class="sc">\n</span><span class="at">  &lt;\/g&gt;</span><span class="sc">\n</span><span class="at">  &lt;g clip-path='url(#svg_85fd72f3_8f97_4485_a4f1_8e353a331791_c2)'&gt;</span><span class="sc">\n</span><span class="at">   &lt;rect x='33.14' y='5.48' width='465.38' height='323.02' fill='#EBEBEB' fill-opacity='1' stroke='none'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='33.14,287.58 498.52,287.58' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='33.14,225.10 498.52,225.10' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='33.14,162.62 498.52,162.62' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='33.14,100.14 498.52,100.14' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='33.14,37.66 498.52,37.66' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='52.89,328.50 52.89,5.48' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='161.06,328.50 161.06,5.48' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='269.24,328.50 269.24,5.48' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='377.41,328.50 377.41,5.48' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='485.59,328.50 485.59,5.48' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='33.14,318.82 498.52,318.82' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='33.14,256.34 498.52,256.34' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='33.14,193.86 498.52,193.86' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='33.14,131.38 498.52,131.38' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='33.14,68.90 498.52,68.90' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='33.14,6.42 498.52,6.42' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='106.97,328.50 106.97,5.48' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='215.15,328.50 215.15,5.48' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='323.32,328.50 323.32,5.48' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='431.50,328.50 431.50,5.48' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e1' cx='174.04' cy='181.36' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 2.62 MPG: 21' data-id='Mazda RX4'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e2' cx='201.63' cy='181.36' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 2.875 MPG: 21' data-id='Mazda RX4 Wag'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e3' cx='141.59' cy='158.87' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 2.32 MPG: 22.8' data-id='Datsun 710'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e4' cx='238.41' cy='176.36' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 3.215 MPG: 21.4' data-id='Hornet 4 Drive'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e5' cx='262.75' cy='210.1' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 3.44 MPG: 18.7' data-id='Hornet Sportabout'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e6' cx='264.91' cy='217.6' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 3.46 MPG: 18.1' data-id='Valiant'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e7' cx='276.81' cy='265.09' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 3.57 MPG: 14.3' data-id='Duster 360'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e8' cx='235.7' cy='138.88' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 3.19 MPG: 24.4' data-id='Merc 240D'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e9' cx='231.38' cy='158.87' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 3.15 MPG: 22.8' data-id='Merc 230'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e10' cx='262.75' cy='203.86' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 3.44 MPG: 19.2' data-id='Merc 280'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e11' cx='262.75' cy='221.35' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 3.44 MPG: 17.8' data-id='Merc 280C'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e12' cx='330.9' cy='238.84' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 4.07 MPG: 16.4' data-id='Merc 450SE'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e13' cx='294.12' cy='227.6' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 3.73 MPG: 17.3' data-id='Merc 450SL'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e14' cx='299.53' cy='253.84' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 3.78 MPG: 15.2' data-id='Merc 450SLC'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e15' cx='458.54' cy='313.82' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 5.25 MPG: 10.4' data-id='Cadillac Fleetwood'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e16' cx='477.37' cy='313.82' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 5.424 MPG: 10.4' data-id='Lincoln Continental'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e17' cx='468.82' cy='260.09' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 5.345 MPG: 14.7' data-id='Chrysler Imperial'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e18' cx='128.61' cy='38.91' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 2.2 MPG: 32.4' data-id='Fiat 128'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e19' cx='65.33' cy='63.9' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 1.615 MPG: 30.4' data-id='Honda Civic'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e20' cx='89.12' cy='20.16' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 1.835 MPG: 33.9' data-id='Toyota Corolla'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e21' cx='157.27' cy='175.11' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 2.465 MPG: 21.5' data-id='Toyota Corona'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e22' cx='271.4' cy='250.09' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 3.52 MPG: 15.5' data-id='Dodge Challenger'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e23' cx='262.21' cy='253.84' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 3.435 MPG: 15.2' data-id='AMC Javelin'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e24' cx='306.02' cy='277.58' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 3.84 MPG: 13.3' data-id='Camaro Z28'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e25' cx='306.56' cy='203.86' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 3.845 MPG: 19.2' data-id='Pontiac Firebird'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e26' cx='99.94' cy='102.64' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 1.935 MPG: 27.3' data-id='Fiat X1-9'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e27' cx='122.12' cy='118.88' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 2.14 MPG: 26' data-id='Porsche 914-2'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e28' cx='54.29' cy='63.9' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 1.513 MPG: 30.4' data-id='Lotus Europa'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e29' cx='233.54' cy='246.34' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 3.17 MPG: 15.8' data-id='Ford Pantera L'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e30' cx='190.27' cy='197.61' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 2.77 MPG: 19.7' data-id='Ferrari Dino'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e31' cx='276.81' cy='256.34' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 3.57 MPG: 15' data-id='Maserati Bora'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;circle id='svg_85fd72f3_8f97_4485_a4f1_8e353a331791_e32' cx='191.35' cy='176.36' r='1.47pt' fill='#000000' fill-opacity='1' stroke='#000000' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Weight: 2.78 MPG: 21.4' data-id='Volvo 142E'/&gt;</span><span class="sc">\n</span><span class="at">  &lt;\/g&gt;</span><span class="sc">\n</span><span class="at">  &lt;g clip-path='url(#svg_85fd72f3_8f97_4485_a4f1_8e353a331791_c1)'&gt;</span><span class="sc">\n</span><span class="at">   &lt;text x='18.41' y='321.97' font-size='6.6pt' font-family='Arial' fill='#4D4D4D' fill-opacity='1'&gt;10&lt;\/text&gt;</span><span class="sc">\n</span><span class="at">   &lt;text x='18.41' y='259.49' font-size='6.6pt' font-family='Arial' fill='#4D4D4D' fill-opacity='1'&gt;15&lt;\/text&gt;</span><span class="sc">\n</span><span class="at">   &lt;text x='18.41' y='197.01' font-size='6.6pt' font-family='Arial' fill='#4D4D4D' fill-opacity='1'&gt;20&lt;\/text&gt;</span><span class="sc">\n</span><span class="at">   &lt;text x='18.41' y='134.53' font-size='6.6pt' font-family='Arial' fill='#4D4D4D' fill-opacity='1'&gt;25&lt;\/text&gt;</span><span class="sc">\n</span><span class="at">   &lt;text x='18.41' y='72.05' font-size='6.6pt' font-family='Arial' fill='#4D4D4D' fill-opacity='1'&gt;30&lt;\/text&gt;</span><span class="sc">\n</span><span class="at">   &lt;text x='18.41' y='9.57' font-size='6.6pt' font-family='Arial' fill='#4D4D4D' fill-opacity='1'&gt;35&lt;\/text&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='30.40,318.82 33.14,318.82' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='30.40,256.34 33.14,256.34' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='30.40,193.86 33.14,193.86' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='30.40,131.38 33.14,131.38' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='30.40,68.90 33.14,68.90' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='30.40,6.42 33.14,6.42' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='106.97,331.24 106.97,328.50' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='215.15,331.24 215.15,328.50' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='323.32,331.24 323.32,328.50' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;polyline points='431.50,331.24 431.50,328.50' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/&gt;</span><span class="sc">\n</span><span class="at">   &lt;text x='104.53' y='339.74' font-size='6.6pt' font-family='Arial' fill='#4D4D4D' fill-opacity='1'&gt;2&lt;\/text&gt;</span><span class="sc">\n</span><span class="at">   &lt;text x='212.7' y='339.74' font-size='6.6pt' font-family='Arial' fill='#4D4D4D' fill-opacity='1'&gt;3&lt;\/text&gt;</span><span class="sc">\n</span><span class="at">   &lt;text x='320.88' y='339.74' font-size='6.6pt' font-family='Arial' fill='#4D4D4D' fill-opacity='1'&gt;4&lt;\/text&gt;</span><span class="sc">\n</span><span class="at">   &lt;text x='429.05' y='339.74' font-size='6.6pt' font-family='Arial' fill='#4D4D4D' fill-opacity='1'&gt;5&lt;\/text&gt;</span><span class="sc">\n</span><span class="at">   &lt;text x='260.33' y='352.2' font-size='8.25pt' font-family='Arial'&gt;wt&lt;\/text&gt;</span><span class="sc">\n</span><span class="at">   &lt;text transform='translate(13.36,177.69) rotate(-90.00)' font-size='8.25pt' font-family='Arial'&gt;mpg&lt;\/text&gt;</span><span class="sc">\n</span><span class="at">  &lt;\/g&gt;</span><span class="sc">\n</span><span class="at"> &lt;\/g&gt;</span><span class="sc">\n</span><span class="at">&lt;\/svg&gt;","js":null,"uid":"svg_85fd72f3_8f97_4485_a4f1_8e353a331791","ratio":1.4,"settings":{"tooltip":{"css":".tooltip_SVGID_ { padding:5px;background:black;color:white;border-radius:2px;text-align:left; ; position:absolute;pointer-events:none;z-index:999;}","placement":"doc","opacity":0.9,"offx":10,"offy":10,"use_cursor_pos":true,"use_fill":false,"use_stroke":false,"delay_over":200,"delay_out":500},"hover":{"css":".hover_data_SVGID_ { fill:orange;stroke:black;cursor:pointer; }</span><span class="sc">\n</span><span class="at">text.hover_data_SVGID_ { stroke:none;fill:orange; }</span><span class="sc">\n</span><span class="at">circle.hover_data_SVGID_ { fill:orange;stroke:black; }</span><span class="sc">\n</span><span class="at">line.hover_data_SVGID_, polyline.hover_data_SVGID_ { fill:none;stroke:orange; }</span><span class="sc">\n</span><span class="at">rect.hover_data_SVGID_, polygon.hover_data_SVGID_, path.hover_data_SVGID_ { fill:orange;stroke:none; }</span><span class="sc">\n</span><span class="at">image.hover_data_SVGID_ { stroke:orange; }","reactive":true,"nearest_distance":null},"hover_inv":{"css":""},"hover_key":{"css":".hover_key_SVGID_ { fill:orange;stroke:black;cursor:pointer; }</span><span class="sc">\n</span><span class="at">text.hover_key_SVGID_ { stroke:none;fill:orange; }</span><span class="sc">\n</span><span class="at">circle.hover_key_SVGID_ { fill:orange;stroke:black; }</span><span class="sc">\n</span><span class="at">line.hover_key_SVGID_, polyline.hover_key_SVGID_ { fill:none;stroke:orange; }</span><span class="sc">\n</span><span class="at">rect.hover_key_SVGID_, polygon.hover_key_SVGID_, path.hover_key_SVGID_ { fill:orange;stroke:none; }</span><span class="sc">\n</span><span class="at">image.hover_key_SVGID_ { stroke:orange; }","reactive":true},"hover_theme":{"css":".hover_theme_SVGID_ { fill:orange;stroke:black;cursor:pointer; }</span><span class="sc">\n</span><span class="at">text.hover_theme_SVGID_ { stroke:none;fill:orange; }</span><span class="sc">\n</span><span class="at">circle.hover_theme_SVGID_ { fill:orange;stroke:black; }</span><span class="sc">\n</span><span class="at">line.hover_theme_SVGID_, polyline.hover_theme_SVGID_ { fill:none;stroke:orange; }</span><span class="sc">\n</span><span class="at">rect.hover_theme_SVGID_, polygon.hover_theme_SVGID_, path.hover_theme_SVGID_ { fill:orange;stroke:none; }</span><span class="sc">\n</span><span class="at">image.hover_theme_SVGID_ { stroke:orange; }","reactive":true},"select":{"css":".select_data_SVGID_ { fill:red;stroke:black;cursor:pointer; }</span><span class="sc">\n</span><span class="at">text.select_data_SVGID_ { stroke:none;fill:red; }</span><span class="sc">\n</span><span class="at">circle.select_data_SVGID_ { fill:red;stroke:black; }</span><span class="sc">\n</span><span class="at">line.select_data_SVGID_, polyline.select_data_SVGID_ { fill:none;stroke:red; }</span><span class="sc">\n</span><span class="at">rect.select_data_SVGID_, polygon.select_data_SVGID_, path.select_data_SVGID_ { fill:red;stroke:none; }</span><span class="sc">\n</span><span class="at">image.select_data_SVGID_ { stroke:red; }","type":"multiple","only_shiny":true,"selected":[]},"select_inv":{"css":""},"select_key":{"css":".select_key_SVGID_ { fill:red;stroke:black;cursor:pointer; }</span><span class="sc">\n</span><span class="at">text.select_key_SVGID_ { stroke:none;fill:red; }</span><span class="sc">\n</span><span class="at">circle.select_key_SVGID_ { fill:red;stroke:black; }</span><span class="sc">\n</span><span class="at">line.select_key_SVGID_, polyline.select_key_SVGID_ { fill:none;stroke:red; }</span><span class="sc">\n</span><span class="at">rect.select_key_SVGID_, polygon.select_key_SVGID_, path.select_key_SVGID_ { fill:red;stroke:none; }</span><span class="sc">\n</span><span class="at">image.select_key_SVGID_ { stroke:red; }","type":"single","only_shiny":true,"selected":[]},"select_theme":{"css":".select_theme_SVGID_ { fill:red;stroke:black;cursor:pointer; }</span><span class="sc">\n</span><span class="at">text.select_theme_SVGID_ { stroke:none;fill:red; }</span><span class="sc">\n</span><span class="at">circle.select_theme_SVGID_ { fill:red;stroke:black; }</span><span class="sc">\n</span><span class="at">line.select_theme_SVGID_, polyline.select_theme_SVGID_ { fill:none;stroke:red; }</span><span class="sc">\n</span><span class="at">rect.select_theme_SVGID_, polygon.select_theme_SVGID_, path.select_theme_SVGID_ { fill:red;stroke:none; }</span><span class="sc">\n</span><span class="at">image.select_theme_SVGID_ { stroke:red; }","type":"single","only_shiny":true,"selected":[]},"zoom":{"min":1,"max":1,"duration":300},"toolbar":{"position":"topright","pngname":"diagram","tooltips":null,"fixed":false,"hidden":[],"delay_over":200,"delay_out":500},"sizing":{"rescale":true,"width":1}}},"evals":[],"jsHooks":[]}&lt;/script&gt;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="st">```</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="sc">:::</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="er">:::</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="https://cdn-images-1.medium.com/max/800/1*mDDRzG9TDlhvGvgYvkC8lA.png" class="img-fluid"></p>
+</section>
+<section id="navigating-through-interactive-nebulae" class="level3">
+<h3 class="anchored" data-anchor-id="navigating-through-interactive-nebulae">Navigating Through Interactive Nebulae</h3>
+<p>With your interactive plot rendered, viewers can now hover over data points to see tooltips — snippets of information that provide deeper insights into each point. This level of interaction invites the audience to explore the data more closely, fostering a connection and understanding that static plots cannot achieve.</p>
+</section>
+<section id="expanding-your-universe" class="level3">
+<h3 class="anchored" data-anchor-id="expanding-your-universe">Expanding Your Universe</h3>
+<p>The example above scratches the surface of what’s possible with <code>ggiraph</code> in Quarto. The package supports a variety of interactive geoms and options, allowing you to tailor the interactivity to your needs. Explore <code>geom_bar_interactive()</code>, <code>geom_line_interactive()</code>, and more to discover the full potential of interactive visualizations in your Quarto documents.</p>
+</section>
+<section id="the-cosmos-awaits" class="level3">
+<h3 class="anchored" data-anchor-id="the-cosmos-awaits">The Cosmos Awaits</h3>
+<p>Integrating <code>ggiraph</code> into your Quarto documents opens up new galaxies of possibilities for data visualization and storytelling. As we continue our exploration of Quarto’s capabilities, let this chapter on <code>ggiraph</code> remind us that the power to illuminate the cosmos lies within our grasp. By making our data visualizations interactive, we not only enhance the aesthetic appeal of our documents but also deepen the engagement and understanding of our audience. Stay tuned for further explorations into the universe of Quarto, where we’ll continue to discover tools and techniques that transform our data storytelling from mere observation to an interactive voyage through the stars.</p>
+</section>
+</section>
+<section id="stellar-annotations-weaving-footnotes-into-your-cosmic-narrative" class="level2">
+<h2 class="anchored" data-anchor-id="stellar-annotations-weaving-footnotes-into-your-cosmic-narrative">Stellar Annotations: Weaving Footnotes into Your Cosmic Narrative</h2>
+<p>Adding footnotes to your Quarto document is akin to embedding hidden constellations within the fabric of your cosmic narrative. These small, yet potent annotations serve as gateways to additional insights, explanations, or references without cluttering the main voyage of discovery. To sprinkle these celestial markers throughout your document, Quarto simplifies the process: simply use the syntax <code>[^1]</code> within your text to indicate a footnote marker, and then detail the footnote’s content at the document’s end or the section’s close, like so:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>This statement requires further illumination<span class="ot">[^1]</span>.</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="ot">[^1]: </span>Here lies the deeper exploration of the statement, shining light on the intricacies and supporting information that enrich the narrative.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="https://cdn-images-1.medium.com/max/800/1*JWMSJvo9uUpI_scvm_jlNQ.png" class="img-fluid"></p>
+<p>By integrating footnotes, you’re not merely adding asides; you’re creating a richer layers of knowledge and exploration, allowing readers to delve deeper into the universe of your data story at their leisure.</p>
+</section>
+<section id="charting-the-cosmos-embedding-mermaid-and-graphviz-diagrams-in-quarto-documents" class="level2">
+<h2 class="anchored" data-anchor-id="charting-the-cosmos-embedding-mermaid-and-graphviz-diagrams-in-quarto-documents">Charting the Cosmos: Embedding Mermaid and Graphviz Diagrams in Quarto Documents</h2>
+<p>In the quest to map the complex galaxies of data and concepts, Quarto equips explorers with powerful tools beyond the realm of mere text and images. Among these are the abilities to embed Mermaid and Graphviz diagrams directly into your documents, enabling the creation of dynamic, illustrative charts that capture the flow of data, relationships, and processes with elegance and precision. This capability transforms your Quarto document into a navigator’s star chart, guiding readers through the intricate constellations of your analysis or argument.</p>
+<p>To integrate a Mermaid diagram, utilize the following syntax within your Quarto document, wrapping your diagram code within a fenced code block tagged with <code>mermaid</code>:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{mermaid}</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="in">graph TD;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="in">    A[Data Exploration] --&gt;|Transform| B(Data Modeling);</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="in">    B --&gt; C{Insight Discovery};</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="in">    C --&gt;|Yes| D[Communicate Results];</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="in">    C --&gt;|No| E[Iterate Further];</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Similarly, for Graphviz diagrams, encapsulate your Graphviz code within a fenced code block annotated with <code>graphviz</code>:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{dot}</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="in">digraph G {</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="in">    A -&gt; B;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="in">    B -&gt; C;</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="in">    C -&gt; D;</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="in">    D -&gt; A;</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="in">}</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img src="https://cdn-images-1.medium.com/max/800/1*9HN_NsqnPxymhxfX277KNQ.png" class="img-fluid"></p>
+<p>These embedded diagrams serve as cosmic beacons in your document, illuminating complex ideas through visual representation and enhancing the reader’s journey through your narrative. By incorporating Mermaid and Graphviz diagrams into your Quarto documents, you unlock new dimensions of storytelling, allowing you to convey intricate relationships and flows in a manner that is both visually appealing and deeply informative.</p>
+</section>
+<section id="the-interactive-cosmos-of-quartos-html-features" class="level2">
+<h2 class="anchored" data-anchor-id="the-interactive-cosmos-of-quartos-html-features">The Interactive Cosmos of Quarto’s HTML Features</h2>
+<p>Quarto’s HTML output capabilities are akin to unlocking a universe of possibilities for enriching your data narrative, allowing you to craft a document that’s not just informative but truly immersive. Among the stellar features that set Quarto apart are modals, content on the margin, parallax sections, and various embeddings — each adding a layer of depth and interactivity to your exploration of data galaxies.</p>
+<p><strong>Modals</strong> offer a space for additional information without steering away from the main narrative. They are like hidden wormholes, revealing more insights when interacted with, perfect for elaborating on datasets, methodologies, or supplementary notes without cluttering the primary view.</p>
+<p><strong>Content on the margin</strong> allows for asides or annotations, akin to charting notes on a star map. This feature enhances the reader’s journey by providing context, references, or additional insights parallel to the main content, ensuring a comprehensive understanding without disrupting the flow of exploration.</p>
+<p><strong>Parallax sections</strong> introduce a dynamic, three-dimensional feel to your document. As readers scroll through your cosmic narrative, background images move at a different speed than the foreground content, creating an engaging, visually captivating experience that mirrors the vastness and depth of space itself.</p>
+<p><strong>Embedding</strong>s further expand the horizons of your HTML document by allowing the integration of interactive content such as videos, podcasts, tweets, and more. These elements are like comets streaking through the document, drawing attention and offering varied mediums to convey your message. You can embed instructional videos, relevant social media posts, or interactive visualizations that make the document not just a report but a portal to a richer, more engaging universe of information.</p>
+<p>In addition to these, Quarto’s HTML output supports a wide array of interactive elements and sophisticated formatting options that empower you to create documents tailored to the needs and curiosities of your audience. Whether it’s through collapsible sections that reveal data layers at a click, floating figures that enhance the visual appeal, or side notes that offer whispered insights, Quarto equips you with the tools to make your document a living, breathing entity.</p>
+<p>Through these capabilities, Quarto transforms the traditional documentation format into a vibrant, interactive journey. By leveraging these features, you invite readers into an immersive experience, encouraging exploration, discovery, and engagement with your data narrative in ways that were once the realm of imagination. With Quarto, you’re not just presenting data; you’re guiding your audience through an interactive cosmos where every scroll reveals new knowledge, every click uncovers hidden wonders, and every page turn is a leap into the unknown.</p>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>As we draw our cosmic journey through the vast functionalities of Quarto’s HTML output to a close, we’ve navigated through a universe brimming with possibilities — from hidden modal galaxies and annotated margins that chart our course, to the dynamic realms of parallax and the diverse ecosystems of embeddings. Each of these features serves as a beacon, guiding us through the intricate narratives of our data stories, and allowing us to craft documents that are not just read, but experienced.</p>
+<p>Yet, what we’ve explored together is merely a glimpse into the nebula of potential that Quarto offers. Beyond these stars lie uncharted territories, waiting for intrepid explorers willing to embark on the adventure. Quarto’s universe is expansive, with advanced functionalities and interactive elements that transcend traditional documentation, inviting us to redefine the boundaries of data storytelling.</p>
+<p>The journey into Quarto’s capabilities does not end here; it’s a continuous voyage of discovery, innovation, and creativity. As you prepare to launch into your own explorations, remember that the tools and techniques highlighted are just the starting points. The true adventure lies in leveraging these to uncover new insights, engage audiences on a deeper level, and illuminate the cosmos of your data in ways previously unimagined. With Quarto as your spacecraft, the universe of data science documentation is yours to explore. So, buckle up and prepare for liftoff into the vast expanse of Quarto’s possibilities — the adventure is just beginning.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = true;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>For everybody, not to be fooled by numbers</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
