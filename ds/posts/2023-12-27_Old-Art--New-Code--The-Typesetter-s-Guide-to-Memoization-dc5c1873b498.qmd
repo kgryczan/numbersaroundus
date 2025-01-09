@@ -1,0 +1,158 @@
+---
+title: "Old Art, New Code: The Typesetter's Guide to Memoization"
+author: "Numbers around us"
+date: "2023-12-27"
+format: html
+---
+
+![](images/memoisation.jpg)
+
+In the world of programming, where complexity often intertwines with the need for efficiency, there exists a practice as ancient as it is modern: memoization. This concept, akin to the meticulous art of typesetting in the days of yore, stands as a testament to the timeless pursuit of optimization and reusability. Typesetters, in the era of physical printing presses, arranged each letter and symbol with precision, creating layouts that could be reused countless times. Their craft, though rooted in history, echoes strikingly in today's digital realm.
+
+Memoization, in its essence, is the programmer's typesetting --- a method to 'set' calculations and results in such a way that they can be efficiently reused, saving valuable time and computational resources. Just as a typesetter would not compose the same page layout repeatedly, a savvy programmer, through memoization, avoids recalculating results for known inputs. This technique, while simple in concept, can have profound implications in the world of coding, much like the revolution brought about by typesetting in printing.
+
+This article embarks on a journey to explore memoization, drawing parallels with the art of typesetting to illuminate its importance and application in modern programming. We shall delve into its basics, see it through the lens of a typesetter, and learn from real-life scenarios where memoization could have been the hero of the day, saving not just time but opening doors to efficiency previously untapped.
+
+## The Art of Typesetting
+
+Long before the advent of digital printing and programming, the meticulous craft of typesetting laid the foundation for the dissemination of knowledge. Typesetters, with their lead letters and symbols, meticulously arranged each character on a page. This painstaking process, once completed, allowed for the repeated printing of a page without the need for re-arrangement. The typesetter's efficient use of reusable layouts is an early embodiment of what we now call memoization in programming.
+
+Memoization, much like typesetting, involves storing the results of expensive function calls and reusing them when the same inputs occur again. This approach is particularly beneficial in programming, where certain computations are costly in terms of time and resources.
+
+To illustrate, let's consider a simple example in R with generated dummy data:
+
+```r
+# Install and load the necessary package
+if (!requireNamespace("memoise", quietly = TRUE)) {
+  install.packages("memoise")
+}
+library(memoise)
+
+# Example function: Calculating the mean of a numeric vector
+calculate_mean <- function(numeric_vector) {
+  Sys.sleep(2) # Simulating a time-consuming process
+  mean(numeric_vector)
+}
+
+# Memoizing the function
+memoized_mean <- memoise(calculate_mean)
+
+# Generating dummy data
+set.seed(123)
+dummy_data <- rnorm(1000)
+
+# Using the memoized function
+system.time(memoized_mean(dummy_data)) # First call, function will compute
+# user  system elapsed 
+# 0.00    0.00    2.05 
+
+system.time(memoized_mean(dummy_data)) # Second call, result is memoized
+# user  system elapsed 
+# 0.00    0.00    0.01 
+```
+
+In this example, `calculate_mean` represents a time-consuming function, akin to the typesetter arranging a page. By using `memoise`, we store the result of this 'arrangement' so that subsequent calls with the same input (our 'page') do not require re-computation, mirroring the typesetter's efficiency.
+
+## Basics of Memoization
+
+Memoization is a concept in programming that allows for the optimization of computer programs by storing the results of expensive function calls and returning the cached result when the same inputs occur again. This technique is particularly beneficial in scenarios where functions are called repeatedly with the same arguments.
+
+To understand memoization better, let's use a classic example in R: calculating Fibonacci numbers. The Fibonacci sequence is an excellent example of how redundant calculations can be significantly reduced with memoization.
+
+```r
+# Fibonacci function without memoization
+fibonacci <- function(n) {
+  if (n <= 1) return(n)
+  else return(fibonacci(n - 1) + fibonacci(n - 2))
+}
+
+# Memoizing the Fibonacci function
+memoized_fibonacci <- memoise(fibonacci)
+
+# Measuring performance (first call no memoized result)
+start_time <- Sys.time()
+memoized_fibonacci(30)
+end_time <- Sys.time()
+time_taken <- end_time - start_time
+
+# Output the time taken
+print(time_taken)
+# > Time difference of 2.487197 secs
+
+# Now try with memoized result
+start_time <- Sys.time()
+memoized_fibonacci(30)
+end_time <- Sys.time()
+time_taken <- end_time - start_time
+
+# Output the time taken
+print(time_taken)
+# > Time difference of 0.006574869 secs
+```
+
+In this example, the `fibonacci` function is highly inefficient without memoization due to its recursive nature, recalculating the same values multiple times. By applying memoization with the `memoise` package, we can cache these results, thereby drastically reducing the number of calculations and the execution time. This is a simple yet powerful demonstration of how memoization can optimize performance in programming tasks.
+
+## Memoization Through the Typesetter's Lens
+
+Just as a typesetter meticulously arranges letters and symbols for printing, programmers arrange code and computations to solve problems. The key to efficiency in both domains lies in the art of reusing work that's already been done.
+
+### The Typesetter's Efficiency in Programming:
+
+- **Reusing Computed Layouts**: In typesetting, once a page layout is set for a particular text, it can be reused for multiple prints. Similarly, in memoization, once a function computes a result for a specific set of inputs, this result is stored. Any future requests for the same computation can be quickly answered by retrieving the stored result, rather than redoing the entire calculation.
+- **Applying the Typesetter Analogy in R Programming**: Let's consider an R function that simulates a more complex calculation, such as determining the optimal pricing strategy for a product based on historical sales data. This process, akin to setting up a typeset page, may involve extensive computation.
+
+```r
+# Pricing strategy function (hypothetical example)
+calculate_pricing_strategy <- function(sales_data) {
+  # Simulated complex computation
+  Sys.sleep(5) # Represents time-consuming computation
+  # [Complex analysis on sales data]
+  # Return some pricing strategy
+}
+
+# Memoizing the function
+memoized_pricing_strategy <- memoise(calculate_pricing_strategy)
+
+# Assuming sales_data1 and sales_data2 are datasets with sales information
+# First call with sales_data1
+system.time(memoized_pricing_strategy(sales_data1)) 
+
+# Second call with the same data (sales_data1) - result is memoized
+system.time(memoized_pricing_strategy(sales_data1))
+```
+
+In this example, the `calculate_pricing_strategy` function represents a complex operation. By using memoization, we save time on subsequent calls with the same sales data, mirroring the typesetter's approach of reusing a set page layout for multiple prints.
+
+## Practical Applications in Programming --- Learning from Personal Experience
+
+Through my journey as an analyst in e-commerce, I encountered several instances where memoization could have significantly streamlined batch calculations. These experiences highlight the practicality and effectiveness of memoization in real-world scenarios.
+
+### 1. Optimizing Profit Per Shopping Cart Calculations:
+
+- **Scenario Description**: My task involved calculating the profit per shopping cart. While I already knew the revenue per product, determining the costs per product for each configuration was challenging due to their slight differences.
+- **Challenge Faced**: Each shopping cart had a unique combination of products, but the method of cost calculation was consistent. The challenge was the repetitive computation for similar configurations.
+- **Memoization Solution**: Implementing memoization would have allowed for storing the cost calculation for each product configuration. Once calculated for a specific configuration, subsequent carts with the same configuration would retrieve the cost instantly, significantly reducing the computation time.
+
+### 2. Streamlining Salesperson Provision Calculations:
+
+- **Scenario Description**: Calculating provisions for salespeople based on the products sold and other conditions, like if the product was a demo item.
+- **Challenge Faced**: The calculation was complex due to the variable provisions depending on the product and conditions. It was a repetitive task, especially for popular product combinations.
+- **Memoization Solution**: Memoization would have enabled caching of provision calculations for frequently sold products, thereby avoiding redundant calculations and speeding up the process.
+
+### 3. Simplifying Recycling Fee Reports:
+
+- **Scenario Description**: Reporting the amounts of paper and plastic for various product packaging combinations was mandatory.
+- **Challenge Faced**: Different combinations of products in packages resulted in varying amounts of materials, making the task laborious and repetitive.
+- **Memoization Solution**: By applying memoization, we could have cached the material amounts for common product combinations. This would have streamlined the reporting process, making it more efficient and less prone to error.
+
+**Reflection and Application**: In each of these scenarios, the principle of memoization would have saved a significant amount of time and resources. These experiences taught me the invaluable lesson of identifying opportunities where memoization can be applied, a lesson that extends beyond e-commerce to various fields in programming.
+
+As we close our exploration of memoization, it's clear that this technique is not just a programming concept but a bridge between the ancient art of typesetting and modern computational efficiency. The journey through the typesetter's world has provided us with a unique lens to view and understand memoization, revealing its profound impact on programming.
+
+The parallels drawn between the meticulous craft of typesetting and the strategic application of memoization in coding demonstrate a timeless principle: the value of reusing work to enhance efficiency. Whether it's a typesetter arranging letters for print or a programmer optimizing code execution, the underlying philosophy remains the same --- work smarter, not harder.
+
+The personal experiences shared from my time in e-commerce analytics further underscore the practical applications of memoization. In scenarios ranging from calculating profits per shopping cart to streamlining salesperson provisions and simplifying recycling fee reports, the potential time and resource savings are evident. These reflections not only highlight memoization's significance in my past work but also its broader applicability in various fields where computational tasks are repetitive and data-driven.
+
+As programmers, developers, or data analysts, embracing the concept of memoization can lead to more efficient, optimized, and effective solutions. It encourages us to think critically about our approaches to problem-solving and to seek opportunities where we can apply this powerful technique.
+
+In the spirit of the typesetters of old, let us set our 'pages' of code with the same efficiency and foresight, harnessing the power of memoization to write not just good code, but great code.

@@ -1,0 +1,352 @@
+---
+title: "S(00)7 --- Agent with License for OOP"
+author: "Numbers around us"
+date: "2023-12-21"
+format: html
+---
+
+![](images/jamesbond.jpg)
+
+In the realm of data science and statistical programming, R stands out for its rich set of features and libraries. Just like the iconic James Bond, also known as Agent 007, who never fails to amaze with his suave skills and an array of sophisticated gadgets, the R programming language has its own secret weapon for object-oriented programming (OOP): the S7 system. The S7 system in R is a new, advanced OOP system, designed to build on and surpass its predecessors, S3 and S4. In this article, we will embark on a mission to explore the S7 OOP system, understanding its features and capabilities through the thrilling lens of a 007 adventure.
+
+## S007 --- The New Agent in Town
+
+R's journey in Object-Oriented Programming (OOP) has been a progressive evolution, much like the transformation of the James Bond character over decades. From the straightforward, yet somewhat limited, S3 system, akin to Bond's early gadgets, to the more complex and robust S4 system, resembling the intricate plotlines and advanced technology of the later Bond films, R's OOP capabilities have continually expanded and improved. Now, enter S7 --- the latest upgrade, designed to be the successor to both S3 and S4, offering a harmonious blend of their best features with additional enhancements.
+
+S7, like a well-scripted Bond movie, offers a narrative of sophistication and efficiency. It provides formal class definitions, a concept somewhat akin to Bond receiving detailed mission briefings. These definitions lay out the structure and capabilities of each class, equipping the programmer with a clear blueprint for designing their data structures and functionalities.
+
+Let's delve into the creation of a class in S7:
+
+```r
+library(S7)
+
+# Defining the Spy class
+spy <- new_class("Spy", properties = list(
+  codeName = class_character,
+  equipment = class_character,
+  assignment = class_character
+))
+
+# Displaying the class structure
+print(spy)
+
+<Spy> class
+@ parent     : <S7_object>
+@ constructor: function(codeName, equipment, assignment) {...}
+@ validator  : <NULL>
+@ properties :
+  $ codeName  : <character>
+  $ equipment : <character>
+  $ assignment: <character>
+```
+
+This code snippet demonstrates how to define a class in S7. The `new_class` function is used to create a new class named 'Spy'. This class has three properties: 'codeName', 'equipment', and 'assignment', each of a specific data type. It's like crafting a persona for Bond, detailing his alias, arsenal, and objectives.
+
+S7 brings the advantage of formal class definitions, which allow for more explicit and structured OOP in R. This is crucial for large-scale and complex programming projects where clarity and maintainability are key. Imagine a spy organization where every agent's skills, gadgets, and missions are meticulously recorded and structured --- this is what S7 brings to R programming.
+
+Moreover, S7 classes support inheritance, a powerful feature that lets new classes adopt the properties and methods of existing ones, much like a new 007 inheriting the legacy of his predecessors while bringing his unique flair to the role. This feature enables code reusability and promotes a more organized and hierarchical approach to programming.
+
+But S7 isn't just about structure and formalism. It also retains the simplicity and flexibility of S3, ensuring that the system remains accessible to those familiar with the traditional R OOP approach. It's the perfect blend of the old and new, much like a Bond film that combines classic spy film elements with modern twists.
+
+In addition to class definitions, S7 introduces built-in type definitions for existing base types in R. These are recognizable as they start with `class_`, such as `class_character` or `class_numeric`. This integration ensures that S7 can seamlessly work with the fundamental data types in R, much like how Bond smoothly integrates into different cultures and environments in his global adventures.
+
+As we progress through this article, we'll continue to build on this foundation, exploring how to create objects, define methods, and utilize inheritance in S7 --- all through the exciting lens of the world of James Bond.
+
+## Assembling the Spy Toolkit --- Classes and Objects in S7
+
+In the world of espionage, a spy's toolkit is crucial. It's not just about the gadgets themselves, but how they are used in the field. Similarly, in S7, the real power lies in how classes are instantiated and objects are manipulated. Just as James Bond expertly utilizes his gadgets for different missions, R programmers can harness the power of objects to achieve their data manipulation goals.
+
+### Creating Instances: The Spy Embarks on a Mission
+
+Creating an instance of a class in S7 is akin to assigning a specific mission to a spy. Each object, like a spy on a unique mission, has its own set of characteristics and objectives, defined by the properties of its class.
+
+Let's create an instance of our 'Spy' class:
+
+```r
+# Instance of Spy class
+jamesBond <- spy(codeName = "007", equipment = "Aston Martin; Walther PPK", assignment = "Track Spectre")
+
+# Viewing the object's details
+jamesBond
+
+<Spy>
+@ codeName  : chr "007"
+@ equipment : chr "Aston Martin; Walther PPK"
+@ assignment: chr "Track Spectre"
+```
+
+Here, `jamesBond` is an object of the 'Spy' class, with a unique set of equipment and a specific mission. This demonstrates how objects in S7 encapsulate data and characteristics, just as James Bond possesses a distinct set of gadgets and objectives in each movie.
+
+### Manipulating Object Properties: A Spy's Dynamic World
+
+The world of a spy is dynamic, with missions evolving and new challenges arising. In S7, this dynamism is reflected in how we can manipulate object properties.
+
+```r
+# Changing the assignment
+jamesBond@assignment <- "Prevent global cyber-attack"
+
+# Updating equipment
+jamesBond@equipment <- c(jamesBond@equipment, "Smartwatch")
+
+# Reviewing updated details
+jamesBond
+
+<Spy>
+@ codeName  : chr "007"
+@ equipment : chr [1:2] "Aston Martin; Walther PPK" "Smartwatch"
+@ assignment: chr "Prevent global cyber-attack"
+```
+
+In this example, we modify the 'assignment' and 'equipment' of `jamesBond`. This flexibility allows objects in S7 to be adaptable, just like a spy who must adjust to new developments during a mission.
+
+### Ensuring Mission Integrity: Validation in S7
+
+In the covert world of espionage, ensuring that all elements of a mission are valid and in place is crucial. Similarly, S7 offers validation mechanisms to ensure that the properties of objects adhere to defined rules.
+
+```r
+# Attempting an invalid assignment update
+jamesBond@assignment <- 12345  # Assignments should be character strings
+
+# S7's validation mechanism throws an error
+# Error: <Spy>@assignment must be <character>, not <double>
+```
+
+Attempting to assign a numeric value to 'assignment', which is defined as a character string, results in an error. This feature ensures the integrity of objects, much like a spy ensuring the validity of mission details.
+
+### The Versatility of S7: Handling Different Types of Missions
+
+Just as James Bond is adept at handling different types of missions, from stealthy reconnaissance to high-octane action, S7 is versatile in handling various types of data structures. This versatility is evident in how S7 can be used to model a wide range of real-world problems and datasets.
+
+For instance, we could define another class, 'Gadget', to represent the tools at a spy's disposal:
+
+```r
+# Defining the Gadget class
+gadget <- new_class("Gadget", properties = list(
+    name = class_character,
+    role = class_character
+  ))
+
+# Creating a gadget instance
+explodingPen <- gadget(name = "Exploding Pen", role = "Detonate upon click")
+
+# Viewing the gadget
+explodingPen
+
+<Gadget>
+@ name: chr "Exploding Pen"
+@ role: chr "Detonate upon click"
+```
+
+This example shows how S7 can be used to model different entities, each with its own unique set of properties and behaviors. The 'Gadget' class represents a different aspect of a spy's world, showcasing the system's ability to handle diverse data modeling scenarios.
+
+## Gadgets and Skills --- Exploring Properties and Methods in S7
+
+In the James Bond universe, each gadget and skill is tailored for specific situations, much like how methods in S7 are designed to operate on objects. This section will explore how to define and use methods in S7, drawing parallels to how Bond expertly utilizes his gadgets and skills on missions.
+
+### Defining Methods: Equipping Our Agent
+
+Methods in S7 are akin to the special skills and gadgets provided to James Bond for his missions. They define what an object can do, or how it reacts to certain actions. Let's equip our 'Spy' with some essential spy skills:
+
+```r
+# Defining a generic method
+infiltrate <- new_generic("infiltrate", "x")
+
+# Defining a method for the Spy class
+method(infiltrate, spy) <- function(x) {
+  paste0(x@codeName, " is infiltrating the enemy base.")
+}
+
+# Bond embarks on a mission
+infiltrate(jamesBond)
+
+[1] "007 is infiltrating the enemy base."
+```
+
+In this example, we define an `infiltrate` method for the 'Spy' class. When called on the `jamesBond` object, it describes Bond's action. This illustrates how methods bring objects to life, defining their behavior and interactions.
+
+### Enhancing Skills: Method Overloading
+
+Just as James Bond adapts his approach based on the mission, methods in S7 can be tailored to different classes. This concept, known as method overloading, allows the same method name to perform different actions depending on the object it's applied to.
+
+Imagine we have another class, 'Villain', in our espionage world. We can define an `infiltrate` method specifically for this class:
+
+```r
+# Defining the Villain class
+villain <- new_class("Villain", properties = list(
+  name = class_character,
+  plan = class_character
+))
+
+# Method for Villain class
+method(infiltrate, villain) <- function(x) {
+  paste0(x@name, " is plotting ", x@plan)
+}
+
+# A villain with a plan
+blofeld <- villain(name = "Blofeld", plan = "world domination")
+
+# Applying the method
+infiltrate(blofeld)
+
+[1] "Blofeld is plotting world domination"
+```
+
+### Mastering Espionage --- Inheritance and Polymorphism in S7
+
+In the same way that a new James Bond actor inherits the legacy of his predecessors while adding his own twist, inheritance in S7 allows new classes to build upon and extend existing ones. This concept is pivotal in OOP, facilitating code reuse and the creation of a more organized and hierarchical structure.
+
+#### Inheritance: Passing the Torch to New Agents
+
+Inheritance in S7 is like the lineage of 007 agents, where each new agent brings their unique qualities while retaining the core characteristics of the 007 identity. Let's illustrate this with an example where a new class 'UndercoverSpy' inherits from the 'Spy' class:
+
+```r
+# Defining the UndercoverSpy class
+undercoverSpy <- new_class("UndercoverSpy", parent = spy, properties = list(
+  alias = class_character
+))
+
+# Creating an undercover spy object
+eveMoneypenny <- undercoverSpy(codeName = "Eve", equipment = "Stealth Gear", assignment = "Undercover Mission", alias = "Miss Moneypenny")
+
+# Viewing the object
+eveMoneypenny
+
+<UndercoverSpy>
+@ codeName  : chr "Eve"
+@ equipment : chr "Stealth Gear"
+@ assignment: chr "Undercover Mission"
+@ alias     : chr "Miss Moneypenny"
+```
+
+Here, `UndercoverSpy` inherits properties and methods from `Spy`, while also introducing its own unique property, `alias`. This demonstrates how inheritance can be used to create specialized versions of existing classes.
+
+#### Polymorphism: Versatility in the Field
+
+In the world of espionage, adaptability is key. James Bond, for example, might approach a mission differently depending on the context. Similarly, polymorphism in S7 allows for methods to be applied in various ways depending on the class of the object they are invoked on.
+
+We can extend the `infiltrate` method to our `UndercoverSpy`, allowing for a different behavior:
+
+```r
+# Extending the infiltrate method for UndercoverSpy
+method(infiltrate, undercoverSpy) <- function(x) {
+  paste0(x@alias, " is using her cover as ", x@alias, " on an ", x@assignment)
+}
+
+# Eve Moneypenny on her mission
+infiltrate(eveMoneypenny)
+[1] "Miss Moneypenny is using her cover as Miss Moneypenny on an Undercover Mission"
+```
+
+This example showcases how the same method name can have different implementations for different classes, a core concept of polymorphism.
+
+#### Method Dispatch: The Right Tool for the Job
+
+Method dispatch in S7 is like selecting the right gadget for the right mission in a Bond movie. Depending on the situation (or the class of the object), a different method (or gadget) is chosen.
+
+```r
+# Generic method for mission execution
+executeMission <- new_generic("executeMission", "x")
+
+# Method for Spy
+method(executeMission, spy) <- function(x) {
+  paste0("Agent ", x@codeName, " is executing mission: ", x@assignment)
+}
+
+# Method for UndercoverSpy
+method(executeMission, undercoverSpy) <- function(x) {
+  paste0(x@alias, ", undercover as ", x@alias, ", is executing a covert operation.")
+}
+
+# Executing missions
+executeMission(jamesBond)
+[1] "Agent 007 is executing mission: Prevent global cyber-attack"
+
+executeMission(eveMoneypenny)
+[1] "Miss Moneypenny, undercover as Miss Moneypenny, is executing a covert operation."
+```
+
+In this scenario, the `executeMission` method behaves differently for a 'Spy' and an 'UndercoverSpy', illustrating the concept of method dispatch where the method's behavior is determined by the object's class.
+
+#### A License to Innovate
+
+The concepts of inheritance and method dispatch in S7 empower R programmers with a 'license to innovate'. By allowing for code reuse, specialization, and context-specific behaviors, S7 opens up a world of possibilities for efficient and effective programming. Just like how each Bond film builds upon its predecessors while introducing new elements, S7 encourages a dynamic and flexible approach to OOP in R.
+
+### Covert Operations --- Advanced Features of S7
+
+Just as James Bond's missions often involve intricate plots and advanced technology, the S7 OOP system in R has advanced features that cater to complex programming needs. These features, like the high-tech gadgets and cunning strategies in a Bond film, enable programmers to tackle sophisticated problems with finesse.
+
+#### Multiple Dispatch: A Team of Agents
+
+In some of James Bond's most thrilling missions, teamwork is essential, with each team member playing a specific role. Similarly, multiple dispatch in S7 allows for methods that can operate based on the types of multiple arguments, akin to a coordinated effort by a team of agents.
+
+```r
+# Defining a multi-agent operation
+cooperativeMission <- new_generic("cooperativeMission", c("agent1", "agent2"))
+
+# Method for Spy and UndercoverSpy
+method(cooperativeMission, list(spy, undercoverSpy)) <- function(agent1, agent2) {
+  paste0(agent1@codeName, " and ", agent2@alias, " collaborate on a mission.")
+}
+
+# Executing a cooperative mission
+cooperativeMission(jamesBond, eveMoneypenny)
+[1] "007 and Miss Moneypenny collaborate on a mission."
+```
+
+This example shows how multiple dispatch allows for more dynamic and flexible method definitions, enabling the handling of complex scenarios where the behavior depends on more than one object's class.
+
+#### Dynamic Properties: Adapting to the Mission
+
+Just as a spy must adapt to unpredictable scenarios, S7 allows for properties that can be dynamically computed or modified. These dynamic properties, like Bond's adaptable gadgets, offer a level of flexibility and responsiveness in how objects are handled.
+
+```r
+# Enhancing the Spy class with a dynamic property
+spy <- new_class("Spy", properties = list(
+  codeName = class_character,
+  equipment = class_character,
+  assignment = class_character,
+  status = new_property(
+    getter = function(self) if (self@assignment == "Undercover Mission") "Undercover" else "Active"
+  )
+))
+
+# Instance of Spy class
+jamesBond <- spy(codeName = "007", equipment = "Aston Martin; Walther PPK", assignment = "Track Spectre")
+
+# Bond's status depends on his assignment
+jamesBond@assignment <- "Undercover Mission"
+jamesBond@status  # "Undercover"
+[1] "Undercover"
+```
+
+This example illustrates how dynamic properties can be used to make objects' behaviors and characteristics respond to changes in their state or environment.
+
+#### Custom Constructors: Tailoring the Agent
+
+In the Bond universe, each agent is unique, with specific traits and skills. S7 allows for custom constructors, enabling the creation of objects with tailored initialization processes. This is like customizing an agent for a specific mission, ensuring they have exactly what they need.
+
+```r
+# Custom constructor for Spy
+spy <- new_class("Spy", properties = list(
+  codeName = class_character,
+  equipment = class_character,
+  assignment = class_character
+), constructor = function(codeName, gadgets) {
+  new_object(spy, codeName = codeName, equipment = paste(gadgets, collapse = "; "), assignment = "Assignment Pending")
+})
+
+# Creating a tailored spy
+q <- spy(codeName = "Q", gadgets = c("Camera Pen", "Explosive Watch"))
+q
+
+<Spy> function (codeName, gadgets)  
+@ codeName  : chr "Q"
+@ equipment : chr "Camera Pen; Explosive Watch"
+@ assignment: chr "Assignment Pending"
+```
+
+This custom constructor allows for more complex object initialization, providing greater control over how objects are created and configured.
+
+## License to Thrive in Complexity
+
+The advanced features of S7, much like the sophisticated elements of a Bond film, provide R programmers with powerful tools to handle complex programming challenges. Multiple dispatch, dynamic properties, and custom constructors open up a realm of possibilities, enabling the creation of more versatile, adaptable, and efficient code. With S7, R programmers are equipped with a ‘license to thrive’ in the complex world of data science and statistical programming.
