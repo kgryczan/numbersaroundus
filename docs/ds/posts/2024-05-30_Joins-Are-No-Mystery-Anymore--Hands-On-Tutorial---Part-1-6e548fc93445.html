@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Numbers around us">
+<meta name="dcterms.date" content="2024-05-30">
+
+<title>Joins Are No Mystery Anymore: Hands-On Tutorial — Part 1 – Numbers Around Us</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-cb71375167fd9ce754afb6fa31d3f44e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-1a65b4115a9519dac2c2f4ba2497ca08.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Numbers Around Us</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../challenges/index.html"> 
+<span class="menu-text">Challenges</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../bi/index.html"> 
+<span class="menu-text">Business Intelligence</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../ds/index.html"> 
+<span class="menu-text">Data Science</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../dp/index.html"> 
+<span class="menu-text">Date Philosophy</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <a href="https://github.com" title="Github" class="quarto-navigation-tool px-1" aria-label="Github"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Joins Are No Mystery Anymore: Hands-On Tutorial — Part 1</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Numbers around us </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">May 30, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><img src="images/join1.jpg" class="img-fluid"></p>
+<p>Welcome! In this tutorial, I’ll be your guide as we unravel the mysteries of data joins in R. Whether you’re working with customer records, inventory lists, or historical documents, mastering data joins is essential for any data analyst or scientist. Together, we’ll explore a variety of join types through real-life examples and datasets, making complex concepts easy to understand and apply. By the end of this tutorial, you’ll be equipped with the knowledge and skills to confidently join data and uncover the valuable insights hidden within. Let’s get started and make joins a breeze!</p>
+<p>At the very beginning… All datasets I am working on and getting using <code>load()</code> function are prepared for you and uploaded to Github.</p>
+<section id="inner-join" class="level2">
+<h2 class="anchored" data-anchor-id="inner-join">Inner Join</h2>
+<p>An Inner Join is used to combine rows from two tables based on a related column between them. It returns only the rows where there is a match in both tables. If there are no matches, the result set will not include those rows.</p>
+<section id="explanation-of-the-scenario" class="level3">
+<h3 class="anchored" data-anchor-id="explanation-of-the-scenario">Explanation of the Scenario</h3>
+<p>In our scenario, we have customer orders and payments. We want to find orders that have been paid. This will help us understand which customers have completed their payments and which orders are still pending.</p>
+<p>Data file: <a href="https://github.com/kgryczan/medium_publishing/blob/main/inner_join_data.RData">https://github.com/kgryczan/medium_publishing/blob/main/inner_join_data.RData</a></p>
+</section>
+<section id="description-of-the-datasets" class="level3">
+<h3 class="anchored" data-anchor-id="description-of-the-datasets">Description of the Datasets</h3>
+<p>We will use two datasets:</p>
+<ul>
+<li><code>orders</code>: Contains information about customer orders. Columns: <code>order_id</code>, <code>customer_id</code>, <code>order_date</code></li>
+<li><code>payments</code>: Contains information about payments made for orders. Columns: <code>payment_id</code>, <code>order_id</code>, <code>amount</code>, <code>payment_date</code></li>
+</ul>
+</section>
+<section id="step-by-step-code-examples" class="level3">
+<h3 class="anchored" data-anchor-id="step-by-step-code-examples">Step-by-Step Code Examples</h3>
+<p><strong>Loading the datasets</strong></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the necessary libraries</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the datasets</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">"inner_join_data.RData"</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the datasets</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(orders, <span class="at">n=</span><span class="dv">5</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 30 × 3</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  order_id customer_id order_date</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>     <span class="sc">&lt;</span>int<span class="sc">&gt;</span>       <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>date<span class="sc">&gt;</span>    </span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>        <span class="dv">1</span>         <span class="dv">102</span> <span class="dv">2024-01-01</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>        <span class="dv">2</span>         <span class="dv">113</span> <span class="dv">2024-01-02</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span>        <span class="dv">3</span>         <span class="dv">108</span> <span class="dv">2024-01-03</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span>        <span class="dv">4</span>         <span class="dv">111</span> <span class="dv">2024-01-04</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span>        <span class="dv">5</span>         <span class="dv">106</span> <span class="dv">2024-01-05</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co"># ℹ 25 more rows</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(payments, <span class="at">n=</span><span class="dv">5</span>)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 20 × 4</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  payment_id order_id amount payment_date</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>       <span class="sc">&lt;</span>int<span class="sc">&gt;</span>    <span class="er">&lt;</span>int<span class="sc">&gt;</span>  <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>date<span class="sc">&gt;</span>      </span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>        <span class="dv">201</span>       <span class="dv">27</span>  <span class="fl">167.</span>  <span class="dv">2024-01-05</span>  </span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>        <span class="dv">202</span>       <span class="dv">30</span>   <span class="fl">80.2</span> <span class="dv">2024-01-06</span>  </span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span>        <span class="dv">204</span>       <span class="dv">28</span>  <span class="fl">110.</span>  <span class="dv">2024-01-08</span>  </span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span>        <span class="dv">206</span>       <span class="dv">24</span>  <span class="fl">159.</span>  <span class="dv">2024-01-10</span>  </span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span>        <span class="dv">207</span>        <span class="dv">4</span>  <span class="fl">173.</span>  <span class="dv">2024-01-11</span>  </span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="co"># ℹ 15 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Performing the Inner Join</strong></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform the inner join</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>orders_paid <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(orders, payments, <span class="at">by =</span> <span class="st">"order_id"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the result</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(orders_paid)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 20 × 6</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>   order_id customer_id order_date payment_id amount payment_date</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>      <span class="sc">&lt;</span>int<span class="sc">&gt;</span>       <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>date<span class="sc">&gt;</span>          <span class="er">&lt;</span>int<span class="sc">&gt;</span>  <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>date<span class="sc">&gt;</span>      </span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a> <span class="dv">1</span>        <span class="dv">2</span>         <span class="dv">113</span> <span class="dv">2024-01-02</span>        <span class="dv">209</span>   <span class="fl">90.6</span> <span class="dv">2024-01-13</span>  </span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a> <span class="dv">2</span>        <span class="dv">2</span>         <span class="dv">113</span> <span class="dv">2024-01-02</span>        <span class="dv">229</span>  <span class="fl">129.</span>  <span class="dv">2024-02-02</span>  </span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a> <span class="dv">3</span>        <span class="dv">4</span>         <span class="dv">111</span> <span class="dv">2024-01-04</span>        <span class="dv">207</span>  <span class="fl">173.</span>  <span class="dv">2024-01-11</span>  </span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a> <span class="dv">4</span>        <span class="dv">6</span>         <span class="dv">104</span> <span class="dv">2024-01-06</span>        <span class="dv">228</span>  <span class="fl">181.</span>  <span class="dv">2024-02-01</span>  </span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a> <span class="dv">5</span>        <span class="dv">7</span>         <span class="dv">111</span> <span class="dv">2024-01-07</span>        <span class="dv">217</span>   <span class="fl">80.8</span> <span class="dv">2024-01-21</span>  </span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a> <span class="dv">6</span>       <span class="dv">11</span>         <span class="dv">109</span> <span class="dv">2024-01-11</span>        <span class="dv">212</span>  <span class="fl">108.</span>  <span class="dv">2024-01-16</span>  </span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a> <span class="dv">7</span>       <span class="dv">12</span>         <span class="dv">109</span> <span class="dv">2024-01-12</span>        <span class="dv">224</span>  <span class="fl">183.</span>  <span class="dv">2024-01-28</span>  </span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a> <span class="dv">8</span>       <span class="dv">13</span>         <span class="dv">105</span> <span class="dv">2024-01-13</span>        <span class="dv">216</span>  <span class="fl">194.</span>  <span class="dv">2024-01-20</span>  </span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a> <span class="dv">9</span>       <span class="dv">13</span>         <span class="dv">105</span> <span class="dv">2024-01-13</span>        <span class="dv">226</span>  <span class="fl">117.</span>  <span class="dv">2024-01-30</span>  </span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span>       <span class="dv">16</span>         <span class="dv">112</span> <span class="dv">2024-01-16</span>        <span class="dv">223</span>  <span class="fl">176.</span>  <span class="dv">2024-01-27</span>  </span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span>       <span class="dv">20</span>         <span class="dv">104</span> <span class="dv">2024-01-20</span>        <span class="dv">208</span>  <span class="fl">131.</span>  <span class="dv">2024-01-12</span>  </span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="dv">12</span>       <span class="dv">20</span>         <span class="dv">104</span> <span class="dv">2024-01-20</span>        <span class="dv">225</span>   <span class="fl">66.2</span> <span class="dv">2024-01-29</span>  </span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="dv">13</span>       <span class="dv">21</span>         <span class="dv">115</span> <span class="dv">2024-01-21</span>        <span class="dv">227</span>  <span class="fl">130.</span>  <span class="dv">2024-01-31</span>  </span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="dv">14</span>       <span class="dv">23</span>         <span class="dv">104</span> <span class="dv">2024-01-23</span>        <span class="dv">230</span>  <span class="fl">103.</span>  <span class="dv">2024-02-03</span>  </span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="dv">15</span>       <span class="dv">24</span>         <span class="dv">111</span> <span class="dv">2024-01-24</span>        <span class="dv">206</span>  <span class="fl">159.</span>  <span class="dv">2024-01-10</span>  </span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="dv">16</span>       <span class="dv">26</span>         <span class="dv">111</span> <span class="dv">2024-01-26</span>        <span class="dv">213</span>   <span class="fl">89.4</span> <span class="dv">2024-01-17</span>  </span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="dv">17</span>       <span class="dv">27</span>         <span class="dv">110</span> <span class="dv">2024-01-27</span>        <span class="dv">201</span>  <span class="fl">167.</span>  <span class="dv">2024-01-05</span>  </span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="dv">18</span>       <span class="dv">28</span>         <span class="dv">101</span> <span class="dv">2024-01-28</span>        <span class="dv">204</span>  <span class="fl">110.</span>  <span class="dv">2024-01-08</span>  </span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="dv">19</span>       <span class="dv">28</span>         <span class="dv">101</span> <span class="dv">2024-01-28</span>        <span class="dv">221</span>  <span class="fl">156.</span>  <span class="dv">2024-01-25</span>  </span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="dv">20</span>       <span class="dv">30</span>         <span class="dv">114</span> <span class="dv">2024-01-30</span>        <span class="dv">202</span>   <span class="fl">80.2</span> <span class="dv">2024-01-06</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Explanation of the Code</strong></p>
+<ul>
+<li>We first load the datasets using the <code>load</code> function.</li>
+<li>We then use the <code>inner_join</code> function from the <code>dplyr</code> package to join the <code>orders</code> and <code>payments</code> datasets on the <code>order_id</code> column.</li>
+<li>Finally, we display the result to see which orders have been paid.</li>
+</ul>
+<p><strong>Interpretation of Results</strong></p>
+<p>The resulting dataset <code>orders_paid</code> contains <strong><em>only</em></strong> the rows where there is a <strong><em>match in both</em></strong> <code>orders</code> and <code>payments</code> datasets. This means that only the orders that have been paid are included in the result. Each row in the result represents an order that has been matched with a corresponding payment, showing details from both the <code>orders</code> and <code>payments</code> tables.</p>
+</section>
+<section id="homework-for-readers" class="level3">
+<h3 class="anchored" data-anchor-id="homework-for-readers">Homework for Readers</h3>
+<p>In the same <code>inner_join_data.RData</code> file, there is another set of datasets for a more creative scenario. You will find:</p>
+<ul>
+<li><code>enrollments</code>: Contains information about student enrollments.</li>
+<li>Columns: <code>student_id</code>, <code>course_id</code>, <code>enrollment_date</code></li>
+<li><code>exam_results</code>: Contains information about exam results.</li>
+<li>Columns: <code>student_id</code>, <code>course_id</code>, <code>exam_score</code>, <code>exam_date</code></li>
+</ul>
+<p>Your task is to perform an inner join on these datasets to find students who have both enrolled and taken exams. Use the <code>student_id</code> and <code>course_id</code> columns for joining.</p>
+</section>
+</section>
+<section id="left-join-left-outer-join" class="level2">
+<h2 class="anchored" data-anchor-id="left-join-left-outer-join">Left Join (Left Outer Join)</h2>
+<p>A Left Join returns all rows from the left table, and the matched rows from the right table. If there is no match, the result is NULL on the side of the right table.</p>
+<section id="explanation-of-the-scenario-1" class="level3">
+<h3 class="anchored" data-anchor-id="explanation-of-the-scenario-1">Explanation of the Scenario</h3>
+<p>In this scenario, we have product information and sales records. We want to find all products, including those that haven’t been sold. This helps in understanding which products are in stock and which are moving in the market.</p>
+<p>Data file: <a href="https://github.com/kgryczan/medium_publishing/blob/main/left_join_data.RData">https://github.com/kgryczan/medium_publishing/blob/main/left_join_data.RData</a></p>
+</section>
+<section id="description-of-the-datasets-1" class="level3">
+<h3 class="anchored" data-anchor-id="description-of-the-datasets-1">Description of the Datasets</h3>
+<p>We will use two datasets:</p>
+<ul>
+<li><code>products</code>: Contains information about the products.</li>
+<li>Columns: <code>product_id</code>, <code>product_name</code>, <code>category</code></li>
+<li><code>sales</code>: Contains information about the sales made.</li>
+<li>Columns: <code>sale_id</code>, <code>product_id</code>, <code>quantity_sold</code>, <code>sale_date</code></li>
+</ul>
+</section>
+<section id="step-by-step-code-examples-1" class="level3">
+<h3 class="anchored" data-anchor-id="step-by-step-code-examples-1">Step-by-Step Code Examples</h3>
+<p><strong>Loading the datasets</strong></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the necessary libraries</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the datasets</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">"left_join_data.RData"</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the datasets</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(products, <span class="at">n =</span> <span class="dv">5</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 30 × 3</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  product_id product_name category  </span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>       <span class="sc">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>chr<span class="sc">&gt;</span>        <span class="er">&lt;</span>chr<span class="sc">&gt;</span>     </span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>          <span class="dv">1</span> Product A    Category <span class="dv">1</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>          <span class="dv">2</span> Product B    Category <span class="dv">3</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span>          <span class="dv">3</span> Product C    Category <span class="dv">3</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span>          <span class="dv">4</span> Product D    Category <span class="dv">3</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span>          <span class="dv">5</span> Product E    Category <span class="dv">3</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="co"># ℹ 25 more rows</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(sales, <span class="at">n =</span> <span class="dv">5</span>)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 30 × 4</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  sale_id product_id quantity_sold sale_date </span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    <span class="sc">&lt;</span>int<span class="sc">&gt;</span>      <span class="er">&lt;</span>int<span class="sc">&gt;</span>         <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>date<span class="sc">&gt;</span>    </span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>     <span class="dv">101</span>          <span class="dv">2</span>            <span class="dv">10</span> <span class="dv">2024-02-01</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>     <span class="dv">102</span>         <span class="dv">29</span>            <span class="dv">10</span> <span class="dv">2024-02-02</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span>     <span class="dv">103</span>         <span class="dv">16</span>             <span class="dv">6</span> <span class="dv">2024-02-03</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span>     <span class="dv">104</span>         <span class="dv">30</span>             <span class="dv">5</span> <span class="dv">2024-02-04</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span>     <span class="dv">105</span>         <span class="dv">25</span>             <span class="dv">4</span> <span class="dv">2024-02-05</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="co"># ℹ 25 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Performing the Left Join</strong></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform the left join</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>products_sales <span class="ot">&lt;-</span> <span class="fu">left_join</span>(products, sales, <span class="at">by =</span> <span class="st">"product_id"</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the result</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(products_sales)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 41 × 6</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>   product_id product_name category   sale_id quantity_sold sale_date </span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>        <span class="sc">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>chr<span class="sc">&gt;</span>        <span class="er">&lt;</span>chr<span class="sc">&gt;</span>        <span class="er">&lt;</span>int<span class="sc">&gt;</span>         <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>date<span class="sc">&gt;</span>    </span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a> <span class="dv">1</span>          <span class="dv">1</span> Product A    Category <span class="dv">1</span>     <span class="dv">106</span>             <span class="dv">7</span> <span class="dv">2024-02-06</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a> <span class="dv">2</span>          <span class="dv">2</span> Product B    Category <span class="dv">3</span>     <span class="dv">101</span>            <span class="dv">10</span> <span class="dv">2024-02-01</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a> <span class="dv">3</span>          <span class="dv">2</span> Product B    Category <span class="dv">3</span>     <span class="dv">118</span>             <span class="dv">8</span> <span class="dv">2024-02-18</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a> <span class="dv">4</span>          <span class="dv">3</span> Product C    Category <span class="dv">3</span>      <span class="cn">NA</span>            <span class="cn">NA</span> <span class="cn">NA</span>        </span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a> <span class="dv">5</span>          <span class="dv">4</span> Product D    Category <span class="dv">3</span>     <span class="dv">107</span>             <span class="dv">4</span> <span class="dv">2024-02-07</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a> <span class="dv">6</span>          <span class="dv">4</span> Product D    Category <span class="dv">3</span>     <span class="dv">127</span>             <span class="dv">2</span> <span class="dv">2024-02-27</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a> <span class="dv">7</span>          <span class="dv">5</span> Product E    Category <span class="dv">3</span>     <span class="dv">113</span>             <span class="dv">9</span> <span class="dv">2024-02-13</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a> <span class="dv">8</span>          <span class="dv">6</span> Product F    Category <span class="dv">3</span>      <span class="cn">NA</span>            <span class="cn">NA</span> <span class="cn">NA</span>        </span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a> <span class="dv">9</span>          <span class="dv">7</span> Product G    Category <span class="dv">1</span>      <span class="cn">NA</span>            <span class="cn">NA</span> <span class="cn">NA</span>        </span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span>          <span class="dv">8</span> Product H    Category <span class="dv">2</span>      <span class="cn">NA</span>            <span class="cn">NA</span> <span class="cn">NA</span>        </span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co"># ℹ 31 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Explanation of the Code</strong></p>
+<ul>
+<li>We first load the datasets using the <code>load</code> function.</li>
+<li>We then use the <code>left_join</code> function from the <code>dplyr</code> package to join the <code>products</code> and <code>sales</code> datasets on the <code>product_id</code> column.</li>
+<li>Finally, we display the result to see all products, including those that haven’t been sold.</li>
+</ul>
+</section>
+<section id="interpretation-of-results" class="level3">
+<h3 class="anchored" data-anchor-id="interpretation-of-results">Interpretation of Results</h3>
+<p>The resulting dataset <code>products_sales</code> contains all rows from the <code>products</code> dataset, with matched rows from the <code>sales</code> dataset. If a product hasn’t been sold, the columns from the <code>sales</code> dataset will have NULL values.</p>
+</section>
+<section id="homework-for-readers-1" class="level3">
+<h3 class="anchored" data-anchor-id="homework-for-readers-1">Homework for Readers</h3>
+<p>In the same <code>left_join_data.RData</code> file, there is another set of datasets for a more creative scenario. You will find:</p>
+<ul>
+<li><code>employees</code>: Contains information about employees.</li>
+<li>Columns: <code>employee_id</code>, <code>name</code>, <code>department</code></li>
+<li><code>parking_permits</code>: Contains information about parking permits issued.</li>
+<li>Columns: <code>permit_id</code>, <code>employee_id</code>, <code>permit_date</code></li>
+</ul>
+<p>Your task is to perform a left join on these datasets to find all employees, including those without a parking permit. Use the <code>employee_id</code> column for joining.</p>
+</section>
+</section>
+<section id="right-join-right-outer-join" class="level2">
+<h2 class="anchored" data-anchor-id="right-join-right-outer-join">Right Join (Right Outer Join)</h2>
+<p>A Right Join returns all rows from the right table, and the matched rows from the left table. If there is no match, the result is NULL on the side of the left table.</p>
+<section id="explanation-of-the-scenario-2" class="level3">
+<h3 class="anchored" data-anchor-id="explanation-of-the-scenario-2">Explanation of the Scenario</h3>
+<p>In this scenario, we have marketing campaigns and responses to those campaigns. We want to find all responses, including those that did not belong to a campaign. This helps in understanding the effectiveness of marketing campaigns and identifying responses that might be related to other activities.</p>
+<p>Data file: <a href="https://github.com/kgryczan/medium_publishing/blob/main/right_join_data.RData">https://github.com/kgryczan/medium_publishing/blob/main/right_join_data.RData</a></p>
+</section>
+<section id="description-of-the-datasets-2" class="level3">
+<h3 class="anchored" data-anchor-id="description-of-the-datasets-2">Description of the Datasets</h3>
+<p>We will use two datasets:</p>
+<ul>
+<li><code>campaigns</code>: Contains information about marketing campaigns.</li>
+<li>Columns: <code>campaign_id</code>, <code>campaign_name</code>, <code>start_date</code></li>
+<li><code>responses</code>: Contains information about responses to campaigns.</li>
+<li>Columns: <code>response_id</code>, <code>campaign_id</code>, <code>response_date</code></li>
+</ul>
+</section>
+<section id="step-by-step-code-examples-2" class="level3">
+<h3 class="anchored" data-anchor-id="step-by-step-code-examples-2">Step-by-Step Code Examples</h3>
+<p><strong>Loading the datasets</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the necessary libraries</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the datasets</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">"right_join_data.RData"</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the datasets</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(campaigns, <span class="at">n =</span> <span class="dv">5</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 20 × 3</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  campaign_id campaign_name start_date</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        <span class="sc">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>chr<span class="sc">&gt;</span>         <span class="er">&lt;</span>date<span class="sc">&gt;</span>    </span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>           <span class="dv">2</span> Campaign B    <span class="dv">2024-01-02</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>           <span class="dv">4</span> Campaign D    <span class="dv">2024-01-04</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span>           <span class="dv">5</span> Campaign E    <span class="dv">2024-01-05</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span>           <span class="dv">7</span> Campaign G    <span class="dv">2024-01-07</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span>           <span class="dv">8</span> Campaign H    <span class="dv">2024-01-08</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="co"># ℹ 15 more rows</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(responses, <span class="at">n =</span> <span class="dv">5</span>)</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 30 × 3</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>  response_id campaign_id response_date</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>        <span class="sc">&lt;</span>int<span class="sc">&gt;</span>       <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>date<span class="sc">&gt;</span>       </span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>         <span class="dv">101</span>          <span class="dv">11</span> <span class="dv">2024-01-05</span>   </span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>         <span class="dv">102</span>          <span class="dv">27</span> <span class="dv">2024-01-06</span>   </span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span>         <span class="dv">103</span>           <span class="dv">2</span> <span class="dv">2024-01-07</span>   </span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span>         <span class="dv">104</span>          <span class="dv">16</span> <span class="dv">2024-01-08</span>   </span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span>         <span class="dv">105</span>          <span class="dv">22</span> <span class="dv">2024-01-09</span>   </span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a><span class="co"># ℹ 25 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Performing the Right Join</strong></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform the right join</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>responses_campaigns <span class="ot">&lt;-</span> <span class="fu">right_join</span>(campaigns, responses, <span class="at">by =</span> <span class="st">"campaign_id"</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the result</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(responses_campaigns, <span class="at">n =</span> <span class="dv">30</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 30 × 5</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>   campaign_id campaign_name start_date response_id response_date</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>         <span class="sc">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>chr<span class="sc">&gt;</span>         <span class="er">&lt;</span>date<span class="sc">&gt;</span>           <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>date<span class="sc">&gt;</span>       </span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a> <span class="dv">1</span>           <span class="dv">2</span> Campaign B    <span class="dv">2024-01-02</span>         <span class="dv">103</span> <span class="dv">2024-01-07</span>   </span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a> <span class="dv">2</span>           <span class="dv">4</span> Campaign D    <span class="dv">2024-01-04</span>         <span class="dv">112</span> <span class="dv">2024-01-16</span>   </span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a> <span class="dv">3</span>           <span class="dv">4</span> Campaign D    <span class="dv">2024-01-04</span>         <span class="dv">121</span> <span class="dv">2024-01-25</span>   </span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a> <span class="dv">4</span>           <span class="dv">5</span> Campaign E    <span class="dv">2024-01-05</span>         <span class="dv">127</span> <span class="dv">2024-01-31</span>   </span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a> <span class="dv">5</span>           <span class="dv">8</span> Campaign H    <span class="dv">2024-01-08</span>         <span class="dv">130</span> <span class="dv">2024-02-03</span>   </span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a> <span class="dv">6</span>          <span class="dv">15</span> Campaign O    <span class="dv">2024-01-15</span>         <span class="dv">119</span> <span class="dv">2024-01-23</span>   </span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a> <span class="dv">7</span>          <span class="dv">15</span> Campaign O    <span class="dv">2024-01-15</span>         <span class="dv">129</span> <span class="dv">2024-02-02</span>   </span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a> <span class="dv">8</span>          <span class="dv">16</span> Campaign P    <span class="dv">2024-01-16</span>         <span class="dv">104</span> <span class="dv">2024-01-08</span>   </span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a> <span class="dv">9</span>          <span class="dv">16</span> Campaign P    <span class="dv">2024-01-16</span>         <span class="dv">106</span> <span class="dv">2024-01-10</span>   </span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span>          <span class="dv">16</span> Campaign P    <span class="dv">2024-01-16</span>         <span class="dv">110</span> <span class="dv">2024-01-14</span>   </span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span>          <span class="dv">16</span> Campaign P    <span class="dv">2024-01-16</span>         <span class="dv">116</span> <span class="dv">2024-01-20</span>   </span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="dv">12</span>          <span class="dv">16</span> Campaign P    <span class="dv">2024-01-16</span>         <span class="dv">124</span> <span class="dv">2024-01-28</span>   </span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="dv">13</span>          <span class="dv">17</span> Campaign Q    <span class="dv">2024-01-17</span>         <span class="dv">126</span> <span class="dv">2024-01-30</span>   </span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="dv">14</span>          <span class="dv">18</span> Campaign R    <span class="dv">2024-01-18</span>         <span class="dv">123</span> <span class="dv">2024-01-27</span>   </span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="dv">15</span>          <span class="dv">27</span> Campaign <span class="cn">NA</span>   <span class="dv">2024-01-27</span>         <span class="dv">102</span> <span class="dv">2024-01-06</span>   </span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="dv">16</span>          <span class="dv">28</span> Campaign <span class="cn">NA</span>   <span class="dv">2024-01-28</span>         <span class="dv">108</span> <span class="dv">2024-01-12</span>   </span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="dv">17</span>          <span class="dv">28</span> Campaign <span class="cn">NA</span>   <span class="dv">2024-01-28</span>         <span class="dv">109</span> <span class="dv">2024-01-13</span>   </span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="dv">18</span>          <span class="dv">28</span> Campaign <span class="cn">NA</span>   <span class="dv">2024-01-28</span>         <span class="dv">117</span> <span class="dv">2024-01-21</span>   </span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="dv">19</span>          <span class="dv">30</span> Campaign <span class="cn">NA</span>   <span class="dv">2024-01-30</span>         <span class="dv">113</span> <span class="dv">2024-01-17</span>   </span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="dv">20</span>          <span class="dv">11</span> <span class="cn">NA</span>            <span class="cn">NA</span>                 <span class="dv">101</span> <span class="dv">2024-01-05</span>   </span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="dv">21</span>          <span class="dv">22</span> <span class="cn">NA</span>            <span class="cn">NA</span>                 <span class="dv">105</span> <span class="dv">2024-01-09</span>   </span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a><span class="dv">22</span>          <span class="dv">19</span> <span class="cn">NA</span>            <span class="cn">NA</span>                 <span class="dv">107</span> <span class="dv">2024-01-11</span>   </span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a><span class="dv">23</span>           <span class="dv">6</span> <span class="cn">NA</span>            <span class="cn">NA</span>                 <span class="dv">111</span> <span class="dv">2024-01-15</span>   </span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a><span class="dv">24</span>          <span class="dv">14</span> <span class="cn">NA</span>            <span class="cn">NA</span>                 <span class="dv">114</span> <span class="dv">2024-01-18</span>   </span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a><span class="dv">25</span>           <span class="dv">3</span> <span class="cn">NA</span>            <span class="cn">NA</span>                 <span class="dv">115</span> <span class="dv">2024-01-19</span>   </span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a><span class="dv">26</span>           <span class="dv">9</span> <span class="cn">NA</span>            <span class="cn">NA</span>                 <span class="dv">118</span> <span class="dv">2024-01-22</span>   </span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a><span class="dv">27</span>           <span class="dv">9</span> <span class="cn">NA</span>            <span class="cn">NA</span>                 <span class="dv">120</span> <span class="dv">2024-01-24</span>   </span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a><span class="dv">28</span>          <span class="dv">11</span> <span class="cn">NA</span>            <span class="cn">NA</span>                 <span class="dv">122</span> <span class="dv">2024-01-26</span>   </span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a><span class="dv">29</span>           <span class="dv">9</span> <span class="cn">NA</span>            <span class="cn">NA</span>                 <span class="dv">125</span> <span class="dv">2024-01-29</span>   </span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a><span class="dv">30</span>          <span class="dv">11</span> <span class="cn">NA</span>            <span class="cn">NA</span>                 <span class="dv">128</span> <span class="dv">2024-02-01</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Explanation of the Code:</strong></p>
+<ul>
+<li>We first load the datasets using the <code>load</code> function.</li>
+<li>We then use the <code>right_join</code> function from the <code>dplyr</code> package to join the <code>campaigns</code> and <code>responses</code> datasets on the <code>campaign_id</code> column.</li>
+<li>Finally, we display the result to see all responses, including those that did not belong to a campaign.</li>
+</ul>
+</section>
+<section id="homework-for-readers-2" class="level3">
+<h3 class="anchored" data-anchor-id="homework-for-readers-2">Homework for Readers</h3>
+<p>In the same <code>right_join_data.RData</code> file, there is another set of datasets for a more creative scenario. You will find:</p>
+<ul>
+<li><code>online_courses</code>: Contains information about online courses.</li>
+<li>Columns: <code>course_id</code>, <code>course_name</code>, <code>launch_date</code></li>
+<li><code>completions</code>: Contains information about course completions.</li>
+<li>Columns: <code>completion_id</code>, <code>course_id</code>, <code>student_id</code>, <code>completion_date</code></li>
+</ul>
+<p>Your task is to perform a right join on these datasets to find all completions, including those for courses that may have been removed. Use the <code>course_id</code> column for joining.</p>
+</section>
+</section>
+<section id="full-join-full-outer-join" class="level2">
+<h2 class="anchored" data-anchor-id="full-join-full-outer-join">Full Join (Full Outer Join)</h2>
+<p>A Full Join returns all rows when there is a match in either the left or right table. If there is no match, the result is NULL on the side where there is no match.</p>
+<section id="explanation-of-the-scenario-3" class="level3">
+<h3 class="anchored" data-anchor-id="explanation-of-the-scenario-3">Explanation of the Scenario</h3>
+<p>In this scenario, we have inventory records from two warehouses. We want to get a complete list of all products and quantities, whether they are in one warehouse or the other. This helps in having a comprehensive view of inventory across multiple locations.</p>
+<p>Data file: <a href="https://github.com/kgryczan/medium_publishing/blob/main/full_join_data.RData">https://github.com/kgryczan/medium_publishing/blob/main/full_join_data.RData</a></p>
+</section>
+<section id="description-of-the-datasets-3" class="level3">
+<h3 class="anchored" data-anchor-id="description-of-the-datasets-3">Description of the Datasets</h3>
+<p>We will use two datasets:</p>
+<ul>
+<li><code>warehouse1</code>: Contains inventory information from warehouse 1.</li>
+<li>Columns: <code>product_id</code>, <code>product_name</code>, <code>quantity</code></li>
+<li><code>warehouse2</code>: Contains inventory information from warehouse 2.</li>
+<li>Columns: <code>product_id</code>, <code>product_name</code>, <code>quantity</code></li>
+</ul>
+</section>
+<section id="step-by-step-code-examples-3" class="level3">
+<h3 class="anchored" data-anchor-id="step-by-step-code-examples-3">Step-by-Step Code Examples</h3>
+<p><strong>Loading the datasets</strong></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the necessary libraries</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the datasets</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">"full_join_data.RData"</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the datasets</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(warehouse1, <span class="at">n =</span> <span class="dv">5</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 20 × 3</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  product_id product_name quantity</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>       <span class="sc">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>chr<span class="sc">&gt;</span>           <span class="er">&lt;</span>int<span class="sc">&gt;</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>          <span class="dv">1</span> Product A         <span class="dv">153</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>          <span class="dv">2</span> Product B         <span class="dv">200</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span>          <span class="dv">3</span> Product C         <span class="dv">111</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span>          <span class="dv">4</span> Product D         <span class="dv">108</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span>          <span class="dv">5</span> Product E         <span class="dv">177</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="co"># ℹ 15 more rows</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(warehouse2, <span class="at">n =</span> <span class="dv">5</span>)</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 16 × 3</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>  product_id product_name quantity</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>       <span class="sc">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>chr<span class="sc">&gt;</span>           <span class="er">&lt;</span>int<span class="sc">&gt;</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>         <span class="dv">15</span> Product O         <span class="dv">161</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>         <span class="dv">16</span> Product P          <span class="dv">94</span></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span>         <span class="dv">17</span> Product Q          <span class="dv">63</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span>         <span class="dv">18</span> Product R          <span class="dv">94</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span>         <span class="dv">19</span> Product S         <span class="dv">111</span></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="co"># ℹ 11 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Performing the Full Join</strong></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform the full join</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>inventory_full <span class="ot">&lt;-</span> <span class="fu">full_join</span>(warehouse1, warehouse2, </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                            <span class="at">by =</span> <span class="st">"product_id"</span>, </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                            <span class="at">suffix =</span> <span class="fu">c</span>(<span class="st">"_wh1"</span>, <span class="st">"_wh2"</span>))</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the result</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="fu">print.AsIs</span>(inventory_full)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>   product_id product_name_wh1 quantity_wh1 product_name_wh2 quantity_wh2</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>           <span class="dv">1</span>        Product A          <span class="dv">153</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>           <span class="dv">2</span>        Product B          <span class="dv">200</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span>           <span class="dv">3</span>        Product C          <span class="dv">111</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span>           <span class="dv">4</span>        Product D          <span class="dv">108</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span>           <span class="dv">5</span>        Product E          <span class="dv">177</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="dv">6</span>           <span class="dv">6</span>        Product F          <span class="dv">161</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="dv">7</span>           <span class="dv">7</span>        Product G          <span class="dv">175</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="dv">8</span>           <span class="dv">8</span>        Product H           <span class="dv">70</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="dv">9</span>           <span class="dv">9</span>        Product I           <span class="dv">72</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span>         <span class="dv">10</span>        Product J           <span class="dv">89</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span>         <span class="dv">11</span>        Product K          <span class="dv">189</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="dv">12</span>         <span class="dv">12</span>        Product L          <span class="dv">109</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="dv">13</span>         <span class="dv">13</span>        Product M          <span class="dv">177</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="dv">14</span>         <span class="dv">14</span>        Product N          <span class="dv">124</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="dv">15</span>         <span class="dv">15</span>        Product O          <span class="dv">123</span>        Product O          <span class="dv">161</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="dv">16</span>         <span class="dv">16</span>        Product P          <span class="dv">188</span>        Product P           <span class="dv">94</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="dv">17</span>         <span class="dv">17</span>        Product Q          <span class="dv">119</span>        Product Q           <span class="dv">63</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="dv">18</span>         <span class="dv">18</span>        Product R          <span class="dv">188</span>        Product R           <span class="dv">94</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="dv">19</span>         <span class="dv">19</span>        Product S          <span class="dv">169</span>        Product S          <span class="dv">111</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="dv">20</span>         <span class="dv">20</span>        Product T          <span class="dv">124</span>        Product T          <span class="dv">197</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="dv">21</span>         <span class="dv">21</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span>        Product U           <span class="dv">81</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="dv">22</span>         <span class="dv">22</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span>        Product V           <span class="dv">93</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="dv">23</span>         <span class="dv">23</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span>        Product W          <span class="dv">199</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="dv">24</span>         <span class="dv">24</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span>        Product X           <span class="dv">80</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="dv">25</span>         <span class="dv">25</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span>        Product Y          <span class="dv">104</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="dv">26</span>         <span class="dv">26</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span>        Product Z           <span class="dv">65</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="dv">27</span>         <span class="dv">27</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span>       Product <span class="cn">NA</span>          <span class="dv">112</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="dv">28</span>         <span class="dv">28</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span>       Product <span class="cn">NA</span>          <span class="dv">116</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a><span class="dv">29</span>         <span class="dv">29</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span>       Product <span class="cn">NA</span>           <span class="dv">58</span></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="dv">30</span>         <span class="dv">30</span>             <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>           <span class="cn">NA</span>       Product <span class="cn">NA</span>          <span class="dv">167</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Explanation of the Code:</strong></p>
+<ul>
+<li>We first load the datasets using the <code>load</code> function.</li>
+<li>We then use the <code>full_join</code> function from the <code>dplyr</code> package to join the <code>warehouse1</code> and <code>warehouse2</code> datasets on the <code>product_id</code> column. The <code>suffix</code> argument is used to distinguish between columns from the two warehouses.</li>
+<li>Finally, we display the result to see a comprehensive inventory list.</li>
+</ul>
+</section>
+<section id="interpretation-of-results-1" class="level3">
+<h3 class="anchored" data-anchor-id="interpretation-of-results-1">Interpretation of Results</h3>
+<p>The resulting dataset <code>inventory_full</code> contains all rows from both the <code>warehouse1</code> and <code>warehouse2</code> datasets. If a product is only in one warehouse, the columns from the other warehouse will have NULL values. As we see in our result products O to T, are available in both warehouses.</p>
+</section>
+<section id="homework-for-readers-3" class="level3">
+<h3 class="anchored" data-anchor-id="homework-for-readers-3">Homework for Readers</h3>
+<p>In the same <code>full_join_data.RData</code> file, there is another set of datasets for a more creative scenario. You will find:</p>
+<ul>
+<li><code>companyA_employees</code>: Contains information about employees from company A.</li>
+<li>Columns: <code>employee_id</code>, <code>name</code>, <code>department</code></li>
+<li><code>companyB_employees</code>: Contains information about employees from company B.</li>
+<li>Columns: <code>employee_id</code>, <code>name</code>, <code>department</code></li>
+</ul>
+<p>Your task is to perform a full join on these datasets to ensure all employees are accounted for from both companies and who is working for both. Use the <code>employee_id</code> column for joining.</p>
+</section>
+</section>
+<section id="semi-join" class="level2">
+<h2 class="anchored" data-anchor-id="semi-join">Semi Join</h2>
+<section id="introduction-to-semi-join" class="level3">
+<h3 class="anchored" data-anchor-id="introduction-to-semi-join">Introduction to Semi Join</h3>
+<p>A Semi Join returns all rows from the left table where there are matching values in the right table, but does not duplicate columns from the right table. It is useful for filtering the left table based on the presence of matching rows in the right table.</p>
+</section>
+<section id="explanation-of-the-scenario-4" class="level3">
+<h3 class="anchored" data-anchor-id="explanation-of-the-scenario-4">Explanation of the Scenario</h3>
+<p>In this scenario, we have customer information and order records. We want to find all customers who have made orders. This helps in identifying active customers.</p>
+<p>Data file: <a href="https://github.com/kgryczan/medium_publishing/blob/main/semi_join_data.RData">https://github.com/kgryczan/medium_publishing/blob/main/semi_join_data.RData</a></p>
+</section>
+<section id="description-of-the-datasets-4" class="level3">
+<h3 class="anchored" data-anchor-id="description-of-the-datasets-4">Description of the Datasets</h3>
+<p>We will use two datasets:</p>
+<ul>
+<li><code>customers</code>: Contains information about customers.</li>
+<li>Columns: <code>customer_id</code>, <code>name</code>, <code>address</code></li>
+<li><code>orders</code>: Contains information about customer orders.</li>
+<li>Columns: <code>order_id</code>, <code>customer_id</code>, <code>order_date</code></li>
+</ul>
+</section>
+<section id="step-by-step-code-examples-4" class="level3">
+<h3 class="anchored" data-anchor-id="step-by-step-code-examples-4">Step-by-Step Code Examples</h3>
+<p><strong>Loading the datasets</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the necessary libraries</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the datasets</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">"semi_join_data.RData"</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the datasets</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(customers, <span class="at">n=</span><span class="dv">5</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 30 × 3</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  customer_id name    address    </span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>        <span class="sc">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>chr<span class="sc">&gt;</span>   <span class="er">&lt;</span>chr<span class="sc">&gt;</span>      </span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>           <span class="dv">1</span> Alice F <span class="dv">423</span> Pine St</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>           <span class="dv">2</span> Bob <span class="cn">NA</span>  <span class="dv">779</span> Elm St </span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span>           <span class="dv">3</span> Carol B <span class="dv">257</span> Oak St </span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span>           <span class="dv">4</span> Zoe O   <span class="dv">452</span> Elm St </span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span>           <span class="dv">5</span> Alice F <span class="dv">73</span> Pine St </span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="co"># ℹ 25 more rows</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(orders, <span class="at">n=</span><span class="dv">5</span>)</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 30 × 3</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  order_id customer_id order_date</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>     <span class="sc">&lt;</span>int<span class="sc">&gt;</span>       <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>date<span class="sc">&gt;</span>    </span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>      <span class="dv">101</span>          <span class="dv">11</span> <span class="dv">2024-01-01</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>      <span class="dv">102</span>           <span class="dv">3</span> <span class="dv">2024-01-02</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span>      <span class="dv">103</span>          <span class="dv">18</span> <span class="dv">2024-01-03</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span>      <span class="dv">104</span>          <span class="dv">29</span> <span class="dv">2024-01-04</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span>      <span class="dv">105</span>           <span class="dv">9</span> <span class="dv">2024-01-05</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="co"># ℹ 25 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Performing the Semi Join</strong></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform the semi join</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>customers_with_orders <span class="ot">&lt;-</span> <span class="fu">semi_join</span>(customers, orders, <span class="at">by =</span> <span class="st">"customer_id"</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the result</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print.AsIs</span>(customers_with_orders)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>   customer_id    name      address</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>            <span class="dv">1</span> Alice F  <span class="dv">423</span> Pine St</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>            <span class="dv">3</span> Carol B   <span class="dv">257</span> Oak St</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span>            <span class="dv">5</span> Alice F   <span class="dv">73</span> Pine St</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span>            <span class="dv">6</span>  Bob <span class="cn">NA</span>  <span class="dv">587</span> Pine St</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span>            <span class="dv">8</span>   Zoe V   <span class="dv">475</span> Elm St</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="dv">6</span>            <span class="dv">9</span> Alice P   <span class="dv">397</span> Oak St</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="dv">7</span>           <span class="dv">10</span>   Bob P  <span class="dv">804</span> Pine St</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="dv">8</span>           <span class="dv">11</span> Carol O  <span class="dv">961</span> Pine St</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="dv">9</span>           <span class="dv">12</span>   Zoe I   <span class="dv">14</span> Pine St</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span>          <span class="dv">13</span> Alice X  <span class="dv">104</span> Pine St</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span>          <span class="dv">14</span>   Bob I   <span class="dv">981</span> Elm St</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="dv">12</span>          <span class="dv">17</span> Alice R   <span class="dv">295</span> Elm St</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="dv">13</span>          <span class="dv">18</span>  Bob <span class="cn">NA</span> <span class="dv">393</span> Maple St</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a><span class="dv">14</span>          <span class="dv">20</span>  Zoe <span class="cn">NA</span> <span class="dv">845</span> Maple St</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="dv">15</span>          <span class="dv">21</span> Alice X   <span class="dv">145</span> Elm St</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a><span class="dv">16</span>          <span class="dv">22</span>   Bob I <span class="dv">179</span> Maple St</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a><span class="dv">17</span>          <span class="dv">23</span> Carol W   <span class="dv">140</span> Oak St</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="dv">18</span>          <span class="dv">24</span>   Zoe Y   <span class="dv">431</span> Elm St</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a><span class="dv">19</span>          <span class="dv">25</span> Alice M   <span class="dv">261</span> Oak St</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="dv">20</span>          <span class="dv">26</span>   Bob E   <span class="dv">4</span> Maple St</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a><span class="dv">21</span>          <span class="dv">29</span> Alice Z  <span class="dv">609</span> Pine St</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Explanation of the Code:</strong></p>
+<ul>
+<li>We first load the datasets using the <code>load</code> function.</li>
+<li>We then use the <code>semi_join</code> function from the <code>dplyr</code> package to filter the <code>customers</code> dataset to include only those customers who have matching entries in the <code>orders</code> dataset, based on the <code>customer_id</code> column.</li>
+<li>Finally, we display the result to see which customers have made orders.</li>
+</ul>
+</section>
+<section id="interpretation-of-results-2" class="level3">
+<h3 class="anchored" data-anchor-id="interpretation-of-results-2">Interpretation of Results</h3>
+<p>The resulting dataset <code>customers_with_orders</code> contains only the rows from the <code>customers</code> dataset where there is a matching row in the <code>orders</code> dataset. This means that only customers who have made at least one order are included.</p>
+</section>
+<section id="homework-for-readers-4" class="level3">
+<h3 class="anchored" data-anchor-id="homework-for-readers-4">Homework for Readers</h3>
+<p>In the same <code>semi_join_data.RData</code> file, there is another set of datasets for a more creative scenario. You will find:</p>
+<ul>
+<li><code>products</code>: Contains information about products.</li>
+<li>Columns: <code>product_id</code>, <code>product_name</code>, <code>category</code></li>
+<li><code>reviews</code>: Contains information about product reviews.</li>
+<li>Columns: <code>review_id</code>, <code>product_id</code>, <code>review_date</code>, <code>rating</code></li>
+</ul>
+<p>Your task is to perform a semi join on these datasets to identify products that have been reviewed by customers. Use the <code>product_id</code> column for joining.</p>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>In this first part of our series, we’ve embarked on a journey to demystify data joins in R. We’ve covered the foundational types of joins that are essential for any data analyst: Inner Join, Left Join, Right Join, Full Join, and Semi Join. Through practical, real-life scenarios and step-by-step code examples, we explored how to combine datasets to gain valuable insights.</p>
+<p>We’ve seen how Inner Joins help us find orders that have been paid, Left Joins reveal products that haven’t been sold, Right Joins show responses that didn’t belong to any campaign, Full Joins provide a comprehensive view of inventory across warehouses, and Semi Joins filter customers who have made orders. Each of these joins plays a critical role in data analysis, enabling us to connect disparate pieces of information in meaningful ways.</p>
+<p>Next week, we’ll continue our exploration by diving into more advanced join techniques. We’ll cover Anti Joins, Cross Joins, Natural Joins, Self Joins, and Equi Joins, each with their own unique applications and benefits. Additionally, we’ll set some challenging exercises to reinforce your learning and build confidence in applying these joins to your own data projects.</p>
+<p>Stay tuned for the next installment, where we continue to unlock the power of data joins in R and take your data analysis skills to the next level. Happy coding!</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = true;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>For everybody, not to be fooled by numbers</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

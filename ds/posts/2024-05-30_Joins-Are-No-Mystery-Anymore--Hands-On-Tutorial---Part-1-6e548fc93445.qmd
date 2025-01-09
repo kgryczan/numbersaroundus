@@ -1,0 +1,583 @@
+---
+title: "Joins Are No Mystery Anymore: Hands-On Tutorial --- Part 1"
+author: "Numbers around us"
+date: "2024-05-30"
+format: html
+---
+
+![](images/join1.jpg)
+
+Welcome! In this tutorial, I'll be your guide as we unravel the mysteries of data joins in R. Whether you're working with customer records, inventory lists, or historical documents, mastering data joins is essential for any data analyst or scientist. Together, we'll explore a variety of join types through real-life examples and datasets, making complex concepts easy to understand and apply. By the end of this tutorial, you'll be equipped with the knowledge and skills to confidently join data and uncover the valuable insights hidden within. Let's get started and make joins a breeze!
+
+At the very beginning... All datasets I am working on and getting using `load()` function are prepared for you and uploaded to Github.
+
+## Inner Join
+
+An Inner Join is used to combine rows from two tables based on a related column between them. It returns only the rows where there is a match in both tables. If there are no matches, the result set will not include those rows.
+
+### Explanation of the Scenario
+
+In our scenario, we have customer orders and payments. We want to find orders that have been paid. This will help us understand which customers have completed their payments and which orders are still pending.
+
+Data file: [https://github.com/kgryczan/medium_publishing/blob/main/inner_join_data.RData](https://github.com/kgryczan/medium_publishing/blob/main/inner_join_data.RData)
+
+### Description of the Datasets
+
+We will use two datasets:
+
+-   `orders`: Contains information about customer orders. Columns: `order_id`, `customer_id`, `order_date`
+-   `payments`: Contains information about payments made for orders. Columns: `payment_id`, `order_id`, `amount`, `payment_date`
+
+### Step-by-Step Code Examples
+
+**Loading the datasets**
+
+```r
+# Load the necessary libraries
+library(dplyr)
+
+# Load the datasets
+load("inner_join_data.RData")
+
+# Display the datasets
+print(orders, n=5)
+
+# A tibble: 30 × 3
+  order_id customer_id order_date
+     <int>       <int> <date>    
+1        1         102 2024-01-01
+2        2         113 2024-01-02
+3        3         108 2024-01-03
+4        4         111 2024-01-04
+5        5         106 2024-01-05
+# ℹ 25 more rows
+
+print(payments, n=5)
+
+# A tibble: 20 × 4
+  payment_id order_id amount payment_date
+       <int>    <int>  <dbl> <date>      
+1        201       27  167.  2024-01-05  
+2        202       30   80.2 2024-01-06  
+3        204       28  110.  2024-01-08  
+4        206       24  159.  2024-01-10  
+5        207        4  173.  2024-01-11  
+# ℹ 15 more rows
+```
+
+**Performing the Inner Join**
+
+```r
+# Perform the inner join
+orders_paid <- inner_join(orders, payments, by = "order_id")
+
+# Display the result
+print(orders_paid)
+
+# A tibble: 20 × 6
+   order_id customer_id order_date payment_id amount payment_date
+      <int>       <int> <date>          <int>  <dbl> <date>      
+ 1        2         113 2024-01-02        209   90.6 2024-01-13  
+ 2        2         113 2024-01-02        229  129.  2024-02-02  
+ 3        4         111 2024-01-04        207  173.  2024-01-11  
+ 4        6         104 2024-01-06        228  181.  2024-02-01  
+ 5        7         111 2024-01-07        217   80.8 2024-01-21  
+ 6       11         109 2024-01-11        212  108.  2024-01-16  
+ 7       12         109 2024-01-12        224  183.  2024-01-28  
+ 8       13         105 2024-01-13        216  194.  2024-01-20  
+ 9       13         105 2024-01-13        226  117.  2024-01-30  
+10       16         112 2024-01-16        223  176.  2024-01-27  
+11       20         104 2024-01-20        208  131.  2024-01-12  
+12       20         104 2024-01-20        225   66.2 2024-01-29  
+13       21         115 2024-01-21        227  130.  2024-01-31  
+14       23         104 2024-01-23        230  103.  2024-02-03  
+15       24         111 2024-01-24        206  159.  2024-01-10  
+16       26         111 2024-01-26        213   89.4 2024-01-17  
+17       27         110 2024-01-27        201  167.  2024-01-05  
+18       28         101 2024-01-28        204  110.  2024-01-08  
+19       28         101 2024-01-28        221  156.  2024-01-25  
+20       30         114 2024-01-30        202   80.2 2024-01-06 
+```
+
+**Explanation of the Code**
+
+-   We first load the datasets using the `load` function.
+-   We then use the `inner_join` function from the `dplyr` package to join the `orders` and `payments` datasets on the `order_id` column.
+-   Finally, we display the result to see which orders have been paid.
+
+**Interpretation of Results**
+
+The resulting dataset `orders_paid` contains ***only*** the rows where there is a ***match in both*** `orders` and `payments` datasets. This means that only the orders that have been paid are included in the result. Each row in the result represents an order that has been matched with a corresponding payment, showing details from both the `orders` and `payments` tables.
+
+### Homework for Readers
+
+In the same `inner_join_data.RData` file, there is another set of datasets for a more creative scenario. You will find:
+
+-   `enrollments`: Contains information about student enrollments.
+-   Columns: `student_id`, `course_id`, `enrollment_date`
+-   `exam_results`: Contains information about exam results.
+-   Columns: `student_id`, `course_id`, `exam_score`, `exam_date`
+
+Your task is to perform an inner join on these datasets to find students who have both enrolled and taken exams. Use the `student_id` and `course_id` columns for joining.
+
+## Left Join (Left Outer Join)
+
+A Left Join returns all rows from the left table, and the matched rows from the right table. If there is no match, the result is NULL on the side of the right table.
+
+### Explanation of the Scenario
+
+In this scenario, we have product information and sales records. We want to find all products, including those that haven't been sold. This helps in understanding which products are in stock and which are moving in the market.
+
+Data file: [https://github.com/kgryczan/medium_publishing/blob/main/left_join_data.RData](https://github.com/kgryczan/medium_publishing/blob/main/left_join_data.RData)
+
+### Description of the Datasets
+
+We will use two datasets:
+
+-   `products`: Contains information about the products.
+-   Columns: `product_id`, `product_name`, `category`
+-   `sales`: Contains information about the sales made.
+-   Columns: `sale_id`, `product_id`, `quantity_sold`, `sale_date`
+
+### Step-by-Step Code Examples
+
+**Loading the datasets**
+
+```r
+# Load the necessary libraries
+library(dplyr)
+
+# Load the datasets
+load("left_join_data.RData")
+
+# Display the datasets
+print(products, n = 5)
+
+# A tibble: 30 × 3
+  product_id product_name category  
+       <int> <chr>        <chr>     
+1          1 Product A    Category 1
+2          2 Product B    Category 3
+3          3 Product C    Category 3
+4          4 Product D    Category 3
+5          5 Product E    Category 3
+# ℹ 25 more rows
+
+print(sales, n = 5)
+
+# A tibble: 30 × 4
+  sale_id product_id quantity_sold sale_date 
+    <int>      <int>         <int> <date>    
+1     101          2            10 2024-02-01
+2     102         29            10 2024-02-02
+3     103         16             6 2024-02-03
+4     104         30             5 2024-02-04
+5     105         25             4 2024-02-05
+# ℹ 25 more rows
+```
+
+**Performing the Left Join**
+
+```r
+# Perform the left join
+products_sales <- left_join(products, sales, by = "product_id")
+
+# Display the result
+print(products_sales)
+
+# A tibble: 41 × 6
+   product_id product_name category   sale_id quantity_sold sale_date 
+        <int> <chr>        <chr>        <int>         <int> <date>    
+ 1          1 Product A    Category 1     106             7 2024-02-06
+ 2          2 Product B    Category 3     101            10 2024-02-01
+ 3          2 Product B    Category 3     118             8 2024-02-18
+ 4          3 Product C    Category 3      NA            NA NA        
+ 5          4 Product D    Category 3     107             4 2024-02-07
+ 6          4 Product D    Category 3     127             2 2024-02-27
+ 7          5 Product E    Category 3     113             9 2024-02-13
+ 8          6 Product F    Category 3      NA            NA NA        
+ 9          7 Product G    Category 1      NA            NA NA        
+10          8 Product H    Category 2      NA            NA NA        
+# ℹ 31 more rows
+```
+
+**Explanation of the Code**
+
+-   We first load the datasets using the `load` function.
+-   We then use the `left_join` function from the `dplyr` package to join the `products` and `sales` datasets on the `product_id` column.
+-   Finally, we display the result to see all products, including those that haven't been sold.
+
+### Interpretation of Results
+
+The resulting dataset `products_sales` contains all rows from the `products` dataset, with matched rows from the `sales` dataset. If a product hasn't been sold, the columns from the `sales` dataset will have NULL values.
+
+### Homework for Readers
+
+In the same `left_join_data.RData` file, there is another set of datasets for a more creative scenario. You will find:
+
+-   `employees`: Contains information about employees.
+-   Columns: `employee_id`, `name`, `department`
+-   `parking_permits`: Contains information about parking permits issued.
+-   Columns: `permit_id`, `employee_id`, `permit_date`
+
+Your task is to perform a left join on these datasets to find all employees, including those without a parking permit. Use the `employee_id` column for joining.
+
+## Right Join (Right Outer Join)
+
+A Right Join returns all rows from the right table, and the matched rows from the left table. If there is no match, the result is NULL on the side of the left table.
+
+### Explanation of the Scenario
+
+In this scenario, we have marketing campaigns and responses to those campaigns. We want to find all responses, including those that did not belong to a campaign. This helps in understanding the effectiveness of marketing campaigns and identifying responses that might be related to other activities.
+
+Data file: [https://github.com/kgryczan/medium_publishing/blob/main/right_join_data.RData](https://github.com/kgryczan/medium_publishing/blob/main/right_join_data.RData)
+
+### Description of the Datasets
+
+We will use two datasets:
+
+-   `campaigns`: Contains information about marketing campaigns.
+-   Columns: `campaign_id`, `campaign_name`, `start_date`
+-   `responses`: Contains information about responses to campaigns.
+-   Columns: `response_id`, `campaign_id`, `response_date`
+
+### Step-by-Step Code Examples
+
+**Loading the datasets**
+
+```r
+# Load the necessary libraries
+library(dplyr)
+
+# Load the datasets
+load("right_join_data.RData")
+
+# Display the datasets
+print(campaigns, n = 5)
+
+# A tibble: 20 × 3
+  campaign_id campaign_name start_date
+        <int> <chr>         <date>    
+1           2 Campaign B    2024-01-02
+2           4 Campaign D    2024-01-04
+3           5 Campaign E    2024-01-05
+4           7 Campaign G    2024-01-07
+5           8 Campaign H    2024-01-08
+# ℹ 15 more rows
+
+print(responses, n = 5)
+
+# A tibble: 30 × 3
+  response_id campaign_id response_date
+        <int>       <int> <date>       
+1         101          11 2024-01-05   
+2         102          27 2024-01-06   
+3         103           2 2024-01-07   
+4         104          16 2024-01-08   
+5         105          22 2024-01-09   
+# ℹ 25 more rows
+```
+
+**Performing the Right Join**
+
+```r
+# Perform the right join
+responses_campaigns <- right_join(campaigns, responses, by = "campaign_id")
+
+# Display the result
+print(responses_campaigns, n = 30)
+
+# A tibble: 30 × 5
+   campaign_id campaign_name start_date response_id response_date
+         <int> <chr>         <date>           <int> <date>       
+ 1           2 Campaign B    2024-01-02         103 2024-01-07   
+ 2           4 Campaign D    2024-01-04         112 2024-01-16   
+ 3           4 Campaign D    2024-01-04         121 2024-01-25   
+ 4           5 Campaign E    2024-01-05         127 2024-01-31   
+ 5           8 Campaign H    2024-01-08         130 2024-02-03   
+ 6          15 Campaign O    2024-01-15         119 2024-01-23   
+ 7          15 Campaign O    2024-01-15         129 2024-02-02   
+ 8          16 Campaign P    2024-01-16         104 2024-01-08   
+ 9          16 Campaign P    2024-01-16         106 2024-01-10   
+10          16 Campaign P    2024-01-16         110 2024-01-14   
+11          16 Campaign P    2024-01-16         116 2024-01-20   
+12          16 Campaign P    2024-01-16         124 2024-01-28   
+13          17 Campaign Q    2024-01-17         126 2024-01-30   
+14          18 Campaign R    2024-01-18         123 2024-01-27   
+15          27 Campaign NA   2024-01-27         102 2024-01-06   
+16          28 Campaign NA   2024-01-28         108 2024-01-12   
+17          28 Campaign NA   2024-01-28         109 2024-01-13   
+18          28 Campaign NA   2024-01-28         117 2024-01-21   
+19          30 Campaign NA   2024-01-30         113 2024-01-17   
+20          11 NA            NA                 101 2024-01-05   
+21          22 NA            NA                 105 2024-01-09   
+22          19 NA            NA                 107 2024-01-11   
+23           6 NA            NA                 111 2024-01-15   
+24          14 NA            NA                 114 2024-01-18   
+25           3 NA            NA                 115 2024-01-19   
+26           9 NA            NA                 118 2024-01-22   
+27           9 NA            NA                 120 2024-01-24   
+28          11 NA            NA                 122 2024-01-26   
+29           9 NA            NA                 125 2024-01-29   
+30          11 NA            NA                 128 2024-02-01
+```
+
+**Explanation of the Code:**
+
+-   We first load the datasets using the `load` function.
+-   We then use the `right_join` function from the `dplyr` package to join the `campaigns` and `responses` datasets on the `campaign_id` column.
+-   Finally, we display the result to see all responses, including those that did not belong to a campaign.
+
+### Homework for Readers
+
+In the same `right_join_data.RData` file, there is another set of datasets for a more creative scenario. You will find:
+
+-   `online_courses`: Contains information about online courses.
+-   Columns: `course_id`, `course_name`, `launch_date`
+-   `completions`: Contains information about course completions.
+-   Columns: `completion_id`, `course_id`, `student_id`, `completion_date`
+
+Your task is to perform a right join on these datasets to find all completions, including those for courses that may have been removed. Use the `course_id` column for joining.
+
+## Full Join (Full Outer Join)
+
+A Full Join returns all rows when there is a match in either the left or right table. If there is no match, the result is NULL on the side where there is no match.
+
+### Explanation of the Scenario
+
+In this scenario, we have inventory records from two warehouses. We want to get a complete list of all products and quantities, whether they are in one warehouse or the other. This helps in having a comprehensive view of inventory across multiple locations.
+
+Data file: [https://github.com/kgryczan/medium_publishing/blob/main/full_join_data.RData](https://github.com/kgryczan/medium_publishing/blob/main/full_join_data.RData)
+
+### Description of the Datasets
+
+We will use two datasets:
+
+-   `warehouse1`: Contains inventory information from warehouse 1.
+-   Columns: `product_id`, `product_name`, `quantity`
+-   `warehouse2`: Contains inventory information from warehouse 2.
+-   Columns: `product_id`, `product_name`, `quantity`
+
+### Step-by-Step Code Examples
+
+**Loading the datasets**
+
+```r
+# Load the necessary libraries
+library(dplyr)
+
+# Load the datasets
+load("full_join_data.RData")
+
+# Display the datasets
+print(warehouse1, n = 5)
+
+# A tibble: 20 × 3
+  product_id product_name quantity
+       <int> <chr>           <int>
+1          1 Product A         153
+2          2 Product B         200
+3          3 Product C         111
+4          4 Product D         108
+5          5 Product E         177
+# ℹ 15 more rows
+
+print(warehouse2, n = 5)
+
+# A tibble: 16 × 3
+  product_id product_name quantity
+       <int> <chr>           <int>
+1         15 Product O         161
+2         16 Product P          94
+3         17 Product Q          63
+4         18 Product R          94
+5         19 Product S         111
+# ℹ 11 more rows
+```
+
+**Performing the Full Join**
+
+```r
+# Perform the full join
+inventory_full <- full_join(warehouse1, warehouse2, 
+                            by = "product_id", 
+                            suffix = c("_wh1", "_wh2"))
+
+# Display the result
+print.AsIs(inventory_full)
+
+   product_id product_name_wh1 quantity_wh1 product_name_wh2 quantity_wh2
+1           1        Product A          153             <NA>           NA
+2           2        Product B          200             <NA>           NA
+3           3        Product C          111             <NA>           NA
+4           4        Product D          108             <NA>           NA
+5           5        Product E          177             <NA>           NA
+6           6        Product F          161             <NA>           NA
+7           7        Product G          175             <NA>           NA
+8           8        Product H           70             <NA>           NA
+9           9        Product I           72             <NA>           NA
+10         10        Product J           89             <NA>           NA
+11         11        Product K          189             <NA>           NA
+12         12        Product L          109             <NA>           NA
+13         13        Product M          177             <NA>           NA
+14         14        Product N          124             <NA>           NA
+15         15        Product O          123        Product O          161
+16         16        Product P          188        Product P           94
+17         17        Product Q          119        Product Q           63
+18         18        Product R          188        Product R           94
+19         19        Product S          169        Product S          111
+20         20        Product T          124        Product T          197
+21         21             <NA>           NA        Product U           81
+22         22             <NA>           NA        Product V           93
+23         23             <NA>           NA        Product W          199
+24         24             <NA>           NA        Product X           80
+25         25             <NA>           NA        Product Y          104
+26         26             <NA>           NA        Product Z           65
+27         27             <NA>           NA       Product NA          112
+28         28             <NA>           NA       Product NA          116
+29         29             <NA>           NA       Product NA           58
+30         30             <NA>           NA       Product NA          167
+```
+
+**Explanation of the Code:**
+
+-   We first load the datasets using the `load` function.
+-   We then use the `full_join` function from the `dplyr` package to join the `warehouse1` and `warehouse2` datasets on the `product_id` column. The `suffix` argument is used to distinguish between columns from the two warehouses.
+-   Finally, we display the result to see a comprehensive inventory list.
+
+### Interpretation of Results
+
+The resulting dataset `inventory_full` contains all rows from both the `warehouse1` and `warehouse2` datasets. If a product is only in one warehouse, the columns from the other warehouse will have NULL values. As we see in our result products O to T, are available in both warehouses.
+
+### Homework for Readers
+
+In the same `full_join_data.RData` file, there is another set of datasets for a more creative scenario. You will find:
+
+-   `companyA_employees`: Contains information about employees from company A.
+-   Columns: `employee_id`, `name`, `department`
+-   `companyB_employees`: Contains information about employees from company B.
+-   Columns: `employee_id`, `name`, `department`
+
+Your task is to perform a full join on these datasets to ensure all employees are accounted for from both companies and who is working for both. Use the `employee_id` column for joining.
+
+## Semi Join
+
+### Introduction to Semi Join
+
+A Semi Join returns all rows from the left table where there are matching values in the right table, but does not duplicate columns from the right table. It is useful for filtering the left table based on the presence of matching rows in the right table.
+
+### Explanation of the Scenario
+
+In this scenario, we have customer information and order records. We want to find all customers who have made orders. This helps in identifying active customers.
+
+Data file: [https://github.com/kgryczan/medium_publishing/blob/main/semi_join_data.RData](https://github.com/kgryczan/medium_publishing/blob/main/semi_join_data.RData)
+
+### Description of the Datasets
+
+We will use two datasets:
+
+-   `customers`: Contains information about customers.
+-   Columns: `customer_id`, `name`, `address`
+-   `orders`: Contains information about customer orders.
+-   Columns: `order_id`, `customer_id`, `order_date`
+
+### Step-by-Step Code Examples
+
+**Loading the datasets**
+
+```r
+# Load the necessary libraries
+library(dplyr)
+
+# Load the datasets
+load("semi_join_data.RData")
+
+# Display the datasets
+print(customers, n=5)
+
+# A tibble: 30 × 3
+  customer_id name    address    
+        <int> <chr>   <chr>      
+1           1 Alice F 423 Pine St
+2           2 Bob NA  779 Elm St 
+3           3 Carol B 257 Oak St 
+4           4 Zoe O   452 Elm St 
+5           5 Alice F 73 Pine St 
+# ℹ 25 more rows
+
+print(orders, n=5)
+
+# A tibble: 30 × 3
+  order_id customer_id order_date
+     <int>       <int> <date>    
+1      101          11 2024-01-01
+2      102           3 2024-01-02
+3      103          18 2024-01-03
+4      104          29 2024-01-04
+5      105           9 2024-01-05
+# ℹ 25 more rows
+```
+
+**Performing the Semi Join**
+
+```r
+# Perform the semi join
+customers_with_orders <- semi_join(customers, orders, by = "customer_id")
+
+# Display the result
+print.AsIs(customers_with_orders)
+
+   customer_id    name      address
+1            1 Alice F  423 Pine St
+2            3 Carol B   257 Oak St
+3            5 Alice F   73 Pine St
+4            6  Bob NA  587 Pine St
+5            8   Zoe V   475 Elm St
+6            9 Alice P   397 Oak St
+7           10   Bob P  804 Pine St
+8           11 Carol O  961 Pine St
+9           12   Zoe I   14 Pine St
+10          13 Alice X  104 Pine St
+11          14   Bob I   981 Elm St
+12          17 Alice R   295 Elm St
+13          18  Bob NA 393 Maple St
+14          20  Zoe NA 845 Maple St
+15          21 Alice X   145 Elm St
+16          22   Bob I 179 Maple St
+17          23 Carol W   140 Oak St
+18          24   Zoe Y   431 Elm St
+19          25 Alice M   261 Oak St
+20          26   Bob E   4 Maple St
+21          29 Alice Z  609 Pine St
+```
+
+**Explanation of the Code:**
+
+-   We first load the datasets using the `load` function.
+-   We then use the `semi_join` function from the `dplyr` package to filter the `customers` dataset to include only those customers who have matching entries in the `orders` dataset, based on the `customer_id` column.
+-   Finally, we display the result to see which customers have made orders.
+
+### Interpretation of Results
+
+The resulting dataset `customers_with_orders` contains only the rows from the `customers` dataset where there is a matching row in the `orders` dataset. This means that only customers who have made at least one order are included.
+
+### Homework for Readers
+
+In the same `semi_join_data.RData` file, there is another set of datasets for a more creative scenario. You will find:
+
+-   `products`: Contains information about products.
+-   Columns: `product_id`, `product_name`, `category`
+-   `reviews`: Contains information about product reviews.
+-   Columns: `review_id`, `product_id`, `review_date`, `rating`
+
+Your task is to perform a semi join on these datasets to identify products that have been reviewed by customers. Use the `product_id` column for joining.
+
+## Summary
+
+In this first part of our series, we've embarked on a journey to demystify data joins in R. We've covered the foundational types of joins that are essential for any data analyst: Inner Join, Left Join, Right Join, Full Join, and Semi Join. Through practical, real-life scenarios and step-by-step code examples, we explored how to combine datasets to gain valuable insights.
+
+We've seen how Inner Joins help us find orders that have been paid, Left Joins reveal products that haven't been sold, Right Joins show responses that didn't belong to any campaign, Full Joins provide a comprehensive view of inventory across warehouses, and Semi Joins filter customers who have made orders. Each of these joins plays a critical role in data analysis, enabling us to connect disparate pieces of information in meaningful ways.
+
+Next week, we'll continue our exploration by diving into more advanced join techniques. We'll cover Anti Joins, Cross Joins, Natural Joins, Self Joins, and Equi Joins, each with their own unique applications and benefits. Additionally, we'll set some challenging exercises to reinforce your learning and build confidence in applying these joins to your own data projects.
+
+Stay tuned for the next installment, where we continue to unlock the power of data joins in R and take your data analysis skills to the next level. Happy coding!

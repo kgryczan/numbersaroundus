@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Numbers around us">
+<meta name="dcterms.date" content="2024-06-06">
+
+<title>Joins Are No Mystery Anymore: Hands-On Tutorial - Part 2 – Numbers Around Us</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-cb71375167fd9ce754afb6fa31d3f44e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-1a65b4115a9519dac2c2f4ba2497ca08.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Numbers Around Us</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../challenges/index.html"> 
+<span class="menu-text">Challenges</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../bi/index.html"> 
+<span class="menu-text">Business Intelligence</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../ds/index.html"> 
+<span class="menu-text">Data Science</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../dp/index.html"> 
+<span class="menu-text">Date Philosophy</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <a href="https://github.com" title="Github" class="quarto-navigation-tool px-1" aria-label="Github"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Joins Are No Mystery Anymore: Hands-On Tutorial - Part 2</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Numbers around us </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 6, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><img src="images/join2.jpg" class="img-fluid"></p>
+<p>Welcome back to the second part of our series, “Joins Are No Mystery Anymore: Hands-On Tutorial.” In the first part, we explored the foundational types of joins, including Inner Join, Left Join, Right Join, Full Join, and Semi Join. Through practical, real-life scenarios and step-by-step code examples, we learned how to effectively combine datasets and uncover valuable insights.</p>
+<p>In this second part, we’ll delve into more advanced join techniques. We’ll start with Anti Joins, which help identify unmatched rows between datasets. Following that, we’ll explore Cross Joins, Natural Joins, Self Joins, and Equi Joins. Each join type will be demonstrated with real-life scenarios to enhance your understanding and practical application. Get ready to take your data analysis skills to the next level!</p>
+<section id="anti-join" class="level2">
+<h2 class="anchored" data-anchor-id="anti-join">Anti Join</h2>
+<p>An Anti Join returns all rows from the left table where there are no matching values in the right table. It is useful for identifying rows in the left table that do not have corresponding rows in the right table.</p>
+<section id="explanation-of-the-scenario" class="level3">
+<h3 class="anchored" data-anchor-id="explanation-of-the-scenario">Explanation of the Scenario</h3>
+<p>In this scenario, we have subscription information and payment records. We want to find subscriptions that have not been paid for. This helps in identifying outstanding payments and managing accounts receivable.</p>
+<p>Data file: <a href="https://github.com/kgryczan/medium_publishing/blob/main/anti_join_data.RData">https://github.com/kgryczan/medium_publishing/blob/main/anti_join_data.RData</a></p>
+</section>
+<section id="description-of-the-datasets" class="level3">
+<h3 class="anchored" data-anchor-id="description-of-the-datasets">Description of the Datasets</h3>
+<p>We will use two datasets:</p>
+<ul>
+<li><code>subscriptions</code>: Contains information about subscriptions.</li>
+<li>Columns: <code>subscription_id</code>, <code>customer_id</code>, <code>start_date</code></li>
+<li><code>payments</code>: Contains information about payments made for subscriptions.</li>
+<li>Columns: <code>payment_id</code>, <code>subscription_id</code>, <code>amount</code>, <code>payment_date</code></li>
+</ul>
+</section>
+<section id="step-by-step-code-examples" class="level3">
+<h3 class="anchored" data-anchor-id="step-by-step-code-examples">Step-by-Step Code Examples</h3>
+<p><strong>Loading the datasets:</strong></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the necessary libraries</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the datasets</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">"anti_join_data.RData"</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the datasets</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(subscriptions)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 30 × 3</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>   subscription_id customer_id start_date</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>             <span class="sc">&lt;</span>int<span class="sc">&gt;</span>       <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>date<span class="sc">&gt;</span>    </span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a> <span class="dv">1</span>               <span class="dv">1</span>         <span class="dv">108</span> <span class="dv">2024-01-01</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a> <span class="dv">2</span>               <span class="dv">2</span>         <span class="dv">107</span> <span class="dv">2024-01-02</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a> <span class="dv">3</span>               <span class="dv">3</span>         <span class="dv">110</span> <span class="dv">2024-01-03</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a> <span class="dv">4</span>               <span class="dv">4</span>         <span class="dv">113</span> <span class="dv">2024-01-04</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a> <span class="dv">5</span>               <span class="dv">5</span>         <span class="dv">110</span> <span class="dv">2024-01-05</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a> <span class="dv">6</span>               <span class="dv">6</span>         <span class="dv">111</span> <span class="dv">2024-01-06</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a> <span class="dv">7</span>               <span class="dv">7</span>         <span class="dv">108</span> <span class="dv">2024-01-07</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a> <span class="dv">8</span>               <span class="dv">8</span>         <span class="dv">107</span> <span class="dv">2024-01-08</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a> <span class="dv">9</span>               <span class="dv">9</span>         <span class="dv">107</span> <span class="dv">2024-01-09</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span>              <span class="dv">10</span>         <span class="dv">112</span> <span class="dv">2024-01-10</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="co"># ℹ 20 more rows</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(payments)</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>   payment_id subscription_id amount payment_date</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>        <span class="sc">&lt;</span>int<span class="sc">&gt;</span>           <span class="er">&lt;</span>int<span class="sc">&gt;</span>  <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>date<span class="sc">&gt;</span>      </span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a> <span class="dv">1</span>        <span class="dv">201</span>               <span class="dv">4</span>  <span class="fl">154.</span>  <span class="dv">2024-01-05</span>  </span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a> <span class="dv">2</span>        <span class="dv">202</span>              <span class="dv">29</span>  <span class="fl">134.</span>  <span class="dv">2024-01-06</span>  </span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a> <span class="dv">3</span>        <span class="dv">203</span>              <span class="dv">25</span>  <span class="fl">158.</span>  <span class="dv">2024-01-07</span>  </span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a> <span class="dv">4</span>        <span class="dv">204</span>              <span class="dv">20</span>  <span class="fl">169.</span>  <span class="dv">2024-01-08</span>  </span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a> <span class="dv">5</span>        <span class="dv">205</span>              <span class="dv">18</span>  <span class="fl">170.</span>  <span class="dv">2024-01-09</span>  </span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a> <span class="dv">6</span>        <span class="dv">206</span>              <span class="dv">27</span>   <span class="fl">91.4</span> <span class="dv">2024-01-10</span>  </span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a> <span class="dv">7</span>        <span class="dv">207</span>              <span class="dv">23</span>   <span class="fl">52.4</span> <span class="dv">2024-01-11</span>  </span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a> <span class="dv">8</span>        <span class="dv">208</span>              <span class="dv">21</span>  <span class="fl">151.</span>  <span class="dv">2024-01-12</span>  </span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a> <span class="dv">9</span>        <span class="dv">209</span>              <span class="dv">12</span>   <span class="fl">76.4</span> <span class="dv">2024-01-13</span>  </span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span>        <span class="dv">210</span>              <span class="dv">25</span>  <span class="fl">133.</span>  <span class="dv">2024-01-14</span>  </span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="co"># ℹ 20 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Performing the Anti Join</strong></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform the anti join</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>unpaid_subscriptions <span class="ot">&lt;-</span> <span class="fu">anti_join</span>(subscriptions, payments, <span class="at">by =</span> <span class="st">"subscription_id"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the result</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(unpaid_subscriptions)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 13 × 3</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>   subscription_id customer_id start_date</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>             <span class="sc">&lt;</span>int<span class="sc">&gt;</span>       <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>date<span class="sc">&gt;</span>    </span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a> <span class="dv">1</span>               <span class="dv">1</span>         <span class="dv">108</span> <span class="dv">2024-01-01</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a> <span class="dv">2</span>               <span class="dv">2</span>         <span class="dv">107</span> <span class="dv">2024-01-02</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a> <span class="dv">3</span>               <span class="dv">5</span>         <span class="dv">110</span> <span class="dv">2024-01-05</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a> <span class="dv">4</span>               <span class="dv">6</span>         <span class="dv">111</span> <span class="dv">2024-01-06</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a> <span class="dv">5</span>               <span class="dv">8</span>         <span class="dv">107</span> <span class="dv">2024-01-08</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a> <span class="dv">6</span>              <span class="dv">10</span>         <span class="dv">112</span> <span class="dv">2024-01-10</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a> <span class="dv">7</span>              <span class="dv">15</span>         <span class="dv">113</span> <span class="dv">2024-01-15</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a> <span class="dv">8</span>              <span class="dv">16</span>         <span class="dv">115</span> <span class="dv">2024-01-16</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a> <span class="dv">9</span>              <span class="dv">19</span>         <span class="dv">115</span> <span class="dv">2024-01-19</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span>              <span class="dv">22</span>         <span class="dv">111</span> <span class="dv">2024-01-22</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span>              <span class="dv">24</span>         <span class="dv">108</span> <span class="dv">2024-01-24</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="dv">12</span>              <span class="dv">28</span>         <span class="dv">115</span> <span class="dv">2024-01-28</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="dv">13</span>              <span class="dv">30</span>         <span class="dv">102</span> <span class="dv">2024-01-30</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Explanation of the Code:</strong></p>
+<ul>
+<li>We first load the datasets using the <code>load</code> function.</li>
+<li>We then use the <code>anti_join</code> function from the <code>dplyr</code> package to filter the <code>subscriptions</code> dataset to include only those subscriptions that do not have matching entries in the <code>payments</code> dataset, based on the <code>subscription_id</code> column.</li>
+<li>Finally, we display the result to see which subscriptions have not been paid for.</li>
+</ul>
+</section>
+<section id="interpretation-of-results" class="level3">
+<h3 class="anchored" data-anchor-id="interpretation-of-results">Interpretation of Results</h3>
+<p>The resulting dataset <code>unpaid_subscriptions</code> contains only the rows from the <code>subscriptions</code> dataset where there is no matching row in the <code>payments</code> dataset. This means that only unpaid subscriptions are included.</p>
+</section>
+<section id="homework-for-readers" class="level3">
+<h3 class="anchored" data-anchor-id="homework-for-readers">Homework for Readers</h3>
+<p>In the same <code>anti_join_data.RData</code> file, there is another set of datasets for a more creative scenario. You will find:</p>
+<ul>
+<li><code>courses</code>: Contains information about courses.</li>
+<li>Columns: <code>course_id</code>, <code>course_name</code>, <code>instructor</code></li>
+<li><code>enrollments</code>: Contains information about student enrollments.</li>
+<li>Columns: <code>enrollment_id</code>, <code>course_id</code>, <code>student_id</code>, <code>enrollment_date</code></li>
+</ul>
+<p>Your task is to perform an anti join on these datasets to identify courses that have no enrollments. Use the <code>course_id</code> column for joining.</p>
+</section>
+</section>
+<section id="cross-join" class="level2">
+<h2 class="anchored" data-anchor-id="cross-join">Cross Join</h2>
+<p>A Cross Join returns the Cartesian product of two tables, combining all rows from the left table with all rows from the right table. This join type is useful when you want to create all possible combinations of the rows in two tables.</p>
+<section id="explanation-of-the-scenario-1" class="level3">
+<h3 class="anchored" data-anchor-id="explanation-of-the-scenario-1">Explanation of the Scenario</h3>
+<p>In this scenario, we have menu items and days of the week. We want to create a schedule of menu items for each day of the week. This helps in planning and organizing the weekly menu offerings.</p>
+<p>Data file: <a href="https://github.com/kgryczan/medium_publishing/blob/main/cross_join_data.RData">https://github.com/kgryczan/medium_publishing/blob/main/cross_join_data.RData</a></p>
+</section>
+<section id="description-of-the-datasets-1" class="level3">
+<h3 class="anchored" data-anchor-id="description-of-the-datasets-1">Description of the Datasets</h3>
+<p>We will use two datasets:</p>
+<ul>
+<li><code>menu_items</code>: Contains information about the menu items.</li>
+<li>Columns: <code>item_id</code>, <code>item_name</code>, <code>category</code></li>
+<li><code>days_of_week</code>: Contains information about the days of the week.</li>
+<li>Columns: <code>day_id</code>, <code>day_name</code></li>
+</ul>
+</section>
+<section id="step-by-step-code-examples-1" class="level3">
+<h3 class="anchored" data-anchor-id="step-by-step-code-examples-1">Step-by-Step Code Examples</h3>
+<p><strong>Loading the datasets</strong></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the necessary libraries</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the datasets</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">"cross_join_data.RData"</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the datasets</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(menu_items)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 10 × 3</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>   item_id item_name category </span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>     <span class="sc">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>chr<span class="sc">&gt;</span>     <span class="er">&lt;</span>chr<span class="sc">&gt;</span>    </span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a> <span class="dv">1</span>       <span class="dv">1</span> Pancakes  Breakfast</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a> <span class="dv">2</span>       <span class="dv">2</span> Sandwich  Lunch    </span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a> <span class="dv">3</span>       <span class="dv">3</span> Salad     Lunch    </span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a> <span class="dv">4</span>       <span class="dv">4</span> Burger    Lunch    </span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a> <span class="dv">5</span>       <span class="dv">5</span> Soup      Dinner   </span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a> <span class="dv">6</span>       <span class="dv">6</span> Pizza     Dinner   </span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a> <span class="dv">7</span>       <span class="dv">7</span> Spaghetti Dinner   </span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a> <span class="dv">8</span>       <span class="dv">8</span> Tacos     Dinner   </span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a> <span class="dv">9</span>       <span class="dv">9</span> Sushi     Dinner   </span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span>      <span class="dv">10</span> Steak     Dinner   </span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(days_of_week)</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 7 × 2</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>  day_id day_name </span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>   <span class="sc">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>chr<span class="sc">&gt;</span>    </span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>      <span class="dv">1</span> Monday   </span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>      <span class="dv">2</span> Tuesday  </span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span>      <span class="dv">3</span> Wednesday</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="dv">4</span>      <span class="dv">4</span> Thursday </span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span>      <span class="dv">5</span> Friday   </span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="dv">6</span>      <span class="dv">6</span> Saturday </span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="dv">7</span>      <span class="dv">7</span> Sunday  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Performing the Cross Join</strong></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform the cross join</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>menu_schedule <span class="ot">&lt;-</span> tidyr<span class="sc">::</span><span class="fu">crossing</span>(menu_items, days_of_week)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the result</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(menu_schedule)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 70 × 5</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>   item_id item_name category  day_id day_name </span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>     <span class="sc">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>chr<span class="sc">&gt;</span>     <span class="er">&lt;</span>chr<span class="sc">&gt;</span>      <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>chr<span class="sc">&gt;</span>    </span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a> <span class="dv">1</span>       <span class="dv">1</span> Pancakes  Breakfast      <span class="dv">1</span> Monday   </span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a> <span class="dv">2</span>       <span class="dv">1</span> Pancakes  Breakfast      <span class="dv">2</span> Tuesday  </span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a> <span class="dv">3</span>       <span class="dv">1</span> Pancakes  Breakfast      <span class="dv">3</span> Wednesday</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a> <span class="dv">4</span>       <span class="dv">1</span> Pancakes  Breakfast      <span class="dv">4</span> Thursday </span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a> <span class="dv">5</span>       <span class="dv">1</span> Pancakes  Breakfast      <span class="dv">5</span> Friday   </span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a> <span class="dv">6</span>       <span class="dv">1</span> Pancakes  Breakfast      <span class="dv">6</span> Saturday </span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a> <span class="dv">7</span>       <span class="dv">1</span> Pancakes  Breakfast      <span class="dv">7</span> Sunday   </span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a> <span class="dv">8</span>       <span class="dv">2</span> Sandwich  Lunch          <span class="dv">1</span> Monday   </span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a> <span class="dv">9</span>       <span class="dv">2</span> Sandwich  Lunch          <span class="dv">2</span> Tuesday  </span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span>       <span class="dv">2</span> Sandwich  Lunch          <span class="dv">3</span> Wednesday</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co"># ℹ 60 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Explanation of the Code:</strong></p>
+<ul>
+<li>We first load the datasets using the <code>load</code> function.</li>
+<li>We then use the <code>crossing</code> function from the <code>tidyr</code> package to perform the cross join between the <code>menu_items</code> and <code>days_of_week</code> datasets. This function creates all possible combinations of the rows in the two datasets.</li>
+<li>Finally, we display the result to see the complete schedule of menu items for each day of the week.</li>
+</ul>
+</section>
+<section id="interpretation-of-results-1" class="level3">
+<h3 class="anchored" data-anchor-id="interpretation-of-results-1">Interpretation of Results</h3>
+<p>The resulting dataset <code>menu_schedule</code> contains all possible combinations of the rows from the <code>menu_items</code> and <code>days_of_week</code> datasets. Each row represents a menu item scheduled for a particular day of the week.</p>
+</section>
+<section id="homework-for-readers-1" class="level3">
+<h3 class="anchored" data-anchor-id="homework-for-readers-1">Homework for Readers</h3>
+<p>In the same <code>cross_join_data.RData</code> file, there is another set of datasets for a more creative scenario. You will find:</p>
+<ul>
+<li><code>shirts</code>: Contains information about shirts.</li>
+<li>Columns: <code>shirt_id</code>, <code>color</code>, <code>size</code></li>
+<li><code>pants</code>: Contains information about pants.</li>
+<li>Columns: <code>pants_id</code>, <code>color</code>, <code>size</code></li>
+</ul>
+<p>Your task is to perform a cross join on these datasets to generate all possible outfits by combining shirts and pants. Use the <code>shirt_id</code> and <code>pants_id</code> columns for joining.</p>
+</section>
+</section>
+<section id="natural-join" class="level2">
+<h2 class="anchored" data-anchor-id="natural-join">Natural Join</h2>
+<p>A Natural Join joins two tables based on columns with the same name and type in both tables. It automatically matches rows with equal values in the common columns, removing the need to specify the joining column.</p>
+<section id="explanation-of-the-scenario-2" class="level3">
+<h3 class="anchored" data-anchor-id="explanation-of-the-scenario-2">Explanation of the Scenario</h3>
+<p>In this scenario, we have authors and books. We want to find authors and their corresponding books based on a common column. This helps in linking authors with the books they have written.</p>
+<p>Data file: <a href="https://github.com/kgryczan/medium_publishing/blob/main/natural_join_data.RData">https://github.com/kgryczan/medium_publishing/blob/main/natural_join_data.RData</a></p>
+</section>
+<section id="description-of-the-datasets-2" class="level3">
+<h3 class="anchored" data-anchor-id="description-of-the-datasets-2">Description of the Datasets</h3>
+<p>We will use two datasets:</p>
+<ul>
+<li><code>authors</code>: Contains information about authors.</li>
+<li>Columns: <code>author_id</code>, <code>name</code>, <code>nationality</code></li>
+<li><code>books</code>: Contains information about books.</li>
+<li>Columns: <code>book_id</code>, <code>author_id</code>, <code>title</code>, <code>genre</code></li>
+</ul>
+</section>
+<section id="step-by-step-code-examples-2" class="level3">
+<h3 class="anchored" data-anchor-id="step-by-step-code-examples-2">Step-by-Step Code Examples</h3>
+<p><strong>Loading the datasets:</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the necessary libraries</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the datasets</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">"natural_join_data.RData"</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the datasets</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(authors)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 20 × 3</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>   author_id name     nationality</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>       <span class="sc">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>chr<span class="sc">&gt;</span>    <span class="er">&lt;</span>chr<span class="sc">&gt;</span>      </span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a> <span class="dv">1</span>         <span class="dv">1</span> Author A Australia  </span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a> <span class="dv">2</span>         <span class="dv">2</span> Author B Australia  </span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a> <span class="dv">3</span>         <span class="dv">3</span> Author C Canada     </span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a> <span class="dv">4</span>         <span class="dv">4</span> Author D USA        </span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a> <span class="dv">5</span>         <span class="dv">5</span> Author E UK         </span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a> <span class="dv">6</span>         <span class="dv">6</span> Author F USA        </span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a> <span class="dv">7</span>         <span class="dv">7</span> Author G Australia  </span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a> <span class="dv">8</span>         <span class="dv">8</span> Author H Australia  </span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a> <span class="dv">9</span>         <span class="dv">9</span> Author I UK         </span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span>        <span class="dv">10</span> Author J Australia  </span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span>        <span class="dv">11</span> Author K Australia  </span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="dv">12</span>        <span class="dv">12</span> Author L USA        </span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="dv">13</span>        <span class="dv">13</span> Author M USA        </span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="dv">14</span>        <span class="dv">14</span> Author N Canada     </span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="dv">15</span>        <span class="dv">15</span> Author O Canada     </span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="dv">16</span>        <span class="dv">16</span> Author P Canada     </span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="dv">17</span>        <span class="dv">17</span> Author Q USA        </span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a><span class="dv">18</span>        <span class="dv">18</span> Author R Australia  </span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="dv">19</span>        <span class="dv">19</span> Author S USA        </span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a><span class="dv">20</span>        <span class="dv">20</span> Author T USA </span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(books)</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 20 × 4</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>   book_id author_id title  genre  </span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>     <span class="sc">&lt;</span>int<span class="sc">&gt;</span>     <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>chr<span class="sc">&gt;</span>  <span class="er">&lt;</span>chr<span class="sc">&gt;</span>  </span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a> <span class="dv">1</span>     <span class="dv">101</span>         <span class="dv">1</span> Book A Fantasy</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a> <span class="dv">2</span>     <span class="dv">102</span>         <span class="dv">2</span> Book B Fiction</span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a> <span class="dv">3</span>     <span class="dv">103</span>         <span class="dv">3</span> Book C Sci<span class="sc">-</span>Fi </span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a> <span class="dv">4</span>     <span class="dv">104</span>         <span class="dv">4</span> Book D Fiction</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a> <span class="dv">5</span>     <span class="dv">105</span>         <span class="dv">5</span> Book E Sci<span class="sc">-</span>Fi </span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a> <span class="dv">6</span>     <span class="dv">106</span>         <span class="dv">6</span> Book F Fantasy</span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a> <span class="dv">7</span>     <span class="dv">107</span>         <span class="dv">7</span> Book G Fantasy</span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a> <span class="dv">8</span>     <span class="dv">108</span>         <span class="dv">8</span> Book H Mystery</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a> <span class="dv">9</span>     <span class="dv">109</span>         <span class="dv">9</span> Book I Mystery</span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span>     <span class="dv">110</span>        <span class="dv">10</span> Book J Mystery</span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span>     <span class="dv">111</span>        <span class="dv">11</span> Book K Fantasy</span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a><span class="dv">12</span>     <span class="dv">112</span>        <span class="dv">12</span> Book L Fiction</span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a><span class="dv">13</span>     <span class="dv">113</span>        <span class="dv">13</span> Book M Fiction</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a><span class="dv">14</span>     <span class="dv">114</span>        <span class="dv">14</span> Book N Mystery</span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a><span class="dv">15</span>     <span class="dv">115</span>        <span class="dv">15</span> Book O Sci<span class="sc">-</span>Fi </span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a><span class="dv">16</span>     <span class="dv">116</span>        <span class="dv">16</span> Book P Sci<span class="sc">-</span>Fi </span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a><span class="dv">17</span>     <span class="dv">117</span>        <span class="dv">17</span> Book Q Fantasy</span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a><span class="dv">18</span>     <span class="dv">118</span>        <span class="dv">18</span> Book R Sci<span class="sc">-</span>Fi </span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a><span class="dv">19</span>     <span class="dv">119</span>        <span class="dv">19</span> Book S Mystery</span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a><span class="dv">20</span>     <span class="dv">120</span>        <span class="dv">20</span> Book T Mystery</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Performing the Natural Join:</strong></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform the natural join</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>authors_books <span class="ot">&lt;-</span> authors <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(books, <span class="at">by =</span> <span class="st">"author_id"</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the result</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(authors_books)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 20 × 6</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>   author_id name     nationality book_id title  genre  </span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>       <span class="sc">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>chr<span class="sc">&gt;</span>    <span class="er">&lt;</span>chr<span class="sc">&gt;</span>         <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>chr<span class="sc">&gt;</span>  <span class="er">&lt;</span>chr<span class="sc">&gt;</span>  </span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a> <span class="dv">1</span>         <span class="dv">1</span> Author A Australia       <span class="dv">101</span> Book A Fantasy</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a> <span class="dv">2</span>         <span class="dv">2</span> Author B Australia       <span class="dv">102</span> Book B Fiction</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a> <span class="dv">3</span>         <span class="dv">3</span> Author C Canada          <span class="dv">103</span> Book C Sci<span class="sc">-</span>Fi </span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a> <span class="dv">4</span>         <span class="dv">4</span> Author D USA             <span class="dv">104</span> Book D Fiction</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a> <span class="dv">5</span>         <span class="dv">5</span> Author E UK              <span class="dv">105</span> Book E Sci<span class="sc">-</span>Fi </span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a> <span class="dv">6</span>         <span class="dv">6</span> Author F USA             <span class="dv">106</span> Book F Fantasy</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a> <span class="dv">7</span>         <span class="dv">7</span> Author G Australia       <span class="dv">107</span> Book G Fantasy</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a> <span class="dv">8</span>         <span class="dv">8</span> Author H Australia       <span class="dv">108</span> Book H Mystery</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a> <span class="dv">9</span>         <span class="dv">9</span> Author I UK              <span class="dv">109</span> Book I Mystery</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span>        <span class="dv">10</span> Author J Australia       <span class="dv">110</span> Book J Mystery</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span>        <span class="dv">11</span> Author K Australia       <span class="dv">111</span> Book K Fantasy</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="dv">12</span>        <span class="dv">12</span> Author L USA             <span class="dv">112</span> Book L Fiction</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="dv">13</span>        <span class="dv">13</span> Author M USA             <span class="dv">113</span> Book M Fiction</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="dv">14</span>        <span class="dv">14</span> Author N Canada          <span class="dv">114</span> Book N Mystery</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="dv">15</span>        <span class="dv">15</span> Author O Canada          <span class="dv">115</span> Book O Sci<span class="sc">-</span>Fi </span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="dv">16</span>        <span class="dv">16</span> Author P Canada          <span class="dv">116</span> Book P Sci<span class="sc">-</span>Fi </span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="dv">17</span>        <span class="dv">17</span> Author Q USA             <span class="dv">117</span> Book Q Fantasy</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="dv">18</span>        <span class="dv">18</span> Author R Australia       <span class="dv">118</span> Book R Sci<span class="sc">-</span>Fi </span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="dv">19</span>        <span class="dv">19</span> Author S USA             <span class="dv">119</span> Book S Mystery</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="dv">20</span>        <span class="dv">20</span> Author T USA             <span class="dv">120</span> Book T Mystery</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Explanation of the Code:</strong></p>
+<ul>
+<li>We first load the datasets using the <code>load</code> function.</li>
+<li>We then use the <code>inner_join</code> function from the <code>dplyr</code> package to perform the natural join between the <code>authors</code> and <code>books</code> datasets on the <code>author_id</code> column.</li>
+<li>Finally, we display the result to see which authors have written which books.</li>
+</ul>
+</section>
+<section id="interpretation-of-results-2" class="level3">
+<h3 class="anchored" data-anchor-id="interpretation-of-results-2">Interpretation of Results</h3>
+<p>The resulting dataset <code>authors_books</code> contains all rows from both the <code>authors</code> and <code>books</code> datasets where there is a matching value in the <code>author_id</code> column. This means that only authors who have written books are included, along with the details of those books. (Yes, it is a kind of inner join.)</p>
+</section>
+<section id="homework-for-readers-2" class="level3">
+<h3 class="anchored" data-anchor-id="homework-for-readers-2">Homework for Readers</h3>
+<p>In the same <code>natural_join_data.RData</code> file, there is another set of datasets for a more creative scenario. You will find:</p>
+<ul>
+<li><code>staff</code>: Contains information about staff members.</li>
+<li>Columns: <code>staff_id</code>, <code>name</code>, <code>role</code></li>
+<li><code>assignments</code>: Contains information about project assignments.</li>
+<li>Columns: <code>assignment_id</code>, <code>staff_id</code>, <code>project_name</code></li>
+</ul>
+<p>Your task is to perform a natural join on these datasets to combine staff details with their project assignments. Use the <code>staff_id</code> column for joining.</p>
+</section>
+</section>
+<section id="self-join" class="level2">
+<h2 class="anchored" data-anchor-id="self-join">Self Join</h2>
+<p>A Self Join is a join of a table to itself. It is used to compare rows within the same table. This can be particularly useful for hierarchical data, such as organizational structures, where you need to find relationships between rows within the same table.</p>
+<section id="explanation-of-the-scenario-3" class="level3">
+<h3 class="anchored" data-anchor-id="explanation-of-the-scenario-3">Explanation of the Scenario</h3>
+<p>In this scenario, we have employee information, and each employee has a manager, who is also an employee. We want to find the relationship between employees and their managers using the same table. This helps in understanding the organizational hierarchy.</p>
+<p>Data file: <a href="https://github.com/kgryczan/medium_publishing/blob/main/self_join_data.RData">https://github.com/kgryczan/medium_publishing/blob/main/self_join_data.RData</a></p>
+</section>
+<section id="description-of-the-datasets-3" class="level3">
+<h3 class="anchored" data-anchor-id="description-of-the-datasets-3">Description of the Datasets</h3>
+<p>We will use one dataset:</p>
+<ul>
+<li><code>employees</code>: Contains information about employees and their managers.</li>
+<li>Columns: <code>employee_id</code>, <code>name</code>, <code>manager_id</code></li>
+</ul>
+</section>
+<section id="step-by-step-code-examples-3" class="level3">
+<h3 class="anchored" data-anchor-id="step-by-step-code-examples-3">Step-by-Step Code Examples</h3>
+<p><strong>Loading the dataset</strong></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the necessary libraries</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the dataset</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">"self_join_data.RData"</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the dataset</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(employees)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 20 × 3</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>   employee_id name    manager_id</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>         <span class="sc">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>chr<span class="sc">&gt;</span>        <span class="er">&lt;</span>int<span class="sc">&gt;</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a> <span class="dv">1</span>           <span class="dv">1</span> Alice E         <span class="dv">12</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a> <span class="dv">2</span>           <span class="dv">2</span> Bob C            <span class="dv">6</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a> <span class="dv">3</span>           <span class="dv">3</span> Carol L          <span class="dv">8</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a> <span class="dv">4</span>           <span class="dv">4</span> Zoe K           <span class="dv">15</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a> <span class="dv">5</span>           <span class="dv">5</span> Alice G         <span class="dv">10</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a> <span class="dv">6</span>           <span class="dv">6</span> Bob D            <span class="dv">7</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a> <span class="dv">7</span>           <span class="dv">7</span> Carol S         <span class="dv">19</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a> <span class="dv">8</span>           <span class="dv">8</span> Zoe T            <span class="dv">1</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a> <span class="dv">9</span>           <span class="dv">9</span> Alice O         <span class="dv">13</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span>          <span class="dv">10</span> Bob O            <span class="dv">2</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span>          <span class="dv">11</span> Carol G         <span class="dv">16</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="dv">12</span>          <span class="dv">12</span> Zoe P            <span class="dv">8</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="dv">13</span>          <span class="dv">13</span> Alice H          <span class="dv">4</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="dv">14</span>          <span class="dv">14</span> Bob K           <span class="dv">14</span></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="dv">15</span>          <span class="dv">15</span> Carol B         <span class="dv">18</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="dv">16</span>          <span class="dv">16</span> Zoe E            <span class="dv">4</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="dv">17</span>          <span class="dv">17</span> Alice O          <span class="dv">7</span></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="dv">18</span>          <span class="dv">18</span> Bob T           <span class="dv">14</span></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="dv">19</span>          <span class="dv">19</span> Carol R          <span class="dv">8</span></span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="dv">20</span>          <span class="dv">20</span> Zoe G           <span class="dv">16</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Performing the Self Join</strong></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform the self join</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>employees_managers <span class="ot">&lt;-</span> employees <span class="sc">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(employees, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"manager_id"</span> <span class="ot">=</span> <span class="st">"employee_id"</span>), <span class="at">suffix =</span> <span class="fu">c</span>(<span class="st">"_employee"</span>, <span class="st">"_manager"</span>))</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the result</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(employees_managers)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 20 × 5</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>   employee_id name_employee manager_id name_manager manager_id_manager</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>         <span class="sc">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>chr<span class="sc">&gt;</span>              <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>chr<span class="sc">&gt;</span>                     <span class="er">&lt;</span>int<span class="sc">&gt;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a> <span class="dv">1</span>           <span class="dv">1</span> Alice E               <span class="dv">12</span> Zoe P                         <span class="dv">8</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a> <span class="dv">2</span>           <span class="dv">2</span> Bob C                  <span class="dv">6</span> Bob D                         <span class="dv">7</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a> <span class="dv">3</span>           <span class="dv">3</span> Carol L                <span class="dv">8</span> Zoe T                         <span class="dv">1</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a> <span class="dv">4</span>           <span class="dv">4</span> Zoe K                 <span class="dv">15</span> Carol B                      <span class="dv">18</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a> <span class="dv">5</span>           <span class="dv">5</span> Alice G               <span class="dv">10</span> Bob O                         <span class="dv">2</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a> <span class="dv">6</span>           <span class="dv">6</span> Bob D                  <span class="dv">7</span> Carol S                      <span class="dv">19</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a> <span class="dv">7</span>           <span class="dv">7</span> Carol S               <span class="dv">19</span> Carol R                       <span class="dv">8</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a> <span class="dv">8</span>           <span class="dv">8</span> Zoe T                  <span class="dv">1</span> Alice E                      <span class="dv">12</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a> <span class="dv">9</span>           <span class="dv">9</span> Alice O               <span class="dv">13</span> Alice H                       <span class="dv">4</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span>          <span class="dv">10</span> Bob O                  <span class="dv">2</span> Bob C                         <span class="dv">6</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span>          <span class="dv">11</span> Carol G               <span class="dv">16</span> Zoe E                         <span class="dv">4</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="dv">12</span>          <span class="dv">12</span> Zoe P                  <span class="dv">8</span> Zoe T                         <span class="dv">1</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="dv">13</span>          <span class="dv">13</span> Alice H                <span class="dv">4</span> Zoe K                        <span class="dv">15</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="dv">14</span>          <span class="dv">14</span> Bob K                 <span class="dv">14</span> Bob K                        <span class="dv">14</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="dv">15</span>          <span class="dv">15</span> Carol B               <span class="dv">18</span> Bob T                        <span class="dv">14</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="dv">16</span>          <span class="dv">16</span> Zoe E                  <span class="dv">4</span> Zoe K                        <span class="dv">15</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="dv">17</span>          <span class="dv">17</span> Alice O                <span class="dv">7</span> Carol S                      <span class="dv">19</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="dv">18</span>          <span class="dv">18</span> Bob T                 <span class="dv">14</span> Bob K                        <span class="dv">14</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="dv">19</span>          <span class="dv">19</span> Carol R                <span class="dv">8</span> Zoe T                         <span class="dv">1</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="dv">20</span>          <span class="dv">20</span> Zoe G                 <span class="dv">16</span> Zoe E                         <span class="dv">4</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Explanation of the Code:</strong></p>
+<ul>
+<li>We first load the dataset using the <code>load</code> function.</li>
+<li>We then use the <code>inner_join</code> function from the <code>dplyr</code> package to join the <code>employees</code> table to itself. The join condition matches the <code>manager_id</code> of one row with the <code>employee_id</code> of another row. The <code>suffix</code> argument is used to distinguish between the employee and manager columns.</li>
+<li>Finally, we display the result to see the relationship between employees and their managers.</li>
+</ul>
+</section>
+<section id="interpretation-of-results-3" class="level3">
+<h3 class="anchored" data-anchor-id="interpretation-of-results-3">Interpretation of Results</h3>
+<p>The resulting dataset <code>employees_managers</code> contains pairs of employees and their managers. Each row shows an employee along with their corresponding manager, including details such as names and IDs.</p>
+</section>
+<section id="homework-for-readers-3" class="level3">
+<h3 class="anchored" data-anchor-id="homework-for-readers-3">Homework for Readers</h3>
+<p>In the same <code>self_join_data.RData</code> file, there is another set of datasets for a more creative scenario. You will find:</p>
+<ul>
+<li><code>friends</code>: Contains information about friendships within a social network.</li>
+<li>Columns: <code>person_id</code>, <code>friend_id</code></li>
+</ul>
+<p>Your task is to perform a self join on this dataset to analyze the friendships and find mutual friends. Use the <code>person_id</code> and <code>friend_id</code> columns for joining.</p>
+</section>
+</section>
+<section id="equi-join" class="level2">
+<h2 class="anchored" data-anchor-id="equi-join">Equi Join</h2>
+<p>An Equi Join is a type of join that combines rows from two tables based on equality conditions between specified columns. It is one of the most common types of joins used in SQL and relational database management. Take into a consideration that all types we already talked about are equi joins. It is just wider definition, beacuse we are looking for equality of keys.</p>
+<section id="explanation-of-the-scenario-4" class="level3">
+<h3 class="anchored" data-anchor-id="explanation-of-the-scenario-4">Explanation of the Scenario</h3>
+<p>In this scenario, we have orders and order details. We want to join these tables to get a comprehensive view of each order along with its details. This helps in understanding the full scope of each transaction.</p>
+<p>Data file: <a href="https://github.com/kgryczan/medium_publishing/blob/main/equi_join_data.RData">https://github.com/kgryczan/medium_publishing/blob/main/equi_join_data.RData</a></p>
+</section>
+<section id="description-of-the-datasets-4" class="level3">
+<h3 class="anchored" data-anchor-id="description-of-the-datasets-4">Description of the Datasets</h3>
+<p>We will use two datasets:</p>
+<ul>
+<li><code>orders</code>: Contains information about customer orders.</li>
+<li>Columns: <code>order_id</code>, <code>customer_id</code>, <code>order_date</code></li>
+<li><code>order_details</code>: Contains detailed information about each order.</li>
+<li>Columns: <code>order_detail_id</code>, <code>order_id</code>, <code>product_id</code>, <code>quantity</code></li>
+</ul>
+</section>
+<section id="step-by-step-code-examples-4" class="level3">
+<h3 class="anchored" data-anchor-id="step-by-step-code-examples-4">Step-by-Step Code Examples</h3>
+<p><strong>Loading the datasets</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the necessary libraries</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the datasets</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">"equi_join_data.RData"</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the datasets</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(orders)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 20 × 3</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>   order_id customer_id order_date</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>      <span class="sc">&lt;</span>int<span class="sc">&gt;</span>       <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>date<span class="sc">&gt;</span>    </span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a> <span class="dv">1</span>        <span class="dv">1</span>         <span class="dv">113</span> <span class="dv">2024-01-01</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a> <span class="dv">2</span>        <span class="dv">2</span>         <span class="dv">113</span> <span class="dv">2024-01-02</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a> <span class="dv">3</span>        <span class="dv">3</span>         <span class="dv">112</span> <span class="dv">2024-01-03</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a> <span class="dv">4</span>        <span class="dv">4</span>         <span class="dv">105</span> <span class="dv">2024-01-04</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a> <span class="dv">5</span>        <span class="dv">5</span>         <span class="dv">117</span> <span class="dv">2024-01-05</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a> <span class="dv">6</span>        <span class="dv">6</span>         <span class="dv">115</span> <span class="dv">2024-01-06</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a> <span class="dv">7</span>        <span class="dv">7</span>         <span class="dv">112</span> <span class="dv">2024-01-07</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a> <span class="dv">8</span>        <span class="dv">8</span>         <span class="dv">107</span> <span class="dv">2024-01-08</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a> <span class="dv">9</span>        <span class="dv">9</span>         <span class="dv">117</span> <span class="dv">2024-01-09</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span>       <span class="dv">10</span>         <span class="dv">106</span> <span class="dv">2024-01-10</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="dv">11</span>       <span class="dv">11</span>         <span class="dv">105</span> <span class="dv">2024-01-11</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="dv">12</span>       <span class="dv">12</span>         <span class="dv">109</span> <span class="dv">2024-01-12</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="dv">13</span>       <span class="dv">13</span>         <span class="dv">117</span> <span class="dv">2024-01-13</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="dv">14</span>       <span class="dv">14</span>         <span class="dv">113</span> <span class="dv">2024-01-14</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="dv">15</span>       <span class="dv">15</span>         <span class="dv">101</span> <span class="dv">2024-01-15</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="dv">16</span>       <span class="dv">16</span>         <span class="dv">107</span> <span class="dv">2024-01-16</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="dv">17</span>       <span class="dv">17</span>         <span class="dv">115</span> <span class="dv">2024-01-17</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="dv">18</span>       <span class="dv">18</span>         <span class="dv">103</span> <span class="dv">2024-01-18</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="dv">19</span>       <span class="dv">19</span>         <span class="dv">108</span> <span class="dv">2024-01-19</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="dv">20</span>       <span class="dv">20</span>         <span class="dv">115</span> <span class="dv">2024-01-20</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(order_details)</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 40 × 4</span></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>   order_detail_id order_id product_id quantity</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>             <span class="sc">&lt;</span>int<span class="sc">&gt;</span>    <span class="er">&lt;</span>int<span class="sc">&gt;</span>      <span class="er">&lt;</span>int<span class="sc">&gt;</span>    <span class="er">&lt;</span>int<span class="sc">&gt;</span></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a> <span class="dv">1</span>               <span class="dv">1</span>       <span class="dv">17</span>        <span class="dv">206</span>       <span class="dv">10</span></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a> <span class="dv">2</span>               <span class="dv">2</span>       <span class="dv">18</span>        <span class="dv">215</span>        <span class="dv">4</span></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a> <span class="dv">3</span>               <span class="dv">3</span>       <span class="dv">13</span>        <span class="dv">218</span>        <span class="dv">8</span></span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a> <span class="dv">4</span>               <span class="dv">4</span>       <span class="dv">16</span>        <span class="dv">217</span>        <span class="dv">3</span></span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a> <span class="dv">5</span>               <span class="dv">5</span>        <span class="dv">2</span>        <span class="dv">217</span>        <span class="dv">5</span></span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a> <span class="dv">6</span>               <span class="dv">6</span>        <span class="dv">2</span>        <span class="dv">203</span>        <span class="dv">4</span></span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a> <span class="dv">7</span>               <span class="dv">7</span>       <span class="dv">20</span>        <span class="dv">219</span>        <span class="dv">9</span></span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a> <span class="dv">8</span>               <span class="dv">8</span>       <span class="dv">18</span>        <span class="dv">214</span>        <span class="dv">4</span></span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a> <span class="dv">9</span>               <span class="dv">9</span>       <span class="dv">12</span>        <span class="dv">218</span>        <span class="dv">4</span></span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span>              <span class="dv">10</span>       <span class="dv">14</span>        <span class="dv">214</span>        <span class="dv">4</span></span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a><span class="co"># ℹ 30 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Performing the Equi Join</strong></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform the equi join</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>orders_with_details <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(orders, order_details, <span class="at">by =</span> <span class="st">"order_id"</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the result</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(orders_with_details)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 40 × 6</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>   order_id customer_id order_date order_detail_id product_id quantity</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>      <span class="sc">&lt;</span>int<span class="sc">&gt;</span>       <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>date<span class="sc">&gt;</span>               <span class="er">&lt;</span>int<span class="sc">&gt;</span>      <span class="er">&lt;</span>int<span class="sc">&gt;</span>    <span class="er">&lt;</span>int<span class="sc">&gt;</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a> <span class="dv">1</span>        <span class="dv">1</span>         <span class="dv">113</span> <span class="dv">2024-01-01</span>              <span class="dv">39</span>        <span class="dv">210</span>        <span class="dv">5</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a> <span class="dv">2</span>        <span class="dv">2</span>         <span class="dv">113</span> <span class="dv">2024-01-02</span>               <span class="dv">5</span>        <span class="dv">217</span>        <span class="dv">5</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a> <span class="dv">3</span>        <span class="dv">2</span>         <span class="dv">113</span> <span class="dv">2024-01-02</span>               <span class="dv">6</span>        <span class="dv">203</span>        <span class="dv">4</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a> <span class="dv">4</span>        <span class="dv">2</span>         <span class="dv">113</span> <span class="dv">2024-01-02</span>              <span class="dv">22</span>        <span class="dv">219</span>        <span class="dv">1</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a> <span class="dv">5</span>        <span class="dv">2</span>         <span class="dv">113</span> <span class="dv">2024-01-02</span>              <span class="dv">25</span>        <span class="dv">220</span>        <span class="dv">8</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a> <span class="dv">6</span>        <span class="dv">2</span>         <span class="dv">113</span> <span class="dv">2024-01-02</span>              <span class="dv">36</span>        <span class="dv">213</span>        <span class="dv">3</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a> <span class="dv">7</span>        <span class="dv">2</span>         <span class="dv">113</span> <span class="dv">2024-01-02</span>              <span class="dv">38</span>        <span class="dv">202</span>        <span class="dv">9</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a> <span class="dv">8</span>        <span class="dv">4</span>         <span class="dv">105</span> <span class="dv">2024-01-04</span>              <span class="dv">12</span>        <span class="dv">215</span>        <span class="dv">4</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a> <span class="dv">9</span>        <span class="dv">4</span>         <span class="dv">105</span> <span class="dv">2024-01-04</span>              <span class="dv">24</span>        <span class="dv">201</span>        <span class="dv">5</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="dv">10</span>        <span class="dv">4</span>         <span class="dv">105</span> <span class="dv">2024-01-04</span>              <span class="dv">30</span>        <span class="dv">219</span>        <span class="dv">3</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="co"># ℹ 30 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Explanation of the Code:</strong></p>
+<ul>
+<li>We first load the datasets using the <code>load</code> function.</li>
+<li>We then use the <code>inner_join</code> function from the <code>dplyr</code> package to perform the equi join between the <code>orders</code> and <code>order_details</code> datasets on the <code>order_id</code> column.</li>
+<li>Finally, we display the result to see the full details of each order.</li>
+</ul>
+</section>
+<section id="interpretation-of-results-4" class="level3">
+<h3 class="anchored" data-anchor-id="interpretation-of-results-4">Interpretation of Results</h3>
+<p>The resulting dataset <code>orders_with_details</code> contains all rows from the <code>orders</code> dataset with the matching rows from the <code>order_details</code> dataset based on the <code>order_id</code> column. This means that each order is enriched with its detailed information.</p>
+</section>
+<section id="homework-for-readers-4" class="level3">
+<h3 class="anchored" data-anchor-id="homework-for-readers-4">Homework for Readers</h3>
+<p>In the same <code>equi_join_data.RData</code> file, there is another set of datasets for a more creative scenario. You will find:</p>
+<ul>
+<li><code>athletes</code>: Contains information about athletes.</li>
+<li>Columns: <code>athlete_id</code>, <code>name</code>, <code>sport</code></li>
+<li><code>performance_records</code>: Contains information about performance records of athletes.</li>
+<li>Columns: <code>record_id</code>, <code>athlete_id</code>, <code>event</code>, <code>score</code></li>
+</ul>
+<p>Your task is to perform an equi join on these datasets to match athletes with their performance records. Use the <code>athlete_id</code> column for joining.</p>
+<p>In this second part of our series, “Joins Are No Mystery Anymore: Hands-On Tutorial,” we delved into more advanced join techniques that are essential for comprehensive data analysis. We explored:</p>
+<ul>
+<li><strong>Anti Join</strong>: Identifying rows in one table that do not have corresponding rows in another, helping to spot outstanding payments.</li>
+<li><strong>Cross Join</strong>: Creating all possible combinations of rows from two tables, useful for planning and organizing.</li>
+<li><strong>Natural Join</strong>: Automatically joining tables based on columns with the same names and types, simplifying the linking process.</li>
+<li><strong>Self Join</strong>: Comparing rows within the same table to uncover relationships, such as employee-manager hierarchies.</li>
+<li><strong>Equi Join</strong>: Combining rows from two tables based on equality conditions, providing detailed insights into orders and their specifics.</li>
+</ul>
+<p>Through practical scenarios and step-by-step code examples, we enhanced our understanding of these joins and their applications. Each join type was demonstrated with real-life datasets, allowing you to see how these techniques can be applied to solve everyday data problems.</p>
+<p>Next week, we will conclude our series with even more specialized join techniques. We’ll cover Non-Equi Joins, Rolling Joins, Overlap Joins, and Fuzzy Joins. These advanced joins will help you handle more complex data scenarios, such as matching based on non-equality conditions, finding the nearest matches, and dealing with approximate or fuzzy data. Stay tuned as we unlock the full potential of joins in R and take your data analysis skills to the ultimate level.</p>
+<p>Thank you for sticking with us through the second part of our “Joins Are No Mystery Anymore: Hands-On Tutorial” series! Your dedication to mastering data joins in R is commendable.</p>
+<p>As a special treat for our patient readers, next week we’ll dive into “Anatomy of a Basic Joining Function.” This extra content will break down the different arguments in joining functions, explaining what each one does and how it changes the output. It’s a deep dive into the mechanics of joins that will enhance your understanding and give you even greater control over your data analysis.</p>
+<p>Stay tuned and happy coding!</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = true;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>For everybody, not to be fooled by numbers</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

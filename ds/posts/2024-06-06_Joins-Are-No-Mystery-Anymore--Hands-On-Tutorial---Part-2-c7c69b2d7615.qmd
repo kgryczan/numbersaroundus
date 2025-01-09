@@ -1,0 +1,626 @@
+---
+title: "Joins Are No Mystery Anymore: Hands-On Tutorial - Part 2"
+author: "Numbers around us"
+date: "2024-06-06"
+format: html
+---
+
+![](images/join2.jpg)
+
+Welcome back to the second part of our series, "Joins Are No Mystery Anymore: Hands-On Tutorial." In the first part, we explored the foundational types of joins, including Inner Join, Left Join, Right Join, Full Join, and Semi Join. Through practical, real-life scenarios and step-by-step code examples, we learned how to effectively combine datasets and uncover valuable insights.
+
+In this second part, we'll delve into more advanced join techniques. We'll start with Anti Joins, which help identify unmatched rows between datasets. Following that, we'll explore Cross Joins, Natural Joins, Self Joins, and Equi Joins. Each join type will be demonstrated with real-life scenarios to enhance your understanding and practical application. Get ready to take your data analysis skills to the next level!
+
+## Anti Join
+
+An Anti Join returns all rows from the left table where there are no matching values in the right table. It is useful for identifying rows in the left table that do not have corresponding rows in the right table.
+
+### Explanation of the Scenario
+
+In this scenario, we have subscription information and payment records. We want to find subscriptions that have not been paid for. This helps in identifying outstanding payments and managing accounts receivable.
+
+Data file:
+[https://github.com/kgryczan/medium_publishing/blob/main/anti_join_data.RData](https://github.com/kgryczan/medium_publishing/blob/main/anti_join_data.RData)
+
+### Description of the Datasets
+
+We will use two datasets:
+
+-   `subscriptions`: Contains information about subscriptions.
+-   Columns: `subscription_id`, `customer_id`, `start_date`
+-   `payments`: Contains information about payments made for subscriptions.
+-   Columns: `payment_id`, `subscription_id`, `amount`, `payment_date`
+
+### Step-by-Step Code Examples
+
+**Loading the datasets:**
+
+```r
+# Load the necessary libraries
+library(dplyr)
+
+# Load the datasets
+load("anti_join_data.RData")
+
+# Display the datasets
+print(subscriptions)
+
+# A tibble: 30 × 3
+   subscription_id customer_id start_date
+             <int>       <int> <date>    
+ 1               1         108 2024-01-01
+ 2               2         107 2024-01-02
+ 3               3         110 2024-01-03
+ 4               4         113 2024-01-04
+ 5               5         110 2024-01-05
+ 6               6         111 2024-01-06
+ 7               7         108 2024-01-07
+ 8               8         107 2024-01-08
+ 9               9         107 2024-01-09
+10              10         112 2024-01-10
+# ℹ 20 more rows
+
+print(payments)
+
+   payment_id subscription_id amount payment_date
+        <int>           <int>  <dbl> <date>      
+ 1        201               4  154.  2024-01-05  
+ 2        202              29  134.  2024-01-06  
+ 3        203              25  158.  2024-01-07  
+ 4        204              20  169.  2024-01-08  
+ 5        205              18  170.  2024-01-09  
+ 6        206              27   91.4 2024-01-10  
+ 7        207              23   52.4 2024-01-11  
+ 8        208              21  151.  2024-01-12  
+ 9        209              12   76.4 2024-01-13  
+10        210              25  133.  2024-01-14  
+# ℹ 20 more rows
+```
+
+**Performing the Anti Join**
+
+```r
+# Perform the anti join
+unpaid_subscriptions <- anti_join(subscriptions, payments, by = "subscription_id")
+
+# Display the result
+print(unpaid_subscriptions)
+
+# A tibble: 13 × 3
+   subscription_id customer_id start_date
+             <int>       <int> <date>    
+ 1               1         108 2024-01-01
+ 2               2         107 2024-01-02
+ 3               5         110 2024-01-05
+ 4               6         111 2024-01-06
+ 5               8         107 2024-01-08
+ 6              10         112 2024-01-10
+ 7              15         113 2024-01-15
+ 8              16         115 2024-01-16
+ 9              19         115 2024-01-19
+10              22         111 2024-01-22
+11              24         108 2024-01-24
+12              28         115 2024-01-28
+13              30         102 2024-01-30
+```
+
+**Explanation of the Code:**
+
+-   We first load the datasets using the `load` function.
+-   We then use the `anti_join` function from the `dplyr` package to filter the `subscriptions` dataset to include only those subscriptions that do not have matching entries in the `payments` dataset, based on the `subscription_id` column.
+-   Finally, we display the result to see which subscriptions have not been paid for.
+
+### Interpretation of Results
+
+The resulting dataset `unpaid_subscriptions` contains only the rows from the `subscriptions` dataset where there is no matching row in the `payments` dataset. This means that only unpaid subscriptions are included.
+
+### Homework for Readers
+
+In the same `anti_join_data.RData` file, there is another set of datasets for a more creative scenario. You will find:
+
+-   `courses`: Contains information about courses.
+-   Columns: `course_id`, `course_name`, `instructor`
+-   `enrollments`: Contains information about student enrollments.
+-   Columns: `enrollment_id`, `course_id`, `student_id`, `enrollment_date`
+
+Your task is to perform an anti join on these datasets to identify courses that have no enrollments. Use the `course_id` column for joining.
+
+## Cross Join
+
+A Cross Join returns the Cartesian product of two tables, combining all rows from the left table with all rows from the right table. This join type is useful when you want to create all possible combinations of the rows in two tables.
+
+### Explanation of the Scenario
+
+In this scenario, we have menu items and days of the week. We want to create a schedule of menu items for each day of the week. This helps in planning and organizing the weekly menu offerings.
+
+Data file:
+[https://github.com/kgryczan/medium_publishing/blob/main/cross_join_data.RData](https://github.com/kgryczan/medium_publishing/blob/main/cross_join_data.RData)
+
+### Description of the Datasets
+
+We will use two datasets:
+
+-   `menu_items`: Contains information about the menu items.
+-   Columns: `item_id`, `item_name`, `category`
+-   `days_of_week`: Contains information about the days of the week.
+-   Columns: `day_id`, `day_name`
+
+### Step-by-Step Code Examples
+
+**Loading the datasets**
+
+```r
+# Load the necessary libraries
+library(dplyr)
+
+# Load the datasets
+load("cross_join_data.RData")
+
+# Display the datasets
+print(menu_items)
+
+# A tibble: 10 × 3
+   item_id item_name category 
+     <int> <chr>     <chr>    
+ 1       1 Pancakes  Breakfast
+ 2       2 Sandwich  Lunch    
+ 3       3 Salad     Lunch    
+ 4       4 Burger    Lunch    
+ 5       5 Soup      Dinner   
+ 6       6 Pizza     Dinner   
+ 7       7 Spaghetti Dinner   
+ 8       8 Tacos     Dinner   
+ 9       9 Sushi     Dinner   
+10      10 Steak     Dinner   
+
+print(days_of_week)
+
+# A tibble: 7 × 2
+  day_id day_name 
+   <int> <chr>    
+1      1 Monday   
+2      2 Tuesday  
+3      3 Wednesday
+4      4 Thursday 
+5      5 Friday   
+6      6 Saturday 
+7      7 Sunday  
+```
+
+**Performing the Cross Join**
+
+```r
+# Perform the cross join
+menu_schedule <- tidyr::crossing(menu_items, days_of_week)
+
+# Display the result
+print(menu_schedule)
+
+# A tibble: 70 × 5
+   item_id item_name category  day_id day_name 
+     <int> <chr>     <chr>      <int> <chr>    
+ 1       1 Pancakes  Breakfast      1 Monday   
+ 2       1 Pancakes  Breakfast      2 Tuesday  
+ 3       1 Pancakes  Breakfast      3 Wednesday
+ 4       1 Pancakes  Breakfast      4 Thursday 
+ 5       1 Pancakes  Breakfast      5 Friday   
+ 6       1 Pancakes  Breakfast      6 Saturday 
+ 7       1 Pancakes  Breakfast      7 Sunday   
+ 8       2 Sandwich  Lunch          1 Monday   
+ 9       2 Sandwich  Lunch          2 Tuesday  
+10       2 Sandwich  Lunch          3 Wednesday
+# ℹ 60 more rows
+```
+
+**Explanation of the Code:**
+
+-   We first load the datasets using the `load` function.
+-   We then use the `crossing` function from the `tidyr` package to perform the cross join between the `menu_items` and `days_of_week` datasets. This function creates all possible combinations of the rows in the two datasets.
+-   Finally, we display the result to see the complete schedule of menu items for each day of the week.
+
+### Interpretation of Results
+
+The resulting dataset `menu_schedule` contains all possible combinations of the rows from the `menu_items` and `days_of_week` datasets. Each row represents a menu item scheduled for a particular day of the week.
+
+### Homework for Readers
+
+In the same `cross_join_data.RData` file, there is another set of datasets for a more creative scenario. You will find:
+
+-   `shirts`: Contains information about shirts.
+-   Columns: `shirt_id`, `color`, `size`
+-   `pants`: Contains information about pants.
+-   Columns: `pants_id`, `color`, `size`
+
+Your task is to perform a cross join on these datasets to generate all possible outfits by combining shirts and pants. Use the `shirt_id` and `pants_id` columns for joining.
+
+## Natural Join
+
+A Natural Join joins two tables based on columns with the same name and type in both tables. It automatically matches rows with equal values in the common columns, removing the need to specify the joining column.
+
+### Explanation of the Scenario
+
+In this scenario, we have authors and books. We want to find authors and their corresponding books based on a common column. This helps in linking authors with the books they have written.
+
+Data file:
+[https://github.com/kgryczan/medium_publishing/blob/main/natural_join_data.RData](https://github.com/kgryczan/medium_publishing/blob/main/natural_join_data.RData)
+
+### Description of the Datasets
+
+We will use two datasets:
+
+-   `authors`: Contains information about authors.
+-   Columns: `author_id`, `name`, `nationality`
+-   `books`: Contains information about books.
+-   Columns: `book_id`, `author_id`, `title`, `genre`
+
+### Step-by-Step Code Examples
+
+**Loading the datasets:**
+
+```r
+# Load the necessary libraries
+library(dplyr)
+
+# Load the datasets
+load("natural_join_data.RData")
+
+# Display the datasets
+print(authors)
+
+# A tibble: 20 × 3
+   author_id name     nationality
+       <int> <chr>    <chr>      
+ 1         1 Author A Australia  
+ 2         2 Author B Australia  
+ 3         3 Author C Canada     
+ 4         4 Author D USA        
+ 5         5 Author E UK         
+ 6         6 Author F USA        
+ 7         7 Author G Australia  
+ 8         8 Author H Australia  
+ 9         9 Author I UK         
+10        10 Author J Australia  
+11        11 Author K Australia  
+12        12 Author L USA        
+13        13 Author M USA        
+14        14 Author N Canada     
+15        15 Author O Canada     
+16        16 Author P Canada     
+17        17 Author Q USA        
+18        18 Author R Australia  
+19        19 Author S USA        
+20        20 Author T USA 
+
+print(books)
+
+# A tibble: 20 × 4
+   book_id author_id title  genre  
+     <int>     <int> <chr>  <chr>  
+ 1     101         1 Book A Fantasy
+ 2     102         2 Book B Fiction
+ 3     103         3 Book C Sci-Fi 
+ 4     104         4 Book D Fiction
+ 5     105         5 Book E Sci-Fi 
+ 6     106         6 Book F Fantasy
+ 7     107         7 Book G Fantasy
+ 8     108         8 Book H Mystery
+ 9     109         9 Book I Mystery
+10     110        10 Book J Mystery
+11     111        11 Book K Fantasy
+12     112        12 Book L Fiction
+13     113        13 Book M Fiction
+14     114        14 Book N Mystery
+15     115        15 Book O Sci-Fi 
+16     116        16 Book P Sci-Fi 
+17     117        17 Book Q Fantasy
+18     118        18 Book R Sci-Fi 
+19     119        19 Book S Mystery
+20     120        20 Book T Mystery
+```
+
+**Performing the Natural Join:**
+
+```r
+# Perform the natural join
+authors_books <- authors %>%
+  inner_join(books, by = "author_id")
+
+# Display the result
+print(authors_books)
+
+# A tibble: 20 × 6
+   author_id name     nationality book_id title  genre  
+       <int> <chr>    <chr>         <int> <chr>  <chr>  
+ 1         1 Author A Australia       101 Book A Fantasy
+ 2         2 Author B Australia       102 Book B Fiction
+ 3         3 Author C Canada          103 Book C Sci-Fi 
+ 4         4 Author D USA             104 Book D Fiction
+ 5         5 Author E UK              105 Book E Sci-Fi 
+ 6         6 Author F USA             106 Book F Fantasy
+ 7         7 Author G Australia       107 Book G Fantasy
+ 8         8 Author H Australia       108 Book H Mystery
+ 9         9 Author I UK              109 Book I Mystery
+10        10 Author J Australia       110 Book J Mystery
+11        11 Author K Australia       111 Book K Fantasy
+12        12 Author L USA             112 Book L Fiction
+13        13 Author M USA             113 Book M Fiction
+14        14 Author N Canada          114 Book N Mystery
+15        15 Author O Canada          115 Book O Sci-Fi 
+16        16 Author P Canada          116 Book P Sci-Fi 
+17        17 Author Q USA             117 Book Q Fantasy
+18        18 Author R Australia       118 Book R Sci-Fi 
+19        19 Author S USA             119 Book S Mystery
+20        20 Author T USA             120 Book T Mystery
+```
+
+**Explanation of the Code:**
+
+-   We first load the datasets using the `load` function.
+-   We then use the `inner_join` function from the `dplyr` package to perform the natural join between the `authors` and `books` datasets on the `author_id` column.
+-   Finally, we display the result to see which authors have written which books.
+
+### Interpretation of Results
+
+The resulting dataset `authors_books` contains all rows from both the `authors` and `books` datasets where there is a matching value in the `author_id` column. This means that only authors who have written books are included, along with the details of those books. (Yes, it is a kind of inner join.)
+
+### Homework for Readers
+
+In the same `natural_join_data.RData` file, there is another set of datasets for a more creative scenario. You will find:
+
+-   `staff`: Contains information about staff members.
+-   Columns: `staff_id`, `name`, `role`
+-   `assignments`: Contains information about project assignments.
+-   Columns: `assignment_id`, `staff_id`, `project_name`
+
+Your task is to perform a natural join on these datasets to combine staff details with their project assignments. Use the `staff_id` column for joining.
+
+## Self Join
+
+A Self Join is a join of a table to itself. It is used to compare rows within the same table. This can be particularly useful for hierarchical data, such as organizational structures, where you need to find relationships between rows within the same table.
+
+### Explanation of the Scenario
+
+In this scenario, we have employee information, and each employee has a manager, who is also an employee. We want to find the relationship between employees and their managers using the same table. This helps in understanding the organizational hierarchy.
+
+Data file:
+[https://github.com/kgryczan/medium_publishing/blob/main/self_join_data.RData](https://github.com/kgryczan/medium_publishing/blob/main/self_join_data.RData)
+
+### Description of the Datasets
+
+We will use one dataset:
+
+-   `employees`: Contains information about employees and their managers.
+-   Columns: `employee_id`, `name`, `manager_id`
+
+### Step-by-Step Code Examples
+
+**Loading the dataset**
+
+```r
+# Load the necessary libraries
+library(dplyr)
+
+# Load the dataset
+load("self_join_data.RData")
+
+# Display the dataset
+print(employees)
+
+# A tibble: 20 × 3
+   employee_id name    manager_id
+         <int> <chr>        <int>
+ 1           1 Alice E         12
+ 2           2 Bob C            6
+ 3           3 Carol L          8
+ 4           4 Zoe K           15
+ 5           5 Alice G         10
+ 6           6 Bob D            7
+ 7           7 Carol S         19
+ 8           8 Zoe T            1
+ 9           9 Alice O         13
+10          10 Bob O            2
+11          11 Carol G         16
+12          12 Zoe P            8
+13          13 Alice H          4
+14          14 Bob K           14
+15          15 Carol B         18
+16          16 Zoe E            4
+17          17 Alice O          7
+18          18 Bob T           14
+19          19 Carol R          8
+20          20 Zoe G           16
+```
+
+**Performing the Self Join**
+
+```r
+# Perform the self join
+employees_managers <- employees %>%
+  inner_join(employees, by = c("manager_id" = "employee_id"), suffix = c("_employee", "_manager"))
+
+# Display the result
+print(employees_managers)
+
+# A tibble: 20 × 5
+   employee_id name_employee manager_id name_manager manager_id_manager
+         <int> <chr>              <int> <chr>                     <int>
+ 1           1 Alice E               12 Zoe P                         8
+ 2           2 Bob C                  6 Bob D                         7
+ 3           3 Carol L                8 Zoe T                         1
+ 4           4 Zoe K                 15 Carol B                      18
+ 5           5 Alice G               10 Bob O                         2
+ 6           6 Bob D                  7 Carol S                      19
+ 7           7 Carol S               19 Carol R                       8
+ 8           8 Zoe T                  1 Alice E                      12
+ 9           9 Alice O               13 Alice H                       4
+10          10 Bob O                  2 Bob C                         6
+11          11 Carol G               16 Zoe E                         4
+12          12 Zoe P                  8 Zoe T                         1
+13          13 Alice H                4 Zoe K                        15
+14          14 Bob K                 14 Bob K                        14
+15          15 Carol B               18 Bob T                        14
+16          16 Zoe E                  4 Zoe K                        15
+17          17 Alice O                7 Carol S                      19
+18          18 Bob T                 14 Bob K                        14
+19          19 Carol R                8 Zoe T                         1
+20          20 Zoe G                 16 Zoe E                         4
+```
+
+**Explanation of the Code:**
+
+-   We first load the dataset using the `load` function.
+-   We then use the `inner_join` function from the `dplyr` package to join the `employees` table to itself. The join condition matches the `manager_id` of one row with the `employee_id` of another row. The `suffix` argument is used to distinguish between the employee and manager columns.
+-   Finally, we display the result to see the relationship between employees and their managers.
+
+### Interpretation of Results
+
+The resulting dataset `employees_managers` contains pairs of employees and their managers. Each row shows an employee along with their corresponding manager, including details such as names and IDs.
+
+### Homework for Readers
+
+In the same `self_join_data.RData` file, there is another set of datasets for a more creative scenario. You will find:
+
+-   `friends`: Contains information about friendships within a social network.
+-   Columns: `person_id`, `friend_id`
+
+Your task is to perform a self join on this dataset to analyze the friendships and find mutual friends. Use the `person_id` and `friend_id` columns for joining.
+
+## Equi Join
+
+An Equi Join is a type of join that combines rows from two tables based on equality conditions between specified columns. It is one of the most common types of joins used in SQL and relational database management. Take into a consideration that all types we already talked about are equi joins. It is just wider definition, beacuse we are looking for equality of keys.
+
+### Explanation of the Scenario
+
+In this scenario, we have orders and order details. We want to join these tables to get a comprehensive view of each order along with its details. This helps in understanding the full scope of each transaction.
+
+Data file:
+[https://github.com/kgryczan/medium_publishing/blob/main/equi_join_data.RData](https://github.com/kgryczan/medium_publishing/blob/main/equi_join_data.RData)
+
+### Description of the Datasets
+
+We will use two datasets:
+
+-   `orders`: Contains information about customer orders.
+-   Columns: `order_id`, `customer_id`, `order_date`
+-   `order_details`: Contains detailed information about each order.
+-   Columns: `order_detail_id`, `order_id`, `product_id`, `quantity`
+
+### Step-by-Step Code Examples
+
+**Loading the datasets**
+
+```r
+# Load the necessary libraries
+library(dplyr)
+
+# Load the datasets
+load("equi_join_data.RData")
+
+# Display the datasets
+print(orders)
+
+# A tibble: 20 × 3
+   order_id customer_id order_date
+      <int>       <int> <date>    
+ 1        1         113 2024-01-01
+ 2        2         113 2024-01-02
+ 3        3         112 2024-01-03
+ 4        4         105 2024-01-04
+ 5        5         117 2024-01-05
+ 6        6         115 2024-01-06
+ 7        7         112 2024-01-07
+ 8        8         107 2024-01-08
+ 9        9         117 2024-01-09
+10       10         106 2024-01-10
+11       11         105 2024-01-11
+12       12         109 2024-01-12
+13       13         117 2024-01-13
+14       14         113 2024-01-14
+15       15         101 2024-01-15
+16       16         107 2024-01-16
+17       17         115 2024-01-17
+18       18         103 2024-01-18
+19       19         108 2024-01-19
+20       20         115 2024-01-20
+
+print(order_details)
+
+# A tibble: 40 × 4
+   order_detail_id order_id product_id quantity
+             <int>    <int>      <int>    <int>
+ 1               1       17        206       10
+ 2               2       18        215        4
+ 3               3       13        218        8
+ 4               4       16        217        3
+ 5               5        2        217        5
+ 6               6        2        203        4
+ 7               7       20        219        9
+ 8               8       18        214        4
+ 9               9       12        218        4
+10              10       14        214        4
+# ℹ 30 more rows
+```
+
+**Performing the Equi Join**
+
+```r
+# Perform the equi join
+orders_with_details <- inner_join(orders, order_details, by = "order_id")
+
+# Display the result
+print(orders_with_details)
+
+# A tibble: 40 × 6
+   order_id customer_id order_date order_detail_id product_id quantity
+      <int>       <int> <date>               <int>      <int>    <int>
+ 1        1         113 2024-01-01              39        210        5
+ 2        2         113 2024-01-02               5        217        5
+ 3        2         113 2024-01-02               6        203        4
+ 4        2         113 2024-01-02              22        219        1
+ 5        2         113 2024-01-02              25        220        8
+ 6        2         113 2024-01-02              36        213        3
+ 7        2         113 2024-01-02              38        202        9
+ 8        4         105 2024-01-04              12        215        4
+ 9        4         105 2024-01-04              24        201        5
+10        4         105 2024-01-04              30        219        3
+# ℹ 30 more rows
+```
+
+**Explanation of the Code:**
+
+-   We first load the datasets using the `load` function.
+-   We then use the `inner_join` function from the `dplyr` package to perform the equi join between the `orders` and `order_details` datasets on the `order_id` column.
+-   Finally, we display the result to see the full details of each order.
+
+### Interpretation of Results
+
+The resulting dataset `orders_with_details` contains all rows from the `orders` dataset with the matching rows from the `order_details` dataset based on the `order_id` column. This means that each order is enriched with its detailed information.
+
+### Homework for Readers
+
+In the same `equi_join_data.RData` file, there is another set of datasets for a more creative scenario. You will find:
+
+-   `athletes`: Contains information about athletes.
+-   Columns: `athlete_id`, `name`, `sport`
+-   `performance_records`: Contains information about performance records of athletes.
+-   Columns: `record_id`, `athlete_id`, `event`, `score`
+
+Your task is to perform an equi join on these datasets to match athletes with their performance records. Use the `athlete_id` column for joining.
+
+In this second part of our series, "Joins Are No Mystery Anymore: Hands-On Tutorial," we delved into more advanced join techniques that are essential for comprehensive data analysis. We explored:
+
+-   **Anti Join**: Identifying rows in one table that do not have corresponding rows in another, helping to spot outstanding payments.
+-   **Cross Join**: Creating all possible combinations of rows from two tables, useful for planning and organizing.
+-   **Natural Join**: Automatically joining tables based on columns with the same names and types, simplifying the linking process.
+-   **Self Join**: Comparing rows within the same table to uncover relationships, such as employee-manager hierarchies.
+-   **Equi Join**: Combining rows from two tables based on equality conditions, providing detailed insights into orders and their specifics.
+
+Through practical scenarios and step-by-step code examples, we enhanced our understanding of these joins and their applications. Each join type was demonstrated with real-life datasets, allowing you to see how these techniques can be applied to solve everyday data problems.
+
+Next week, we will conclude our series with even more specialized join techniques. We'll cover Non-Equi Joins, Rolling Joins, Overlap Joins, and Fuzzy Joins. These advanced joins will help you handle more complex data scenarios, such as matching based on non-equality conditions, finding the nearest matches, and dealing with approximate or fuzzy data. Stay tuned as we unlock the full potential of joins in R and take your data analysis skills to the ultimate level.
+
+Thank you for sticking with us through the second part of our "Joins Are No Mystery Anymore: Hands-On Tutorial" series! Your dedication to mastering data joins in R is commendable.
+
+As a special treat for our patient readers, next week we'll dive into "Anatomy of a Basic Joining Function." This extra content will break down the different arguments in joining functions, explaining what each one does and how it changes the output. It's a deep dive into the mechanics of joins that will enhance your understanding and give you even greater control over your data analysis.
+
+Stay tuned and happy coding!
