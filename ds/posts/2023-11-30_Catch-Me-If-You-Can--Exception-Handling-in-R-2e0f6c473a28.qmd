@@ -1,0 +1,205 @@
+---
+title: "Catch Me If You Can: Exception Handling in R"
+author: "Numbers around us"
+date: "2023-11-30"
+format: html
+---
+
+![](images/catchmeifyoucan.jpg)
+
+In the multifaceted world of R programming, particularly when navigating the intricate paths of data analysis, robust error handling is not merely a precaution; it's an essential pillar of reliable and trustworthy code development. Picture this: you're deep into a complex data analysis task, your script meticulously weaving through rows and columns of data, and suddenly, it grinds to a halt --- an unhandled error has thrown a wrench into the gears. Such abrupt interruptions not only break the flow of your work but can also lead to misleading results if errors go unnoticed or are mismanaged. This scenario highlights the critical nature of error handling in programming --- a skill paramount to ensuring the smooth execution and integrity of your code.
+
+In this fourth episode of our series on enhancing R functions, titled "Catch Me If You Can," we embark on a journey through the nuances of error and exception management in R. Our quest is to fortify our `data_quality_report()` function against the unexpected. We will explore R's built-in mechanisms for error handling, learn to predict and manage potential disruptions, and, most importantly, understand how to maintain the continuity and accuracy of our analyses in the face of errors. Mastering these techniques will empower you to handle unexpected situations gracefully, transforming potential obstacles into controlled, manageable events, thus elevating the robustness of your R functions.
+
+## Basics of Error Handling in R
+
+Error handling in R is a multifaceted tool, essential for signaling and managing issues within your code. The functions `stop()`, `warning()`, and `message()` form the foundation of this system. `stop()` is used to throw an error and halt execution, signaling that something has gone fundamentally wrong. `warning()`, in contrast, indicates a potential issue or anomaly in the code but doesn't stop the execution; it serves as a caution sign, allowing the script to proceed but alerting the user to potential irregularities. `message()` is less severe; it's used for conveying information, such as status updates or confirmations, without implying any error or warning.
+
+But the true art of error handling in R extends beyond just signaling a problem. It's about how your program responds to these issues --- whether it's a full stop, a cautious continuation, or a simple notification. This is where R's `try()` and `tryCatch()` functions become pivotal. `try()` allows you to attempt an operation that might generate an error, with the assurance that even if it fails, your entire script won't come to a standstill. `tryCatch()`, on the other hand, offers a more nuanced approach. It allows you to define specific actions based on different types of outcomes --- whether it's an error, a warning, or a normal completion. This approach not only enhances the robustness of your code but also provides a safety net, ensuring that your script can gracefully handle and respond to various situations.
+
+To illustrate these concepts in action, let's consider an example that employs `tryCatch()`:
+
+```r
+example_function <- function(data) {
+  result <- tryCatch({
+    if (!is.numeric(data)) {
+      stop("Data must be numeric")
+    }
+    sqrt(data)
+  }, error = function(e) {
+    message("Error: ", e$message)
+    NA  # Returning NA in case of an error
+  })
+  return(result)
+}
+
+example_function(1)
+#> [1] 1
+
+example_function(64)
+#> [1] 8
+
+example_function("a")
+#> Error: Data must be numeric
+#> [1] NA
+```
+
+In this example, `example_function` is designed to compute the square root of a numeric input. However, if the input is non-numeric, `stop()` triggers an error, which is then elegantly handled by `tryCatch`. The function, instead of crashing, displays an error message and returns `NA`. This is a simple demonstration of how `tryCatch` can make your functions more resilient and user-friendly.
+
+## Implementing `tryCatch` in `data_quality_report()`
+
+To enhance the robustness of the `data_quality_report()` function, incorporating `tryCatch` is crucial. It ensures that the function can handle errors gracefully, without disrupting the entire execution. Let's focus on integrating `tryCatch` into the outlier detection component of the function. Outlier detection involves numerical operations that might lead to errors, particularly when dealing with data of unexpected formats or types.
+
+Here's how to robustly implement `tryCatch` in the outlier detection part:
+
+```r
+data_quality_report <- function(data) {
+  missing_values <- data %>%
+    summarize(across(everything(), ~sum(is.na(.)))) %>%
+    pivot_longer(cols = everything(), names_to = "column", values_to = "missing_values")
+
+  outliers <- tryCatch({
+    data %>%
+      select(where(is.numeric)) %>%
+      imap(~{
+        qnt <- quantile(.x, probs = c(0.25, 0.75), na.rm = TRUE)
+        iqr <- IQR(.x, na.rm = TRUE)
+        lower_bound <- qnt[1] - 1.5 * iqr
+        upper_bound <- qnt[2] + 1.5 * iqr
+        outlier_count <- sum(.x < lower_bound | .x > upper_bound, na.rm = TRUE)
+        
+        tibble(column = .y, lower_bound, upper_bound, outlier_count)
+      }) %>%
+      bind_rows()
+  }, error = function(e) {
+    message("Error in outlier detection: ", e$message)
+    NULL  # Returning NULL in case of an error in outlier detection
+  })
+
+  data_types <- data %>%
+    summarize(across(everything(), ~paste(class(.), collapse = ", "))) %>%
+    pivot_longer(cols = everything(), names_to = "column", values_to = "data_type")
+  
+  list(
+    MissingValues = missing_values,
+    Outliers = outliers,
+    DataTypes = data_types
+  )
+}
+
+dummy_data <- tibble(
+  normal_numeric_column = c(1, 2, 3, 4, 5),  # A normal numeric column
+  problematic_column = c(1, 2, 3, 4, NA)    # A numeric column with an Inf value
+)
+
+data_quality_report(dummy_data)
+#> Error in outlier detection: Error in outlier detection: In index: 2.
+
+$Outliers
+NULL
+```
+
+In this enhanced `data_quality_report()` function, the `tryCatch` block ensures that if an error occurs during the outlier detection process, it doesn't cause the entire function to fail. Instead, it gracefully handles the error, outputs an informative message, and continues execution. This addition significantly improves the function's resilience and user-friendliness.
+
+## Utilizing `safely()` from `purrr`
+
+Another elegant approach to managing potential errors in R is using the `safely()` function from the `purrr` package. `safely()` wraps any function and returns a new version of that function that never throws an error. Instead, it returns a list containing two elements: `result` (the original function's output) and `error` (an error object if an error occurred, otherwise `NULL`).
+
+Let's apply `safely()` to a hypothetical example within our `data_quality_report()` function. Imagine we have a custom calculation that could fail under certain conditions, such as when dealing with extreme values:
+
+```r
+custom_division <- function(x, y) {
+  if (y == 0) {
+    stop("Division by zero error")
+  }
+  x / y
+}
+
+# Wrap the custom function with safely
+safe_division <- safely(custom_division)
+
+data_quality_report <- function(data) {
+  missing_values <- data %>%
+    summarize(across(everything(), ~sum(is.na(.)))) %>%
+    pivot_longer(cols = everything(), names_to = "column", values_to = "missing_values")
+  
+  outliers <- tryCatch({
+    data %>%
+      select(where(is.numeric)) %>%
+      imap(~{
+        qnt <- quantile(.x, probs = c(0.25, 0.75), na.rm = TRUE)
+        iqr <- IQR(.x, na.rm = TRUE)
+        lower_bound <- qnt[1] - 1.5 * iqr
+        upper_bound <- qnt[2] + 1.5 * iqr
+        outlier_count <- sum(.x < lower_bound | .x > upper_bound, na.rm = TRUE)
+        
+        tibble(column = .y, lower_bound, upper_bound, outlier_count)
+      }) %>%
+      bind_rows()
+  }, error = function(e) {
+    message("Error in outlier detection: ", e$message)
+    NULL  # Returning NULL in case of an error in outlier detection
+  })
+  
+  data_types <- data %>%
+    summarize(across(everything(), ~paste(class(.), collapse = ", "))) %>%
+    pivot_longer(cols = everything(), names_to = "column", values_to = "data_type")
+  
+  # Applying the safe_division to a column
+  # Assuming 'data' has columns 'numerator' and 'denominator'
+  division_results <- map2(data$numerator, data$denominator, ~ safe_division(.x, .y))
+
+  # Extract results and handle errors
+  division_values <- map(division_results, "result")
+  division_errors <- map(division_results, "error")
+
+  # Check and handle if any errors occurred
+  if (any(!map_lgl(division_errors, is.null))) {
+    message("Errors occurred in division calculations.")
+    # Additional error handling logic
+  }
+  
+  list(
+    MissingValues = missing_values,
+    Outliers = outliers,
+    DataTypes = data_types,
+    Division_values = division_values,
+    Division_errors = division_errors
+  )
+}
+
+dummy_data <- tibble(
+  numerator = c(10, 20, 30, 40),
+  denominator = c(2, 4, 0, 5)  # The third element will cause division by zero
+)
+
+result <- data_quality_report(dummy_data)
+#> Errors occurred in division calculations.
+
+result[["Division_errors"]]
+[[1]]
+NULL
+
+[[2]]
+NULL
+
+[[3]]
+<simpleError in .f(...): Division by zero error>
+  
+[[4]]
+NULL
+```
+
+In this implementation, `safe_division` ensures that even if `custom_division` fails, the `data_quality_report()` function doesn't halt execution. Instead, it captures the error, allowing for a more controlled and informative response.
+
+## Best Practices for Error Handling
+
+Effective error handling in R encompasses a set of best practices that collectively enhance the resilience and user-friendliness of your code:
+
+- **Use Meaningful Error Messages**: Error messages should be clear and informative, helping users understand what went wrong and how to potentially fix it. Avoid vague or overly technical jargon.
+- **Fail Early and Clearly**: If a function encounters a situation where it cannot proceed correctly, it's often better to halt its execution early with a clear and informative message. This prevents the propagation of errors and ambiguities in the later stages of the script.
+- **Consider the User's Perspective**: Design your error handling with the end-user in mind. Provide clear instructions or alternatives when an error occurs, enabling users to understand and address the issue.
+- **Log Errors for Future Reference**: In more complex applications, consider logging errors to a file or a logging service. This can be invaluable for debugging and improving your application over time.
+- **Test Your Error Handling**: Just as you test your functions for correct results, also test them for correct error handling. Ensure that your function responds as expected in various error scenarios.
+
+Through robust error handling, our R functions become not only more reliable but also more user-friendly. Anticipating and managing potential errors ensure that our scripts are resilient and dependable. As we continue our series on enhancing R functions, remember that error handling is an integral part of writing excellent code. Embrace these techniques to make your R code robust and professional, capable of gracefully handling whatever challenges it encounters.

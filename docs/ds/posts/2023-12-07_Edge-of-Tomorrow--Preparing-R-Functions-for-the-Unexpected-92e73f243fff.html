@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Numbers around us">
-<meta name="dcterms.date" content="2023-05-28">
+<meta name="dcterms.date" content="2023-12-07">
 
-<title>Symphony of Structures: A Journey through List-Columns and Nested Data Frames with purrr – Numbers Around Us</title>
+<title>Edge of Tomorrow: Preparing R Functions for the Unexpected – Numbers Around Us</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -146,7 +146,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Symphony of Structures: A Journey through List-Columns and Nested Data Frames with purrr</h1>
+<h1 class="title">Edge of Tomorrow: Preparing R Functions for the Unexpected</h1>
 </div>
 
 
@@ -163,7 +163,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">May 28, 2023</p>
+      <p class="date">December 7, 2023</p>
     </div>
   </div>
   
@@ -175,108 +175,89 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="images/notes.jpg" class="img-fluid figure-img"></p>
-<figcaption>Symphony</figcaption>
-</figure>
-</div>
-<section id="overture-introduction" class="level4">
-<h4 class="anchored" data-anchor-id="overture-introduction">Overture: Introduction</h4>
-<p>Just as a symphony’s overture sets the tone for the entire performance, so too does our introduction provide an overview of what’s to come. Much like an orchestra is composed of different sections — each with their unique characteristics — data in R can be complex, having different layers and structures. Today, we’ll be delving into the magic of list-columns and nested data frames, two aspects of the purrr package that can sometimes seem as intricate and detailed as a beautifully crafted symphony.</p>
-<p>Whether you’re just starting to compose your first few notes in R, or you’re a seasoned conductor of data analysis, navigating these structures is crucial. When data is layered within itself, like a melody within a melody, it can become a bit daunting. But fear not — by the end of this post, you will have the necessary knowledge to conduct your way through even the most complex data structures in R with the baton of the purrr package!</p>
+<p><img src="images/edgeoftomorrow.jpg" class="img-fluid"></p>
+<p>In the dynamic world of data science and programming, one of the most valuable skills is the ability to anticipate and handle unexpected scenarios. When working with data, the unexpected comes in various forms: unusual data patterns, edge cases, or atypical inputs. These anomalies can pose significant challenges, potentially leading to incorrect analyses or crashes if not properly managed. In this installment of our series, titled “Edge of Tomorrow,” we embark on a journey to fortify our <code>data_quality_report()</code> function against the unpredictable nature of real-world data. By enhancing the robustness of our function, we aim to ensure that it performs reliably, even under unusual conditions. This article will equip you with strategies and insights to make your R functions versatile, resilient, and capable of gracefully handling the quirks and anomalies inherent in real-world datasets.</p>
+<section id="understanding-edge-cases" class="level2">
+<h2 class="anchored" data-anchor-id="understanding-edge-cases">Understanding Edge Cases</h2>
+<p>Edge cases in data analysis are scenarios that occur at the extreme ends of operating parameters. These could be extremely large or small numbers, unexpected data types, missing or corrupted data, or any other anomalies that deviate from the norm. The first step in tackling edge cases is recognizing where and how they might arise in your function. For example, consider a function designed to process numeric data. What happens if it encounters a column with character data? How does it handle <code>NA</code> or <code>Inf</code> values? Identifying these potential vulnerabilities is critical.</p>
+<p>Let’s illustrate this with an example. Suppose our <code>data_quality_report()</code> function is expected to handle only numeric data. We should first check if the dataset contains any non-numeric columns:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>data_quality_report <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.data.frame</span>(data)) {</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"Input must be a dataframe."</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">any</span>(<span class="fu">sapply</span>(data, class) <span class="sc">!=</span> <span class="st">"numeric"</span>)) {</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"All columns must be numeric."</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="sc">/</span><span class="er">/</span> ... [rest of the <span class="cf">function</span>]</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This initial check ensures that the function processes only numeric data, thus preventing unexpected behavior when encountering different data types.</p>
 </section>
-<section id="harmony-in-chaos-understanding-list-columns" class="level4">
-<h4 class="anchored" data-anchor-id="harmony-in-chaos-understanding-list-columns">Harmony in Chaos: Understanding List-Columns</h4>
-<p>Picture an orchestra where each musician brings their unique skillset and instrument to create a harmonious symphony, striking the perfect balance between order and chaos. This mirrors the concept of list-columns in our data-orchestra. Each cell in a list-column can house a list, rather than a single value as in traditional data frame columns. This unique structure allows for a richer, more layered dataset, much like the harmonious complexity of an orchestra’s melody.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># create a list-column</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a> <span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>,</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a> <span class="at">y =</span> <span class="fu">list</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(df)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co"># A tibble: 3 × 2</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># x y </span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co"># &lt;int&gt; &lt;list&gt; </span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 1 1 &lt;int [2]&gt;</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 2 2 &lt;int [3]&gt;</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 3 3 &lt;int [4]&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>With this code snippet, we’ve composed the first few bars of our data-symphony, introducing a data frame with a list-column. In the ‘y’ column, rather than seeing individual notes (or single data values), we see miniature symphonies — lists of values, all housed within a single cell.</p>
-<p>But remember, just as an orchestra is not composed in a day, so too does understanding list-columns take time and practice. Each musician, each instrument, adds to the overall melody, and each new note of knowledge brings us closer to understanding the grand symphony of list-columns. It may seem chaotic at first glance, but as we delve deeper into the layers of this data structure, we’ll uncover the order within the chaos, the harmony within the cacophony.</p>
-<p>It’s crucial to acknowledge that complexity isn’t a deterrent — it’s a challenge that promises a greater depth of understanding. As we journey through list-columns, remember that their complexity is their strength, allowing for intricate compositions of data that bring new perspectives to your analysis. So, let’s embrace this unique element of our data orchestra, wielding the baton of purrr with a renewed sense of purpose.</p>
-</section>
-<section id="conducting-the-orchestra-mapping-functions-on-list-columns" class="level4">
-<h4 class="anchored" data-anchor-id="conducting-the-orchestra-mapping-functions-on-list-columns">Conducting the Orchestra: Mapping Functions on List-Columns</h4>
-<p>Our exploration of the composition of list-columns would be incomplete without the magic wand that every maestro needs — mapping functions. Mapping functions are to a conductor as bow is to a violinist, they help to extract the desired notes, or in our case, data, from our instruments.</p>
-<p>Mapping functions are a cornerstone of purrr, allowing us to apply functions to each element of a list or a list-column in a systematic way. They can be seen as the conductor guiding the different sections of the orchestra to play in unison, each producing their unique sound but contributing to a harmonious melody.</p>
-<p>In the case of list-columns, mapping functions can help us uncover and manipulate the data hidden within these nested structures. Let’s look at an example with the <code>mtcars</code> dataset:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating a list-column of data frames</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>mtcars_nested <span class="ot">&lt;-</span> mtcars <span class="sc">%&gt;%</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a> <span class="fu">split</span>(.<span class="sc">$</span>cyl) </span>
+<section id="input-validation" class="level2">
+<h2 class="anchored" data-anchor-id="input-validation">Input Validation</h2>
+<p>Input validation is crucial for ensuring that the data your function processes meet certain criteria. It involves checks for data types, value ranges, presence of required columns, or specific data formats. Proper input validation can prevent many issues associated with edge cases.</p>
+<p>In our <code>data_quality_report()</code> function, we can implement more comprehensive input validation. For example, we might want to ensure that the dataset contains specific columns expected by the function, or check that the data does not contain extreme values that could skew the analysis:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>data_quality_report <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  required_columns <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"column1"</span>, <span class="st">"column2"</span>, <span class="st">"column3"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">all</span>(required_columns <span class="sc">%in%</span> <span class="fu">names</span>(data))) {</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"Data is missing required columns."</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  }</span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Applying a function to each data frame using map</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>mtcars_nested <span class="sc">%&gt;%</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a> <span class="fu">map</span>(<span class="sc">~</span> <span class="fu">summary</span>(.))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>In this example, we’re applying the summary function to each data frame in our list-column using the <code>map()</code> function. The <code>~</code> is a shorthand for defining a function in purrr, so <code>~ summary(.)</code> is equivalent to <code>function(x) summary(x)</code>. Like a conductor guiding the orchestra to play a particular section of the score, the map function applies the summary function to each nested data frame in our list-column.</p>
-<p>This is just a glimpse of what mapping functions can do. They are capable of orchestrating complex transformations and analyses on list-columns and other list-like structures, making them indispensable in our data analysis symphony.</p>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">any</span>(data <span class="sc">&gt;</span> <span class="fl">1e6</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) {</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"Data contains values too large to process."</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="sc">/</span><span class="er">/</span> ... [rest of the <span class="cf">function</span>]</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>These checks at the beginning of the function can prevent the processing of inappropriate data, ensuring that the function behaves as expected.</p>
 </section>
-<section id="exploring-the-soundscapes-working-with-nested-data-frames-using-purrr" class="level4">
-<h4 class="anchored" data-anchor-id="exploring-the-soundscapes-working-with-nested-data-frames-using-purrr">Exploring the Soundscapes: Working with Nested Data Frames using purrr</h4>
-<p>Just as an explorer ventures into new lands, it’s time for us to journey through the intriguing landscapes of nested data frames using purrr.</p>
-<p>Nested data frames can be considered as multilevel compositions in our symphony, each bearing their unique tunes yet blending harmoniously to create a beautiful melody. They add an additional layer of complexity by nesting data frames within each row of another data frame. However, with the potent power of purrr, this complexity can be tackled gracefully.</p>
-<p>Let’s take a look at how we can utilize purrr functions with nested data frames:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the tidyr package</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<section id="handling-diverse-data-types-and-structures" class="level2">
+<h2 class="anchored" data-anchor-id="handling-diverse-data-types-and-structures">Handling Diverse Data Types and Structures</h2>
+<p>Preparing your function to handle various data types and structures enhances its adaptability and resilience. This might involve special handling for different types of data, such as categorical vs.&nbsp;numeric data, or considering different data structures like time-series or hierarchical data.</p>
+<p>In the <code>data_quality_report()</code> function, let’s add logic to handle categorical data differently from numeric data. This could involve different summarization strategies or different types of analysis:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>data_quality_report <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="sc">/</span><span class="er">/</span> ... [input validation code]</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating a nested data frame</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>mtcars_nested <span class="ot">&lt;-</span> mtcars <span class="sc">%&gt;%</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a> <span class="fu">group_by</span>(cyl) <span class="sc">%&gt;%</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a> <span class="fu">nest</span>()</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the nested data frame</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(mtcars_nested)</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Applying a function to the nested data frame using map</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>mtcars_nested <span class="sc">%&gt;%</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a> <span class="fu">mutate</span>(<span class="at">mean_mpg =</span> <span class="fu">map_dbl</span>(data, <span class="sc">~</span> <span class="fu">mean</span>(.<span class="sc">$</span>mpg)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>In this example, we’ve created a nested data frame with <code>nest()</code> function by nesting all columns except <code>cyl</code> in <code>mtcars</code>. Then, using <code>mutate()</code> combined with <code>map_dbl()</code>, we computed the mean of <code>mpg</code> for each nested data frame.</p>
-<p>You can imagine this as focusing on each individual section of the orchestra, understanding their specific rhythm, and then integrating that knowledge into the entire symphony.</p>
-<p>The ability to traverse these nested data frames opens up new possibilities for data analysis, enabling us to uncover deeper insights within our data. Like the various sections of the orchestra uniting to create a harmonious performance, the different layers of a nested data frame can be collectively leveraged to tell a comprehensive data story.</p>
-<p>With the power of purrr at our fingertips, we are well-equipped to conduct our data orchestra through these complex soundscapes.</p>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="sc">/</span><span class="er">/</span> Handling numeric and categorical data differently</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  numeric_columns <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="fu">where</span>(is.numeric))</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  categorical_columns <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="fu">where</span>(is.factor))</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  numeric_summary <span class="ot">&lt;-</span> <span class="fu">summarize_numeric_data</span>(numeric_columns)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  categorical_summary <span class="ot">&lt;-</span> <span class="fu">summarize_categorical_data</span>(categorical_columns)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="sc">/</span><span class="er">/</span> ... [combine summaries and continue with the <span class="cf">function</span>]</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>summarize_numeric_data <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="sc">/</span><span class="er">/</span> Numeric data summarization logic</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>summarize_categorical_data <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  <span class="sc">/</span><span class="er">/</span> Categorical data summarization logic</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>By structuring the function to handle different data types appropriately, we ensure it can adapt to a variety of datasets and provide meaningful analysis regardless of the data structure.</p>
 </section>
-<section id="symphony-rehearsals-iterating-over-list-columns-and-nested-data-frames" class="level4">
-<h4 class="anchored" data-anchor-id="symphony-rehearsals-iterating-over-list-columns-and-nested-data-frames">Symphony Rehearsals: Iterating over List-Columns and Nested Data Frames</h4>
-<p>You’ve tuned your instruments, studied the sheet music, and the conductor has just given the downbeat. But how do you make your orchestra play in unison? The answer lies in iterating over these list-columns and nested data frames using purrr.</p>
-<p>Consider a situation where you need to perform multiple operations on different columns in each nested data frame. Imagine each player in the orchestra playing their own instrument, but in harmony with the whole ensemble. That’s where <code>purrr</code>’s iterate functions like <code>map()</code>, <code>map2()</code>, and <code>pmap()</code> shine.</p>
-<p>For instance, let’s compute the mean and standard deviation of <code>mpg</code> within each <code>cyl</code> group:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>mtcars_nested <span class="sc">%&gt;%</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">mutate</span>(<span class="at">mean_mpg =</span> <span class="fu">map_dbl</span>(data, <span class="sc">~</span> <span class="fu">mean</span>(.<span class="sc">$</span>mpg)),</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a> <span class="at">sd_mpg =</span> <span class="fu">map_dbl</span>(data, <span class="sc">~</span> <span class="fu">sd</span>(.<span class="sc">$</span>mpg)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Here, <code>map_dbl()</code> elegantly steps in, repeating the operations for each nested data frame (or list-item in the <code>data</code> column), and returns a double vector. The result is an augmented data frame where the mean and standard deviation of <code>mpg</code> for each <code>cyl</code> group have been calculated and added as new columns.</p>
-<p>This ability to iterate over list-columns and nested data frames is akin to a conductor ensuring that each instrument plays its part at the right time, contributing to the harmony of the whole performance. The resulting music is as beautiful as our tidily handled complex data structure.</p>
-<p>But remember, each piece of music has its tricky passages and potential pitfalls. In our next section, we will explore some of these challenges and strategies to overcome them in the context of complex data structures.</p>
+<section id="building-resilience-with-assertions" class="level2">
+<h2 class="anchored" data-anchor-id="building-resilience-with-assertions">Building Resilience with Assertions</h2>
+<p>Assertions are a proactive approach to ensure certain conditions are met within your function. They allow you to explicitly state your assumptions about the data and halt the function if these assumptions are not met. The <code>assertthat</code> package in R provides a user-friendly way to write assertions.</p>
+<p>For instance, you might want to assert that certain columns are present and contain no missing values:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(assertthat)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>data_quality_report <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">assert_that</span>(<span class="fu">is.data.frame</span>(data))</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">assert_that</span>(<span class="fu">all</span>(<span class="fu">colSums</span>(<span class="sc">!</span><span class="fu">is.na</span>(data)) <span class="sc">&gt;</span> <span class="dv">0</span>), <span class="at">msg =</span> <span class="st">"Some columns are entirely NA."</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="sc">/</span><span class="er">/</span> ... [rest of the <span class="cf">function</span>]</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>These assertions act as safeguards, ensuring that the function operates on data that meet specific criteria. If the assertions fail, the function stops, preventing it from proceeding with unsuitable data.</p>
 </section>
-<section id="cacophonies-and-solutions-dealing-with-complex-structures" class="level4">
-<h4 class="anchored" data-anchor-id="cacophonies-and-solutions-dealing-with-complex-structures">Cacophonies and Solutions: Dealing with Complex Structures</h4>
-<p>Any musician can tell you that perfect harmony is a combination of practice and overcoming hurdles, and our journey with complex data structures in R is no different. With list-columns and nested data frames, we’re weaving intricate musical phrases and occasionally, cacophonies will emerge.</p>
-<p>One common issue you might encounter with these structures is their resistance to the usual data frame operations. For instance, if you try to use <code>dplyr::filter()</code> or <code>dplyr::select()</code> directly on a nested data frame, you’ll run into problems.</p>
-<p>Consider this:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>mtcars_nested <span class="sc">%&gt;%</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(mean_mpg <span class="sc">&gt;</span> <span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>If you run this, R will throw an error because it doesn’t know how to compare a list-column to a single number. It’s like trying to compare the volume of a whole orchestra to a single violin — it doesn’t quite work.</p>
-<p>In this situation, you’d want to un-nest the data, perform the filtering, and then re-nest if necessary. Alternatively, you can use the <code>purrr::map()</code> function to apply the filter within each list-item of the list-column. It’s like adjusting the sheet music for each individual musician.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>mtcars_nested <span class="sc">%&gt;%</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">mutate</span>(<span class="at">data =</span> <span class="fu">map</span>(data, <span class="sc">~</span> <span class="fu">filter</span>(.x, mpg <span class="sc">&gt;</span> <span class="dv">20</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The above code will return the rows in each nested data frame where <code>mpg</code> is greater than 20.</p>
-<p>Remember, the key to dealing with these complex structures is to think of them as collections of smaller pieces that you can manipulate independently. Just as a symphony is comprised of individual notes that together create a harmonious piece, your data structure is a collection of components that can be handled one at a time. With practice, your understanding of these structures will be music to your ears!</p>
-<p>In this performance, we’ve attuned ourselves to the harmonious rhythms of list-columns and nested data frames, conducting complex structures in our R orchestration. We’ve demonstrated how the purrr package and its various functions, like our virtuoso violinists, are instrumental in navigating the symphony of nested data structures.</p>
-<p>In many ways, working with list-columns and nested data frames is like directing an orchestra. Each musician has a specific part to play, but they all contribute to the overall melody. Just as each instrument in an orchestra adds depth and richness to the music, each element in a list-column or nested data frame adds complexity and granularity to our data.</p>
-<p>But, as with any musical masterpiece, it requires practice to perfect. By understanding these structures and how to manipulate them, we’ve acquired an important skill in data science. The ability to manage complex data structures can open up new possibilities for your data analysis, allowing you to work more efficiently and handle more intricate datasets.</p>
-<p>Continue to practice and explore these concepts. Every new dataset is a fresh sheet of music waiting for your interpretation. Remember that the more comfortable you are with the tools at your disposal, the more effectively you can turn your data dissonance into a harmonious data symphony. Let’s continue to make beautiful music together with R and purrr!</p>
+<section id="fortifying-r-functions-against-the-unknown" class="level2">
+<h2 class="anchored" data-anchor-id="fortifying-r-functions-against-the-unknown">Fortifying R Functions Against the Unknown</h2>
+<p>Dealing with edge cases and unexpected data inputs is a critical aspect of robust programming. It involves not just coding for the expected but also preparing for the unexpected. By the end of “Edge of Tomorrow,” you’ll have gained a comprehensive understanding of strategies to make your R functions resilient and reliable. You’ll be equipped to handle a wide range of data scenarios, ensuring that your functions deliver accurate and reliable results, even in the face of data anomalies.</p>
+<p>As we continue our series on enhancing R functions, embracing these techniques will elevate your programming skills, enabling you to write functions that are not just functional, but truly dependable and versatile, ready for the diverse and unpredictable nature of real-world data.</p>
 
 
 </section>

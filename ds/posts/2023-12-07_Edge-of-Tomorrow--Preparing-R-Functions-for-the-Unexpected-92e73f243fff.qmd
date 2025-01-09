@@ -1,0 +1,113 @@
+---
+title: "Edge of Tomorrow: Preparing R Functions for the Unexpected"
+author: "Numbers around us"
+date: "2023-12-07"
+format: html
+---
+
+![](images/edgeoftomorrow.jpg)
+
+In the dynamic world of data science and programming, one of the most valuable skills is the ability to anticipate and handle unexpected scenarios. When working with data, the unexpected comes in various forms: unusual data patterns, edge cases, or atypical inputs. These anomalies can pose significant challenges, potentially leading to incorrect analyses or crashes if not properly managed. In this installment of our series, titled "Edge of Tomorrow," we embark on a journey to fortify our `data_quality_report()` function against the unpredictable nature of real-world data. By enhancing the robustness of our function, we aim to ensure that it performs reliably, even under unusual conditions. This article will equip you with strategies and insights to make your R functions versatile, resilient, and capable of gracefully handling the quirks and anomalies inherent in real-world datasets.
+
+## Understanding Edge Cases
+
+Edge cases in data analysis are scenarios that occur at the extreme ends of operating parameters. These could be extremely large or small numbers, unexpected data types, missing or corrupted data, or any other anomalies that deviate from the norm. The first step in tackling edge cases is recognizing where and how they might arise in your function. For example, consider a function designed to process numeric data. What happens if it encounters a column with character data? How does it handle `NA` or `Inf` values? Identifying these potential vulnerabilities is critical.
+
+Let's illustrate this with an example. Suppose our `data_quality_report()` function is expected to handle only numeric data. We should first check if the dataset contains any non-numeric columns:
+
+```r
+data_quality_report <- function(data) {
+  if (!is.data.frame(data)) {
+    stop("Input must be a dataframe.")
+  }
+
+  if (any(sapply(data, class) != "numeric")) {
+    stop("All columns must be numeric.")
+  }
+
+  // ... [rest of the function]
+}
+```
+
+This initial check ensures that the function processes only numeric data, thus preventing unexpected behavior when encountering different data types.
+
+## Input Validation
+
+Input validation is crucial for ensuring that the data your function processes meet certain criteria. It involves checks for data types, value ranges, presence of required columns, or specific data formats. Proper input validation can prevent many issues associated with edge cases.
+
+In our `data_quality_report()` function, we can implement more comprehensive input validation. For example, we might want to ensure that the dataset contains specific columns expected by the function, or check that the data does not contain extreme values that could skew the analysis:
+
+```r
+data_quality_report <- function(data) {
+  required_columns <- c("column1", "column2", "column3")
+  if (!all(required_columns %in% names(data))) {
+    stop("Data is missing required columns.")
+  }
+
+  if (any(data > 1e6, na.rm = TRUE)) {
+    stop("Data contains values too large to process.")
+  }
+
+  // ... [rest of the function]
+}
+```
+
+These checks at the beginning of the function can prevent the processing of inappropriate data, ensuring that the function behaves as expected.
+
+## Handling Diverse Data Types and Structures
+
+Preparing your function to handle various data types and structures enhances its adaptability and resilience. This might involve special handling for different types of data, such as categorical vs. numeric data, or considering different data structures like time-series or hierarchical data.
+
+In the `data_quality_report()` function, let's add logic to handle categorical data differently from numeric data. This could involve different summarization strategies or different types of analysis:
+
+```r
+data_quality_report <- function(data) {
+  // ... [input validation code]
+
+  // Handling numeric and categorical data differently
+  numeric_columns <- data %>%
+    select(where(is.numeric))
+  categorical_columns <- data %>%
+    select(where(is.factor))
+
+  numeric_summary <- summarize_numeric_data(numeric_columns)
+  categorical_summary <- summarize_categorical_data(categorical_columns)
+
+  // ... [combine summaries and continue with the function]
+}
+
+summarize_numeric_data <- function(data) {
+  // Numeric data summarization logic
+}
+
+summarize_categorical_data <- function(data) {
+  // Categorical data summarization logic
+}
+```
+
+By structuring the function to handle different data types appropriately, we ensure it can adapt to a variety of datasets and provide meaningful analysis regardless of the data structure.
+
+## Building Resilience with Assertions
+
+Assertions are a proactive approach to ensure certain conditions are met within your function. They allow you to explicitly state your assumptions about the data and halt the function if these assumptions are not met. The `assertthat` package in R provides a user-friendly way to write assertions.
+
+For instance, you might want to assert that certain columns are present and contain no missing values:
+
+```r
+library(assertthat)
+
+data_quality_report <- function(data) {
+  assert_that(is.data.frame(data))
+  assert_that(all(colSums(!is.na(data)) > 0), msg = "Some columns are entirely NA.")
+
+  // ... [rest of the function]
+}
+```
+
+These assertions act as safeguards, ensuring that the function operates on data that meet specific criteria. If the assertions fail, the function stops, preventing it from proceeding with unsuitable data.
+
+## Fortifying R Functions Against the Unknown
+
+Dealing with edge cases and unexpected data inputs is a critical aspect of robust programming. It involves not just coding for the expected but also preparing for the unexpected. By the end of "Edge of Tomorrow," you'll have gained a comprehensive understanding of strategies to make your R functions resilient and reliable. You'll be equipped to handle a wide range of data scenarios, ensuring that your functions deliver accurate and reliable results, even in the face of data anomalies.
+
+As we continue our series on enhancing R functions, embracing these techniques will elevate your programming skills, enabling you to write functions that are not just functional, but truly dependable and versatile, ready for the diverse and unpredictable nature of real-world data.

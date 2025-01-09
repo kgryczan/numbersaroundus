@@ -1,0 +1,222 @@
+---
+title: "The Function Begins"
+author: "Numbers around us"
+date: "2023-11-08"
+format: html
+---
+
+![](images/function begin.jpg)
+
+In the multifaceted realm of data science, 'quality' isn't just a desirable attribute, it's the bedrock upon which all subsequent analysis is built. Think of it as the foundation of a house. Without a solid base, no matter how grand your designs or how vibrant your paint choices, the entire structure is vulnerable. Similarly, in data analysis, before one can indulge in the artistry of predictive models or the narrative of data visualizations, there's a crucial juncture every data enthusiast must navigate: ensuring the integrity of their data. Here, we introduce a trusty ally in this endeavor --- the `data_quality_report()` function, our in-house R guru dedicated to dissecting datasets, uncovering the hidden facets of missing values, sniffing out the rogue elements that are outliers, and cataloging the assorted data types. It's the analytical equivalent of a pre-flight checklist ensuring every aspect of the dataset is clear for takeoff.
+
+This function isn't just another step in the data preparation process; it's a beacon of best practices, emphasizing the significance of understanding your data before you ask it to reveal its secrets. By wielding this tool, we aim to instill in our datasets the virtues of clarity, cleanliness, and consistency. Think of the `data_quality_report()` as your data's first interview --- it's about making a stellar first impression and setting the tone for the relationship that follows. Through its meticulous scanning of each column, its probing of every value, we're setting ourselves up for a smoother analytical journey, one where surprises are minimized and insights are maximized.
+
+## Anatomy of data_quality_report()
+
+Consider the `data_quality_report()` as your R programming sidekick, akin to a master detective with a penchant for meticulous scrutiny. It's a function that takes a dataframe - an amalgamation of rows and columns that whisper tales of patterns and anomalies - and puts it under the microscope to reveal its innermost secrets. But what exactly does this sleuthing reveal? We focus on three key pillars of data integrity: missing values, outliers, and data types.
+
+First, we hunt for missing values --- the empty spaces in our data tapestry that can warp the final image if left unaddressed. Missing values are like the silent notes in a symphony --- their absence can be as telling as their presence. They can skew our analysis, lead to biased inferences, or signal a deeper data collection issue. Our function quantifies these absences, giving us a numerical representation of the voids within our datasets.
+
+Next, we have outliers --- the mavericks of the data world. These values don't play by the rules; they defy norms and expectations, standing out from the crowd. Sometimes they're the result of a typo, an anomaly, or a genuine rarity, but in each case, they warrant a closer look. Outliers can be influential, they can be indicators of a significant finding or a warning of a data entry error. They could skew our analysis or be the very focus of it. Our function is tasked with isolating these values, flagging them for further investigation.
+
+Lastly, we have data types --- the genetic makeup of our dataset. Just as blood types are crucial for safe transfusions, data types are critical for accurate analysis. They inform us how to treat each piece of data; numerical values offer a different insight compared to categorical ones. Our function assesses each column, categorizing them appropriately and ensuring they're ready for the analytical procedures ahead.
+
+Each piece of information --- missing values, outliers, data types --- forms a strand of the larger story. By compiling these strands, our `data_quality_report()` begins to weave a narrative, giving us an overarching view of our dataset's health and readiness for the adventures of analysis that lie ahead.
+
+## Building the Foundation
+
+Before our `data_quality_report()` can unfold its analytical prowess, we need a stage where its talents can shine -- a dataset that's a microcosm of the common challenges faced in data analysis. Picture this: a dataset with missing values, akin to the scattered pieces of a jigsaw puzzle; outliers, like the bold strokes in a delicate painting that seem out of place; and a variety of data types, each with its own language and rules of engagement.
+
+Let's conjure up such a dataset:
+
+```r
+library(tidyverse)
+# Generating a dataset with the intricacies of real-world data
+
+set.seed(123) # Ensuring reproducibility
+dummy_data <- tibble(
+  id = 1:100,
+  category = sample(c("A", "B", "C", NA), 100, replace = TRUE),
+  value = c(rnorm(97), -10, 100, NA), # Including outliers and a missing value
+  date = seq.Date(from = as.Date("2020-01-01"), by = "day", length.out = 100),
+  text = sample(c("Lorem", "Ipsum", "Dolor", "Sit", NA), 100, replace = TRUE)
+)
+
+# Take a peek at the dataset
+glimpse(dummy_data)
+
+// ...existing code...
+```
+
+With our stage set, let's guide our `data_quality_report()` function through its initial routines using the `value` column as a spotlight. We'll uncover the missing values---those voids in the dataset that could lead our analysis astray:
+
+```r
+# Identifying the missing pieces of the puzzle (missing values)
+missing_values <- dummy_data %>% 
+  summarise(missing_count = sum(is.na(value)))
+
+print(missing_values)
+
+// ...existing code...
+```
+
+Next, we turn to the outliers --- these are the data points that dare to deviate from the norm, the rebels of the dataset. Their presence can be a source of insight or an error waiting to be corrected:
+
+```r
+# Spotting the rebels (outliers)
+outliers <- dummy_data %>%
+  filter(!is.na(value)) %>% # Exclude NA values for the outlier calculation
+  filter(
+    value < (quantile(value, 0.25, na.rm = TRUE) - 1.5*IQR(value, na.rm = TRUE)) | 
+    value > (quantile(value, 0.75, na.rm = TRUE) + 1.5*IQR(value, na.rm = TRUE))
+  )
+
+print(outliers)
+
+// ...existing code...
+```
+
+Finally, we take note of the data types, the very essence of our dataset's characters. In this case, we're focusing on whether our `value` is numeric as it should be:
+
+```r
+# Understanding the characters (data types) 
+data_types <- dummy_data %>% 
+  summarise(data_type = paste(class(value), collapse = " "))
+
+print(data_types)
+
+// ...existing code...
+```
+
+Presented as a triad, these snippets offer a narrative of diagnostics, allowing us to explore the nuances of our dataset with surgical precision. It's the first act in our data quality odyssey, setting the stage for the deeper explorations and enhancements to come.
+
+## The Core of data_quality_report()
+
+At the heart of our series is the `data_quality_report()` function---a concerto of code where each element plays its part in harmony. We've laid out individual features like scouts, and now it's time to unite them under one banner. The function we're about to build will not only diagnose the quality of our data but also present it with clarity and insight.
+
+Let's construct the skeleton of our function, and then breathe life into it:
+
+```r
+data_quality_report <- function(data) {
+  # Check for missing values
+  missing_values <- data %>% summarize(across(everything(), ~sum(is.na(.))))
+  
+  # Identify outliers, little bit more complex looking
+  outliers <- data %>%
+    select(where(is.numeric)) %>% 
+    map_df(~{
+      qnt <- quantile(.x, probs = c(0.25, 0.75), na.rm = TRUE)
+      iqr <- IQR(.x, na.rm = TRUE)
+      tibble(
+        lower_bound = qnt[1] - 1.5 * iqr,
+        upper_bound = qnt[2] + 1.5 * iqr,
+        outlier_count = sum(.x < (qnt[1] - 1.5 * iqr) | .x > (qnt[2] + 1.5 * iqr), na.rm = TRUE)
+      )
+    }, .id = "column")
+  
+  # Summarize data types (all types not only value as in previous example)
+  data_types <- data %>% summarize(across(everything(), ~paste(class(.), collapse = " ")))
+  
+  # Combine all the elements into a list
+  list(
+    MissingValues = missing_values,
+    Outliers = outliers,
+    DataTypes = data_types
+  )
+}
+
+// ...existing code...
+```
+
+Executing the function yields an initial report --- a glimpse into the state of our dataset. It reveals the number of missing values, counts of outliers, and the tapestry of data types we're working with.
+
+This encapsulated functionality sets the stage for further enhancements. As we progress, we'll refine this core, infuse it with `tidyverse` elegance, and harness `purrr` for its functional programming strengths, leading us to a function that's not only powerful but also a pleasure to use.
+
+## Enhancing Readability and Functionality
+
+Crafting a function that's as intuitive as it is functional is like ensuring that our script not only performs its task but also tells a story. In this part, we polish the `data_quality_report()` to be more readable by adopting `tidyverse` conventions and leverage `purrr` for its elegance in handling lists and iterations.
+
+We enhance readability by making the code more descriptive and the logic flow more apparent. For example, naming intermediate steps and using pipes can transform a complex function into a readable narrative.
+
+Let's refine our function:
+
+```r
+data_quality_report <- function(data) {
+  # Calculate missing values in a readable way
+  missing_values <- data %>% 
+    summarize(across(everything(), ~sum(is.na(.)))) %>% 
+    pivot_longer(cols = everything(), names_to = "column", values_to = "missing_values")
+  
+  # Adjust to use imap for iteration over columns with names
+  outliers <- data %>% 
+    select(where(is.numeric)) %>% 
+    imap(~{
+      qnt <- quantile(.x, probs = c(0.25, 0.75), na.rm = TRUE)
+      iqr <- IQR(.x, na.rm = TRUE)
+      lower_bound <- qnt[1] - 1.5 * iqr
+      upper_bound <- qnt[2] + 1.5 * iqr
+      outlier_count <- sum(.x < lower_bound | .x > upper_bound, na.rm = TRUE)
+      
+      tibble(column = .y, lower_bound, upper_bound, outlier_count)
+    }) %>% 
+    bind_rows() # Combine the list of tibbles into one tibble
+  
+  # Improve the data types summarization for better readability
+  data_types <- data %>% 
+    summarize(across(everything(), ~paste(class(.), collapse = " "))) %>% 
+    pivot_longer(cols = everything(), names_to = "column", values_to = "data_type")
+  
+  # Combine all the elements into a list in a tidy way
+  list(
+    MissingValues = missing_values,
+    Outliers = outliers,
+    DataTypes = data_types
+  )
+}
+
+// ...existing code...
+```
+
+With these tweaks, our function tells a clearer story: check for the missing, identify the outliers, and catalog the types. We've structured our script to mimic the logical flow of thought that a data scientist might follow when assessing data quality.
+
+Now, we can also consider the user experience --- how will they interact with the function? What will they expect? This is where `purrr` shines, by offering a suite of tools that can handle complex list outputs with finesse, which we'll explore further in subsequent parts.
+
+This updated version of `data_quality_report()` now not only does its job well but also invites the user into its process, making the experience as enlightening as it is efficient.
+
+## The Output
+
+The `data_quality_report()` function concludes with a multi-faceted output, neatly packed into a list structure. This list is the crux of the function, presenting a distilled view of the data's integrity across three dimensions.
+
+- **MissingValues**: A tibble pinpointing the columns with their respective counts of missing data. This element is crucial, as missing data can lead to inaccurate analyses or biased models. It's the first checkpoint in data cleaning and paves the way for further data imputation strategies if required.
+- **Outliers**: Another tibble captures the essence of data dispersion. It details the lower and upper bounds of acceptable data range and the count of outliers beyond these thresholds for each numeric variable. Outliers could be either data entry errors or rare, significant events. Understanding their nature is key to making informed decisions on whether to include or exclude them from analyses.
+- **DataTypes**: Finally, a tibble lays out the data types for each column. A mix-up in expected data types can wreak havoc during data processing, hence why a quick check here can save hours of debugging later.
+
+Let's take a look at a snippet of how this would play out with an example dataset:
+
+```r
+# Run the data quality report on our example dataset
+enhanced_report <- data_quality_report(dummy_data)
+
+# Examine the Missing Values summary
+enhanced_report$MissingValues
+
+# Investigate the Outliers detected
+enhanced_report$Outliers
+
+# Verify the DataTypes for consistency
+enhanced_report$DataTypes
+```
+
+The report's user gets immediate clarity on potential data issues through a simple call and examination of the function's list output. The addition of visual elements like bar charts for missing data or box plots for outliers will be the next level of refinement, making the report not just informative but also visually engaging.
+
+As we wrap up our exploration of the `data_quality_report()` function, we reflect on its current capabilities: diagnosing missing values, spotting outliers, and identifying data types. Each aspect of the report shines a light on crucial areas that, if left unchecked, could undermine the integrity of any analysis.
+
+The journey of our `data_quality_report()` is just beginning. The road ahead is lined with potential enhancements. We're looking at diving into performance optimization to make our function a sleek, rapid tool that handles large datasets with ease. Expect to see discussions on vectorization and memory management that can turn seconds into milliseconds.
+
+Moreover, we'll venture into the realm of object-oriented programming (OOP) in R. By embracing OOP principles, we can extend the functionality of our function, making it modular, more adaptable, and opening doors to customization that procedural programming often finds cumbersome.
+
+Finally, we will also cover how to make our reports more presentable and sharable by adding features to export them into user-friendly formats like PDF or HTML. This step is crucial for sharing our findings with others who might not be as comfortable diving into R code but need to understand the data's quality.
+
+As the series progresses, the `data_quality_report()` function will evolve, mirroring the complexities and the nuances of the real-world data it aims to decipher. Stay tuned as we continue to refine our tool, ensuring it remains robust in the face of varied and unpredictable datasets.
+
+Stay curious, and keep coding!
