@@ -6,10 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Numbers around us">
-<meta name="dcterms.date" content="2023-10-04">
 
-<title>Council of the Ents: How Random Forest in tidymodels Delivers Judgments – Numbers Around Us</title>
+<title>Latest posts of each topic – Numbers Around Us</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,55 +20,23 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
-<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
-<script src="../../site_libs/clipboard/clipboard.min.js"></script>
-<script src="../../site_libs/quarto-html/quarto.js"></script>
-<script src="../../site_libs/quarto-html/popper.min.js"></script>
-<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../../site_libs/quarto-html/anchor.min.js"></script>
-<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-cb71375167fd9ce754afb6fa31d3f44e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-1a65b4115a9519dac2c2f4ba2497ca08.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/quarto-listing/list.min.js"></script>
+<script src="site_libs/quarto-listing/quarto-listing.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-cb71375167fd9ce754afb6fa31d3f44e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-1a65b4115a9519dac2c2f4ba2497ca08.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "language": {
     "search-no-results-text": "No results",
@@ -86,9 +52,124 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<script>
 
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    const listingTargetEl = window.document.querySelector('#listing-ds .list');
+    if (!listingTargetEl) {
+      // No listing discovered, do not attach.
+      return; 
+    }
 
-<link rel="stylesheet" href="../../styles.css">
+    const options = {
+      valueNames: ['listing-image','listing-date','listing-title','listing-word-count','listing-reading-time',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
+      page: 18,
+    pagination: { item: "<li class='page-item'><a class='page page-link' href='#'></a></li>" },
+      searchColumns: ["listing-title","listing-author","listing-date","listing-image","listing-description"],
+    };
+
+    window['quarto-listings'] = window['quarto-listings'] || {};
+    window['quarto-listings']['listing-ds'] = new List('listing-ds', options);
+
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  });
+
+  window.addEventListener('hashchange',() => {
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  })
+  
+
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    const listingTargetEl = window.document.querySelector('#listing-ds .list');
+    if (!listingTargetEl) {
+      // No listing discovered, do not attach.
+      return; 
+    }
+
+    const options = {
+      valueNames: ['listing-image','listing-date','listing-title','listing-word-count','listing-reading-time',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
+      
+      searchColumns: ["listing-title","listing-author","listing-date","listing-image","listing-description"],
+    };
+
+    window['quarto-listings'] = window['quarto-listings'] || {};
+    window['quarto-listings']['listing-ds'] = new List('listing-ds', options);
+
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  });
+
+  window.addEventListener('hashchange',() => {
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  })
+  
+
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    const listingTargetEl = window.document.querySelector('#listing-BI .list');
+    if (!listingTargetEl) {
+      // No listing discovered, do not attach.
+      return; 
+    }
+
+    const options = {
+      valueNames: ['listing-image','listing-date','listing-title','listing-word-count','listing-reading-time',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
+      
+      searchColumns: ["listing-title","listing-author","listing-date","listing-image","listing-description"],
+    };
+
+    window['quarto-listings'] = window['quarto-listings'] || {};
+    window['quarto-listings']['listing-BI'] = new List('listing-BI', options);
+
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  });
+
+  window.addEventListener('hashchange',() => {
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  })
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="styles.css">
 </head>
 
 <body class="nav-fixed fullcontent">
@@ -98,7 +179,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="../../index.html">
+    <a class="navbar-brand" href="./index.html">
     <span class="navbar-title">Numbers Around Us</span>
     </a>
   </div>
@@ -108,27 +189,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../../index.html"> 
+    <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../last-articles.html"> 
+    <a class="nav-link active" href="./last-articles.html" aria-current="page"> 
 <span class="menu-text">Newest articles</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../challenges/index.html"> 
+    <a class="nav-link" href="./challenges/index.html"> 
 <span class="menu-text">Challenges</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../bi/index.html"> 
+    <a class="nav-link" href="./bi/index.html"> 
 <span class="menu-text">Business Intelligence</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../ds/index.html"> 
+    <a class="nav-link" href="./ds/index.html"> 
 <span class="menu-text">Data Science</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../dp/index.html"> 
+    <a class="nav-link" href="./dp/index.html"> 
 <span class="menu-text">Data Philosophy</span></a>
   </li>  
 </ul>
@@ -150,26 +231,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Council of the Ents: How Random Forest in tidymodels Delivers Judgments</h1>
+<h1 class="title">Latest posts of each topic</h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>Numbers around us </p>
-          </div>
-  </div>
     
-    <div>
-    <div class="quarto-title-meta-heading">Published</div>
-    <div class="quarto-title-meta-contents">
-      <p class="date">October 4, 2023</p>
-    </div>
-  </div>
   
     
   </div>
@@ -179,119 +248,133 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p><img src="images/ents.jpg" class="img-fluid"></p>
-<p>The tapestry of metaphors we’ve been weaving in the “Metaphors in Motion” series takes a mythical twist as we step into our fourth installment. We’ve traversed the plains of linear regression, delved into the binary realms of logistic regression, and climbed the intricate branches of decision trees. Now, we find ourselves amidst the dense forests of Tolkien’s Middle-earth, drawing parallels with the awe-inspiring Ents — the venerable tree shepherds of ancient lore.</p>
-<p>Just as Ents are more than mere trees, the Random Forest algorithm in the tidymodels package is far more than a mere collection of decision trees. Imagine a council where each member, seasoned by time, brings forth unique wisdom, collectively arriving at judgments that resonate with profound insight. This is the essence of Random Forest — a chorus of decision trees harmonizing to discern patterns and make predictions. As we embark on this journey, we will illuminate the intricate dance between the Ents of Tolkien’s universe and the ensemble approach of Random Forest, exploring how their collective wisdom far surpasses the sum of their individual insights.</p>
-<section id="the-essence-of-ents-and-trees" class="level2">
-<h2 class="anchored" data-anchor-id="the-essence-of-ents-and-trees">The Essence of Ents and Trees</h2>
-<p>In the vast forests of Tolkien’s Middle-earth, Ents stand as guardians of ancient wisdom, their slow-paced lives allowing them to gather knowledge over eons. Their roots, both literal and metaphorical, run deep into the history of the land. With gnarled limbs and deep-set eyes, Ents are the epitome of nature’s wise stewards, overseeing the forests with a patient and methodical demeanor.</p>
-<p>Much like Ents, decision trees in the realm of machine learning stand sentinel over data. At the heart of their structure, they methodically dissect information, making decisions at every node based on specific criteria. These trees, although insightful, possess an inherent vulnerability: their decisions can be too granular, too tailored to the specific data they’ve been nurtured on. This often leads to overfitting, where a tree might be overly influenced by noise or outliers in the data, reducing its ability to generalize well to new, unseen data.</p>
-<p>In the same way that an individual Ent holds a piece of the larger narrative, but not its entirety, a single decision tree captures only a fragment of the dataset’s overarching story. Its decisions, while informed, can benefit from the collective wisdom of many. This notion sets the stage for an assembly of trees, a gathering that harnesses the strengths of each member while mitigating individual weaknesses. And in this gathering, much like the council of Ents, lies the power of the Random Forest algorithm.</p>
+<section id="last-article-data-science" class="level2">
+<h2 class="anchored" data-anchor-id="last-article-data-science">Last article: Data Science</h2>
+<div id="listing-ds" class="quarto-listing quarto-listing-container-grid">
+<div class="list grid quarto-listing-cols-3">
+<div class="g-col-1" data-index="0" data-listing-date-sort="1729116000000" data-listing-file-modified-sort="1736281270927" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="14" data-listing-word-count-sort="2642">
+<a href="./dp/posts/2024-10-17_Don-t-Get-Fooled-by-Numbers--Data-Literacy-as-the-New-Survival-Skill-72a484855c80.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top"><img src="dp\posts\images\dataliteracy.jpg" style="height: 150px;"  class="thumbnail-image card-img"/></p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+Don’t Get Fooled by Numbers: Data Literacy as the New Survival Skill
+</h5>
+<div class="listing-reading-time card-text text-muted">
+14 min
+</div>
+<div class="card-attribution card-text-small end">
+<div class="listing-date">
+Oct 17, 2024
+</div>
+</div>
+<table class="card-other-values">
+<tbody><tr>
+<td>
+Word Count
+</td>
+<td class="word-count">
+2642 words
+</td>
+</tr>
+</tbody></table>
+</div>
+</div>
+</a>
+</div>
+</div>
+<div class="listing-no-matching d-none">
+No matching items
+</div>
+</div>
 </section>
-<section id="the-councils-gathering-ensemble-learning" class="level2">
-<h2 class="anchored" data-anchor-id="the-councils-gathering-ensemble-learning">The Council’s Gathering: Ensemble Learning</h2>
-<p>Deep within the legendary woods, Ents — solitary beings of immense wisdom — converge in times of necessity, forming the ‘Entmoot’, a purposeful assembly characterized by prolonged, contemplative dialogues. Each Ent, akin to a whispering leaf, carries with it experiences from varied epochs, contributing multifaceted perspectives and wisdom to the collective decision-making process. In an atmosphere brimming with solemnity, they deliberate, ensuring that every voice is heard, and every nuance considered, before a consensus is reached.</p>
-<p>Parallelly, in the world of data science, we engage with the Random Forest algorithm, a method that, too, believes in the potency of collective wisdom. As if echoing the Ents, Random Forest forms its own council — an assembly of decision trees, each nurtured on a random subset of the data, imparting its own unique insights. The algorithm ensures these trees, each possibly harboring their own biases and imperfections, do not dominate the collective decision. The verdict — whether it be a classification or a prediction — emerges from an aggregation of voices, commonly through majority voting or averaging, ensuring that the final outcome is balanced, robust, and safeguarded against individual tree anomalies.</p>
-<p>The algorithm’s eloquence lies in its embracing of diversity and unity, ensuring that while each tree’s voice is distinct, the ensemble speaks in unison, delivering predictions that are both stable and reliable. This ensemble methodology mitigates overfitting, a common ailment that plagues individual trees when they become too entwined with the training data, thereby losing their ability to generalize effectively to unseen data.</p>
-<p>In our data-driven endeavors, much like an Entmoot, the Random Forest algorithm stands resilient, ensuring that our models, informed by the collective wisdom of myriad decision trees, navigate through the perplexities of data, delivering judgments that are both insightful and reliable.</p>
+<section id="last-article-business-intelligence" class="level2">
+<h2 class="anchored" data-anchor-id="last-article-business-intelligence">Last article: Business Intelligence</h2>
+<div id="listing-BI" class="quarto-listing quarto-listing-container-grid">
+<div class="list grid quarto-listing-cols-3">
+<div class="g-col-1" data-index="0" data-listing-date-sort="1727906400000" data-listing-file-modified-sort="1736533263337" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="10" data-listing-word-count-sort="1817">
+<a href="./bi/posts/2024-10-03_Choosing-the-Right-Chart--A-Personal-Guide-to-Better-Data-Visualization-490696c7774a.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top"><img src="bi\posts\images\choose-report.jpg" style="height: 150px;"  class="thumbnail-image card-img"/></p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+Choosing the Right Chart: A Personal Guide to Better Data Visualization
+</h5>
+<div class="listing-reading-time card-text text-muted">
+10 min
+</div>
+<div class="card-attribution card-text-small end">
+<div class="listing-date">
+Oct 3, 2024
+</div>
+</div>
+<table class="card-other-values">
+<tbody><tr>
+<td>
+Word Count
+</td>
+<td class="word-count">
+1817 words
+</td>
+</tr>
+</tbody></table>
+</div>
+</div>
+</a>
+</div>
+</div>
+<div class="listing-no-matching d-none">
+No matching items
+</div>
+</div>
 </section>
-<section id="walking-with-ents-building-a-random-forest-model-in-tidymodels" class="level2">
-<h2 class="anchored" data-anchor-id="walking-with-ents-building-a-random-forest-model-in-tidymodels">Walking with Ents: Building a Random Forest Model in tidymodels</h2>
-<p>To navigate the intricate and enigmatic woods of Middle-earth with Ents is to walk with legends — each step echoing centuries of lore, every rustling leaf whispering tales of yore. Tolkien’s Ents, though seemingly ponderous, move with purpose and profound understanding of the world around them. Let’s embark on a similar journey through the expansive forest of data, guided by the Random Forest algorithm, and craft our own council of Ents using the tidymodels package.</p>
-<p>Before our journey commences, let’s ensure we have the tools for our expedition:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Summoning the necessary tomes and scrolls</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidymodels)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>For our journey, we’ll use the <code>mtcars</code> dataset, a classic tome of motorcar specifications, as our guiding map:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The parchment of data</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(mtcars)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Splitting our tales: some for the council's learning, others for testing its wisdom</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)  <span class="co"># Ensuring the path remains the same on every journey</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>data_split <span class="ot">&lt;-</span> <span class="fu">initial_split</span>(data, <span class="at">prop =</span> <span class="fl">0.75</span>)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>training_data <span class="ot">&lt;-</span> <span class="fu">training</span>(data_split)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>validation_data <span class="ot">&lt;-</span> <span class="fu">testing</span>(data_split)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Crafting our council — our Random Forest — is akin to gathering Ents for an Entmoot. Each tree is distinct, yet their collective wisdom is paramount:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Crafting the council of Ents</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>rf_spec <span class="ot">&lt;-</span> <span class="fu">rand_forest</span>(<span class="at">trees =</span> <span class="dv">1000</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a> <span class="fu">set_engine</span>(<span class="st">"ranger"</span>, <span class="at">importance =</span> <span class="st">'permutation'</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a> <span class="fu">set_mode</span>(<span class="st">"regression"</span>)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Invoking the council’s wisdom on our data</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>rf_fit <span class="ot">&lt;-</span> rf_spec <span class="sc">%&gt;%</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a> <span class="fu">fit</span>(mpg <span class="sc">~</span> ., <span class="at">data =</span> training_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>In these incantations, we’ve summoned a powerful ensemble of a thousand trees, each ready to weigh in, explore the intricacies of our dataset, and grant us insights that are both deep-rooted and expansive.</p>
-</section>
-<section id="hearing-the-ents-verdict-interpreting-and-evaluating-the-model" class="level2">
-<h2 class="anchored" data-anchor-id="hearing-the-ents-verdict-interpreting-and-evaluating-the-model">Hearing the Ents’ Verdict: Interpreting and Evaluating the Model</h2>
-<p>In Tolkien’s realm, after the lengthy deliberations of the Entmoot, the Ents arrive at decisions that resonate with the collective wisdom of the ages. Their verdicts, though arrived at after prolonged contemplation, hold profound implications and guide the trajectory of Middle-earth’s destiny. Similarly, once our Random Forest model has been trained, the culmination of its myriad decision trees imparts a verdict. This verdict, forged from the collective insights of every tree in the ensemble, is our prediction. But how do we understand this council’s decree and measure its wisdom?</p>
-<p>The Random Forest algorithm, by its very nature, allows us to not only make predictions but also evaluate the importance of different variables in the decision-making process:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Gauging the significance of each council member’s voice</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>importance <span class="ot">&lt;-</span> vip<span class="sc">::</span><span class="fu">vip</span>(rf_fit)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualizing the wisdom imparted</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(importance)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><img src="https://cdn-images-1.medium.com/max/800/1*z6OuNGudK71qiul6uHH2wQ.png" class="img-fluid"></p>
-<p>This code provides a glimpse into which features, or predictors, carry the most weight in our model. In the context of our metaphor, it’s akin to understanding which Ents or topics had the most influence in the Entmoot’s decision-making process.</p>
-<p>Furthermore, the model’s true wisdom can be assessed by its ability to generalize its knowledge to unseen data. We evaluate this through various metrics such as accuracy, precision, recall, and others depending on the task at hand:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluating the council’s foresight on unseen tales</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>predictions <span class="ot">&lt;-</span> <span class="fu">predict</span>(rf_fit, <span class="at">new_data =</span> validation_data)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> validation_data <span class="sc">%&gt;%</span> </span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a> <span class="fu">bind_cols</span>(predictions) <span class="sc">%&gt;%</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a> yardstick<span class="sc">::</span><span class="fu">metrics</span>(<span class="at">truth =</span> mpg, <span class="at">estimate =</span> .pred)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Here, we’re essentially asking our ensemble of Ents: “Given new scenarios and tales you’ve not heard before, how accurately can you predict the outcomes?” The metrics returned provide us with an answer, helping gauge the efficacy and reliability of our model.</p>
-<p>In our journey with Ents and the Random Forest, it’s imperative that we not only heed the council’s decisions but also scrutinize, understand, and evaluate the collective wisdom it imparts.</p>
-</section>
-<section id="the-final-verdict-of-the-ents-and-reflections-on-our-journey" class="level2">
-<h2 class="anchored" data-anchor-id="the-final-verdict-of-the-ents-and-reflections-on-our-journey">The Final Verdict of the Ents and Reflections on Our Journey</h2>
-<p>As we bring our exploration of Random Forests to a close, it’s worth taking a moment to reflect upon the profound wisdom of our Ents and their counterpart in data science. While the Ents’ deliberations at the Entmoot might stretch across days or even weeks, our computational council of trees makes swift decisions, powered by the speed of modern technology. In fact, one could jest that if Middle-earth had the algorithms we possess today, the Ents would’ve reached their decisions before Merry and Pippin even had time for a second breakfast!</p>
-<p>Yet, much like the Ents, the true value of the Random Forest doesn’t just lie in its speed but in the collective wisdom of its ensemble. By pooling together the insights of numerous decision trees, this algorithm offers robust predictions, making it a stalwart ally in our data science toolkit.</p>
-<p>And there we have it: our fourth episode of “Metaphors in Motion” complete. As we’ve journeyed from the linear pathways of linear regression, traversed the logistic bends, stood firm with individual decision trees, and now wandered with the Ents of the Random Forest, it’s evident that the realm of machine learning is as vast and varied as the tales of Middle-earth.</p>
-<p>But before we close this chapter, let’s delve into the practical applicability of the Random Forest with five real-life scenarios where this ensemble of Ents has been invoked to render its wisdom.</p>
-</section>
-<section id="five-tales-where-ents-rendered-their-wisdom-real-life-applications-of-random-forests" class="level2">
-<h2 class="anchored" data-anchor-id="five-tales-where-ents-rendered-their-wisdom-real-life-applications-of-random-forests">Five Tales Where Ents Rendered Their Wisdom: Real-life Applications of Random Forests</h2>
-<section id="the-quest-for-health-medical-diagnostics" class="level3">
-<h3 class="anchored" data-anchor-id="the-quest-for-health-medical-diagnostics">The Quest for Health: Medical Diagnostics</h3>
-<ul>
-<li><strong>Tale</strong>: In the sprawling lands of medical diagnostics, swift and accurate detection of diseases can make the difference between a quick recovery and prolonged suffering.</li>
-<li><strong>Ents’ Role</strong>: Random Forests have been employed to analyze myriad patient symptoms, medical images, and even genetic sequences. By parsing through these complex datasets, our council of Ents can identify patterns and anomalies, leading to early and accurate disease detection.</li>
-</ul>
-</section>
-<section id="guarding-the-treasures-financial-fraud-detection" class="level3">
-<h3 class="anchored" data-anchor-id="guarding-the-treasures-financial-fraud-detection">Guarding the Treasures: Financial Fraud Detection</h3>
-<ul>
-<li><strong>Tale</strong>: In the vaults of financial institutions, treasures are under constant threat from crafty burglars aiming to deceive and steal.</li>
-<li><strong>Ents’ Role</strong>: Random Forests have proven instrumental in detecting fraudulent transactions. By analyzing vast transactional histories, our Ents identify suspicious patterns, raising the alarm bells before the burglars can escape with their ill-gotten gains.</li>
-</ul>
-</section>
-<section id="natures-whispers-environmental-monitoring" class="level3">
-<h3 class="anchored" data-anchor-id="natures-whispers-environmental-monitoring">Nature’s Whispers: Environmental Monitoring</h3>
-<ul>
-<li><strong>Tale</strong>: From the ancient woods to vast plains, our environment sends subtle signals, hinting at its health and impending changes.</li>
-<li><strong>Ents’ Role</strong>: Random Forests are used to analyze satellite imagery and sensor data to monitor deforestation, track animal migrations, and predict natural calamities. Like the Ents guarding Fangorn Forest, our algorithmic guardians keep a watchful eye on our planet’s health.</li>
-</ul>
-</section>
-<section id="elixirs-and-brews-pharmaceutical-research" class="level3">
-<h3 class="anchored" data-anchor-id="elixirs-and-brews-pharmaceutical-research">Elixirs and Brews: Pharmaceutical Research</h3>
-<ul>
-<li><strong>Tale</strong>: In the quest to concoct potent elixirs to combat ailments, countless combinations of ingredients are tried and tested.</li>
-<li><strong>Ents’ Role</strong>: Random Forests aid in the discovery of new drugs by analyzing compound structures and their biological impacts. By discerning patterns in these vast datasets, our Ents guide researchers towards promising drug candidates.</li>
-</ul>
-</section>
-<section id="deciphering-chatter-customer-feedback-analysis" class="level3">
-<h3 class="anchored" data-anchor-id="deciphering-chatter-customer-feedback-analysis">Deciphering Chatter: Customer Feedback Analysis</h3>
-<ul>
-<li><strong>Tale</strong>: In the bustling marketplaces, merchants are inundated with feedback, praise, complaints, and suggestions from their clientele.</li>
-<li><strong>Ents’ Role</strong>: By applying Random Forests to analyze customer feedback, businesses can glean insights about product preferences, areas of improvement, and emerging market trends. Like Ents sifting through the voices in the Entmoot, businesses can discern the collective sentiment of their clientele.</li>
-</ul>
-<p>These tales showcase the versatility and power of Random Forests in addressing challenges across varied domains. From health to finance, nature to commerce, the Ents’ wisdom resonates, providing guidance and insights that shape outcomes.</p>
+<section id="last-article-data-philosophy" class="level2">
+<h2 class="anchored" data-anchor-id="last-article-data-philosophy">Last article: Data Philosophy</h2>
+<div id="dp">
+
+</div>
+
 
 
 </section>
-</section>
 
-</main> <!-- /main -->
+<div class="quarto-listing quarto-listing-container-grid" id="listing-ds">
+<div class="list grid quarto-listing-cols-3">
+<div class="g-col-1" data-index="0" data-listing-date-sort="1729116000000" data-listing-file-modified-sort="1736281270927" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="14" data-listing-word-count-sort="2642">
+<a href="./dp/posts/2024-10-17_Don-t-Get-Fooled-by-Numbers--Data-Literacy-as-the-New-Survival-Skill-72a484855c80.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top"><img src="dp\posts\images\dataliteracy.jpg" style="height: 150px;"  class="thumbnail-image card-img"/></p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+Don’t Get Fooled by Numbers: Data Literacy as the New Survival Skill
+</h5>
+<div class="listing-reading-time card-text text-muted">
+14 min
+</div>
+<div class="card-attribution card-text-small end">
+<div class="listing-date">
+Oct 17, 2024
+</div>
+</div>
+<table class="card-other-values">
+<tbody><tr>
+<td>
+Word Count
+</td>
+<td class="word-count">
+2642 words
+</td>
+</tr>
+</tbody></table>
+</div>
+</div>
+</a>
+</div>
+</div>
+<div class="listing-no-matching d-none">
+No matching items
+</div>
+</div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
