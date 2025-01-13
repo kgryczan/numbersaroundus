@@ -1,0 +1,117 @@
+---
+title: "Excel BI - Excel Challenge 629"
+format: 
+  html:
+    code-fold: false
+date: "2025-01-13"
+---
+
+![](/challenges/images/Exc%20629.jpg)
+
+## Challenge Description
+
+If a number is preceded by + or -, change + to - and - to +. Ex. qw3-4+ty+8- =\> -4 and +8 will be replaced with +4 and -8 =\> qw3+4+ty-8-
+
+Download Practice File - https://lnkd.in/dKU3GxYK
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/629 Invert Sign.xlsx"
+input = read_excel(path, range = "A1:A10", col_names = "Words")
+test = read_excel(path, range = "B1:B10")
+
+result = input %>%
+ mutate(`Answer Expected` = str_replace_all(Words, "([+-])(?=\\d)", function(m) ifelse(m == "+", "-", "+")))
+
+all.equal(result$`Answer Expected`, test$`Answer Expected`)
+#> [1] TRUE
+
+```
+
+### R Analysis
+
+1.  Logic:
+
+    1.  The str_replace_all function effectively uses the regular expression (\[+-\])(?=\d) to capture + or - immediately followed by a digit.
+
+    2.  The anonymous function (function(m)) dynamically swaps the signs using a simple ifelse. Strengths:
+
+
+2.  Conciseness:
+
+    1.  The pipeline (%\>%) ensures a clean and readable workflow.
+
+    2.  Verification: all.equal confirms correctness against the expected results.
+
+3.  Areas for Improvement:
+
+    1.  Flexibility: If there are non-standard input formats (e.g., spaces around signs or digits), the solution might need additional handling.
+
+    2.  Documentation: Brief comments explaining the regex pattern would make the code more beginner-friendly.
+
+4.  Gems:
+
+    1.  The regex is succinct and precisely targets the problem. The dynamic function for sign swapping (function(m)) is a nice touch.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "629 Invert Sign.xlsx"
+input = pd.read_excel(path, usecols="A", skiprows=0, nrows=10)
+test = pd.read_excel(path, usecols="B", skiprows=0, nrows=10)
+
+def switch_sign(match):
+ signs = {"+": "-", "-": "+"}
+ return signs[match.group(1)]
+result = input['Words'].apply(lambda x: re.sub(r"([+-])(?=\d)", switch_sign, x))
+print(result.equals(test['Answer Expected'])) # True
+
+```
+
+### Python
+
+1.  Logic:
+
+    1.  The regex pattern (\[+-\])(?=\d) is identical to the R solution and functions in the same manner.
+    
+    2.  re.sub is used alongside a helper function switch_sign to replace the matched signs dynamically.
+    
+2.  Strengths:
+
+    1.  Modularity: The switch_sign function is a reusable and modular approach to handling the sign inversion.
+    
+    2.  Readability: The solution is straightforward, with logical steps for processing the data.
+    
+3.  Areas for Improvement:
+
+    1.  Edge Cases: Similar to the R solution, additional testing for unusual input formats would enhance robustness.
+
+    2.  Performance: While the solution works efficiently for small datasets, larger datasets might benefit from vectorized operations in pandas rather than row-wise application.
+    
+4.  Gems:
+    
+    1.  The use of re.sub with a custom function ensures flexibility in extending or modifying the logic.
+    
+    2.  Applying result.equals(test\['Answer Expected'\]) ensures validation of correctness.
+:::
+
+## Difficulty Level
+
+This task is of moderate complexity:
+
+-   It involves knowledge of regular expressions, which can be challenging for beginners.
+-   The task requires dynamic replacement logic, which adds an extra layer of difficulty.
