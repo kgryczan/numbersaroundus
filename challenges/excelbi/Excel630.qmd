@@ -1,0 +1,119 @@
+---
+title: "Excel BI - Excel Challenge 630"
+format: 
+  html:
+    code-fold: false
+date: "2025-01-14"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![](/challenges/images/Exc630.jpg)
+
+## Challenge Description
+
+For each date group, populate the immediate last caller.
+So, first row in each date group will not have any immediate last caller.
+Note - data is unsorted.
+
+Download Practice File - https://lnkd.in/dwFEQgce
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/630 Immediate Last Caller.xlsx"
+input = read_excel(path, range = "A1:C16")
+test = read_excel(path, range = "D1:D16")
+
+result = input %>% 
+ mutate(`Answer Expected` = order_by(Time, lag(Caller)), .by = Date) 
+
+all.equal(result$`Answer Expected`, test$`Answer Expected`)
+[1] TRUE    
+
+```
+
+### R Analysis
+
+1.  Logic:
+
+    1.  mutate: Adds a new column (Answer Expected) that contains the immediate last caller.
+
+    2.  order_by(Time, lag(Caller)): Ensures that the data is sorted by Time before applying the lag function to fetch the previous value.
+
+    3.  .by = Date: Groups the data by Date, so the lag function only applies within each group.
+
+2.  Strengths:
+
+    1.  Conciseness: Combines sorting and lagging in a single step with order_by.
+
+    2.  Readability: Leverages tidyverse functions, which are intuitive and readable.
+
+3.  Areas for Improvement:
+
+    1.  Edge Case Handling: Ensure that Time and Date are valid and properly formatted to avoid errors.
+
+4.  Gem:
+
+    1.  Using order_by(Time, lag(Caller)) is a clean and efficient way to sort and fetch the previous value in one step.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+
+
+path = "630 Immediate Last Caller.xlsx"
+input = pd.read_excel(path, usecols="A:C", nrows=16)
+test = pd.read_excel(path, usecols="D", nrows=16)
+
+input['Answer Expected'] = input.sort_values(by='Time').groupby('Date')['Caller'].shift()
+print(input['Answer Expected'].equals(test['Answer Expected'])) # True
+
+```
+
+### Python
+
+1.  **Logic**:
+
+    1.  `sort_values(by='Time')`: Sorts the data chronologically within each date group.
+
+    2.  `groupby('Date')['Caller'].shift()`: Fetches the previous caller in the sorted order for each date group.
+
+    3.  `shift()`: Handles the logic for getting the "immediate last caller," leaving the first row as `NaN`.
+
+2.  **Strengths**:
+
+    1.  **Step-by-Step Clarity**: Each operation is explicit and modular, making the logic easy to follow.
+
+    2.  **Accuracy**: The use of `sort_values` ensures the correct chronological order within groups.
+
+3.  **Areas for Improvement**:
+
+    1.  **Efficiency**: Sorting can be computationally expensive for large datasets, but it's necessary for this task.
+
+    2.  **Flexibility**: Assumes the `Time` column is correctly formatted and sortable.
+
+4.  **Gem**:
+
+    1.  The use of `groupby` with `shift()` directly mirrors the task requirement in an intuitive and concise way.
+:::
+
+## Difficulty Level
+
+This task is of moderate complexity:
+
+-   It involves knowledge of regular expressions, which can be challenging for beginners.
+-   The task requires dynamic replacement logic, which adds an extra layer of difficulty.
