@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Numbers around us">
+<meta name="dcterms.date" content="2025-01-14">
+
+<title>Building Blocks of R: From Vectors to Lists and Beyond – Numbers Around Us</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-cb71375167fd9ce754afb6fa31d3f44e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-1a65b4115a9519dac2c2f4ba2497ca08.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Numbers Around Us</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../last-articles.html"> 
+<span class="menu-text">Newest articles</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../challenges/index.html"> 
+<span class="menu-text">Challenges</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../bi/index.html"> 
+<span class="menu-text">Business Intelligence</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../ds/index.html"> 
+<span class="menu-text">Data Science</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../dp/index.html"> 
+<span class="menu-text">Data Philosophy</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <a href="https://github.com" title="Github" class="quarto-navigation-tool px-1" aria-label="Github"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Building Blocks of R: From Vectors to Lists and Beyond</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Numbers around us </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 14, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><img src="images/R - basic structure.jpg" class="img-fluid"></p>
+<p><strong>Introduction</strong></p>
+<p>In the world of data analysis and statistical computing, R stands out as a powerful and versatile language. Its ability to handle complex data operations with ease makes it a favorite among data scientists, statisticians, and researchers. At the heart of this power lies R’s <strong>data structures</strong>, the foundational building blocks that allow users to organize, manipulate, and analyze data efficiently.</p>
+<p>Understanding these data structures is like learning the grammar of a language: once you grasp how they work and interact, you unlock the ability to express yourself clearly and effectively in R. Whether you’re calculating statistics for a dataset, organizing results from a machine learning model, or preparing a table for visualization, mastering R’s data structures ensures your work is both efficient and precise.</p>
+<p>In this article, we’ll take a guided tour through R’s core data structures, starting with the simplest—vectors—and gradually moving toward more complex ones like lists and data frames. Along the way, we’ll explore practical questions that arise as your data grows in complexity, such as:</p>
+<ul>
+<li><p>What if I need to store different types of data together?</p></li>
+<li><p>How can I categorize data for analysis?</p></li>
+<li><p>What’s the best way to handle higher-dimensional data?</p></li>
+</ul>
+<p>By the end of this journey, you’ll have a clear understanding of how to select and use the right data structure for your task. So let’s dive in, starting with the cornerstone of R programming: <strong>vectors</strong>.</p>
+<section id="vectors-the-foundation-of-data-in-r" class="level3">
+<h3 class="anchored" data-anchor-id="vectors-the-foundation-of-data-in-r"><strong>Vectors: The Foundation of Data in R</strong></h3>
+<p>Vectors are the most fundamental data structure in R. They are <strong>one-dimensional containers</strong> that hold a sequence of elements, all of which must be of the same type. Whether you’re calculating the average temperature over a week or analyzing survey responses, vectors are often the starting point for data manipulation in R.</p>
+<section id="what-is-a-vector" class="level4">
+<h4 class="anchored" data-anchor-id="what-is-a-vector"><strong>2.1 What is a Vector?</strong></h4>
+<p>Think of a vector as a <strong>row or column of data</strong> in a spreadsheet. Each cell contains a single value, and all the values must share the same data type—logical, numeric, integer, character, or complex.</p>
+<p><strong>Example: A Simple Vector</strong></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A numeric vector</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>temperatures <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">22.5</span>, <span class="fl">23.0</span>, <span class="fl">19.8</span>, <span class="fl">21.4</span>, <span class="fl">20.7</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Here, <code>temperatures</code> is a vector holding five numeric values.</p>
+</section>
+<section id="creating-vectors" class="level4">
+<h4 class="anchored" data-anchor-id="creating-vectors"><strong>2.2 Creating Vectors</strong></h4>
+<p>R provides several functions to create vectors quickly:</p>
+<p><strong>Using <code>c()</code></strong><br>
+The <code>c()</code> function combines values into a vector.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>grades <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">85</span>, <span class="dv">90</span>, <span class="dv">78</span>, <span class="dv">92</span>, <span class="dv">88</span>)  <span class="co"># A numeric vector of grades</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>days <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Monday"</span>, <span class="st">"Tuesday"</span>, <span class="st">"Wednesday"</span>)  <span class="co"># A character vector</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Using <code>seq()</code></strong><br>
+The <code>seq()</code> function generates a sequence of numbers.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">seq</span>(<span class="dv">1</span>, <span class="dv">10</span>, <span class="at">by =</span> <span class="dv">2</span>)  <span class="co"># A sequence from 1 to 10 in steps of 2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Using <code>rep()</code></strong><br>
+The <code>rep()</code> function repeats elements to create a vector.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rep</span>(<span class="st">"Yes"</span>, <span class="at">times =</span> <span class="dv">5</span>)  <span class="co"># A vector with "Yes" repeated 5 times</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="accessing-vector-elements" class="level4">
+<h4 class="anchored" data-anchor-id="accessing-vector-elements"><strong>2.3 Accessing Vector Elements</strong></h4>
+<p>You can access specific elements in a vector using <strong>indexing</strong>, which starts at 1 in R.</p>
+<p><strong>Example: Accessing Vector Elements</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Accessing elements by position</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>temperatures[<span class="dv">1</span>]  <span class="co"># First element: 22.5</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>temperatures[<span class="dv">3</span>]  <span class="co"># Third element: 19.8</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Accessing elements by a logical condition</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>temperatures[temperatures <span class="sc">&gt;</span> <span class="dv">21</span>]  <span class="co"># Values greater than 21</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>You can also use <strong>negative indexing</strong> to exclude elements:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>temperatures[<span class="sc">-</span><span class="dv">1</span>]  <span class="co"># All elements except the first</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="key-operations-on-vectors" class="level4">
+<h4 class="anchored" data-anchor-id="key-operations-on-vectors"><strong>2.4 Key Operations on Vectors</strong></h4>
+<p>R allows you to perform operations directly on vectors, treating them as a single unit. This is called <strong>vectorized computation</strong>, making R highly efficient for data manipulation.</p>
+<p><strong>Example: Arithmetic Operations</strong></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Adding 1 to each temperature</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>temperatures <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculating the average temperature</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(temperatures)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Example: Logical Operations</strong></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Identifying which temperatures exceed 21</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>temperatures <span class="sc">&gt;</span> <span class="dv">21</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Vector Functions</strong></p>
+<ul>
+<li><p><code>sum()</code>: Calculate the sum of elements.</p></li>
+<li><p><code>length()</code>: Find the number of elements in a vector.</p></li>
+<li><p><code>sort()</code>: Sort the vector.</p></li>
+</ul>
+</section>
+<section id="real-life-example" class="level4">
+<h4 class="anchored" data-anchor-id="real-life-example"><strong>2.5 Real-Life Example</strong></h4>
+<p><strong>Scenario: Analyzing Weekly Temperatures</strong><br>
+Imagine you’re monitoring daily temperatures for a week to understand temperature trends.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Daily temperatures in Celsius</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>temperatures <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">22.5</span>, <span class="fl">23.0</span>, <span class="fl">19.8</span>, <span class="fl">21.4</span>, <span class="fl">20.7</span>, <span class="fl">22.0</span>, <span class="fl">23.3</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the average temperature</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>average_temp <span class="ot">&lt;-</span> <span class="fu">mean</span>(temperatures)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Find which days were hotter than average</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>hot_days <span class="ot">&lt;-</span> temperatures[temperatures <span class="sc">&gt;</span> average_temp]</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the results</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>average_temp  <span class="co"># 21.95</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>hot_days      <span class="co"># 22.5, 23.0, 22.0, 23.3</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This simple analysis shows how vectors can store data, perform calculations, and identify patterns in just a few lines of code.</p>
+</section>
+<section id="what-if-you-need-to-store-mixed-types" class="level4">
+<h4 class="anchored" data-anchor-id="what-if-you-need-to-store-mixed-types"><strong>What If You Need to Store Mixed Types?</strong></h4>
+<p>While vectors are incredibly versatile, they have one limitation: <strong>all elements must share the same data type</strong>. But what if you need to store different types of data—like a mix of numbers, text, and logical values? That’s where <strong>lists</strong> come in.</p>
+<p>Next, we’ll explore <strong>lists</strong> and how they expand on vectors to offer greater flexibility.</p>
+</section>
+</section>
+<section id="lists-combining-anything-you-want" class="level3">
+<h3 class="anchored" data-anchor-id="lists-combining-anything-you-want"><strong>Lists: Combining Anything You Want</strong></h3>
+<p>While vectors are the cornerstone of R’s data structures, they have a key limitation: they can only hold elements of the same type. But what if you need to store a mix of numbers, text, logical values, or even entire datasets? Enter <strong>lists</strong>, R’s most flexible data structure.</p>
+<p>A <strong>list</strong> is like a storage container where each compartment can hold different types of data. This flexibility makes lists ideal for handling complex or heterogeneous data.</p>
+<section id="what-is-a-list" class="level4">
+<h4 class="anchored" data-anchor-id="what-is-a-list"><strong>3.1 What is a List?</strong></h4>
+<p>Think of a list as a <strong>data organizer</strong>. Each component of a list can hold something different: a vector, a matrix, a data frame, or even another list.</p>
+<p><strong>Example: A Simple List</strong></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A list containing a number, a string, and a logical value</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>my_list <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="dv">42</span>, <span class="st">"Hello, R!"</span>, <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Here, <code>my_list</code> contains:</p>
+<ul>
+<li><p>A numeric value (<code>42</code>),</p></li>
+<li><p>A character value (<code>"Hello, R!"</code>),</p></li>
+<li><p>A logical value (<code>TRUE</code>).</p></li>
+</ul>
+</section>
+<section id="creating-and-using-lists" class="level4">
+<h4 class="anchored" data-anchor-id="creating-and-using-lists"><strong>3.2 Creating and Using Lists</strong></h4>
+<p>Lists can be created using the <code>list()</code> function. You can also name the components of a list to make them easier to access.</p>
+<p><strong>Example: Creating a Named List</strong></p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>rrrrrrrrrrrrrr<span class="co"># A list with named components</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>student <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">"Alice"</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">age =</span> <span class="dv">25</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">grades =</span> <span class="fu">c</span>(<span class="dv">85</span>, <span class="dv">90</span>, <span class="dv">88</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This list represents a student with:</p>
+<ul>
+<li><p>A <code>name</code> (character),</p></li>
+<li><p>An <code>age</code> (numeric),</p></li>
+<li><p>A set of <code>grades</code> (vector).</p></li>
+</ul>
+</section>
+<section id="accessing-list-elements" class="level4">
+<h4 class="anchored" data-anchor-id="accessing-list-elements"><strong>3.3 Accessing List Elements</strong></h4>
+<p>You can access elements in a list using double square brackets (<code>[[ ]]</code>) or the <code>$</code> operator for named components.</p>
+<p><strong>Example: Accessing List Elements</strong></p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Access the name</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>student<span class="sc">$</span>name  <span class="co"># "Alice"</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Access the grades</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>student<span class="sc">$</span>grades  <span class="co"># c(85, 90, 88)</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Access the first grade</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>student<span class="sc">$</span>grades[<span class="dv">1</span>]  <span class="co"># 85</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="modifying-lists" class="level4">
+<h4 class="anchored" data-anchor-id="modifying-lists"><strong>3.4 Modifying Lists</strong></h4>
+<p>Lists are dynamic, allowing you to add, modify, or remove components easily.</p>
+<p><strong>Example: Adding or Changing Components</strong></p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Add a new component</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>student<span class="sc">$</span>major <span class="ot">&lt;-</span> <span class="st">"Mathematics"</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Modify an existing component</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>student<span class="sc">$</span>age <span class="ot">&lt;-</span> <span class="dv">26</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Example: Removing a Component</strong></p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove the 'major' component</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>student<span class="sc">$</span>major <span class="ot">&lt;-</span> <span class="cn">NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="lists-within-lists" class="level4">
+<h4 class="anchored" data-anchor-id="lists-within-lists"><strong>3.5 Lists Within Lists</strong></h4>
+<p>Lists can contain other lists, creating a nested structure. This is useful for organizing hierarchical or grouped data.</p>
+<p><strong>Example: Nested List</strong></p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A nested list for multiple students</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>classroom <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">student1 =</span> <span class="fu">list</span>(<span class="at">name =</span> <span class="st">"Alice"</span>, <span class="at">age =</span> <span class="dv">25</span>, <span class="at">grades =</span> <span class="fu">c</span>(<span class="dv">85</span>, <span class="dv">90</span>, <span class="dv">88</span>)),</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">student2 =</span> <span class="fu">list</span>(<span class="at">name =</span> <span class="st">"Bob"</span>, <span class="at">age =</span> <span class="dv">24</span>, <span class="at">grades =</span> <span class="fu">c</span>(<span class="dv">78</span>, <span class="dv">84</span>, <span class="dv">80</span>))</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Access Bob's grades</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>classroom<span class="sc">$</span>student2<span class="sc">$</span>grades  <span class="co"># c(78, 84, 80)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="real-life-example-1" class="level4">
+<h4 class="anchored" data-anchor-id="real-life-example-1"><strong>3.6 Real-Life Example</strong></h4>
+<p><strong>Scenario: Storing Results of an Experiment</strong> Suppose you’ve conducted an experiment and need to store results for multiple trials. Each trial includes the trial number, the outcome, and any observations.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Store trial results in a list</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>trial_results <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">trial1 =</span> <span class="fu">list</span>(<span class="at">number =</span> <span class="dv">1</span>, <span class="at">outcome =</span> <span class="st">"Success"</span>, <span class="at">observations =</span> <span class="fu">c</span>(<span class="st">"Fast reaction"</span>, <span class="st">"Accurate"</span>)),</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">trial2 =</span> <span class="fu">list</span>(<span class="at">number =</span> <span class="dv">2</span>, <span class="at">outcome =</span> <span class="st">"Failure"</span>, <span class="at">observations =</span> <span class="fu">c</span>(<span class="st">"Slow reaction"</span>, <span class="st">"Error in measurement"</span>))</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Access the outcome of the second trial</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>trial_results<span class="sc">$</span>trial2<span class="sc">$</span>outcome  <span class="co"># "Failure"</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Add a new trial</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>trial_results<span class="sc">$</span>trial3 <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">number =</span> <span class="dv">3</span>, <span class="at">outcome =</span> <span class="st">"Success"</span>, <span class="at">observations =</span> <span class="fu">c</span>(<span class="st">"Steady reaction"</span>, <span class="st">"Improved accuracy"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Lists allow you to store structured and detailed information, making them indispensable for managing complex datasets.</p>
+</section>
+<section id="what-if-you-need-structure-like-a-table" class="level4">
+<h4 class="anchored" data-anchor-id="what-if-you-need-structure-like-a-table"><strong>What If You Need Structure Like a Table?</strong></h4>
+<p>Lists are highly flexible, but they can sometimes become hard to manage, especially when components have similar lengths and need to be treated as rows or columns. If you need a <strong>tabular structure</strong>, where rows represent observations and columns represent variables, the solution is a <strong>data frame</strong>.</p>
+<p>Next, we’ll explore <strong>data frames</strong>, their strengths, and how they combine the power of lists and vectors to create tabular datasets.</p>
+</section>
+</section>
+<section id="data-frames-tables-of-data" class="level3">
+<h3 class="anchored" data-anchor-id="data-frames-tables-of-data"><strong>Data Frames: Tables of Data</strong></h3>
+<p>As your data grows more structured, you often need to work with <strong>tables</strong> where rows represent observations and columns represent variables. Enter the <strong>data frame</strong>, one of R’s most widely used data structures. A data frame combines the flexibility of lists and the simplicity of vectors, creating a tabular format that is both intuitive and powerful.</p>
+<section id="what-is-a-data-frame" class="level4">
+<h4 class="anchored" data-anchor-id="what-is-a-data-frame"><strong>4.1 What is a Data Frame?</strong></h4>
+<p>A data frame is a <strong>two-dimensional structure</strong> that organizes data into rows and columns:</p>
+<ul>
+<li><p>Each column is a <strong>vector</strong> or a <strong>factor</strong>, meaning all its elements must share the same type.</p></li>
+<li><p>Different columns can have different types, making data frames ideal for storing heterogeneous data.</p></li>
+</ul>
+<p><strong>Example: A Simple Data Frame</strong></p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating a data frame</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>students <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="fu">c</span>(<span class="st">"Alice"</span>, <span class="st">"Bob"</span>, <span class="st">"Charlie"</span>),</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">age =</span> <span class="fu">c</span>(<span class="dv">25</span>, <span class="dv">24</span>, <span class="dv">23</span>),</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">grades =</span> <span class="fu">c</span>(<span class="dv">90</span>, <span class="dv">85</span>, <span class="dv">88</span>)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Here, <code>students</code> is a data frame with:</p>
+<ul>
+<li><p>A <code>name</code> column (character),</p></li>
+<li><p>An <code>age</code> column (numeric),</p></li>
+<li><p>A <code>grades</code> column (numeric).</p></li>
+</ul>
+</section>
+<section id="creating-and-exploring-data-frames" class="level4">
+<h4 class="anchored" data-anchor-id="creating-and-exploring-data-frames"><strong>4.2 Creating and Exploring Data Frames</strong></h4>
+<p>Data frames can be created using the <code>data.frame()</code> function. Once created, you can explore and manipulate them easily.</p>
+<p><strong>Example: Exploring a Data Frame</strong></p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># View the first few rows</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(students)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># View the structure</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(students)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a summary of the data</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(students)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Real-Life Use Case</strong><br>
+Data frames are ideal for datasets like survey results, where different types of data (e.g., names, ratings, and comments) need to be stored together.</p>
+</section>
+<section id="accessing-data-frame-elements" class="level4">
+<h4 class="anchored" data-anchor-id="accessing-data-frame-elements"><strong>4.3 Accessing Data Frame Elements</strong></h4>
+<p>Data frames support several ways of accessing their elements:</p>
+<ol type="1">
+<li><p><strong>Accessing Columns</strong><br>
+Columns in a data frame can be accessed using <code>$</code>, <code>[[ ]]</code>, or <code>[ ]</code>.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Access the 'grades' column</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>students<span class="sc">$</span>grades  <span class="co"># Using $</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>students[[<span class="st">"grades"</span>]]  <span class="co"># Using [[ ]]</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>students[, <span class="st">"grades"</span>]  <span class="co"># Using [ ]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Accessing Rows<br>
+</strong>Rows can be accessed using numeric indexing.</p></li>
+</ol>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="st">```</span><span class="at">         </span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="at"># Access the second row</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="at">students[2, ]  # Bob's data</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="st">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ol start="3" type="1">
+<li><p><strong>Accessing Specific Elements</strong><br>
+Combine row and column indices to extract specific elements.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Access Charlie's grade</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>students[<span class="dv">3</span>, <span class="st">"grades"</span>]  <span class="co"># 88</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ol>
+</section>
+<section id="manipulating-data-frames" class="level4">
+<h4 class="anchored" data-anchor-id="manipulating-data-frames"><strong>4.4 Manipulating Data Frames</strong></h4>
+<p>Data frames are highly dynamic, allowing you to add, modify, or remove columns and rows.</p>
+<p><strong>Adding Columns</strong></p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Add a column for majors</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>students<span class="sc">$</span>major <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Math"</span>, <span class="st">"Physics"</span>, <span class="st">"Biology"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Adding Rows</strong> Use <code>rbind()</code> to add new rows.</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Add a new student</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>students <span class="ot">&lt;-</span> <span class="fu">rbind</span>(students, <span class="fu">data.frame</span>(<span class="at">name =</span> <span class="st">"Diana"</span>, <span class="at">age =</span> <span class="dv">22</span>, <span class="at">grades =</span> <span class="dv">92</span>, <span class="at">major =</span> <span class="st">"Chemistry"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Filtering Rows</strong> Data frames support filtering based on conditions.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get students with grades above 85</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>high_achievers <span class="ot">&lt;-</span> students[students<span class="sc">$</span>grades <span class="sc">&gt;</span> <span class="dv">85</span>, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Removing Columns or Rows</strong></p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove the 'major' column</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>students<span class="sc">$</span>major <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove the first row</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>students <span class="ot">&lt;-</span> students[<span class="sc">-</span><span class="dv">1</span>, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="real-life-example-2" class="level4">
+<h4 class="anchored" data-anchor-id="real-life-example-2"><strong>4.5 Real-Life Example</strong></h4>
+<p><strong>Scenario: Tracking Employee Records</strong><br>
+Imagine you’re managing a team and want to maintain a dataset of employee records, including their names, roles, salaries, and years of experience.</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create an employee data frame</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>employees <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="fu">c</span>(<span class="st">"Alice"</span>, <span class="st">"Bob"</span>, <span class="st">"Charlie"</span>, <span class="st">"Diana"</span>),</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">role =</span> <span class="fu">c</span>(<span class="st">"Manager"</span>, <span class="st">"Analyst"</span>, <span class="st">"Developer"</span>, <span class="st">"Designer"</span>),</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">salary =</span> <span class="fu">c</span>(<span class="dv">75000</span>, <span class="dv">65000</span>, <span class="dv">70000</span>, <span class="dv">60000</span>),</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">years_experience =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">5</span>, <span class="dv">7</span>, <span class="dv">3</span>)</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Get employees earning more than $65,000</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>high_earners <span class="ot">&lt;-</span> employees[employees<span class="sc">$</span>salary <span class="sc">&gt;</span> <span class="dv">65000</span>, ]</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the average salary</span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>average_salary <span class="ot">&lt;-</span> <span class="fu">mean</span>(employees<span class="sc">$</span>salary)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This example demonstrates how data frames allow you to store structured data and perform quick analyses.</p>
+</section>
+<section id="treating-data-frames-as-lists" class="level4">
+<h4 class="anchored" data-anchor-id="treating-data-frames-as-lists"><strong>Treating Data Frames as Lists</strong></h4>
+<p>A lesser-known fact about data frames is that they are essentially <strong>lists of equal-length vectors</strong>, with some extra functionality for tabular organization. This means:</p>
+<ul>
+<li><p>Each column is a component of a list.</p></li>
+<li><p>You can apply functions like <code>lapply()</code> or <code>sapply()</code> to process columns.</p></li>
+</ul>
+<p><strong>Example: Using <code>sapply()</code> with Data Frames</strong></p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the mean for numeric columns</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(employees[, <span class="fu">c</span>(<span class="st">"salary"</span>, <span class="st">"years_experience"</span>)], mean)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>If you need to categorize data within a data frame—such as grouping employees by department—<strong>factors</strong> become invaluable.</p>
+<p>Next, we’ll explore <strong>factors</strong>, a powerful data structure for working with categorical data.</p>
+</section>
+</section>
+<section id="factors-handling-categorical-data" class="level3">
+<h3 class="anchored" data-anchor-id="factors-handling-categorical-data"><strong>Factors: Handling Categorical Data</strong></h3>
+<p>When working with data in R, you’ll often encounter situations where variables represent <strong>categories</strong> rather than continuous values. Examples include gender, education level, and customer segments. For such cases, <strong>factors</strong> offer a powerful way to manage and analyze categorical data effectively.</p>
+<p>Factors not only make data storage more efficient but also ensure categories are handled appropriately in statistical modeling and visualizations. Let’s dive into the world of factors and see how they can enhance your data analysis.</p>
+<section id="what-is-a-factor" class="level4">
+<h4 class="anchored" data-anchor-id="what-is-a-factor"><strong>5.1 What is a Factor?</strong></h4>
+<p>A <strong>factor</strong> is a special data type in R used to represent categorical variables. It stores the categories as <strong>levels</strong>, ensuring consistency and enabling ordered or unordered classifications.</p>
+<p><strong>Example: A Simple Factor</strong></p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating a factor for education levels</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>education <span class="ot">&lt;-</span> <span class="fu">factor</span>(<span class="fu">c</span>(<span class="st">"High School"</span>, <span class="st">"Bachelor's"</span>, <span class="st">"Master's"</span>, <span class="st">"Bachelor's"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Here, the <code>education</code> factor automatically identifies unique categories (<code>High School</code>, <code>Bachelor's</code>, and <code>Master's</code>) and assigns them as levels.</p>
+</section>
+<section id="creating-and-customizing-factors" class="level4">
+<h4 class="anchored" data-anchor-id="creating-and-customizing-factors"><strong>5.2 Creating and Customizing Factors</strong></h4>
+<p>You can create factors using the <code>factor()</code> function, with options to customize the order of levels.</p>
+<p><strong>Example: Creating a Factor</strong></p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating a factor with specified levels</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>education <span class="ot">&lt;-</span> <span class="fu">factor</span>(</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">"High School"</span>, <span class="st">"Bachelor's"</span>, <span class="st">"Master's"</span>, <span class="st">"Bachelor's"</span>),</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"High School"</span>, <span class="st">"Bachelor's"</span>, <span class="st">"Master's"</span>)</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Example: Changing the Order of Levels</strong></p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Specify an order to indicate progression</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>education <span class="ot">&lt;-</span> <span class="fu">factor</span>(education, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"High School"</span>, <span class="st">"Bachelor's"</span>, <span class="st">"Master's"</span>), <span class="at">ordered =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>By setting <code>ordered = TRUE</code>, the levels now have a logical order, making them useful for comparisons.</p>
+</section>
+<section id="exploring-and-modifying-factors" class="level4">
+<h4 class="anchored" data-anchor-id="exploring-and-modifying-factors"><strong>5.3 Exploring and Modifying Factors</strong></h4>
+<p>Factors come with a set of functions to explore and manipulate their levels.</p>
+<p><strong>Example: Inspecting a Factor</strong></p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check levels</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(education)  <span class="co"># "High School", "Bachelor's", "Master's"</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Summary of a factor</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(education)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Example: Modifying Levels</strong></p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Renaming levels</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(education) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"HS"</span>, <span class="st">"BA"</span>, <span class="st">"MA"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="why-use-factors" class="level4">
+<h4 class="anchored" data-anchor-id="why-use-factors"><strong>5.4 Why Use Factors?</strong></h4>
+<ol type="1">
+<li><p><strong>Efficient Storage</strong>: Factors store categories as integers under the hood, saving memory when dealing with large datasets.</p></li>
+<li><p><strong>Statistical Modeling</strong>: Many R functions automatically treat factors as categorical variables, ensuring accurate results in models.</p></li>
+<li><p><strong>Improved Visualization</strong>: Factors are essential for creating meaningful categorical plots in libraries like <code>ggplot2</code>.</p></li>
+</ol>
+</section>
+<section id="real-life-example-3" class="level4">
+<h4 class="anchored" data-anchor-id="real-life-example-3"><strong>5.5 Real-Life Example</strong></h4>
+<p><strong>Scenario: Customer Segmentation</strong><br>
+Imagine you’re analyzing a dataset of customers grouped into segments like “Low”, “Medium”, and “High” value.</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a factor for customer segments</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>segments <span class="ot">&lt;-</span> <span class="fu">factor</span>(</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">"High"</span>, <span class="st">"Medium"</span>, <span class="st">"Low"</span>, <span class="st">"Medium"</span>, <span class="st">"High"</span>),</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Low"</span>, <span class="st">"Medium"</span>, <span class="st">"High"</span>),</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">ordered =</span> <span class="cn">TRUE</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Count customers in each segment</span></span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(segments)</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Identify high-value customers</span></span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>high_value <span class="ot">&lt;-</span> segments[segments <span class="sc">==</span> <span class="st">"High"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The factor ensures that the customer segments are consistently treated as “Low”, “Medium”, and “High” in all analyses.</p>
+</section>
+<section id="expanding-to-tables-with-categorical-data" class="level4">
+<h4 class="anchored" data-anchor-id="expanding-to-tables-with-categorical-data"><strong>Expanding to Tables with Categorical Data</strong></h4>
+<p>Factors are often used within data frames to represent categorical columns. For instance, a data frame might include a column for education levels or customer segments as factors. But what if you need to handle more dimensions, like stacking customer data across regions and years? That’s where <strong>matrices and arrays</strong> come into play.</p>
+<p>Next, we’ll explore <strong>matrices and arrays</strong>, showing how they expand R’s capabilities to handle multi-dimensional data efficiently.</p>
+</section>
+</section>
+<section id="matrices-and-arrays-organizing-data-in-higher-dimensions" class="level3">
+<h3 class="anchored" data-anchor-id="matrices-and-arrays-organizing-data-in-higher-dimensions"><strong>Matrices and Arrays: Organizing Data in Higher Dimensions</strong></h3>
+<p>As your data becomes more complex, you may need to work with <strong>higher-dimensional structures</strong> to organize it effectively. While vectors and data frames work well for simpler datasets, <strong>matrices</strong> and <strong>arrays</strong> allow you to store data in multiple dimensions, making them ideal for certain applications like image processing, multidimensional data analysis, or mathematical computations.</p>
+<section id="what-is-a-matrix" class="level4">
+<h4 class="anchored" data-anchor-id="what-is-a-matrix"><strong>6.1 What is a Matrix?</strong></h4>
+<p>A <strong>matrix</strong> is a two-dimensional, homogeneous data structure. Each element in a matrix must have the same type (e.g., numeric, character), and it’s organized into rows and columns.</p>
+<p><strong>Example: A Simple Matrix</strong></p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating a matrix</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>matrix_data <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">9</span>, <span class="at">nrow =</span> <span class="dv">3</span>, <span class="at">ncol =</span> <span class="dv">3</span>)</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>matrix_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This creates a 3x3 matrix:</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>     [,<span class="dv">1</span>] [,<span class="dv">2</span>] [,<span class="dv">3</span>]</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>[<span class="dv">1</span>,]    <span class="dv">1</span>    <span class="dv">4</span>    <span class="dv">7</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>[<span class="dv">2</span>,]    <span class="dv">2</span>    <span class="dv">5</span>    <span class="dv">8</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>[<span class="dv">3</span>,]    <span class="dv">3</span>    <span class="dv">6</span>    <span class="dv">9</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="what-is-an-array" class="level4">
+<h4 class="anchored" data-anchor-id="what-is-an-array"><strong>6.2 What is an Array?</strong></h4>
+<p>An <strong>array</strong> generalizes the concept of a matrix by adding more dimensions. Arrays can have <strong>n-dimensions</strong>, where <code>n &gt; 2</code>, and they are particularly useful for representing multi-layered data, such as time-series or spatial data.</p>
+<p><strong>Example: A Simple Array</strong></p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating a 3D array</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>array_data <span class="ot">&lt;-</span> <span class="fu">array</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">12</span>, <span class="at">dim =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">2</span>))</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>array_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This creates a 3x2x2 array, essentially a “stack” of two matrices.</p>
+</section>
+<section id="creating-matrices-and-arrays" class="level4">
+<h4 class="anchored" data-anchor-id="creating-matrices-and-arrays"><strong>6.3 Creating Matrices and Arrays</strong></h4>
+<p><strong>1. Using <code>matrix()</code> for Matrices</strong><br>
+The <code>matrix()</code> function is used to create matrices by specifying the data and the number of rows or columns.</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span><span class="co"># Matrix with row-wise filling</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>, <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>2. Using <code>array()</code> for Arrays</strong><br>
+The <code>array()</code> function extends matrices into higher dimensions.</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A 3x3x2 array</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="fu">array</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">18</span>, <span class="at">dim =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="accessing-elements" class="level4">
+<h4 class="anchored" data-anchor-id="accessing-elements"><strong>6.4 Accessing Elements</strong></h4>
+<p>You can access elements in matrices and arrays using indices for rows, columns, and dimensions.</p>
+<p><strong>Example: Accessing a Matrix</strong></p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Access element in row 2, column 3</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>matrix_data[<span class="dv">2</span>, <span class="dv">3</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Example: Accessing an Array</strong></p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Access element in the first matrix (3D array), row 2, column 1</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>array_data[<span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="operations-on-matrices-and-arrays" class="level4">
+<h4 class="anchored" data-anchor-id="operations-on-matrices-and-arrays"><strong>6.5 Operations on Matrices and Arrays</strong></h4>
+<p>Matrices and arrays support a wide range of operations, from element-wise calculations to matrix algebra.</p>
+<p><strong>Matrix Algebra</strong></p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Matrix multiplication</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="at">nrow =</span> <span class="dv">2</span>)</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>B <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">5</span><span class="sc">:</span><span class="dv">8</span>, <span class="at">nrow =</span> <span class="dv">2</span>)</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>A <span class="sc">%*%</span> B  <span class="co"># Matrix multiplication</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Applying Functions</strong> Use <code>apply()</code> to perform operations across rows, columns, or dimensions.</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sum across rows of a matrix</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(matrix_data, <span class="dv">1</span>, sum)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Element-wise Operations</strong></p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Adding two matrices</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>matrix_data <span class="sc">+</span> matrix_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="real-life-example-4" class="level4">
+<h4 class="anchored" data-anchor-id="real-life-example-4"><strong>Real-Life Example</strong></h4>
+<p><strong>Scenario: Tracking Sales Data Across Regions and Quarters</strong><br>
+Suppose you’re analyzing sales data for three regions (North, East, West) across four quarters.</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sales data for three regions over four quarters</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>sales <span class="ot">&lt;-</span> <span class="fu">array</span>(</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="dv">200</span>, <span class="dv">250</span>, <span class="dv">300</span>, <span class="dv">220</span>, <span class="dv">270</span>, <span class="dv">330</span>, <span class="dv">210</span>, <span class="dv">260</span>, <span class="dv">320</span>, <span class="dv">230</span>, <span class="dv">280</span>, <span class="dv">350</span>),</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">dim =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">1</span>),  <span class="co"># 3 regions x 4 quarters x 1 layer</span></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">dimnames =</span> <span class="fu">list</span>(</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">Region =</span> <span class="fu">c</span>(<span class="st">"North"</span>, <span class="st">"East"</span>, <span class="st">"West"</span>),</span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">Quarter =</span> <span class="fu">c</span>(<span class="st">"Q1"</span>, <span class="st">"Q2"</span>, <span class="st">"Q3"</span>, <span class="st">"Q4"</span>),</span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Sales"</span></span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Total sales by region</span></span>
+<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(sales, <span class="dv">1</span>, sum)</span>
+<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Average sales by quarter</span></span>
+<span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(sales, <span class="dv">2</span>, mean)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This analysis shows how arrays can efficiently store and process multi-dimensional data.</p>
+</section>
+<section id="what-if-you-need-both-flexibility-and-structure" class="level4">
+<h4 class="anchored" data-anchor-id="what-if-you-need-both-flexibility-and-structure"><strong>What If You Need Both Flexibility and Structure?</strong></h4>
+<p>Matrices and arrays are powerful for numerical computations and fixed-dimension data, but they are less flexible than lists or data frames for handling mixed data types. What if you want to combine the structured nature of arrays with the flexibility of lists? That’s where <strong>lists</strong> shine as a bridge to handle complex datasets.</p>
+<p>Next, we’ll bring everything together by exploring <strong>the relationships between all these structures</strong>, highlighting their strengths and ideal use cases.</p>
+</section>
+</section>
+<section id="the-big-picture-connecting-the-dots" class="level3">
+<h3 class="anchored" data-anchor-id="the-big-picture-connecting-the-dots"><strong>The Big Picture: Connecting the Dots</strong></h3>
+<p>R’s data structures are like tools in a toolbox: each one has a specific purpose, but they also complement each other. To work effectively in R, it’s essential to understand how these structures connect, when to use them, and how to transition between them as your data grows in complexity.</p>
+<p>In this chapter, we’ll summarize the relationships between the structures we’ve explored—vectors, lists, data frames, factors, matrices, and arrays—and provide guidance on selecting the right tool for the job.</p>
+<section id="vectors-as-the-foundation" class="level4">
+<h4 class="anchored" data-anchor-id="vectors-as-the-foundation"><strong>7.1 Vectors as the Foundation</strong></h4>
+<p>At the heart of all R’s data structures lies the <strong>vector</strong>. Every column in a data frame, every row in a matrix, and every element of an array can ultimately be traced back to a vector.</p>
+<p><strong>Key Characteristics of Vectors:</strong></p>
+<ul>
+<li><p>Homogeneous: All elements must have the same type.</p></li>
+<li><p>One-dimensional: A vector is a simple sequence of elements.</p></li>
+</ul>
+<p><strong>When to Use:</strong></p>
+<ul>
+<li>When your data is a single sequence, such as numeric values, strings, or logical values.</li>
+</ul>
+<p><strong>Example Transition:</strong></p>
+<ul>
+<li><p>Need to store different types of data? Use a <strong>list</strong>.</p></li>
+<li><p>Need to expand to two dimensions? Use a <strong>matrix</strong>.</p></li>
+</ul>
+</section>
+<section id="lists-the-swiss-army-knife" class="level4">
+<h4 class="anchored" data-anchor-id="lists-the-swiss-army-knife"><strong>7.2 Lists: The Swiss Army Knife</strong></h4>
+<p>Lists build on vectors by allowing you to store elements of different types or lengths. They’re flexible but can become unwieldy if you need tabular or higher-dimensional structures.</p>
+<p><strong>Key Characteristics of Lists:</strong></p>
+<ul>
+<li><p>Heterogeneous: Each element can be of a different type or structure.</p></li>
+<li><p>Nested: Lists can contain other lists, making them ideal for hierarchical data.</p></li>
+</ul>
+<p><strong>When to Use:</strong></p>
+<ul>
+<li><p>When your data includes mixed types, such as metadata, raw data, and results.</p></li>
+<li><p>When you need to group related objects in a flexible way.</p></li>
+</ul>
+<p><strong>Example Transition:</strong></p>
+<ul>
+<li>Need a tabular structure for analysis? Convert a list to a <strong>data frame</strong> using <code>as.data.frame()</code>.</li>
+</ul>
+</section>
+<section id="data-frames-organized-flexibility" class="level4">
+<h4 class="anchored" data-anchor-id="data-frames-organized-flexibility"><strong>7.3 Data Frames: Organized Flexibility</strong></h4>
+<p>Data frames are essentially <strong>lists of equal-length vectors</strong>, organized into rows and columns. They strike a balance between flexibility and structure, making them ideal for most real-world datasets.</p>
+<p><strong>Key Characteristics of Data Frames:</strong></p>
+<ul>
+<li><p>Tabular structure: Rows represent observations, and columns represent variables.</p></li>
+<li><p>Heterogeneous: Different columns can have different types.</p></li>
+</ul>
+<p><strong>When to Use:</strong></p>
+<ul>
+<li><p>When you have structured data with rows and columns, such as survey results or transaction records.</p></li>
+<li><p>When you need to integrate factors for categorical variables.</p></li>
+</ul>
+<p><strong>Example Transition:</strong></p>
+<ul>
+<li><p>Need to model categories in a column? Convert it to a <strong>factor</strong>.</p></li>
+<li><p>Want to analyze numerical columns mathematically? Extract them as a <strong>matrix</strong>.</p></li>
+</ul>
+</section>
+<section id="factors-categorical-data-mastery" class="level4">
+<h4 class="anchored" data-anchor-id="factors-categorical-data-mastery"><strong>7.4 Factors: Categorical Data Mastery</strong></h4>
+<p>Factors are often stored within data frames to represent categories efficiently. They simplify statistical modeling and visualization by treating categories as levels.</p>
+<p><strong>Key Characteristics of Factors:</strong></p>
+<ul>
+<li><p>Efficient: Internally stored as integers with associated labels.</p></li>
+<li><p>Ordered or unordered: Can represent ordinal or nominal data.</p></li>
+</ul>
+<p><strong>When to Use:</strong></p>
+<ul>
+<li>When you need to model or visualize categorical variables, such as survey responses or customer segments.</li>
+</ul>
+<p><strong>Example Transition:</strong></p>
+<ul>
+<li>Need numerical calculations on factor data? Use <code>as.numeric()</code> to convert levels to integers.</li>
+</ul>
+</section>
+<section id="matrices-and-arrays-expanding-dimensions" class="level4">
+<h4 class="anchored" data-anchor-id="matrices-and-arrays-expanding-dimensions"><strong>7.5 Matrices and Arrays: Expanding Dimensions</strong></h4>
+<p>Matrices and arrays handle <strong>higher-dimensional, homogeneous data</strong>. They are optimized for numerical computations, making them essential for tasks like linear algebra or multi-dimensional statistics.</p>
+<p><strong>Key Characteristics:</strong></p>
+<ul>
+<li><p>Homogeneous: All elements must share the same type.</p></li>
+<li><p>Dimensional: Matrices are 2D; arrays can have 3D or more.</p></li>
+</ul>
+<p><strong>When to Use:</strong></p>
+<ul>
+<li>When working with numerical or categorical data organized in fixed dimensions, such as time-series or spatial data.</li>
+</ul>
+<p><strong>Example Transition:</strong></p>
+<ul>
+<li><p>Want more flexibility for mixed data? Convert to a <strong>list</strong>.</p></li>
+<li><p>Need to analyze rows or columns independently? Use <code>apply()</code>.</p></li>
+</ul>
+</section>
+<section id="practical-decision-guide" class="level4">
+<h4 class="anchored" data-anchor-id="practical-decision-guide"><strong>7.6 Practical Decision Guide</strong></h4>
+<p>Here’s a quick decision-making guide to help you choose the right structure for your data:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 49%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Scenario</strong></th>
+<th><strong>Use This Structure</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>A single sequence of numbers, strings, or logical values.</td>
+<td><strong>Vector</strong></td>
+</tr>
+<tr class="even">
+<td>A mix of data types or nested objects.</td>
+<td><strong>List</strong></td>
+</tr>
+<tr class="odd">
+<td>Tabular data with rows and columns.</td>
+<td><strong>Data Frame</strong></td>
+</tr>
+<tr class="even">
+<td>Categorical data with fixed levels.</td>
+<td><strong>Factor</strong></td>
+</tr>
+<tr class="odd">
+<td>Numeric data in 2D for matrix algebra.</td>
+<td><strong>Matrix</strong></td>
+</tr>
+<tr class="even">
+<td>Multi-dimensional data for analysis.</td>
+<td><strong>Array</strong></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="final-example-combining-structures" class="level4">
+<h4 class="anchored" data-anchor-id="final-example-combining-structures"><strong>7.7 Final Example: Combining Structures</strong></h4>
+<p>Let’s see how these structures work together in a real-world scenario.</p>
+<p><strong>Scenario: Analyzing Marketing Campaign Data</strong><br>
+You’re managing a marketing campaign and have the following data:</p>
+<ul>
+<li><p>Campaign names (character vector),</p></li>
+<li><p>Budgets (numeric vector),</p></li>
+<li><p>Outcomes (categorical: “Success”, “Failure”),</p></li>
+<li><p>Monthly performance across regions (numeric array).</p></li>
+</ul>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: Store campaign data in a data frame</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>campaigns <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="fu">c</span>(<span class="st">"Campaign A"</span>, <span class="st">"Campaign B"</span>, <span class="st">"Campaign C"</span>),</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">budget =</span> <span class="fu">c</span>(<span class="dv">10000</span>, <span class="dv">15000</span>, <span class="dv">20000</span>),</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">outcome =</span> <span class="fu">factor</span>(<span class="fu">c</span>(<span class="st">"Success"</span>, <span class="st">"Failure"</span>, <span class="st">"Success"</span>))</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: Add performance data as an array</span></span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>performance <span class="ot">&lt;-</span> <span class="fu">array</span>(</span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="dv">200</span>, <span class="dv">250</span>, <span class="dv">300</span>, <span class="dv">220</span>, <span class="dv">270</span>, <span class="dv">330</span>, <span class="dv">210</span>, <span class="dv">260</span>, <span class="dv">320</span>),</span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">dim =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>),  <span class="co"># 3 campaigns x 3 regions</span></span>
+<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">dimnames =</span> <span class="fu">list</span>(</span>
+<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">Campaign =</span> campaigns<span class="sc">$</span>name,</span>
+<span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">Region =</span> <span class="fu">c</span>(<span class="st">"North"</span>, <span class="st">"East"</span>, <span class="st">"West"</span>)</span>
+<span id="cb45-15"><a href="#cb45-15" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb45-16"><a href="#cb45-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb45-17"><a href="#cb45-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-18"><a href="#cb45-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 3: Store everything in a list</span></span>
+<span id="cb45-19"><a href="#cb45-19" aria-hidden="true" tabindex="-1"></a>campaign_summary <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb45-20"><a href="#cb45-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">details =</span> campaigns,</span>
+<span id="cb45-21"><a href="#cb45-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">performance =</span> performance</span>
+<span id="cb45-22"><a href="#cb45-22" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb45-23"><a href="#cb45-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-24"><a href="#cb45-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Access the performance of Campaign A in the North</span></span>
+<span id="cb45-25"><a href="#cb45-25" aria-hidden="true" tabindex="-1"></a>campaign_summary<span class="sc">$</span>performance[<span class="st">"Campaign A"</span>, <span class="st">"North"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This example shows how <strong>vectors, data frames, factors, arrays, and lists</strong> combine seamlessly to manage and analyze data.</p>
+</section>
+</section>
+<section id="conclusion" class="level3">
+<h3 class="anchored" data-anchor-id="conclusion"><strong>Conclusion</strong></h3>
+<p>By mastering R’s core data structures, you gain the ability to organize, manipulate, and analyze data effectively. From the simplicity of vectors to the complexity of lists and arrays, each structure has its strengths and use cases. The key is to understand their relationships and transitions, enabling you to pick the right tool for every task.</p>
+<p>Now that you’ve explored these building blocks, it’s time to practice and experiment. With these skills in hand, you’re well-equipped to tackle the challenges of data analysis and statistical computing in R.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = true;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>For everybody, not to be fooled by numbers</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
