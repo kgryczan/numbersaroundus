@@ -1,0 +1,114 @@
+---
+title: "Omid - Challenge 175"
+format: 
+  html:
+    code-fold: false
+date: "2025-01-17"
+---
+
+![](/challenges/images/OmidC175.jpg)
+
+## Challenge Description
+
+🔰 In the ID column, remove all instances of "X" if it appears consecutively more than once.
+
+🔗 Link to Excel file: 👉<https://lnkd.in/gNWC_HzJ>
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-175 Remove consecutive X.xlsx"
+input = read_excel(path, range = "C2:D10")
+test  = read_excel(path, range = "G2:G10") %>%
+  replace(is.na(.), "")
+
+result = input %>%
+  mutate(ID = str_remove_all(ID, "[xX]{2,}")) %>%
+  select(ID)
+
+all.equal(result, test, check.attributes = FALSE)
+
+
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   `str_remove_all(ID, "[xX]{2,}")`: Matches two or more consecutive `x` or `X` and removes them from the string.
+
+    -   `replace(is.na(.), "")`: Handles `NA` values by replacing them with an empty string.
+
+<!-- -->
+
+-   **Strengths**:
+
+    -   **Conciseness**: The `mutate` and `str_remove_all` functions make the transformation clear and efficient.
+
+    -   **Robustness**: Handles missing values (`NA`) gracefully.
+
+-   **Areas for Improvement**:
+
+    -   None; the solution is well-suited for the task.
+
+-   **Gem**:
+
+    -   The use of `str_remove_all` simplifies the regex operation, keeping the code compact and readable.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "CH-175 Remove consecutive X.xlsx"
+
+input = pd.read_excel(path, usecols="C:D", skiprows=1, nrows=9)
+test = pd.read_excel(path, usecols="G", skiprows=1, nrows=9).fillna("").rename(columns=lambda x: x.split('.')[0])
+
+input['ID'] = input['ID'].apply(lambda x: re.sub(r'[xX]{2,}', '', x))
+
+print(input[['ID']].equals(test)) # True
+
+```
+
+### Python
+
+-   **Logic**:
+
+    -   `re.sub(r'[xX]{2,}', '', x)`: This regex matches two or more consecutive `x` or `X` characters and removes them.
+
+    -   `apply`: Applies the regex substitution to each value in the `ID` column.
+
+-   **Strengths**:
+
+    -   **Efficiency**: Regex handles all consecutive cases in a single pass.
+
+    -   **Clarity**: The regex pattern is straightforward and self-explanatory.
+
+-   **Areas for Improvement**:
+
+    -   **Edge Cases**: If the `ID` column contains `NaN`, ensure these are handled gracefully.
+
+-   **Gem**:
+
+    -   The use of `[xX]{2,}` in regex is concise and effectively handles both lowercase and uppercase `X`.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate to challenging**:
+
+-   Requires a strong understanding of row-wise operations and lag/lead handling.
+
+-   Balancing edge case handling (e.g., first and last rows) with efficiency can be non-trivial.

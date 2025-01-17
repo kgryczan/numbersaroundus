@@ -1,0 +1,165 @@
+---
+title: "Excel BI - Excel Challenge 633"
+format: 
+  html:
+    code-fold: false
+date: "2025-01-17"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![](/challenges/images/exc633.jpg)
+
+## Challenge Description
+
+Encrypt the given words with following rules 1.
+Make length of key = length of words + 1.
+If key is shorter than words, repeat the key to match the length.
+2.
+Find the position of individual alphabets in Words in English alphabets table which is a = 1, b = 2....z = 26.
+3.
+Prefix, insert and append those many random printable characters (character codes 32 to 132 are printable) as per positions derived in step 2.
+Since we are inserting random characters, hence answers wouldn\`t match.
+
+Ex.
+Word = watch and Key = abcd Repeat key till length of key = length of word + 1 =\> abcdab (length of word is 5, hence length of key has to be 6).
+Position of abcdab in English alphabets is 1, 2, 3, 4, 1, 2 Prefix 1 character before w.
+Now insert 2 printable characters between w and a, 3 printable characters between a and t, 4 printable characters between t and c and 1 between c & h.
+Append 2 printable characters after h.
+
+🔗 Link to Excel file: 👉<https://lnkd.in/dTjyZk5r>
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/633 Encryption by Printable Characters.xlsx"
+input = read_excel(path, range = "A1:B10")
+
+n_random_chars <- function(n) {
+  random_chars = sample(32:132, n, replace = TRUE) %>%
+    intToUtf8()
+  return(random_chars)
+}
+
+encode_word = function(word, key) {
+  word = strsplit(word, "")[[1]]
+  key = strsplit(key, "")[[1]]
+  l_word = length(word)
+  l_key = length(key)
+  
+  key = if (l_word > l_key) rep(key, length.out = l_word + 1) else key[1:(l_word + 1)]
+  
+  df = data.frame(word = c(word, ""), key = key) %>%
+    mutate(key_num = map_dbl(key, ~which(.x == letters)),
+           random_chars = map_chr(key_num, ~n_random_chars(.x))) %>%
+    unite("encoded", word, random_chars, sep = "", remove = F) %>%
+    summarise(encoded = paste(encoded, collapse = "")) %>%
+    pull(encoded)
+  
+  return(df)
+}
+
+result = input %>%
+  mutate(Sample_answer = map2_chr(input$Words, input$key, ~encode_word(.x, .y)))
+
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   `strsplit`: Splits words and keys into individual characters.
+
+    -   Key length adjustment: Repeats or truncates the key to match `word` length + 1.
+
+    -   `map_dbl` and `map_chr`: Calculate character positions in the alphabet and generate random characters accordingly.
+
+    -   `unite`: Combines the original word characters and random characters.
+
+-   **Strengths**:
+
+    -   **Compactness**: Tidyverse functions streamline the workflow.
+
+    -   **Flexibility**: Handles key adjustments and random character generation dynamically.
+
+-   **Areas for Improvement**:
+
+    -   **Randomness Testing**: Ensure randomness meets the specifications (ASCII 32–132).
+
+    -   **Performance**: Larger datasets may benefit from optimized vectorized operations.
+
+-   **Gem**:
+
+    -   The dynamic generation of random characters based on alphabet positions is both elegant and modular.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import random
+import string
+
+path = "633 Encryption by Printable Characters.xlsx"
+input = pd.read_excel(path, usecols="A:B", nrows=10)
+
+def n_random_chars(n):
+  random_chars = ''.join(random.choices(string.printable, k=n))
+return random_chars
+
+def encode_word(word, key):
+  key = (key * (len(word) // len(key) + 1))[:len(word)]
+key_num = [string.ascii_lowercase.index(k) + 1 for k in key]
+return ''.join([w + n_random_chars(num) for w, num in zip(word, key_num)])
+
+input['Sample_answer'] = input.apply(lambda row: encode_word(row['Words'], row['key']), axis=1)
+
+print(input)
+
+
+```
+
+### Python
+
+1.  **Logic**:
+
+    -   Key adjustment: Repeats the key to match `word` length.
+
+    -   `string.ascii_lowercase.index(k) + 1`: Maps key characters to their alphabet positions.
+
+    -   `n_random_chars`: Generates random printable characters for each word and key character pair.
+
+    -   `apply`: Applies the encoding function row-wise.
+
+2.  **Strengths**:
+
+    -   **Explicit Logic**: The operations are broken down into clear steps.
+
+    -   **Ease of Understanding**: Direct string manipulation and Python’s standard library functions are used effectively.
+
+3.  **Areas for Improvement**:
+
+    -   **Randomness Consistency**: Ensure random choices are constrained to ASCII 32–132 (not all of `string.printable` falls in this range).
+
+4.  **Gem**:
+
+    -   The use of `zip` to pair word characters and key numbers for processing is intuitive and compact.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   Requires string manipulation and dynamic key adjustment.
+
+-   Involves understanding of character encoding and randomness.
