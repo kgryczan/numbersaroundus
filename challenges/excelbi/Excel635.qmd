@@ -1,0 +1,144 @@
+---
+title: "Excel BI - Excel Challenge 635"
+format: 
+  html:
+    code-fold: false
+date: "2025-01-21"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![](/challenges/images/exc635.jpg)
+
+## Challenge Description
+
+🔰Sort the data on the basis of years, months and days in ascending order.
+
+🔗 Link to Excel file: 👉[https://lnkd.in/dgSMDbS2](#0){.uri style="font-size: 8pt;"}
+
+## Solutions
+
+:::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(lubridate)
+
+path = "Excel/635 Sorting Years Month Days.xlsx"
+input = read_excel(path, range = "A1:A8")
+test  = read_excel(path, range = "C1:C8")
+
+result = input %>%
+  separate(col = DATA, sep = " ", into = c("Year", "Y", "Month", "M", "Day", "D"), remove = F) %>%  # Split fields
+  mutate(
+    dur = dyears(as.numeric(Year)) + 
+          dmonths(as.numeric(Month)) + 
+          ddays(as.numeric(Day))  # Calculate total duration
+  ) %>%
+  arrange(dur) %>%  # Sort by duration
+  select(DATA)
+
+all.equal(result$DATA, test$`SORT DATA RESULTS`)
+#> [1] TRUE
+
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   `separate`: Splits the `DATA` column into components for year, month, and day.
+
+    -   `dyears`, `dmonths`, `ddays`: Converts years, months, and days into a common duration unit (`Period`).
+
+    -   `arrange(dur)`: Sorts entries by the total duration.
+
+<!-- -->
+
+-   **Strengths**:
+
+    -   **Clarity**: The use of `lubridate` makes the duration calculation intuitive and precise.
+
+    -   **Scalability**: Adapts dynamically to variations in the input data.
+
+-   **Areas for Improvement**:
+
+    -   **Data Integrity**: Ensure input data is consistently formatted (e.g., no missing values or extra fields).
+
+-   **Gem**:
+
+    -   The use of `lubridate`'s duration functions ensures accurate handling of time calculations.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from dateutil.relativedelta import relativedelta
+
+path = "635 Sorting Years Month Days.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=8)
+test = pd.read_excel(path, usecols="C", nrows=8)
+
+# Split the DATA column into year, month, and day components
+input[['Year', 'Y', 'Month', 'M', 'Day', 'D']] = input['DATA'].str.split(' ', expand=True).astype(int)
+
+# Calculate total days
+def calculate_total_days(row):
+    delta = relativedelta(years=row['Year'], months=row['Month'], days=row['Day'])
+    return delta.years * 365 + delta.months * 30 + delta.days
+
+input['Total_Days'] = input.apply(calculate_total_days, axis=1)
+
+# Sort by total days
+result = input.sort_values(by='Total_Days').reset_index(drop=True)
+
+print(result['DATA'].equals(test['SORT DATA RESULTS']))  # True
+
+
+```
+
+### Python
+
+<div>
+
+-   **Logic**:
+
+    -   `str.split`: Splits the `DATA` column into year, month, and day components.
+
+    -   `calculate_total_days`: Converts the year, month, and day values into a total day count using `relativedelta`.
+
+    -   `sort_values(by='Total_Days')`: Sorts entries based on the calculated day counts.
+
+<!-- -->
+
+-   **Strengths**:
+
+    -   **Explicit Calculation**: The total day calculation is clear and follows standard calendar approximations.
+
+    -   **Flexibility**: Handles datasets of varying lengths with ease.
+
+-   **Areas for Improvement**:
+
+    -   **Precision**: Using fixed day counts for months (30) and years (365) introduces minor inaccuracies for real calendar durations.
+
+-   **Gem**:
+
+    -   The use of `relativedelta` to handle relative durations dynamically is efficient and adaptable.
+
+</div>
+::::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   Requires splitting data into components and performing time-based calculations.
+
+-   Involves sorting based on derived values.

@@ -1,0 +1,137 @@
+---
+title: "Excel BI - Excel Challenge 634"
+format: 
+  html:
+    code-fold: false
+date: "2025-01-20"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![](challenges/images/exc634.jpg)
+
+## Challenge Description
+
+🔰Group every five rows of the question table and then provide some of quantity for each group
+
+🔗 Link to Excel file: 👉<https://lnkd.in/dHgBqfH4>
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/634 Array Equality.xlsx"
+input = read_excel(path, range = "A2:B10")
+test  = read_excel(path, range = "D2:E7")
+
+result = input %>%
+  mutate(
+    set_array1 = map(Array1, ~ sort(unique(strsplit(.x, ",")[[1]]))),  # Split, deduplicate, and sort Array1
+    set_array2 = map(Array2, ~ sort(unique(strsplit(.x, ",")[[1]])))   # Split, deduplicate, and sort Array2
+  ) %>%
+  mutate(result = map2(set_array1, set_array2, ~ .x %>% setequal(.y))) # Compare the processed arrays
+  filter(result == TRUE) %>%                                           # Filter rows where arrays are equal
+  select(Array1, Array2)                                               # Keep only Array1 and Array2 columns
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+
+
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   `strsplit`: Splits array strings into individual elements using `,` as the delimiter.
+
+    -   `unique` and `sort`: Deduplicates and sorts elements for consistency.
+
+    -   `setequal`: Checks if the two arrays contain the same elements, regardless of order.
+
+    -   `filter`: Keeps rows where arrays are equal.
+
+<!-- -->
+
+-   **Strengths**:
+
+    -   **Clean Transformation**: Uses tidyverse functions for concise and readable code.
+
+    -   **Flexibility**: Handles arrays of varying lengths and ensures order doesn't affect the comparison.
+
+-   **Areas for Improvement**:
+
+    -   **Performance**: Processing could be optimized for very large datasets with many rows.
+
+-   **Gem**:
+
+    -   The use of `setequal` ensures robust and order-independent equality checks.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "634 Array Equality.xlsx"
+input = pd.read_excel(path,  usecols="A:B", skiprows=1, nrows=9)
+test = pd.read_excel(path,  usecols="D:E", skiprows=1, nrows=5).rename(columns=lambda x: x.split('.')[0])
+
+def split_sort_unique(s):
+    return sorted(set(s.split(',')))  # Split, deduplicate, and sort
+
+input['set_array1'] = input['Array1'].apply(split_sort_unique)  # Process Array1
+input['set_array2'] = input['Array2'].apply(split_sort_unique)  # Process Array2
+input['result'] = input.apply(lambda row: row['set_array1'] == row['set_array2'], axis=1)  # Compare arrays
+result = input[input['result'] == True][['Array1', 'Array2']].reset_index(drop=True)  # Filter and reset index
+
+print(result)
+print(test)
+
+```
+
+### Python
+
+-   **Logic**:
+
+    -   `split_sort_unique`: Splits array strings into individual elements, removes duplicates, and sorts.
+
+    -   `apply`: Applies the processing function to both arrays.
+
+    -   Row-wise comparison: Checks if the processed arrays are equal.
+
+    -   Filtering: Keeps rows where arrays are equal.
+
+<!-- -->
+
+-   **Strengths**:
+
+    -   **Explicit Logic**: Each step is modular and easy to understand.
+
+    -   **Flexibility**: Handles variations in input data robustly.
+
+-   **Areas for Improvement**:
+
+    -   **Performance**: Row-wise operations (`apply`) may be slower for very large datasets; vectorization could improve speed.
+
+-   **Gem**:
+
+    -   The use of `sorted(set(...))` effectively ensures that order and duplicates don't affect the comparison.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   Requires knowledge of string processing, deduplication, and order-independent comparison.
+
+-   Involves working with potentially variable-length arrays.

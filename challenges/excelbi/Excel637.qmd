@@ -1,0 +1,215 @@
+---
+title: "Excel BI - Excel Challenge 637"
+format: 
+  html:
+    code-fold: false
+date: "2025-01-23"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![](/challenges/images/exc637.jpg)
+
+## Challenge Description
+
+🔰 Given alphanumeric strings, insert a dash if two characters are not consecutive in increasing order.
+
+Ex.
+ABY =\> AB-Y (A & B are consecutive in increasing order and B & Y are not consecutive, hence dash after AB).
+BA2R =\> B-A-2-R (B & A are consecutive but not in increasing order. A and 2 are not consecutive. 2 and R are not consecutive)
+
+🔗 Link to Excel file: 👉https://lnkd.in/dZt6XuE3
+
+## Solutions
+
+::::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/637 Insert Dash At Non Consecutive Character.xlsx"
+input = read_excel(path, range = "A1:A8")
+test  = read_excel(path, range = "B1:B8")
+
+process_string = function(string) {
+  string %>%
+    str_split("") %>%                            # Split string into characters
+    unlist() %>%                                # Flatten the list
+    tibble(char = .) %>%                         # Create a tibble
+    mutate(value = ifelse(is.na(as.numeric(char)), 
+                          match(char, LETTERS),  # Convert letters to positions (A=1, B=2, ...)
+                          as.numeric(char))) %>% # Keep numeric values as-is
+    mutate(dash = ifelse(value - lag(value) != 1, "-", "")) %>% # Check for non-consecutive
+    replace_na(list(dash = "")) %>%              # Replace NA dash values with ""
+    unite("char", c("dash", "char"), sep = "") %>% # Combine dash with character
+    pull(char) %>%                               # Extract character vector
+    paste0(collapse = "")                        # Reconstruct the processed string
+}
+
+result = input %>%
+  mutate(processed = map_chr(String, process_string))
+
+print(result$processed == test$`Answer Expected`)
+
+```
+
+### R Analysis
+
+<div>
+
+<div>
+
+#### Logic:
+
+-   **Split Characters**: The string is split into individual characters using `str_split`.
+
+    -   **Map to Values**:
+
+    <!-- -->
+
+    -   Alphabetic characters are mapped to their positions in the English alphabet using `match(char, LETTERS)`.
+
+    -   Numeric characters are converted to their numeric values using `as.numeric`.
+
+-   **Identify Non-Consecutive Pairs**:
+
+    -   The difference between the numeric values of consecutive characters is calculated using `lag`.
+
+    -   A dash is inserted if the difference is not `1`.
+
+-   **Reconstruct the String**:
+
+    -   Characters and dashes are combined using `unite` and reconstructed into the final string.
+
+#### **Strength**:
+
+-   **Flexibility**:
+
+-   Handles both alphabetic and numeric characters dynamically, ensuring wide applicability.
+
+-   **Integration with `tidyverse`**:
+
+    -   The use of `mutate`, `map_chr`, and `unite` ensures clean, modular, and readable code.
+
+-   **Dynamic Logic**:
+
+    -   Automatically processes strings of varying lengths and structures without manual intervention.
+
+#### **Area for Improvement**:
+
+**Handling of Edge Cases**:
+
+1.  The original logic failed for cases like `ABAB`, where the same pair (`AB`) is processed multiple times, leading to redundant or missed dashes.
+
+2.  **Efficiency**:
+
+3.  For very long strings, the multiple `mutate` steps could be computationally expensive.
+
+4.  **Complexity**:
+
+    -   While readable, the pipeline could be simplified or modularized into smaller functions for better maintainability.
+
+#### **Gem**: 
+
+-   **Numeric Mapping for Characters**:
+
+    -   The use of `match(char, LETTERS)` to map alphabetic characters to their numeric positions is elegant and avoids manual encoding or additional libraries.
+
+</div>
+
+</div>
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "637 Insert Dash At Non Consecutive Character.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=8)
+test = pd.read_excel(path, usecols="B", nrows=8)
+
+def process_string(string):
+    result = [string[0]]
+    for i in range(1, len(string)):
+        if (ord(string[i]) - ord(string[i-1]) != 1):
+            result.append('-')
+        result.append(string[i])
+    return ''.join(result)
+
+input['processed'] = input.iloc[:, 0].apply(process_string)
+
+print(test['Answer Expected'] == input['processed'])
+
+# 0     True
+# 1     True
+# 2     True
+# 3     True
+# 4     True
+# 5     True
+# 6    False  AB in this string can be pair once. 
+
+
+```
+
+### Python
+
+#### **Logic**:
+
+1.  **Split Characters**: The string is iterated character by character.
+
+2.  **Compare Consecutive Characters**:
+
+    -   The difference between ASCII values (`ord`) of consecutive characters is calculated.
+
+    -   A dash (`-`) is inserted if the difference is not `1`.
+
+3.  **Reconstruct the String**:
+
+    -   Characters and dashes are appended iteratively to build the final string.
+
+#### **Strength**:
+
+-   **Explicit Logic**:
+
+    -   The use of `ord` makes the comparison between characters straightforward and intuitive.
+
+-   **Iterative Approach**:
+
+    -   Processes each character pair exactly once, making the logic simple to follow and efficient.
+
+-   **Flexibility**:
+
+    -   Handles mixed alphanumeric strings of varying lengths seamlessly.
+
+**Area for Improvement**:
+
+-   **Edge Case Handling**:
+
+    -   The original implementation failed for cases like `ABAB`, where the same pair (`AB`) is redundantly processed, leading to incorrect results.
+
+-   **Code Modularity**:
+
+    -   The core logic could be broken into reusable helper functions for splitting, comparison, and reconstruction.
+
+#### **Gem**:
+
+-   **Efficient ASCII Comparison**:
+
+    -   The use of `ord` for character comparison is concise and ensures seamless handling of both letters and numbers without additional logic.
+:::::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   Requires grouping and aggregation across multiple dimensions.
+
+-   Involves filtering and transforming data dynamically based on conditions.
