@@ -1,0 +1,129 @@
+---
+title: "Excel BI - PowerBI Challenge 254"
+format: 
+  html:
+    code-fold: false
+date: "2025-01-19"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![](Excel254pq.qmd)
+
+## Challenge Description
+
+🔰Group every five rows of the question table and then provide some of quantity for each group\
+lnkd.in 🔗 Link to Excel file: 👉https://lnkd.in/gvWMZVcm\>
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_254.xlsx"
+input = read_excel(path, range = "A1:Q5")
+test  = read_excel(path, range = "A9:C19")
+
+result = input %>%
+  pivot_longer(
+    cols = -Dept,                          
+    names_to = c(".value", "person"),        
+    names_pattern = "(.*)(\\d+)"          
+  ) %>%
+  na.omit() %>%
+  select(-person) %>%
+  unite("Age & Nationality & Salary", Age, Nationality, Salary, sep = ", ")
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE                               
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   `pivot_longer`: Converts wide data to long format by separating column names into base names and numeric identifiers.
+
+    -   `unite`: Concatenates selected columns (`Age`, `Nationality`, `Salary`) into a single string column.
+
+    -   `na.omit`: Removes rows with missing values.
+
+-   **Strengths**:
+
+    -   **Compact Transformation**: The use of `pivot_longer` and `unite` simplifies reshaping and formatting.
+
+    -   **Readability**: Tidyverse functions make the process easy to follow.
+
+-   **Areas for Improvement**:
+
+    -   **Dynamic Column Handling**: Ensure the solution dynamically adapts to column name variations or additional fields.
+
+-   **Gem**:
+
+    -   The regex `(.*)(\\d+)` effectively extracts base column names and their associated numbers.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "PQ_Challenge_254.xlsx"
+input = pd.read_excel(path, usecols="A:Q", nrows=5)
+test = pd.read_excel(path, usecols="A:C", skiprows=8, nrows=11).sort_values("Dept").reset_index(drop=True)
+
+input_long = pd.melt(input, id_vars=[input.columns[0]], var_name='Variable', value_name='Value')
+input_long[['Name', 'Number']] = input_long['Variable'].str.extract(r'([a-zA-Z]+)(\d+)')
+input_long.drop(columns=['Variable'], inplace=True)
+input_long.dropna(subset=['Value'], inplace=True)
+input_long.loc[input_long['Name'].isin(['Salary', 'Age']), 'Value'] = input_long.loc[input_long['Name'].isin(['Salary', 'Age']), 'Value'].astype(int)
+input_pivot = input_long.pivot_table(index=['Dept', 'Number'], columns='Name', values='Value', aggfunc='first').reset_index()
+input_pivot['Age & Nationality & Salary'] = input_pivot[['Age', 'Nationality', 'Salary']].astype(str).agg(', '.join, axis=1)
+input_pivot.drop(columns=['Number', 'Age', 'Nationality', 'Salary'], inplace=True)
+input_pivot = input_pivot.rename_axis(None, axis=1)
+
+print(input_pivot.equals(test)) # True
+```
+
+### Python Analysis
+
+1.  **Logic**:
+
+    -   `pd.melt`: Converts wide data to long format for easier manipulation.
+
+    -   `str.extract`: Splits column names into base names (`Name`) and numeric identifiers (`Number`).
+
+    -   `pivot_table`: Reshapes the data into a grouped format.
+
+    -   Column concatenation: Combines multiple fields into a single formatted column.
+
+2.  **Strengths**:
+
+    -   **Modularity**: Each transformation step is clearly defined and reusable.
+
+    -   **Flexibility**: Handles data aggregation and formatting dynamically.
+
+3.  **Areas for Improvement**:
+
+    -   **Error Handling**: Ensure robust handling of unexpected data types or missing columns.
+
+4.  **Gem**:
+
+    -   The use of `str.extract` for splitting column names based on a regex is concise and adaptable.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   Requires reshaping and aggregating data, both of which are common but non-trivial transformations.
+
+-   Demands familiarity with regex for parsing column names.
