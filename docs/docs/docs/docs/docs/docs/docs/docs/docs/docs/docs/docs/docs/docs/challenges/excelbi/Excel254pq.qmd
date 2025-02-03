@@ -1,5 +1,5 @@
 ---
-title: "Crispo - Excel Challenge 03 2025"
+title: "Excel BI - PowerBI Challenge 254"
 format: 
   html:
     code-fold: false
@@ -9,16 +9,12 @@ editor:
     wrap: sentence
 ---
 
-![](/challenges/images/Crispo032025.jpg)
+![](Excel254pq.qmd)
 
 ## Challenge Description
 
-Easy Sunday Excel Challenge
-
-⭐Group and Sum Shop Fruit Sales
-
-⭐ e.g.
-Mango Sales for Shop A: 10+12=22
+🔰Group every five rows of the question table and then provide some of quantity for each group\
+lnkd.in 🔗 Link to Excel file: 👉https://lnkd.in/gvWMZVcm\>
 
 ## Solutions
 
@@ -27,29 +23,26 @@ Mango Sales for Shop A: 10+12=22
 
 ```{r}
 #| eval: false
-#| 
+
 library(tidyverse)
 library(readxl)
 
-path = "files/Ex-Challenge 03 2025.xlsx"
-input = read_excel(path, range = "B3:H12")
-test  = read_excel(path, range = "J3:L18") %>% arrange(Shop, desc(Sale))
+path = "Power Query/PQ_Challenge_254.xlsx"
+input = read_excel(path, range = "A1:Q5")
+test  = read_excel(path, range = "A9:C19")
 
-result = 
-  bind_rows(
-    input %>% select(1, 2, 3),  # First set of Fruit and Sale
-    input %>% select(1, 4, 5),  # Second set of Fruit and Sale
-    input %>% select(1, 6, 7)   # Third set of Fruit and Sale
+result = input %>%
+  pivot_longer(
+    cols = -Dept,                          
+    names_to = c(".value", "person"),        
+    names_pattern = "(.*)(\\d+)"          
   ) %>%
-  mutate(Fruit = as.factor(Fruit)) %>%
-  summarise(Sale = sum(Sale), .by = c(Shop, Fruit)) %>%
-  complete(Shop, Fruit, fill = list(Sale = 0)) %>%
-  mutate(Fruit = as.character(Fruit)) %>%
-  arrange(Shop, desc(Sale))
+  na.omit() %>%
+  select(-person) %>%
+  unite("Age & Nationality & Salary", Age, Nationality, Salary, sep = ", ")
 
 all.equal(result, test, check.attributes = FALSE)
-# [1] TRUE
-                           
+#> [1] TRUE                               
 ```
 
 ### R Analysis
@@ -83,33 +76,21 @@ all.equal(result, test, check.attributes = FALSE)
 
 import pandas as pd
 
-path = "files/Ex-Challenge 03 2025.xlsx"
-input = pd.read_excel(path, usecols="B:H", skiprows=2, nrows=9, names=['Shop', 'Fruit.1', 'Sale.1', 'Fruit.2', 'Sale.2', 'Fruit.3', 'Sale.3'])
-test = pd.read_excel(path, usecols="J:L", skiprows=2, nrows=15)
+path = "PQ_Challenge_254.xlsx"
+input = pd.read_excel(path, usecols="A:Q", nrows=5)
+test = pd.read_excel(path, usecols="A:C", skiprows=8, nrows=11).sort_values("Dept").reset_index(drop=True)
 
-# Stack the repeating fruit-sale columns into a long format
-result = pd.concat([input.iloc[:, [0, i, i+1]] for i in range(1, 6, 2)]).reset_index(drop=True)
+input_long = pd.melt(input, id_vars=[input.columns[0]], var_name='Variable', value_name='Value')
+input_long[['Name', 'Number']] = input_long['Variable'].str.extract(r'([a-zA-Z]+)(\d+)')
+input_long.drop(columns=['Variable'], inplace=True)
+input_long.dropna(subset=['Value'], inplace=True)
+input_long.loc[input_long['Name'].isin(['Salary', 'Age']), 'Value'] = input_long.loc[input_long['Name'].isin(['Salary', 'Age']), 'Value'].astype(int)
+input_pivot = input_long.pivot_table(index=['Dept', 'Number'], columns='Name', values='Value', aggfunc='first').reset_index()
+input_pivot['Age & Nationality & Salary'] = input_pivot[['Age', 'Nationality', 'Salary']].astype(str).agg(', '.join, axis=1)
+input_pivot.drop(columns=['Number', 'Age', 'Nationality', 'Salary'], inplace=True)
+input_pivot = input_pivot.rename_axis(None, axis=1)
 
-# Dynamically adjust column names
-result['Fruit'] = result[['Fruit.1', 'Fruit.2', 'Fruit.3']].bfill(axis=1).iloc[:, 0]
-result['Sale'] = result[['Sale.1', 'Sale.2', 'Sale.3']].bfill(axis=1).iloc[:, 0]
-result = result[['Shop', 'Fruit', 'Sale']]
-
-# Group by Shop and Fruit, then sum sales
-summary = result.groupby(['Shop', 'Fruit'], as_index=False)['Sale'].sum()
-
-# Ensure all combinations are represented and sorted
-summary = summary.pivot(index='Shop', columns='Fruit', values='Sale').fillna(0).reset_index()
-summary = summary.melt(id_vars='Shop', var_name='Fruit', value_name='Sale')
-summary['Sale'] = summary['Sale'].astype(int)
-summary = summary.sort_values(['Shop', 'Sale'], ascending=[True, False]).reset_index(drop=True)
-
-# Compare with test data
-test.columns = summary.columns
-test = test.sort_values(['Shop', 'Sale'], ascending=[True, False]).reset_index(drop=True)
-
-print(all(summary == test))  # True
-
+print(input_pivot.equals(test)) # True
 ```
 
 ### Python Analysis

@@ -1124,7 +1124,7 @@
     "href": "challenges/index.html#crispo-mwangi",
     "title": "Challenges",
     "section": "Crispo Mwangi",
-    "text": "Crispo Mwangi\n\nhttps://www.linkedin.com/in/crispo-mwangi-6ab49453/\n\n\nCrispo is publishing his challenges once a week on Sundays.\n\n\n\n\n\n\n\n\nCrispo - Excel Challenge 254\n\n\n3 min\n\n\n\nJan 19, 2025\n\n\n\n\n\nWord Count\n\n\n591 words\n\n\n\n\n\n\n\n\n\nNo matching items"
+    "text": "Crispo Mwangi\n\nhttps://www.linkedin.com/in/crispo-mwangi-6ab49453/\n\n\nCrispo is publishing his challenges once a week on Sundays.\n\n\n\n\n\n\n\n\nCrispo - Excel Challenge 05 2025\n\n\n4 min\n\n\n\nFeb 2, 2025\n\n\n\n\n\nWord Count\n\n\n639 words\n\n\n\n\n\n\n\n\n\n\n\n\n\nCrispo - Excel Challenge 04 2025\n\n\n4 min\n\n\n\nJan 26, 2025\n\n\n\n\n\nWord Count\n\n\n638 words\n\n\n\n\n\n\n\n\n\n\n\n\n\nCrispo - Excel Challenge 03 2025\n\n\n3 min\n\n\n\nJan 19, 2025\n\n\n\n\n\nWord Count\n\n\n591 words\n\n\n\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "challenges/excelbi/Excel630.html#challenge-description",
@@ -3166,23 +3166,23 @@
   {
     "objectID": "challenges/crispo-mwangi/Crispo 032025.html#challenge-description",
     "href": "challenges/crispo-mwangi/Crispo 032025.html#challenge-description",
-    "title": "Crispo - Excel Challenge 254",
+    "title": "Crispo - Excel Challenge 03 2025",
     "section": "Challenge Description",
     "text": "Challenge Description\nEasy Sunday Excel Challenge\n⭐Group and Sum Shop Fruit Sales\n⭐ e.g. Mango Sales for Shop A: 10+12=22"
   },
   {
     "objectID": "challenges/crispo-mwangi/Crispo 032025.html#solutions",
     "href": "challenges/crispo-mwangi/Crispo 032025.html#solutions",
-    "title": "Crispo - Excel Challenge 254",
+    "title": "Crispo - Excel Challenge 03 2025",
     "section": "Solutions",
     "text": "Solutions\n\nR SolutionR AnalysisPython SolutionPython Analysis\n\n\n\nlibrary(tidyverse)\nlibrary(readxl)\n\npath = \"files/Ex-Challenge 03 2025.xlsx\"\ninput = read_excel(path, range = \"B3:H12\")\ntest  = read_excel(path, range = \"J3:L18\") %&gt;% arrange(Shop, desc(Sale))\n\nresult = \n  bind_rows(\n    input %&gt;% select(1, 2, 3),  # First set of Fruit and Sale\n    input %&gt;% select(1, 4, 5),  # Second set of Fruit and Sale\n    input %&gt;% select(1, 6, 7)   # Third set of Fruit and Sale\n  ) %&gt;%\n  mutate(Fruit = as.factor(Fruit)) %&gt;%\n  summarise(Sale = sum(Sale), .by = c(Shop, Fruit)) %&gt;%\n  complete(Shop, Fruit, fill = list(Sale = 0)) %&gt;%\n  mutate(Fruit = as.character(Fruit)) %&gt;%\n  arrange(Shop, desc(Sale))\n\nall.equal(result, test, check.attributes = FALSE)\n# [1] TRUE\n\n\n\n\nLogic:\n\npivot_longer: Converts wide data to long format by separating column names into base names and numeric identifiers.\nunite: Concatenates selected columns (Age, Nationality, Salary) into a single string column.\nna.omit: Removes rows with missing values.\n\nStrengths:\n\nCompact Transformation: The use of pivot_longer and unite simplifies reshaping and formatting.\nReadability: Tidyverse functions make the process easy to follow.\n\nAreas for Improvement:\n\nDynamic Column Handling: Ensure the solution dynamically adapts to column name variations or additional fields.\n\nGem:\n\nThe regex (.*)(\\\\d+) effectively extracts base column names and their associated numbers.\n\n\n\n\n\nimport pandas as pd\n\npath = \"files/Ex-Challenge 03 2025.xlsx\"\ninput = pd.read_excel(path, usecols=\"B:H\", skiprows=2, nrows=9, names=['Shop', 'Fruit.1', 'Sale.1', 'Fruit.2', 'Sale.2', 'Fruit.3', 'Sale.3'])\ntest = pd.read_excel(path, usecols=\"J:L\", skiprows=2, nrows=15)\n\n# Stack the repeating fruit-sale columns into a long format\nresult = pd.concat([input.iloc[:, [0, i, i+1]] for i in range(1, 6, 2)]).reset_index(drop=True)\n\n# Dynamically adjust column names\nresult['Fruit'] = result[['Fruit.1', 'Fruit.2', 'Fruit.3']].bfill(axis=1).iloc[:, 0]\nresult['Sale'] = result[['Sale.1', 'Sale.2', 'Sale.3']].bfill(axis=1).iloc[:, 0]\nresult = result[['Shop', 'Fruit', 'Sale']]\n\n# Group by Shop and Fruit, then sum sales\nsummary = result.groupby(['Shop', 'Fruit'], as_index=False)['Sale'].sum()\n\n# Ensure all combinations are represented and sorted\nsummary = summary.pivot(index='Shop', columns='Fruit', values='Sale').fillna(0).reset_index()\nsummary = summary.melt(id_vars='Shop', var_name='Fruit', value_name='Sale')\nsummary['Sale'] = summary['Sale'].astype(int)\nsummary = summary.sort_values(['Shop', 'Sale'], ascending=[True, False]).reset_index(drop=True)\n\n# Compare with test data\ntest.columns = summary.columns\ntest = test.sort_values(['Shop', 'Sale'], ascending=[True, False]).reset_index(drop=True)\n\nprint(all(summary == test))  # True\n\n\n\n\nLogic:\n\npd.melt: Converts wide data to long format for easier manipulation.\nstr.extract: Splits column names into base names (Name) and numeric identifiers (Number).\npivot_table: Reshapes the data into a grouped format.\nColumn concatenation: Combines multiple fields into a single formatted column.\n\nStrengths:\n\nModularity: Each transformation step is clearly defined and reusable.\nFlexibility: Handles data aggregation and formatting dynamically.\n\nAreas for Improvement:\n\nError Handling: Ensure robust handling of unexpected data types or missing columns.\n\nGem:\n\nThe use of str.extract for splitting column names based on a regex is concise and adaptable."
   },
   {
     "objectID": "challenges/crispo-mwangi/Crispo 032025.html#difficulty-level",
     "href": "challenges/crispo-mwangi/Crispo 032025.html#difficulty-level",
-    "title": "Crispo - Excel Challenge 254",
+    "title": "Crispo - Excel Challenge 03 2025",
     "section": "Difficulty Level",
-    "text": "Difficulty Level\nThis task is moderate:\n\nRequires reshaping and aggregating data, both of which are common but non-trivial transformations.\nDemands familiarity with regex for parsing column names.2ta"
+    "text": "Difficulty Level\nThis task is moderate:\n\nRequires reshaping and aggregating data, both of which are common but non-trivial transformations.\nDemands familiarity with regex for parsing column names."
   },
   {
     "objectID": "challenges/excelbi/Excel254pq.html#challenge-description",
@@ -3565,6 +3565,90 @@
   {
     "objectID": "docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/challenges/excelbi/Excel254pq.html#difficulty-level",
     "href": "docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/challenges/excelbi/Excel254pq.html#difficulty-level",
+    "title": "Excel BI - PowerBI Challenge 254",
+    "section": "Difficulty Level",
+    "text": "Difficulty Level\nThis task is moderate:\n\nRequires reshaping and aggregating data, both of which are common but non-trivial transformations.\nDemands familiarity with regex for parsing column names."
+  },
+  {
+    "objectID": "challenges/crispo-mwangi/Crispo 042025.html#challenge-description",
+    "href": "challenges/crispo-mwangi/Crispo 042025.html#challenge-description",
+    "title": "Crispo - Excel Challenge 04 2025",
+    "section": "Challenge Description",
+    "text": "Challenge Description\nEasy Sunday Excel Challenge\n⭐Rank the Fruits Based on Demand\n⭐ e.g. Apricot and Guava are the most demanded"
+  },
+  {
+    "objectID": "challenges/crispo-mwangi/Crispo 042025.html#solutions",
+    "href": "challenges/crispo-mwangi/Crispo 042025.html#solutions",
+    "title": "Crispo - Excel Challenge 04 2025",
+    "section": "Solutions",
+    "text": "Solutions\n\nR SolutionR AnalysisPython SolutionPython Analysis\n\n\n\nlibrary(tidyverse)\nlibrary(readxl)\n\npath = \"files/Ex-Challenge 04 2025.xlsx\"\ninput = read_excel(path, range = \"B3:D18\")\ntest  = read_excel(path, range = \"F3:G13\")\n\nresult = input %&gt;%\n  mutate(Rank = dense_rank(desc(Demand))) %&gt;%\n  summarise(`Fruit(s)` = paste0(Fruit, collapse = \" ; \"), .by = Rank) %&gt;%\n  arrange(Rank)\n\n\n\n\nLogic:\n\nCalculate Rank: Use dense_rank(desc(Demand)) to assign ranks in descending order, ensuring that fruits with the same demand get the same rank.\n\n\n\nGroup by Rank: Use summarise to concatenate fruit names (paste0(Fruit, collapse = \" ; \")) for fruits with the same rank.\nSort the Data: Arrange the data by rank in ascending order to maintain ranking consistency.\n\nStrengths:\n\nEfficient Ranking: Uses dense_rank(desc(Demand)), which assigns the same rank to identical demand values.\n\n\n\nConcatenation of Fruits: Uses paste0(Fruit, collapse = \" ; \") to properly format the result.\nReadable and Compact: The pipeline approach (%&gt;%) ensures clarity and modularity.\n\nAreas for Improvement:\n\nFormatting: Consider checking for duplicate separators (e.g., extra spaces or semicolons).\n\n\n\nScalability: If demand values are floating-point numbers instead of integers, precision issues might arise.\n\nGem:\n\nThe use of dense_rank(desc(Demand)) ensures an accurate ranking system that avoids gaps in ranking.\n\n\n\n\n\nimport pandas as pd\n\npath = \"files/Ex-Challenge 04 2025.xlsx\"\ninput = pd.read_excel(path, usecols=\"B:D\", skiprows=2, nrows=15)\ntest = pd.read_excel(path, usecols=\"F:G\", skiprows=2, nrows=10)\n\nresult = input.assign(Rank=input['Demand'].rank(method='dense', ascending=False).astype(int)) \\\n              .groupby('Rank')['Fruit'].agg(' ; '.join) \\\n              .reset_index() \\\n              .sort_values(by='Rank')\n\n\n\n\nLogic:\n\nCalculate Rank: Use rank(method='dense', ascending=False).astype(int) to rank fruits based on demand in descending order.\n\n\n\nGroup by Rank: Use .groupby('Rank')['Fruit'].agg(' ; '.join) to concatenate fruits sharing the same rank.\nSort the Data: Sort by Rank to maintain ranking consistency.\n\nStrengths:\n\nEfficient Ranking: Uses rank(method='dense', ascending=False).astype(int) to ensure consecutive ranking without gaps.\n\n\n\nConcatenation of Fruits: Uses .groupby('Rank')['Fruit'].agg(' ; '.join) to merge fruit names within the same rank.\nConcise and Vectorized: Uses assign for ranking and groupby for aggregation, ensuring efficient execution.\n\nAreas for Improvement:\n\nEdge Cases: Ensure that fruit names are properly formatted and no unintended characters are introduced.\n\n\n\nScalability: If the dataset is very large, consider optimizing string concatenation to avoid performance bottlenecks.\n\nGem:\n\nThe combination of rank(method='dense', ascending=False).astype(int) and groupby makes ranking and aggregation highly efficient."
+  },
+  {
+    "objectID": "challenges/crispo-mwangi/Crispo 042025.html#difficulty-level",
+    "href": "challenges/crispo-mwangi/Crispo 042025.html#difficulty-level",
+    "title": "Crispo - Excel Challenge 04 2025",
+    "section": "Difficulty Level",
+    "text": "Difficulty Level\nThis task is moderate:\n\nRequires reshaping and aggregating data, which are common but non-trivial transformations.\nDemands familiarity with ranking methods and handling ties in numerical data.\nInvolves string manipulation to concatenate multiple fruit names within the same rank.\nRequires careful sorting to ensure correct order of ranked results."
+  },
+  {
+    "objectID": "docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/challenges/excelbi/Excel254pq.html#challenge-description",
+    "href": "docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/challenges/excelbi/Excel254pq.html#challenge-description",
+    "title": "Excel BI - PowerBI Challenge 254",
+    "section": "Challenge Description",
+    "text": "Challenge Description\n🔰Group every five rows of the question table and then provide some of quantity for each group\nlnkd.in 🔗 Link to Excel file: 👉https://lnkd.in/gvWMZVcm&gt;"
+  },
+  {
+    "objectID": "docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/challenges/excelbi/Excel254pq.html#solutions",
+    "href": "docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/challenges/excelbi/Excel254pq.html#solutions",
+    "title": "Excel BI - PowerBI Challenge 254",
+    "section": "Solutions",
+    "text": "Solutions\n\nR SolutionR AnalysisPython SolutionPython Analysis\n\n\n\nlibrary(tidyverse)\nlibrary(readxl)\n\npath = \"Power Query/PQ_Challenge_254.xlsx\"\ninput = read_excel(path, range = \"A1:Q5\")\ntest  = read_excel(path, range = \"A9:C19\")\n\nresult = input %&gt;%\n  pivot_longer(\n    cols = -Dept,                          \n    names_to = c(\".value\", \"person\"),        \n    names_pattern = \"(.*)(\\\\d+)\"          \n  ) %&gt;%\n  na.omit() %&gt;%\n  select(-person) %&gt;%\n  unite(\"Age & Nationality & Salary\", Age, Nationality, Salary, sep = \", \")\n\nall.equal(result, test, check.attributes = FALSE)\n#&gt; [1] TRUE                               \n\n\n\n\nLogic:\n\npivot_longer: Converts wide data to long format by separating column names into base names and numeric identifiers.\nunite: Concatenates selected columns (Age, Nationality, Salary) into a single string column.\nna.omit: Removes rows with missing values.\n\nStrengths:\n\nCompact Transformation: The use of pivot_longer and unite simplifies reshaping and formatting.\nReadability: Tidyverse functions make the process easy to follow.\n\nAreas for Improvement:\n\nDynamic Column Handling: Ensure the solution dynamically adapts to column name variations or additional fields.\n\nGem:\n\nThe regex (.*)(\\\\d+) effectively extracts base column names and their associated numbers.\n\n\n\n\n\nimport pandas as pd\n\npath = \"PQ_Challenge_254.xlsx\"\ninput = pd.read_excel(path, usecols=\"A:Q\", nrows=5)\ntest = pd.read_excel(path, usecols=\"A:C\", skiprows=8, nrows=11).sort_values(\"Dept\").reset_index(drop=True)\n\ninput_long = pd.melt(input, id_vars=[input.columns[0]], var_name='Variable', value_name='Value')\ninput_long[['Name', 'Number']] = input_long['Variable'].str.extract(r'([a-zA-Z]+)(\\d+)')\ninput_long.drop(columns=['Variable'], inplace=True)\ninput_long.dropna(subset=['Value'], inplace=True)\ninput_long.loc[input_long['Name'].isin(['Salary', 'Age']), 'Value'] = input_long.loc[input_long['Name'].isin(['Salary', 'Age']), 'Value'].astype(int)\ninput_pivot = input_long.pivot_table(index=['Dept', 'Number'], columns='Name', values='Value', aggfunc='first').reset_index()\ninput_pivot['Age & Nationality & Salary'] = input_pivot[['Age', 'Nationality', 'Salary']].astype(str).agg(', '.join, axis=1)\ninput_pivot.drop(columns=['Number', 'Age', 'Nationality', 'Salary'], inplace=True)\ninput_pivot = input_pivot.rename_axis(None, axis=1)\n\nprint(input_pivot.equals(test)) # True\n\n\n\n\nLogic:\n\npd.melt: Converts wide data to long format for easier manipulation.\nstr.extract: Splits column names into base names (Name) and numeric identifiers (Number).\npivot_table: Reshapes the data into a grouped format.\nColumn concatenation: Combines multiple fields into a single formatted column.\n\nStrengths:\n\nModularity: Each transformation step is clearly defined and reusable.\nFlexibility: Handles data aggregation and formatting dynamically.\n\nAreas for Improvement:\n\nError Handling: Ensure robust handling of unexpected data types or missing columns.\n\nGem:\n\nThe use of str.extract for splitting column names based on a regex is concise and adaptable."
+  },
+  {
+    "objectID": "docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/challenges/excelbi/Excel254pq.html#difficulty-level",
+    "href": "docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/challenges/excelbi/Excel254pq.html#difficulty-level",
+    "title": "Excel BI - PowerBI Challenge 254",
+    "section": "Difficulty Level",
+    "text": "Difficulty Level\nThis task is moderate:\n\nRequires reshaping and aggregating data, both of which are common but non-trivial transformations.\nDemands familiarity with regex for parsing column names."
+  },
+  {
+    "objectID": "challenges/crispo-mwangi/Crispo 052025.html#challenge-description",
+    "href": "challenges/crispo-mwangi/Crispo 052025.html#challenge-description",
+    "title": "Crispo - Excel Challenge 05 2025",
+    "section": "Challenge Description",
+    "text": "Challenge Description\nEasy Sunday Excel Challenge\n⭐Convert crosstab table to row-based table. ⭐Doctors, Patients and Days are repeated based on the number of appointment(s). ⭐e.g. Halley sees Liz 3 times a week on Wed."
+  },
+  {
+    "objectID": "challenges/crispo-mwangi/Crispo 052025.html#solutions",
+    "href": "challenges/crispo-mwangi/Crispo 052025.html#solutions",
+    "title": "Crispo - Excel Challenge 05 2025",
+    "section": "Solutions",
+    "text": "Solutions\n\nR SolutionR AnalysisPython SolutionPython Analysis\n\n\n\nlibrary(tidyverse)\nlibrary(readxl)\n\npath = \"files/Ex-Challenge 05 2025.xlsx\"\ninput = read_excel(path, range = \"B2:I7\")\ntest  = read_excel(path, range = \"K2:M21\")\n\nresult = input %&gt;%\n  pivot_longer(cols = -c(1, 2), names_to = \"Appointments\", values_to = \"value\") %&gt;%\n  na.omit() %&gt;%\n  uncount(value) \n\nall.equal(result, test, check.attributes = FALSE)\n# [1] TRUE\n\n\n\n\nLogic:\n\nPivot the Crosstab Table Use pivot_longer() to transform column names (appointment days) into a single “Appointments” column.\n\n\n\nRemove Missing Values Use na.omit() to filter out empty appointment entries.\nExpand Rows Based on Appointment Count Use uncount(value) to repeat rows based on the count of appointments.\n\nStrengths:\n\nCompact and Readable: Uses tidyverse functions for a clear and structured pipeline.\n\n\n\nEfficient Row Expansion: uncount(value) dynamically expands rows based on appointment counts.\nHandles Missing Values Automatically: na.omit() ensures only meaningful data is retained.\n\nAreas for Improvement:\n\nFormatting: Consider checking for duplicate separators (e.g., extra spaces or semicolons).\nScalability: If demand values are floating-point numbers instead of integers, precision issues might arise.\n\nGem:\n\nuncount(value) is a powerful function that simplifies row expansion, making the transformation seamless.\n\n\n\n\n\nimport pandas as pd\n\npath = \"files/Ex-Challenge 05 2025.xlsx\"\ninput = pd.read_excel(path, usecols=\"B:I\", skiprows=1, nrows=5)\ntest = pd.read_excel(path, usecols=\"K:M\", skiprows=1, nrows=20)\\\n    .rename(columns=lambda x: x.replace('.1', ''))\\\n    .sort_values(by=['Patient', 'Appointments']).reset_index(drop=True)\n\ninput_piv = input.melt(id_vars=input.columns[:2], var_name=\"Appointments\", value_name=\"value\")\ninput_piv = input_piv.dropna()\ninput_piv = input_piv[input_piv['value'] &gt;= 0]\ninput_piv = input_piv.loc[input_piv.index.repeat(input_piv['value'])].reset_index(drop=True)\ninput_piv = input_piv.drop(columns=['value'])\ninput_piv = input_piv.sort_values(by=['Patient', 'Appointments']).reset_index(drop=True)\n\nprint(input_piv.equals(test)) # True\n\n\n\n\nLogic:\n\nPivot the Crosstab Table Use .melt() to move column names (appointment days) into a single column.\n\n\n\nRemove Missing Values Use .dropna() to filter out empty appointment entries.\nExpand Rows Based on Appointment Count Use .ld[input_piv.index.repeat(input_piv['value'])] to repeat rows based on appointment count.\nSort for Consistency Use .sort_values() to match expected output.\n\nStrengths:\n\nEfficient Ranking: Uses rank(method='dense', ascending=False).astype(int) to ensure consecutive ranking without gaps.2\nConcatenation of Fruits: Uses .groupby('Rank')['Fruit'].agg(' ; '.join) to merge fruit names within the same rank.\nConcise and Vectorized: Uses assign for ranking and groupby for aggregation, ensuring efficient execution.\n\nAreas for Impqrovement:\n\nOptimize Row Expansion: .repeat(value) can be memory-intensive if the appointment count is high.\nHandle Edge Cases for Zeros Explicitly: Filtering out non-positive values (&gt;= 0) ensures no errors, but a more explicit check would be better.\n\nGem\n\n.repeat(value) is a clean and efficient way to expand rows dynamically, avoiding complex loops."
+  },
+  {
+    "objectID": "challenges/crispo-mwangi/Crispo 052025.html#difficulty-level",
+    "href": "challenges/crispo-mwangi/Crispo 052025.html#difficulty-level",
+    "title": "Crispo - Excel Challenge 05 2025",
+    "section": "Difficulty Level",
+    "text": "Difficulty Level\nThis task is moderate:\n\nRequires Data Reshaping: Uses .melt() in Python and pivot_longer() in R to convert wide data into a long format.\n\n\n\nRow Expansion is Non-Trivial: Needs .repeat(value) in Python and uncount(value) in R to generate repeated rows dynamically.\nHandles Missing Values Dynamically: Ensuring missing or empty values do not affect the transformation adds complexity."
+  },
+  {
+    "objectID": "docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/challenges/excelbi/Excel254pq.html#challenge-description",
+    "href": "docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/challenges/excelbi/Excel254pq.html#challenge-description",
+    "title": "Excel BI - PowerBI Challenge 254",
+    "section": "Challenge Description",
+    "text": "Challenge Description\n🔰Group every five rows of the question table and then provide some of quantity for each group\nlnkd.in 🔗 Link to Excel file: 👉https://lnkd.in/gvWMZVcm&gt;"
+  },
+  {
+    "objectID": "docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/challenges/excelbi/Excel254pq.html#solutions",
+    "href": "docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/challenges/excelbi/Excel254pq.html#solutions",
+    "title": "Excel BI - PowerBI Challenge 254",
+    "section": "Solutions",
+    "text": "Solutions\n\nR SolutionR AnalysisPython SolutionPython Analysis\n\n\n\nlibrary(tidyverse)\nlibrary(readxl)\n\npath = \"Power Query/PQ_Challenge_254.xlsx\"\ninput = read_excel(path, range = \"A1:Q5\")\ntest  = read_excel(path, range = \"A9:C19\")\n\nresult = input %&gt;%\n  pivot_longer(\n    cols = -Dept,                          \n    names_to = c(\".value\", \"person\"),        \n    names_pattern = \"(.*)(\\\\d+)\"          \n  ) %&gt;%\n  na.omit() %&gt;%\n  select(-person) %&gt;%\n  unite(\"Age & Nationality & Salary\", Age, Nationality, Salary, sep = \", \")\n\nall.equal(result, test, check.attributes = FALSE)\n#&gt; [1] TRUE                               \n\n\n\n\nLogic:\n\npivot_longer: Converts wide data to long format by separating column names into base names and numeric identifiers.\nunite: Concatenates selected columns (Age, Nationality, Salary) into a single string column.\nna.omit: Removes rows with missing values.\n\nStrengths:\n\nCompact Transformation: The use of pivot_longer and unite simplifies reshaping and formatting.\nReadability: Tidyverse functions make the process easy to follow.\n\nAreas for Improvement:\n\nDynamic Column Handling: Ensure the solution dynamically adapts to column name variations or additional fields.\n\nGem:\n\nThe regex (.*)(\\\\d+) effectively extracts base column names and their associated numbers.\n\n\n\n\n\nimport pandas as pd\n\npath = \"PQ_Challenge_254.xlsx\"\ninput = pd.read_excel(path, usecols=\"A:Q\", nrows=5)\ntest = pd.read_excel(path, usecols=\"A:C\", skiprows=8, nrows=11).sort_values(\"Dept\").reset_index(drop=True)\n\ninput_long = pd.melt(input, id_vars=[input.columns[0]], var_name='Variable', value_name='Value')\ninput_long[['Name', 'Number']] = input_long['Variable'].str.extract(r'([a-zA-Z]+)(\\d+)')\ninput_long.drop(columns=['Variable'], inplace=True)\ninput_long.dropna(subset=['Value'], inplace=True)\ninput_long.loc[input_long['Name'].isin(['Salary', 'Age']), 'Value'] = input_long.loc[input_long['Name'].isin(['Salary', 'Age']), 'Value'].astype(int)\ninput_pivot = input_long.pivot_table(index=['Dept', 'Number'], columns='Name', values='Value', aggfunc='first').reset_index()\ninput_pivot['Age & Nationality & Salary'] = input_pivot[['Age', 'Nationality', 'Salary']].astype(str).agg(', '.join, axis=1)\ninput_pivot.drop(columns=['Number', 'Age', 'Nationality', 'Salary'], inplace=True)\ninput_pivot = input_pivot.rename_axis(None, axis=1)\n\nprint(input_pivot.equals(test)) # True\n\n\n\n\nLogic:\n\npd.melt: Converts wide data to long format for easier manipulation.\nstr.extract: Splits column names into base names (Name) and numeric identifiers (Number).\npivot_table: Reshapes the data into a grouped format.\nColumn concatenation: Combines multiple fields into a single formatted column.\n\nStrengths:\n\nModularity: Each transformation step is clearly defined and reusable.\nFlexibility: Handles data aggregation and formatting dynamically.\n\nAreas for Improvement:\n\nError Handling: Ensure robust handling of unexpected data types or missing columns.\n\nGem:\n\nThe use of str.extract for splitting column names based on a regex is concise and adaptable."
+  },
+  {
+    "objectID": "docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/challenges/excelbi/Excel254pq.html#difficulty-level",
+    "href": "docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/docs/challenges/excelbi/Excel254pq.html#difficulty-level",
     "title": "Excel BI - PowerBI Challenge 254",
     "section": "Difficulty Level",
     "text": "Difficulty Level\nThis task is moderate:\n\nRequires reshaping and aggregating data, both of which are common but non-trivial transformations.\nDemands familiarity with regex for parsing column names."
