@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Numbers around us">
+<meta name="dcterms.date" content="2025-02-04">
+
+<title>Dormammu, I’ve Come to Iterate: R vs.&nbsp;Python in the Infinite Loop – Numbers Around Us</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-cb71375167fd9ce754afb6fa31d3f44e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-1a65b4115a9519dac2c2f4ba2497ca08.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Numbers Around Us</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../last-articles.html"> 
+<span class="menu-text">Newest articles</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../challenges/index.html"> 
+<span class="menu-text">Challenges</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../bi/index.html"> 
+<span class="menu-text">Business Intelligence</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../ds/index.html"> 
+<span class="menu-text">Data Science</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../dp/index.html"> 
+<span class="menu-text">Data Philosophy</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <a href="https://github.com" title="Github" class="quarto-navigation-tool px-1" aria-label="Github"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Dormammu, I’ve Come to Iterate: R vs.&nbsp;Python in the Infinite Loop</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Numbers around us </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 4, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><img src="images/Iteration.jpg" class="img-fluid"></p>
+<section id="dormammu-ive-come-to-iterate-r-vs.-python-in-the-infinite-loop" class="level3">
+<h3 class="anchored" data-anchor-id="dormammu-ive-come-to-iterate-r-vs.-python-in-the-infinite-loop"><strong>Dormammu, I’ve Come to Iterate: R vs.&nbsp;Python in the Infinite Loop</strong></h3>
+<p><em>“Dormammu, I’ve come to bargain!”</em> But instead of an endless struggle, what if we could break the loop with the right approach? In programming, iteration is an unavoidable part of working with data—whether it’s looping through rows in a dataset, applying transformations, or optimizing performance. Like Doctor Strange’s battle against Dormammu, iteration can either be a brute-force, time-consuming process or a carefully optimized strategy.</p>
+<p>In this article, we’ll explore how <strong>R and Python approach iteration differently</strong>. R, like Strange, often relies on clever, optimized solutions (vectorization, <code>apply()</code>, and functional programming) to break out of the loop quickly. Python, on the other hand, often embraces explicit control (<code>for</code> loops, list comprehensions), giving developers more flexibility but sometimes at a cost of efficiency. Which approach is better? And how can we iterate smarter instead of harder? Let’s step into the loop and find out.</p>
+</section>
+<section id="looping-in-r-vs.-python-the-first-approach-to-the-time-loop" class="level3">
+<h3 class="anchored" data-anchor-id="looping-in-r-vs.-python-the-first-approach-to-the-time-loop"><strong>1. Looping in R vs.&nbsp;Python: The First Approach to the Time Loop</strong></h3>
+<p>Doctor Strange didn’t immediately master the time loop—he started with trial and error, just like how programmers first learn iteration through <strong>loops</strong>. In both R and Python, <code>for</code> and <code>while</code> loops are the fundamental tools for repeating operations. However, their implementations and efficiency differ significantly.</p>
+<section id="for-loops-a-structured-approach" class="level4">
+<h4 class="anchored" data-anchor-id="for-loops-a-structured-approach"><strong>For Loops: A Structured Approach</strong></h4>
+<p>In both languages, <code>for</code> loops allow us to iterate over a collection of elements. Here’s a direct comparison:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>) {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(i)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">6</span>):</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(i)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>At first glance, they seem similar. However, R’s <code>for</code> loop is <strong>not the most efficient</strong> tool for iteration. Unlike Python, which optimizes looping at the interpreter level, R was designed with <strong>vectorization in mind</strong>—meaning loops can often be replaced with functions that operate on entire datasets at once.</p>
+</section>
+<section id="while-loops-holding-the-loop-until-conditions-change" class="level4">
+<h4 class="anchored" data-anchor-id="while-loops-holding-the-loop-until-conditions-change"><strong>While Loops: Holding the Loop Until Conditions Change</strong></h4>
+<p>Another way to iterate is using <code>while</code> loops, where repetition continues <strong>until a condition is met</strong>—just like Strange’s infinite time loop, except with a clear exit strategy.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> (x <span class="sc">&lt;=</span> <span class="dv">5</span>) {</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(x)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> x <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> x <span class="op">&lt;=</span> <span class="dv">5</span>:</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(x)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    x <span class="op">+=</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Again, both languages execute this in a similar way, but in R, using <code>while</code> loops for large-scale operations is rarely the best choice. Instead, <strong>vectorized operations and apply functions</strong> are preferred for performance reasons.</p>
+</section>
+<section id="loop-efficiency-whos-stuck-in-the-time-loop" class="level4">
+<h4 class="anchored" data-anchor-id="loop-efficiency-whos-stuck-in-the-time-loop"><strong>Loop Efficiency: Who’s Stuck in the Time Loop?</strong></h4>
+<p>If iteration is unavoidable, how do these loops perform when handling larger datasets? Let’s compare execution times for looping over 1 million elements:</p>
+<p><strong>R (slower approach):</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tictoc)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tic</span>(<span class="st">"R for loop"</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fl">1e6</span>) {</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> i <span class="sc">*</span> <span class="dv">2</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">toc</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Python (more optimized loops):</strong></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>start <span class="op">=</span> time.time()</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">int</span>(<span class="fl">1e6</span>)):</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> i <span class="op">*</span> <span class="dv">2</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>end <span class="op">=</span> time.time()</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Execution time:"</span>, end <span class="op">-</span> start)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Python’s compiled nature allows it to handle loops more efficiently, while R’s interpreter struggles with raw iteration. However, the real power of R lies <strong>beyond loops</strong>—in vectorized operations and functional programming.</p>
+<p>💡 <strong>Key Takeaway:</strong></p>
+<ul>
+<li><p><strong>Python’s <code>for</code> and <code>while</code> loops are well-optimized and often necessary.</strong></p></li>
+<li><p><strong>R’s loops are slower and should be avoided for large data processing tasks.</strong></p></li>
+<li><p><strong>The best approach? In R, avoid explicit loops and use vectorized operations whenever possible.</strong></p></li>
+</ul>
+</section>
+</section>
+<section id="iterating-over-data-structures-lists-data-frames-and-more" class="level3">
+<h3 class="anchored" data-anchor-id="iterating-over-data-structures-lists-data-frames-and-more"><strong>2. Iterating Over Data Structures: Lists, Data Frames, and More</strong></h3>
+<p>Doctor Strange’s loop against Dormammu wasn’t just about repeating the same thing—it was about adapting. Similarly, iteration isn’t always about looping over numbers. In real-world programming, we often need to iterate over <strong>lists, data frames, and other complex data structures</strong>. This is where the differences between R and Python become more pronounced.</p>
+<section id="iterating-over-lists-different-paths-to-the-same-outcome" class="level4">
+<h4 class="anchored" data-anchor-id="iterating-over-lists-different-paths-to-the-same-outcome"><strong>Iterating Over Lists: Different Paths to the Same Outcome</strong></h4>
+<p>Lists are a fundamental data structure in both R and Python. Let’s compare how iteration works in each language:</p>
+<p><strong>Basic List Iteration</strong></p>
+<p><strong>R (using a <code>for</code> loop):</strong></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>my_list <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"apple"</span>, <span class="st">"banana"</span>, <span class="st">"cherry"</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (item <span class="cf">in</span> my_list) {</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(item)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Python (<code>for</code> loop on a list):</strong></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>my_list <span class="op">=</span> [<span class="st">"apple"</span>, <span class="st">"banana"</span>, <span class="st">"cherry"</span>]</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> item <span class="kw">in</span> my_list:</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(item)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>Observation:</strong> Python’s iteration is more natural for lists, while R’s <code>for</code> loop is functional but not the most efficient.</p>
+</section>
+<section id="iterating-over-data-frames-a-major-difference" class="level4">
+<h4 class="anchored" data-anchor-id="iterating-over-data-frames-a-major-difference"><strong>Iterating Over Data Frames: A Major Difference</strong></h4>
+<p>One of the biggest differences between R and Python is how they handle <strong>data frames</strong> (<code>data.frame</code> in R, <code>pandas.DataFrame</code> in Python). In Python, explicit iteration is common, while in R, iteration is usually avoided in favor of <strong>vectorized operations</strong> or <code>apply()</code> functions.</p>
+<p><strong>Looping Over Data Frames (Not Recommended in R)</strong></p>
+<p>🔴 <strong>Inefficient R approach:</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">name =</span> <span class="fu">c</span>(<span class="st">"Alice"</span>, <span class="st">"Bob"</span>, <span class="st">"Charlie"</span>), <span class="at">age =</span> <span class="fu">c</span>(<span class="dv">25</span>, <span class="dv">30</span>, <span class="dv">35</span>))</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(df)) {</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="fu">paste</span>(df<span class="sc">$</span>name[i], <span class="st">"is"</span>, df<span class="sc">$</span>age[i], <span class="st">"years old"</span>))</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>Python’s more natural approach:</strong></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame({<span class="st">"name"</span>: [<span class="st">"Alice"</span>, <span class="st">"Bob"</span>, <span class="st">"Charlie"</span>], <span class="st">"age"</span>: [<span class="dv">25</span>, <span class="dv">30</span>, <span class="dv">35</span>]})</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> _, row <span class="kw">in</span> df.iterrows():</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>row[<span class="st">'name'</span>]<span class="sc">}</span><span class="ss"> is </span><span class="sc">{</span>row[<span class="st">'age'</span>]<span class="sc">}</span><span class="ss"> years old"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>💡 <strong>Key Takeaway:</strong> In Python, looping through a data frame is natural with <code>iterrows()</code>, but in R, <strong>loops over data frames are slow and should be avoided</strong>.</p>
+</section>
+<section id="efficient-data-frame-iteration-in-r-apply-and-friends" class="level4">
+<h4 class="anchored" data-anchor-id="efficient-data-frame-iteration-in-r-apply-and-friends"><strong>Efficient Data Frame Iteration in R: <code>apply()</code> and Friends</strong></h4>
+<p>Since R is optimized for vectorized operations, a better way to iterate over data frames is using <strong><code>apply()</code> functions</strong>, which work much faster than loops.</p>
+<p>✅ <strong>R’s optimized approach using <code>apply()</code>:</strong></p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(df, <span class="dv">1</span>, <span class="cf">function</span>(row) <span class="fu">paste</span>(row[<span class="st">"name"</span>], <span class="st">"is"</span>, row[<span class="st">"age"</span>], <span class="st">"years old"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>R’s <code>dplyr</code> approach (even better!):</strong></p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>df <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">info =</span> <span class="fu">paste</span>(name, <span class="st">"is"</span>, age, <span class="st">"years old"</span>)) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(info)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>Python’s alternative using <code>apply()</code>:</strong></p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">"info"</span>] <span class="op">=</span> df.<span class="bu">apply</span>(<span class="kw">lambda</span> row: <span class="ss">f"</span><span class="sc">{</span>row[<span class="st">'name'</span>]<span class="sc">}</span><span class="ss"> is </span><span class="sc">{</span>row[<span class="st">'age'</span>]<span class="sc">}</span><span class="ss"> years old"</span>, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df[<span class="st">"info"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>💡 <strong>Key Takeaway:</strong></p>
+<ul>
+<li><p><strong>Python naturally supports row-wise iteration with <code>iterrows()</code>, but <code>apply()</code> is often faster.</strong></p></li>
+<li><p><strong>R should avoid loops over data frames—use <code>apply()</code>, <code>mutate()</code>, or vectorized solutions instead.</strong></p></li>
+</ul>
+</section>
+<section id="final-verdict-who-wins-the-iteration-battle" class="level4">
+<h4 class="anchored" data-anchor-id="final-verdict-who-wins-the-iteration-battle"><strong>Final Verdict: Who Wins the Iteration Battle?</strong></h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>R (Base)</th>
+<th>R (Optimized)</th>
+<th>Python</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>List Iteration</td>
+<td>✅ Works but slow</td>
+<td>✅ Works but slow</td>
+<td>✅ Natural and fast</td>
+</tr>
+<tr class="even">
+<td>Data Frame Loops</td>
+<td>❌ Slow &amp; not recommended</td>
+<td>✅ <code>apply()</code>, <code>dplyr</code></td>
+<td>✅ <code>iterrows()</code>, <code>apply()</code></td>
+</tr>
+<tr class="odd">
+<td>Best Approach</td>
+<td>🚀 Avoid loops, use vectorization</td>
+<td>🚀 <code>apply()</code> &amp; <code>mutate()</code></td>
+<td>🚀 <code>apply()</code> or <code>iterrows()</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="functional-programming-alternatives-breaking-the-loop-smarter" class="level3">
+<h3 class="anchored" data-anchor-id="functional-programming-alternatives-breaking-the-loop-smarter"><strong>3. Functional Programming Alternatives: Breaking the Loop Smarter</strong></h3>
+<p>Doctor Strange didn’t just brute-force his way through Dormammu—he found a smarter way to escape the infinite loop. Likewise, instead of using traditional loops, both R and Python offer <strong>functional programming techniques</strong> that make iteration <strong>faster, cleaner, and more efficient</strong>.</p>
+<p>In this chapter, we’ll compare how R’s <strong><code>apply()</code> family and purrr package</strong> stack up against Python’s <strong>list comprehensions and <code>map()</code> function</strong>.</p>
+<section id="replacing-loops-with-apply-in-r" class="level4">
+<h4 class="anchored" data-anchor-id="replacing-loops-with-apply-in-r"><strong>Replacing Loops with <code>apply()</code> in R</strong></h4>
+<p>One of the most powerful ways to avoid explicit loops in R is by using the <code>apply()</code> family of functions, which allow you to apply a function to every element of a data structure.</p>
+<p><strong>Iterating Over a Vector: <code>sapply()</code> vs.&nbsp;List Comprehension</strong></p>
+<p><strong>R (<code>sapply()</code> - functional programming)</strong></p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>numbers <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(numbers, <span class="cf">function</span>(x) x<span class="sc">^</span><span class="dv">2</span>)  <span class="co"># Squaring each element</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Python (List comprehension - more concise)</strong></p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>numbers <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>]</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>[x<span class="op">**</span><span class="dv">2</span> <span class="cf">for</span> x <span class="kw">in</span> numbers]  <span class="co"># Squaring each element</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>💡 <strong>Key Takeaway:</strong> Python’s <strong>list comprehensions</strong> are more concise than R’s <code>sapply()</code>, but both serve the same purpose: <strong>replacing explicit loops with functional operations</strong>.</p>
+</section>
+<section id="mapping-over-lists-lapply-vs.-map" class="level4">
+<h4 class="anchored" data-anchor-id="mapping-over-lists-lapply-vs.-map"><strong>Mapping Over Lists: <code>lapply()</code> vs.&nbsp;<code>map()</code></strong></h4>
+<p>When dealing with lists instead of vectors, R’s <code>lapply()</code> and Python’s <code>map()</code> function behave similarly.</p>
+<p><strong>R (<code>lapply()</code> - returns a list):</strong></p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>my_list <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(my_list, <span class="cf">function</span>(x) x<span class="sc">^</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Python (<code>map()</code> - returns an iterator):</strong></p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>my_list <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>]</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="bu">list</span>(<span class="bu">map</span>(<span class="kw">lambda</span> x: x<span class="op">**</span><span class="dv">2</span>, my_list))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>💡 <strong>Key Takeaway:</strong> <code>map()</code> in Python and <code>lapply()</code> in R both apply a function to each element, but <code>map()</code> returns an iterator that must be converted to a list.</p>
+</section>
+<section id="advanced-functional-programming-the-power-of-purrrmap" class="level4">
+<h4 class="anchored" data-anchor-id="advanced-functional-programming-the-power-of-purrrmap"><strong>Advanced Functional Programming: The Power of <code>purrr::map()</code></strong></h4>
+<p>The <code>purrr</code> package in R extends the <code>apply()</code> family by offering even more functional flexibility.</p>
+<p>✅ <strong>Best <code>purrr</code> equivalent to <code>map()</code> in R:</strong></p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>my_list <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(my_list, <span class="sc">~</span> .x<span class="sc">^</span><span class="dv">2</span>)  <span class="co"># Shorter syntax than lapply()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>Python equivalent using <code>map()</code>:</strong></p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> functools <span class="im">import</span> partial</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>squared <span class="op">=</span> <span class="bu">map</span>(<span class="kw">lambda</span> x: x<span class="op">**</span><span class="dv">2</span>, my_list)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="bu">list</span>(squared)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>💡 <strong>Key Takeaway:</strong></p>
+<ul>
+<li><p><code>purrr::map()</code> is <strong>more powerful</strong> and readable than base R’s <code>lapply()</code>.</p></li>
+<li><p>Python’s <code>map()</code> is effective but often <strong>less readable than list comprehensions</strong>.</p></li>
+</ul>
+</section>
+<section id="final-verdict-functional-programming-for-the-win" class="level4">
+<h4 class="anchored" data-anchor-id="final-verdict-functional-programming-for-the-win"><strong>Final Verdict: Functional Programming for the Win!</strong></h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>R (<code>apply()</code> family)</th>
+<th>R (<code>purrr::map()</code>)</th>
+<th>Python (List Comprehension)</th>
+<th>Python (<code>map()</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Readability</td>
+<td>⚠️ Medium</td>
+<td>✅ High</td>
+<td>✅ High</td>
+<td>⚠️ Medium</td>
+</tr>
+<tr class="even">
+<td>Performance</td>
+<td>✅ Fast</td>
+<td>✅ Fast</td>
+<td>✅ Fast</td>
+<td>✅ Fast</td>
+</tr>
+<tr class="odd">
+<td>Ease of Use</td>
+<td>⚠️ OK</td>
+<td>✅ Very easy</td>
+<td>✅ Very easy</td>
+<td>⚠️ Less readable</td>
+</tr>
+<tr class="even">
+<td>Best Use Case</td>
+<td>Matrices, Data Frames</td>
+<td>Lists, Data Frames</td>
+<td>Lists, Iterables</td>
+<td>Lists, Iterables</td>
+</tr>
+</tbody>
+</table>
+<p>🚀 <strong>Recommendation:</strong></p>
+<ul>
+<li><p><strong>Use <code>purrr::map()</code> over loops in R.</strong></p></li>
+<li><p><strong>Use list comprehensions in Python whenever possible.</strong></p></li>
+<li><p><strong>Avoid raw loops for performance reasons.</strong></p></li>
+</ul>
+</section>
+</section>
+<section id="vectorization-the-true-escape-from-the-time-loop" class="level3">
+<h3 class="anchored" data-anchor-id="vectorization-the-true-escape-from-the-time-loop"><strong>4. Vectorization: The True Escape from the Time Loop</strong></h3>
+<p>Doctor Strange didn’t just loop indefinitely—he <strong>optimized</strong> the loop to achieve his goal with minimal effort. Likewise, the best way to iterate efficiently isn’t looping at all—it’s <strong>vectorization</strong>.</p>
+<p>Vectorization allows operations to be applied to entire datasets at once, avoiding explicit iteration. In both R and Python, this is the <strong>fastest</strong> and most <strong>efficient</strong> way to process large amounts of data.</p>
+<section id="what-is-vectorization" class="level4">
+<h4 class="anchored" data-anchor-id="what-is-vectorization"><strong>What is Vectorization?</strong></h4>
+<p>Vectorization means applying an operation to an entire array, list, or column <strong>without using explicit loops</strong>. This is <strong>massively faster</strong> because the computation is optimized at a low level (C, Fortran, or optimized Python/R internals).</p>
+<p><strong>Traditional Loop (Slow)</strong></p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>numbers <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> numbers) {</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(i <span class="sc">*</span> <span class="dv">2</span>)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>numbers <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>]</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> numbers:</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(i <span class="op">*</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Vectorized Approach (Fast!)</strong></p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>numbers <span class="sc">*</span> <span class="dv">2</span>  <span class="co"># Directly multiplying the entire vector</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>numbers <span class="op">=</span> np.array([<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>])</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(numbers <span class="op">*</span> <span class="dv">2</span>)  <span class="co"># Directly multiplying the entire array</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>💡 <strong>Key Takeaway:</strong> <strong>Vectorized operations eliminate the need for loops, making them faster and more readable.</strong></p>
+</section>
+</section>
+<section id="final-verdict-who-escapes-the-time-loop" class="level3">
+<h3 class="anchored" data-anchor-id="final-verdict-who-escapes-the-time-loop"><strong>Final Verdict: Who Escapes the Time Loop?</strong></h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>R (Base)</th>
+<th>R (<code>data.table</code>)</th>
+<th>R (<code>dplyr</code>)</th>
+<th>Python (NumPy)</th>
+<th>Python (Pandas)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Vectorized Math</td>
+<td>✅ Fast</td>
+<td>✅ Fastest</td>
+<td>✅ Fast</td>
+<td>✅ Fastest</td>
+<td>✅ Fast</td>
+</tr>
+<tr class="even">
+<td>Data Frame Ops</td>
+<td>⚠️ OK</td>
+<td>✅ Fastest</td>
+<td>✅ Fast</td>
+<td>✅ Fast</td>
+<td>✅ Fast</td>
+</tr>
+<tr class="odd">
+<td>Ease of Use</td>
+<td>✅ Easy</td>
+<td>⚠️ Learning Curve</td>
+<td>✅ Easy</td>
+<td>⚠️ Learning Curve</td>
+<td>✅ Easy</td>
+</tr>
+<tr class="even">
+<td>Best Use Case</td>
+<td>Vectors</td>
+<td>Large Data</td>
+<td>Tidy Workflow</td>
+<td>Numerical Ops</td>
+<td>Tabular Data</td>
+</tr>
+</tbody>
+</table>
+<p>🚀 <strong>Recommendation:</strong></p>
+<ul>
+<li><p><strong>In R, use <code>data.table</code> for speed or <code>dplyr</code> for readability.</strong></p></li>
+<li><p><strong>In Python, prefer NumPy for numerical operations and Pandas for data frames.</strong></p></li>
+<li><p><strong>Avoid loops for large datasets—vectorization is always faster!</strong></p></li>
+</ul>
+</section>
+<section id="breaking-out-of-the-time-loop" class="level3">
+<h3 class="anchored" data-anchor-id="breaking-out-of-the-time-loop"><strong>6. Breaking Out of the Time Loop</strong></h3>
+<p>Doctor Strange didn’t fight Dormammu by brute force—he <strong>outsmarted</strong> him. The key to efficient iteration isn’t looping endlessly; it’s knowing <strong>when to loop, when to map, and when to vectorize</strong>.</p>
+<p>Through our journey, we’ve seen how R and Python approach iteration differently:</p>
+<ul>
+<li><p><strong>Loops (<code>for</code>, <code>while</code>)</strong> are fundamental but often inefficient for large-scale operations.</p></li>
+<li><p><strong>Functional programming (<code>apply()</code>, <code>map()</code>)</strong> provides cleaner, more efficient alternatives.</p></li>
+<li><p><strong>Vectorization (<code>data.table</code>, <code>dplyr</code>, <code>NumPy</code>, <code>Pandas</code>)</strong> is the ultimate performance booster.</p></li>
+</ul>
+<section id="when-to-use-what" class="level4">
+<h4 class="anchored" data-anchor-id="when-to-use-what"><strong>When to Use What?</strong></h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Scenario</strong></th>
+<th><strong>Best for R</strong></th>
+<th><strong>Best for Python</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Basic iteration</strong></td>
+<td><code>for</code> loop (but avoid for large data)</td>
+<td><code>for</code> loop (optimized, but still slow)</td>
+</tr>
+<tr class="even">
+<td><strong>Applying functions to elements</strong></td>
+<td><code>apply()</code>, <code>lapply()</code>, <code>purrr::map()</code></td>
+<td>List comprehensions, <code>map()</code></td>
+</tr>
+<tr class="odd">
+<td><strong>Processing tabular data</strong></td>
+<td><code>data.table</code>, <code>dplyr::mutate()</code></td>
+<td>Pandas <code>.apply()</code>, <code>.map()</code></td>
+</tr>
+<tr class="even">
+<td><strong>Mathematical operations</strong></td>
+<td>Vectorized base R, <code>data.table</code></td>
+<td>NumPy vectorized arrays</td>
+</tr>
+<tr class="odd">
+<td><strong>Text processing</strong></td>
+<td><code>stringr</code>, <code>map()</code></td>
+<td>List comprehensions, <code>re</code> (regex)</td>
+</tr>
+<tr class="even">
+<td><strong>Simulations &amp; iterations over parameters</strong></td>
+<td><code>replicate()</code>, <code>map()</code></td>
+<td>NumPy, list comprehensions</td>
+</tr>
+</tbody>
+</table>
+<p>💡 <strong>General Advice:</strong></p>
+<ul>
+<li><p><strong>Use loops sparingly.</strong> In both R and Python, <strong>loops should be a last resort</strong> for performance-heavy tasks.</p></li>
+<li><p><strong>Favor functional programming (<code>apply()</code>, <code>map()</code>).</strong> This approach is more readable and often faster.</p></li>
+<li><p><strong>When working with large datasets, always prefer vectorized solutions (<code>data.table</code>, <code>NumPy</code>).</strong></p></li>
+</ul>
+</section>
+<section id="who-wins-r-or-python" class="level4">
+<h4 class="anchored" data-anchor-id="who-wins-r-or-python"><strong>Who Wins? R or Python?</strong></h4>
+<p>The real answer: <strong>It depends.</strong></p>
+<ul>
+<li><p>If you work heavily with <strong>tabular data</strong>, <strong>R’s <code>data.table</code> and <code>dplyr</code></strong> are incredibly efficient.</p></li>
+<li><p>If you need <strong>fast numerical computations</strong>, <strong>Python’s NumPy is unmatched</strong> in speed.</p></li>
+<li><p>If you value <strong>concise, readable iteration</strong>, <strong>Python’s list comprehensions feel more natural</strong> than R’s <code>apply()</code>.</p></li>
+<li><p>If you want <strong>functional programming with clean syntax</strong>, <strong>R’s <code>purrr</code> package is more expressive</strong> than Python’s <code>map()</code>.</p></li>
+</ul>
+<p>At the end of the day, <strong>both languages offer powerful tools for iteration. The key is choosing the right tool for the job.</strong></p>
+</section>
+<section id="final-thought-dormammu-weve-won-the-iteration-battle" class="level4">
+<h4 class="anchored" data-anchor-id="final-thought-dormammu-weve-won-the-iteration-battle"><strong>Final Thought: Dormammu, We’ve Won the Iteration Battle</strong></h4>
+<p>Iteration doesn’t have to feel like an <strong>endless fight</strong>. By understanding <strong>how R and Python handle iteration</strong>, we can break free from inefficient loops and <strong>embrace smarter, faster solutions</strong>.</p>
+<p>So the next time you find yourself <strong>stuck in an iteration loop</strong>, remember:<br>
+🚀 <strong>There’s always a better way to iterate.</strong></p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = true;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>For everybody, not to be fooled by numbers</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
