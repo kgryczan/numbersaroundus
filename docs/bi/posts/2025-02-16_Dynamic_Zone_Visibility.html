@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Numbers around us">
+<meta name="dcterms.date" content="2025-02-16">
+
+<title>Now You See It, Now You Don’t – Dynamic Zone Visibility in Tableau – Numbers Around Us</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-697306ee647f3aecb60be57249203282.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-3fe3df12cb322cd60d4f50ab5ce79ec8.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-71a1c0b2fece7d4d1d4daa5e23e0c0ad.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-00ab377d17f9c7e1b98bb5b1ff2b2f0e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Numbers Around Us</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../last-articles.html"> 
+<span class="menu-text">Newest articles</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../challenges/index.html"> 
+<span class="menu-text">Challenges</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../bi/index.html"> 
+<span class="menu-text">Business Intelligence</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../ds/index.html"> 
+<span class="menu-text">Data Science</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../dp/index.html"> 
+<span class="menu-text">Data Philosophy</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <a href="https://github.com" title="Github" class="quarto-navigation-tool px-1" aria-label="Github"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Now You See It, Now You Don’t – Dynamic Zone Visibility in Tableau</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Numbers around us </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 16, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><img src="images/DVZ_feature_tableau.jpg" class="img-fluid"></p>
+<section id="the-magicians-trick-in-data-storytelling" class="level2">
+<h2 class="anchored" data-anchor-id="the-magicians-trick-in-data-storytelling"><strong>The Magician’s Trick in Data Storytelling</strong></h2>
+<p>A great magician knows <strong>how to guide attention</strong>. They don’t reveal <strong>everything at once</strong>—instead, they carefully <strong>show and hide elements</strong>, leading the audience through an engaging experience.</p>
+<p>🔹 <strong>Too many objects on stage?</strong> The illusion loses its impact.<br>
+🔹 <strong>Too little information?</strong> The audience misses the magic.</p>
+<p>This same principle applies to <strong>dashboard design</strong>. Business Intelligence reports often suffer from:</p>
+<ul>
+<li><p><strong>Cluttered layouts</strong>—too many visualizations competing for attention.</p></li>
+<li><p><strong>Overwhelming details</strong>—users struggle to find the insights that matter.</p></li>
+<li><p><strong>Lack of interactivity</strong>—static dashboards that don’t adapt to user needs.</p></li>
+</ul>
+<p>Enter <strong>Dynamic Zone Visibility (DZV)</strong> in <strong>Tableau</strong>—a feature that acts like a <strong>magician’s trick</strong>, revealing only what’s necessary at the perfect moment.</p>
+<section id="what-is-dynamic-zone-visibility" class="level3">
+<h3 class="anchored" data-anchor-id="what-is-dynamic-zone-visibility"><strong>What is Dynamic Zone Visibility?</strong></h3>
+<p><strong>DZV allows Tableau designers to dynamically show or hide dashboard elements</strong> based on user interactions.</p>
+<p>✅ Instead of <strong>showing everything at once</strong>, DZV ensures <strong>only relevant insights appear when needed</strong>.<br>
+✅ Instead of <strong>forcing users to navigate multiple pages</strong>, DZV <strong>creates a seamless, interactive experience</strong>.<br>
+✅ Instead of <strong>cluttering dashboards with unnecessary details</strong>, DZV <strong>keeps them clean, sleek, and user-friendly</strong>.</p>
+<p>This isn’t just about making dashboards <strong>look better</strong>—it’s about making them <strong>work smarter</strong>.</p>
+</section>
+<section id="why-does-dzv-matter" class="level3">
+<h3 class="anchored" data-anchor-id="why-does-dzv-matter"><strong>Why Does DZV Matter?</strong></h3>
+<p>Before <strong>DZV</strong>, Tableau users had to rely on <strong>cumbersome workarounds</strong> like:<br>
+❌ <strong>Sheet Swapping</strong> – Managing multiple sheets with complex parameter-driven visibility.<br>
+❌ <strong>Floating Containers</strong> – Manually layering elements and toggling visibility.<br>
+❌ <strong>Filter-Based Actions</strong> – Creating complex filter dependencies to simulate dynamic visibility.</p>
+<p>DZV <strong>simplifies everything</strong> by allowing dashboard elements to <strong>appear or disappear dynamically</strong> based on a Boolean field (TRUE/FALSE).</p>
+<p>This makes dashboards:<br>
+🎩 <strong>More interactive</strong> – Users control what they see.<br>
+🎩 <strong>More user-friendly</strong> – Less clutter, better experience.<br>
+🎩 <strong>More efficient</strong> – Tableau only renders what’s visible, improving performance.</p>
+</section>
+<section id="what-this-article-covers" class="level3">
+<h3 class="anchored" data-anchor-id="what-this-article-covers"><strong>What This Article Covers</strong></h3>
+<p>In this article, we won’t bore you with technical details. Instead, we’ll focus on <strong>real-world use cases</strong> and <strong>creative tricks</strong> that DZV makes possible.</p>
+<p>🎩 <strong>How DZV works</strong>—the magician’s secret behind Tableau’s dynamic interactivity.<br>
+🎩 <strong>The best use cases for DZV</strong>—when and where it makes the biggest impact.<br>
+🎩 <strong>Tricks for making dashboards feel more intuitive, responsive, and user-friendly.</strong><br>
+🎩 <strong>Real-world case studies</strong>—how DZV has improved actual dashboards.<br>
+🎩 <strong>How Power BI compares</strong>—does it have anything close to this magic trick?</p>
+<p>By the end of this article, you’ll <strong>understand how to make dashboards feel truly interactive</strong>—giving users a sense of <strong>control and engagement</strong> without overwhelming them with unnecessary clutter.</p>
+</section>
+</section>
+<section id="the-magicians-secret-what-makes-dzv-unique" class="level2">
+<h2 class="anchored" data-anchor-id="the-magicians-secret-what-makes-dzv-unique"><strong>The Magician’s Secret – What Makes DZV Unique?</strong></h2>
+<p>A magician’s greatest trick isn’t just making something disappear—it’s <strong>controlling attention</strong>, revealing only what the audience needs to see at the right moment. <strong>Dynamic Zone Visibility (DZV)</strong> in <strong>Tableau</strong> serves the same purpose: keeping dashboards <strong>clean, interactive, and responsive</strong>.</p>
+<p>With <strong>DZV, elements of a Tableau dashboard (charts, filters, text, containers, etc.) can appear or disappear dynamically based on a Boolean field.</strong> This allows designers to build <strong>interactive, context-aware dashboards</strong> that adjust to the user’s needs.</p>
+<section id="what-can-dzv-replace" class="level3">
+<h3 class="anchored" data-anchor-id="what-can-dzv-replace"><strong>What Can DZV Replace?</strong></h3>
+<p>Before <strong>DZV</strong>, Tableau users had to rely on complex workarounds like:<br>
+🔹 <strong>Sheet Swapping</strong> – Manually switching between different sheets based on a parameter.<br>
+🔹 <strong>Floating Containers</strong> – Stacking visualizations in layers and revealing/hiding them.<br>
+🔹 <strong>Custom Filters &amp; Actions</strong> – Creating filter-based navigation tricks.</p>
+<p>Now, <strong>DZV provides a native, flexible, and more efficient way to control dashboard visibility.</strong></p>
+</section>
+<section id="use-cases-where-dzv-shines-the-most" class="level3">
+<h3 class="anchored" data-anchor-id="use-cases-where-dzv-shines-the-most"><strong>Use Cases – Where DZV Shines the Most</strong></h3>
+<section id="use-case-1-showing-additional-details-only-when-needed" class="level4">
+<h4 class="anchored" data-anchor-id="use-case-1-showing-additional-details-only-when-needed"><strong>🔹 Use Case 1: Showing Additional Details Only When Needed</strong></h4>
+<p>📌 <strong>Scenario</strong>: A <strong>KPI dashboard</strong> where you want to show <strong>detailed breakdowns</strong> only when a user clicks on a metric.</p>
+<p>✅ <strong>DZV Trick</strong>:</p>
+<ul>
+<li><p>Initially show only <strong>top-level KPIs (Sales, Profit, Orders, etc.).</strong></p></li>
+<li><p>When a user clicks on <strong>“Sales”</strong>, a <strong>hidden chart container appears</strong> with detailed regional breakdowns.</p></li>
+<li><p>When they select <strong>“Orders”</strong>, the <strong>chart dynamically updates instead of cluttering the dashboard with all details at once</strong>.</p></li>
+</ul>
+<p>🎩 <strong>Why It’s Useful</strong>: Keeps the dashboard <strong>clean, minimalistic, and performance-friendly</strong>, only rendering data when needed.</p>
+</section>
+<section id="use-case-2-creating-interactive-view-switchers-without-sheet-swapping" class="level4">
+<h4 class="anchored" data-anchor-id="use-case-2-creating-interactive-view-switchers-without-sheet-swapping"><strong>🔹 Use Case 2: Creating Interactive View Switchers Without Sheet Swapping</strong></h4>
+<p>📌 <strong>Scenario</strong>: A report where users want to toggle between different <strong>views (e.g., Table vs.&nbsp;Graph vs.&nbsp;Map)</strong> without navigating to another page.</p>
+<p>✅ <strong>DZV Trick</strong>:</p>
+<ul>
+<li><p>Instead of sheet-swapping, use a <strong>parameter</strong> that controls a <strong>Boolean field</strong> for each visualization type.</p></li>
+<li><p><strong>Only one chart is visible at a time</strong>, based on user selection.</p></li>
+</ul>
+<p>🎩 <strong>Why It’s Useful</strong>:</p>
+<ul>
+<li><p><strong>Faster, easier to maintain</strong> than traditional <strong>sheet swapping</strong>.</p></li>
+<li><p>Improves <strong>dashboard performance</strong> since Tableau only renders <strong>one view at a time</strong>.</p></li>
+</ul>
+</section>
+<section id="use-case-3-collapsing-and-expanding-sections-dynamically" class="level4">
+<h4 class="anchored" data-anchor-id="use-case-3-collapsing-and-expanding-sections-dynamically"><strong>🔹 Use Case 3: Collapsing and Expanding Sections Dynamically</strong></h4>
+<p>📌 <strong>Scenario</strong>: You need a <strong>dashboard with expandable sections</strong> for users to explore insights <strong>without overwhelming them with too much information at once</strong>.</p>
+<p>✅ <strong>DZV Trick</strong>:</p>
+<ul>
+<li><p>Users <strong>click a button or select a parameter</strong> to reveal <strong>additional context</strong>, such as annotations, insights, or notes.</p></li>
+<li><p><strong>DZV hides the extra text elements until needed</strong>, keeping the dashboard layout clean.</p></li>
+</ul>
+<p>🎩 <strong>Why It’s Useful</strong>:</p>
+<ul>
+<li><p>Eliminates the need for <strong>static text-heavy dashboards</strong>.</p></li>
+<li><p>Creates a <strong>more interactive, guided experience</strong>.</p></li>
+</ul>
+</section>
+<section id="use-case-4-conditional-filtering-without-overloading-the-dashboard" class="level4">
+<h4 class="anchored" data-anchor-id="use-case-4-conditional-filtering-without-overloading-the-dashboard"><strong>🔹 Use Case 4: Conditional Filtering Without Overloading the Dashboard</strong></h4>
+<p>📌 <strong>Scenario</strong>: You have a dashboard where different user roles (Sales, Marketing, Finance) need to see <strong>different visualizations</strong>.</p>
+<p>✅ <strong>DZV Trick</strong>:</p>
+<ul>
+<li><p>A user selects their <strong>role from a dropdown</strong>.</p></li>
+<li><p><strong>Only the relevant visualizations appear</strong>, while others remain hidden.</p></li>
+</ul>
+<p>🎩 <strong>Why It’s Useful</strong>:</p>
+<ul>
+<li><p><strong>No need for multiple dashboards</strong>—one dashboard dynamically adjusts to <strong>who is viewing it</strong>.</p></li>
+<li><p><strong>Performance boost</strong>—unused visualizations aren’t rendered.</p></li>
+</ul>
+</section>
+</section>
+<section id="best-practices-hidden-tricks-for-dzv" class="level3">
+<h3 class="anchored" data-anchor-id="best-practices-hidden-tricks-for-dzv"><strong>Best Practices &amp; Hidden Tricks for DZV</strong></h3>
+<p>✅ <strong>Use DZV for big elements, not small details</strong> – Hiding/showing entire <strong>containers or sections</strong> works best. Don’t overuse it for tiny changes.</p>
+<p>✅ <strong>DZV works best with Boolean fields</strong> – Always ensure that the logic behind the field controlling visibility is straightforward (TRUE/FALSE).</p>
+<p>✅ <strong>Combine DZV with Parameter Actions</strong> – If you need to create <strong>advanced toggles</strong> or <strong>multi-step visibility controls</strong>, consider using <strong>Parameter Actions</strong> to trigger visibility dynamically.</p>
+<p>✅ <strong>Optimize for performance</strong> – Don’t create <strong>too many hidden elements</strong> that require complex calculations. Keep it simple and efficient.</p>
+</section>
+<section id="final-thoughts-a-new-way-to-build-dashboards" class="level3">
+<h3 class="anchored" data-anchor-id="final-thoughts-a-new-way-to-build-dashboards"><strong>Final Thoughts: A New Way to Build Dashboards</strong></h3>
+<p><strong>Dynamic Zone Visibility (DZV) changes how we think about dashboard design in Tableau.</strong> It’s a <strong>powerful tool</strong> that helps us:<br>
+🎩 <strong>Control focus like a magician</strong> – Reveal only what’s needed, exactly when it’s needed.<br>
+🎩 <strong>Improve user experience</strong> – Users feel more engaged and in control of the insights.<br>
+🎩 <strong>Boost performance</strong> – Unnecessary visualizations aren’t loaded until required.</p>
+<p>Now that we’ve seen what <strong>DZV can do</strong>, let’s explore <strong>real-world case studies</strong> in the next chapter.</p>
+</section>
+</section>
+<section id="real-world-use-cases-best-tricks-for-dzv" class="level1">
+<h1><strong>Real-World Use Cases &amp; Best Tricks for DZV</strong> 🎩</h1>
+<p>A great magician doesn’t just perform random tricks—they tailor their illusions to the audience, <strong>creating the right effect at the right time</strong>. Similarly, <strong>Dynamic Zone Visibility (DZV) in Tableau</strong> allows designers to build dashboards that <strong>adapt to the user’s journey, revealing only the necessary insights at the right moment.</strong></p>
+<p>Now, let’s explore some <strong>real-world use cases</strong> where DZV <strong>shines the most</strong> and uncover some <strong>advanced tricks</strong> to take your dashboards to the next level.</p>
+<section id="case-study-1-role-based-dashboards-one-dashboard-different-users" class="level2">
+<h2 class="anchored" data-anchor-id="case-study-1-role-based-dashboards-one-dashboard-different-users"><strong>🔹 Case Study 1: Role-Based Dashboards (One Dashboard, Different Users)</strong></h2>
+<p>📌 <strong>Scenario:</strong> A company wants to create a <strong>single dashboard</strong> that serves <strong>three different teams</strong>—Sales, Marketing, and Finance. Each department needs different <strong>KPIs and visualizations</strong>, but the <strong>dashboard should adjust dynamically based on the user’s role</strong>.</p>
+<section id="how-dzv-solves-it" class="level4">
+<h4 class="anchored" data-anchor-id="how-dzv-solves-it"><strong>🚀 How DZV Solves It:</strong></h4>
+<p>Instead of creating <strong>three separate dashboards</strong>, we use <strong>DZV to control visibility</strong> based on the logged-in user.</p>
+<p>✅ <strong>Step 1:</strong> Create a <strong>Boolean field</strong> like:</p>
+<pre class="vizql"><code>ISMEMBEROF["Sales"]</code></pre>
+<p>✅ <strong>Step 2:</strong> Apply DZV to entire <strong>containers</strong> containing charts and metrics <strong>relevant to each role</strong>.<br>
+✅ <strong>Step 3:</strong> When a user logs in, only <strong>their relevant dashboard elements are visible</strong>.</p>
+<p>🎩 <strong>Magic Effect:</strong> One dashboard, multiple user experiences—reducing maintenance and improving efficiency.</p>
+</section>
+</section>
+<section id="case-study-2-dynamic-detail-views-expanding-kpis-on-demand" class="level2">
+<h2 class="anchored" data-anchor-id="case-study-2-dynamic-detail-views-expanding-kpis-on-demand"><strong>🔹 Case Study 2: Dynamic Detail Views (Expanding KPIs on Demand)</strong></h2>
+<p>📌 <strong>Scenario:</strong> A <strong>CEO dashboard</strong> needs to show <strong>high-level KPIs</strong>, but when a user clicks on a metric (e.g., Sales), a <strong>detailed breakdown</strong> should appear—without cluttering the main view.</p>
+<section id="how-dzv-solves-it-1" class="level4">
+<h4 class="anchored" data-anchor-id="how-dzv-solves-it-1"><strong>🚀 How DZV Solves It:</strong></h4>
+<p>✅ <strong>Step 1:</strong> Users select a KPI (Sales, Profit, Orders).<br>
+✅ <strong>Step 2:</strong> DZV <strong>reveals</strong> the corresponding breakdown chart.<br>
+✅ <strong>Step 3:</strong> When the user clicks away, the <strong>detailed view disappears</strong>, keeping the dashboard clean.</p>
+<p>🎩 <strong>Magic Effect:</strong> A <strong>clutter-free</strong> dashboard that <strong>adapts based on user curiosity</strong>.</p>
+<p>💡 <strong>Bonus Trick:</strong></p>
+<ul>
+<li><p>Combine DZV with <strong>Parameter Actions</strong> to make the toggling effect even smoother.</p></li>
+<li><p>Use <strong>animations</strong> to enhance the experience.</p></li>
+</ul>
+</section>
+</section>
+<section id="case-study-3-interactive-report-switchers-tables-charts-and-maps-in-one-view" class="level2">
+<h2 class="anchored" data-anchor-id="case-study-3-interactive-report-switchers-tables-charts-and-maps-in-one-view"><strong>🔹 Case Study 3: Interactive Report Switchers (Tables, Charts, and Maps in One View)</strong></h2>
+<p>📌 <strong>Scenario:</strong> A dashboard needs to show <strong>different data views</strong> (Table, Graph, and Map) but <strong>only one should be visible at a time</strong> to avoid overcrowding.</p>
+<section id="how-dzv-solves-it-2" class="level4">
+<h4 class="anchored" data-anchor-id="how-dzv-solves-it-2"><strong>🚀 How DZV Solves It:</strong></h4>
+<p>✅ <strong>Step 1:</strong> Create a <strong>Parameter</strong> called <strong>“View Type”</strong> with values <code>"Table"</code>, <code>"Graph"</code>, <code>"Map"</code>.<br>
+✅ <strong>Step 2:</strong> Create Boolean fields for each view:</p>
+<pre class="vizql"><code>[View Type] = "Graph"</code></pre>
+<p>✅ <strong>Step 3:</strong> Apply DZV to toggle visibility based on the selected view.</p>
+<p>🎩 <strong>Magic Effect:</strong> One dashboard with multiple perspectives—users can <strong>switch between views seamlessly</strong>.</p>
+<p>💡 <strong>Bonus Trick:</strong></p>
+<ul>
+<li>Use <strong>highlight effects</strong> when switching views.</li>
+</ul>
+</section>
+<section id="final-thoughts-making-dashboards-feel-magical" class="level3">
+<h3 class="anchored" data-anchor-id="final-thoughts-making-dashboards-feel-magical"><strong>Final Thoughts: Making Dashboards Feel Magical</strong></h3>
+<p>DZV isn’t just a small feature—it’s <strong>a game-changer</strong> for Tableau dashboard design. When used correctly, it:<br>
+🎩 <strong>Enhances user engagement</strong> – Users feel in control of their experience.<br>
+🎩 <strong>Reduces clutter</strong> – Only relevant insights are displayed.<br>
+🎩 <strong>Boosts performance</strong> – Tableau renders fewer elements at a time.</p>
+<p>A well-designed dashboard should feel <strong>intuitive and interactive</strong>—<strong>not overwhelming</strong>. With <strong>DZV, we can create dashboards that feel almost alive, responding to user interactions like a magician reading the audience’s mind.</strong></p>
+</section>
+</section>
+</section>
+<section id="does-power-bi-have-its-own-magic-trick-comparing-dzv-in-tableau-to-power-bis-approach" class="level1">
+<h1><strong>Does Power BI Have Its Own Magic Trick? Comparing DZV in Tableau to Power BI’s Approach</strong></h1>
+<p>Tableau’s <strong>Dynamic Zone Visibility (DZV)</strong> allows designers to dynamically show or hide elements <strong>without complicated workarounds</strong>. But what about Power BI?</p>
+<p><strong>Does Power BI have a native feature that works the same way?</strong></p>
+<p>The short answer: <strong>Not exactly</strong>—but it has some alternative tricks that can achieve similar effects.</p>
+<section id="power-bis-approach-bookmarks-selection-pane" class="level2">
+<h2 class="anchored" data-anchor-id="power-bis-approach-bookmarks-selection-pane"><strong>1. Power BI’s Approach: Bookmarks &amp; Selection Pane</strong></h2>
+<p>In <strong>Power BI</strong>, there’s no direct equivalent to Tableau’s <strong>DZV</strong>, but developers often rely on:</p>
+<section id="bookmarks" class="level3">
+<h3 class="anchored" data-anchor-id="bookmarks"><strong>🔹 Bookmarks</strong></h3>
+<p>📌 <strong>What It Does:</strong></p>
+<ul>
+<li><p>Saves a specific state of the report (including visible/invisible elements).</p></li>
+<li><p>Allows users to switch between different layouts/views.</p></li>
+<li><p>Works best for toggling between different report sections.</p></li>
+</ul>
+<p>🎩 <strong>How It Compares to DZV:</strong><br>
+✅ Can mimic some <strong>show/hide behaviors</strong>, but requires <strong>predefined states</strong> (less dynamic).<br>
+❌ Not truly data-driven—visibility <strong>doesn’t respond to field values or user interactions</strong> like DZV.</p>
+</section>
+<section id="selection-pane" class="level3">
+<h3 class="anchored" data-anchor-id="selection-pane"><strong>🔹 Selection Pane</strong></h3>
+<p>📌 <strong>What It Does:</strong></p>
+<ul>
+<li><p>Allows report creators to manually <strong>hide/show visual elements</strong> in design mode.</p></li>
+<li><p>Works <strong>only at the development stage</strong>, not dynamically for end-users.</p></li>
+</ul>
+<p>🎩 <strong>How It Compares to DZV:</strong><br>
+❌ Not user-controlled—end-users <strong>can’t toggle visibility dynamically</strong>.<br>
+❌ Less flexible—works more like <strong>manual layout customization</strong> than true interactivity.</p>
+</section>
+</section>
+<section id="alternative-methods-in-power-bi" class="level2">
+<h2 class="anchored" data-anchor-id="alternative-methods-in-power-bi"><strong>2. Alternative Methods in Power BI</strong></h2>
+<section id="using-measures-conditional-formatting-to-control-visibility" class="level3">
+<h3 class="anchored" data-anchor-id="using-measures-conditional-formatting-to-control-visibility"><strong>🔹 Using Measures &amp; Conditional Formatting to Control Visibility</strong></h3>
+<p>📌 <strong>What It Does:</strong></p>
+<ul>
+<li><p>Creates dynamic <strong>measures</strong> that control whether a chart or table appears.</p></li>
+<li><p>Uses <strong>DAX logic</strong> to return <code>BLANK()</code> when an element shouldn’t be displayed.</p></li>
+</ul>
+<p>🎩 <strong>Example Trick:</strong></p>
+<ul>
+<li>Create a <strong>DAX measure</strong> to control a visual:</li>
+</ul>
+<pre class="dax"><code>ShowChart = IF(SELECTEDVALUE(ViewType) = "Chart", 1, BLANK()) </code></pre>
+<ul>
+<li>Apply this measure to <strong>Conditional Formatting</strong> for transparency or dynamic filtering.</li>
+</ul>
+<p>🎩 <strong>How It Compares to DZV:</strong><br>
+✅ Works dynamically based on <strong>data-driven user selections</strong>.<br>
+✅ Can control visibility conditionally but <strong>doesn’t physically remove the element</strong>—it’s still rendered but blank.</p>
+</section>
+<section id="page-navigation-drill-through" class="level3">
+<h3 class="anchored" data-anchor-id="page-navigation-drill-through"><strong>🔹 Page Navigation &amp; Drill-Through</strong></h3>
+<p>📌 <strong>What It Does:</strong></p>
+<ul>
+<li><p>Instead of dynamically hiding sections on a single page, Power BI <strong>redirects users</strong> to a different report page.</p></li>
+<li><p>Works best for <strong>progressive drill-downs</strong> or <strong>step-by-step reporting flows</strong>.</p></li>
+</ul>
+<p>🎩 <strong>How It Compares to DZV:</strong><br>
+✅ Achieves <strong>guided interactivity</strong>, but requires <strong>separate report pages</strong>.<br>
+❌ More rigid—users <strong>can’t reveal/hide elements within the same page dynamically</strong>.</p>
+</section>
+</section>
+<section id="when-does-power-bis-approach-work-better" class="level2">
+<h2 class="anchored" data-anchor-id="when-does-power-bis-approach-work-better"><strong>3. When Does Power BI’s Approach Work Better?</strong></h2>
+<p>While Power BI doesn’t have a <strong>1:1 equivalent to DZV</strong>, its <strong>alternative features can be more effective in certain cases</strong>:</p>
+<p>✅ <strong>For highly structured reporting</strong> – Bookmarks + navigation create a <strong>consistent user experience</strong>, great for executive reports.<br>
+✅ <strong>For predefined dashboard states</strong> – When users only need to switch between <strong>static layouts</strong>, Power BI’s <strong>Bookmarks &amp; Selection Pane</strong> work well.<br>
+✅ <strong>For interactive storytelling</strong> – Drill-through navigation provides a <strong>step-by-step guided approach</strong>, useful for presentations.</p>
+<p>However, <strong>for on-the-fly interactivity, Tableau’s DZV is more flexible</strong> because:<br>
+🎩 It responds to <strong>real-time user interactions</strong> without needing predefined bookmarks.<br>
+🎩 It allows <strong>elements to truly disappear</strong> instead of just becoming blank.<br>
+🎩 It keeps everything on <strong>a single dashboard page</strong>, reducing navigation complexity.</p>
+</section>
+<section id="final-thoughts-the-magic-of-dzv-vs.-power-bis-workarounds" class="level2">
+<h2 class="anchored" data-anchor-id="final-thoughts-the-magic-of-dzv-vs.-power-bis-workarounds"><strong>Final Thoughts: The Magic of DZV vs.&nbsp;Power BI’s Workarounds</strong></h2>
+<p>While <strong>Power BI offers several workarounds</strong>, <strong>it lacks a native feature as powerful as DZV</strong>. Tableau’s <strong>Dynamic Zone Visibility</strong> remains the better choice when:</p>
+<p>✅ You need <strong>seamless, real-time visibility control</strong>.<br>
+✅ You want elements to <strong>appear/disappear dynamically</strong> based on user input.<br>
+✅ You’re designing <strong>a single-page dashboard experience</strong> without needing bookmarks.</p>
+<p>That said, <strong>Power BI’s strengths lie elsewhere</strong>, with features like <strong>paginated reports, robust drill-through navigation, and Power Automate integration</strong>.</p>
+<p>Ultimately, the <strong>best tool depends on the use case</strong>—but when it comes to <strong>interactive visibility control</strong>, <strong>Tableau’s DZV is the more elegant and efficient solution</strong>.</p>
+</section>
+</section>
+<section id="conclusion-the-magic-of-smart-visibility-in-tableau" class="level1">
+<h1><strong>Conclusion: The Magic of Smart Visibility in Tableau</strong> 🎩✨</h1>
+<p>A great magician doesn’t overwhelm the audience by showing <strong>everything at once</strong>. Instead, they reveal only what’s necessary, guiding attention <strong>step by step</strong> to create an engaging experience.</p>
+<p>With <strong>Dynamic Zone Visibility (DZV) in Tableau</strong>, we can bring that same <strong>magic</strong> to our dashboards.</p>
+<section id="why-dzv-is-a-game-changer" class="level3">
+<h3 class="anchored" data-anchor-id="why-dzv-is-a-game-changer"><strong>🎩 Why DZV is a Game-Changer</strong></h3>
+<p>✅ <strong>Keeps dashboards clean and user-friendly</strong> – No more clutter; users see only what’s relevant.<br>
+✅ <strong>Enhances interactivity</strong> – Users engage with data on their terms, revealing details <strong>when needed</strong>.<br>
+✅ <strong>Improves performance</strong> – Tableau only renders visible elements, making dashboards run more efficiently.</p>
+</section>
+<section id="where-dzv-works-best" class="level3">
+<h3 class="anchored" data-anchor-id="where-dzv-works-best"><strong>🔹 Where DZV Works Best</strong></h3>
+<p>🚀 <strong>Role-based dashboards</strong> – Show different views for different users without duplicating reports.<br>
+🚀 <strong>Collapsible filters and sections</strong> – Keep dashboards streamlined while allowing deeper exploration.<br>
+🚀 <strong>KPI drill-downs</strong> – Expand high-level metrics into detailed breakdowns with a simple interaction.<br>
+🚀 <strong>Switching between tables, charts, and maps</strong> – Let users control how they view the data.</p>
+</section>
+<section id="power-bi-vs.-tableau-the-visibility-showdown" class="level3">
+<h3 class="anchored" data-anchor-id="power-bi-vs.-tableau-the-visibility-showdown"><strong>🔍 Power BI vs.&nbsp;Tableau: The Visibility Showdown</strong></h3>
+<p>While <strong>Power BI offers workarounds</strong> like <strong>Bookmarks, Selection Pane, and DAX-driven visibility</strong>, <strong>it lacks a direct equivalent to DZV</strong>. Tableau’s approach is more <strong>fluid, dynamic, and integrated</strong> into the dashboard design, allowing for <strong>real-time user-driven visibility control</strong> without pre-defined layouts.</p>
+</section>
+<section id="the-future-of-interactive-dashboards" class="level2">
+<h2 class="anchored" data-anchor-id="the-future-of-interactive-dashboards"><strong>🔮 The Future of Interactive Dashboards</strong></h2>
+<p>As data storytelling evolves, <strong>user expectations are shifting</strong>. People no longer want static reports—they want <strong>interactive, personalized experiences</strong> where they control what they see.</p>
+<p>🎩 <strong>DZV is more than a feature—it’s a new way of thinking about dashboards</strong>. It helps us build reports that feel intuitive, smart, and engaging, reducing the friction between users and insights.</p>
+<p>The question is: <strong>Are you using this magic trick yet?</strong></p>
+</section>
+<section id="next-steps-try-it-yourself" class="level2">
+<h2 class="anchored" data-anchor-id="next-steps-try-it-yourself"><strong>🚀 Next Steps: Try it Yourself!</strong></h2>
+<p>1️⃣ <strong>Review your current Tableau dashboards</strong> – Are they cluttered? Could DZV improve the user experience?<br>
+2️⃣ <strong>Experiment with DZV</strong> – Start with a small feature, like toggling between two views.<br>
+3️⃣ <strong>Share your experiences!</strong> – Have you built something cool using DZV? Let’s discuss how others are applying it.</p>
+<section id="final-thoughts" class="level3">
+<h3 class="anchored" data-anchor-id="final-thoughts"><strong>Final Thoughts</strong></h3>
+<p>Tableau gives us powerful tools—not just for <strong>visualizing</strong> data, but for <strong>controlling how users experience insights</strong>. With <strong>DZV</strong>, dashboards aren’t just static reports—they become <strong>interactive, dynamic environments where the data responds to the user’s needs</strong>.</p>
+<p>Now, <strong>it’s your turn to make the magic happen</strong>. 🎩✨</p>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = true;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>For everybody, not to be fooled by numbers</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
