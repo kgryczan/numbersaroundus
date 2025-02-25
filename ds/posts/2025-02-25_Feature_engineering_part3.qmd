@@ -1,0 +1,517 @@
+---
+title: "Cooking Temperatures Matter – Scaling & Transforming Numerical Data"
+author: "Numbers around us"
+date: "2025-02-25"
+format: html
+---
+
+![](images/FE_3.jpg)
+
+After mastering categorical feature engineering, it’s time to focus on **numerical data transformations**—a crucial step that can **make or break** model performance. Many machine learning algorithms **assume numerical features follow a specific distribution**, and incorrect handling can lead to **biased models, slow training, and poor generalization**.
+
+In this article, we’ll explore:\
+✅ **Why scaling matters and when to use it** (and when to avoid it).\
+✅ **Different types of transformations—log, power, and polynomial features**.\
+✅ **Standardization vs. normalization—how they impact different models.**\
+✅ **Practical R & Python examples to apply numerical feature transformations effectively.**
+
+# **📌 Chapter 1: Why Scaling & Transformation Matter**
+
+## **1️⃣ The Importance of Scaling Numerical Features**
+
+Machine learning models rely on **mathematical operations** that are sensitive to the scale of features. Features with different ranges can **negatively impact model performance** in several ways:
+
+📌 **Unbalanced feature influence** → Some models (e.g., linear regression, SVMs) give **higher importance to large-magnitude features**.\
+📌 **Slow convergence in gradient-based models** → Features with large values dominate updates, making training **slower and less stable**.\
+📌 **Distance-based models struggle** → Algorithms like KNN and K-Means depend on **distance calculations**, and unscaled data skews these distances.
+
+**🔹 Example: Predicting House Prices**\
+Imagine we have two numerical features:
+
+-   `square_footage` (ranging from 500 to 5000)
+
+-   `num_bedrooms` (ranging from 1 to 5)
+
+Since `square_footage` has a much larger range, some models might **assign it more weight than necessary**, even if `num_bedrooms` is just as important. **Scaling ensures all features contribute fairly.**
+
+## **2️⃣ When Scaling Is (and Isn’t) Necessary**
+
+**✅ Models that Require Scaling:**\
+✔ **Linear Regression, Logistic Regression** (weights are sensitive to magnitude).\
+✔ **KNN, K-Means, PCA** (distance-based models).\
+✔ **SVMs, Neural Networks** (gradient-based optimizers).
+
+**❌ Models That Handle Scaling Automatically:**\
+✖ **Tree-based models (Random Forest, XGBoost, LightGBM)**—Trees split on feature values, so scaling **does not affect performance**.\
+✖ **Naive Bayes**—Uses probabilities, not distance-based measures.\
+
+# **📌 Chapter 2: Standardization vs. Normalization**
+
+Scaling numerical data is an essential preprocessing step, but **not all scaling methods are created equal**. Two of the most common techniques—**standardization and normalization**—serve different purposes and should be applied depending on the dataset and model.
+
+But before we dive in, let’s talk about something **unexpectedly funny** in R’s `recipes` package:
+
+-   **"Normalization" (`step_normalize()`) actually means standardization (Z-score transformation).**
+
+-   **"Range Scaling" (`step_range()`) actually performs normalization (Min-Max scaling).**
+
+-   So, if you thought these names were flipped, **you're not alone!** 🎭
+
+Let’s break it all down.
+
+## **1️⃣ Standardization (Z-Score Scaling) → `step_normalize()`**
+
+🔹 **How It Works**\
+Standardization **centers the data around 0** and scales it to have a **standard deviation of 1**. The formula is:
+
+$X_{scaled} = \frac{X - \mu}{\sigma}$
+
+Where:
+
+-   $X$ = original feature value
+
+-   $\mu$ = mean of the feature
+
+-   $\sigma$ = standard deviation
+
+### **📌 Example: Standardizing "House Size"**
+
+| House Size (sqft) | Standardized Value |
+|-------------------|--------------------|
+| 1500              | -0.8               |
+| 2000              | 0.0                |
+| 2500              | 0.8                |
+
+After standardization, the values are **centered around 0**, which prevents features with larger magnitudes from dominating smaller ones.
+
+✅ **When to Use Standardization**\
+✔ **Linear models (e.g., logistic regression, linear regression)** → Keeps coefficients balanced.\
+✔ **PCA (Principal Component Analysis)** → Reduces variance bias from large-magnitude variables.\
+✔ **SVMs, Neural Networks** → Ensures faster and more stable training.
+
+❌ **When Not to Use Standardization**
+
+-   **When features have a non-normal distribution**—since standardization assumes a bell-curve shape.
+
+-   **For tree-based models (Random Forest, XGBoost, LightGBM)**—scaling does **not** impact tree-based splits.
+
+### 📌 R: Standardizing Features Using `recipes` (Even Though It Says "Normalize")
+
+``` r
+library(tidymodels)
+
+recipe_standardized <- recipe(~ sqft, data = df) %>%
+  step_normalize(sqft)  # Standardization (Z-score)
+
+prepped_data <- prep(recipe_standardized) %>% bake(new_data = df)
+```
+
+### 📌 Python: Standardizing with `StandardScaler` in `scikit-learn`
+
+``` python
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+df['sqft_standardized'] = scaler.fit_transform(df[['sqft']])
+```
+
+## **2️⃣ Normalization (Min-Max Scaling) → `step_range()`**
+
+🔹 **How It Works**\
+Normalization **rescales feature values between a fixed range** (usually 0 to 1). The formula is:
+
+$X_{scaled} = \frac{X - X_{\text{min}}}{X_{\text{max}} - X_{\text{min}}}$
+
+Where:
+
+-   $X$ = original feature value
+
+-   $X_{min}$= minimum value in the feature
+
+-   $X_{max}$​ = maximum value in the feature
+
+### **📌 Example: Normalizing "Income"**
+
+| Income (\$) | Normalized Value |
+|-------------|------------------|
+| 30,000      | 0.0              |
+| 50,000      | 0.5              |
+| 100,000     | 1.0              |
+
+After normalization, all values fit within the **0-1 range**, making comparisons between variables easier.
+
+✅ **When to Use Normalization**\
+✔ **KNN, K-Means, Neural Networks** → Models relying on distance-based calculations benefit from a uniform scale.\
+✔ **Data with extreme outliers** → Prevents large values from dominating calculations.
+
+❌ **When Not to Use Normalization**
+
+-   **If the dataset contains meaningful negative values**—scaling to \[0,1\] may distort relationships.
+
+-   **If a normal distribution is required**—use standardization instead.
+
+### 📌 R: Normalizing Features Using `recipes` (Even Though It Says "Range")
+
+``` r
+recipe_normalized <- recipe(~ Income, data = df) %>%
+  step_range(Income, min = 0, max = 1)  # Min-Max Scaling (Normalization)
+
+prepped_data <- prep(recipe_normalized) %>% bake(new_data = df)
+```
+
+### 📌 Python: Normalizing with `MinMaxScaler` in `scikit-learn`
+
+``` python
+from sklearn.preprocessing import MinMaxScaler
+
+scaler = MinMaxScaler()
+df['income_normalized'] = scaler.fit_transform(df[['Income']])
+```
+
+## **3️⃣ When to Use Standardization vs. Normalization**
+
+| **Scenario** | **Use Standardization (`step_normalize()`)** | **Use Normalization (`step_range()`)** |
+|------------------------|------------------------|------------------------|
+| **Linear Models (Regression, SVMs, PCA)** | ✅ Recommended | ❌ Not ideal |
+| **Distance-Based Models (KNN, K-Means, Neural Networks)** | ❌ Not ideal | ✅ Recommended |
+| **Feature values contain extreme outliers** | ✅ Helps handle outliers | ❌ Not robust to outliers |
+| **Features have different units (e.g., weight in kg, height in cm)** | ✅ Ensures balanced impact | ❌ Can distort relationships |
+| **Tree-Based Models (Random Forest, XGBoost)** | ❌ Not needed | ❌ Not needed |
+
+✅ **By choosing the right scaling method, we ensure models perform optimally without unnecessary transformations.**
+
+### **📌 Funny Naming Recap (So You Don’t Get Confused Again!)**
+
+| **What We Expect** | **What `recipes` Actually Calls It** | **What It Actually Does** |
+|------------------------|------------------------|------------------------|
+| **Standardization (Z-score)** | `step_normalize()` | Centers data (mean = 0, std = 1) |
+| **Min-Max Scaling (Normalization)** | `step_range()` | Rescales values between `[0,1]` |
+
+Yes, it’s **confusing at first**, but just remember:
+
+-   `step_normalize()` **normalizes the distribution** (standardization).
+
+-   `step_range()` **scales into a fixed range** (normalization).
+
+At the end of the day, **names don’t matter—choosing the right technique does!** 🎭
+
+# **📌 Chapter 3: Transforming Skewed Data**
+
+Scaling is **not always enough** to prepare numerical data for machine learning. Many real-world datasets contain **skewed distributions**, where values are concentrated in a small range and **a few extreme values (outliers) dominate the feature**.
+
+If we don’t handle skewed data properly, it can lead to:\
+❌ **Poor model performance** (linear models assume normally distributed features).\
+❌ **Ineffective scaling** (min-max scaling doesn’t fix skewness).\
+❌ **Reduced interpretability** (exponential relationships may be misrepresented).
+
+In this chapter, we’ll explore:\
+✅ **How to detect skewed data.**\
+✅ **Log, Box-Cox, and Yeo-Johnson transformations.**\
+✅ **Feature binning (discretization) to improve model interpretability.**
+
+## **1️⃣ Detecting Skewed Data**
+
+Before applying transformations, we need to **check whether a feature is skewed**.
+
+🔹 **Right-skewed (positive skew)** → Long tail on the **right** (e.g., income distribution).\
+🔹 **Left-skewed (negative skew)** → Long tail on the **left** (e.g., age at retirement).
+
+### 📌 R: Checking Skewness in a Feature
+
+``` r
+library(e1071)
+
+# Calculate skewness
+skewness(df$income)
+```
+
+### 📌 Python: Checking Skewness with `scipy`
+
+``` python
+from scipy.stats import skew
+
+print(skew(df['income']))  # Positive = right-skewed, Negative = left-skewed
+```
+
+✅ **A skewness value above ±1 indicates a highly skewed feature that may need transformation.**
+
+## **2️⃣ Log Transformation**
+
+**🔹 How It Works**\
+Log transformation **reduces right skewness** by compressing large values while keeping small values distinct:
+
+$X' = \log(X+1)$
+
+(The +1 prevents issues with zero values.)
+
+🔹 **Best for:** Right-skewed data (e.g., income, sales, house prices).\
+🔹 **Not useful if data contains negative or zero values.**
+
+### **📌 R: Applying Log Transformation**
+
+``` r
+df$income_log <- log(df$income + 1)  # Log-transform income
+```
+
+### 📌 Python: Applying Log Transformation
+
+``` python
+import numpy as np
+
+df['income_log'] = np.log1p(df['income'])  # log(1 + x)
+```
+
+✅ **Log transformation is a simple way to make right-skewed features more normal.**\
+❌ **Avoid using it on features with negative values!**
+
+## **3️⃣ Box-Cox Transformation (Only for Positive Data)**
+
+🔹 **How It Works**\
+Box-Cox transformation adjusts skewed data **dynamically** using a parameter λ\lambdaλ:
+
+\begin{cases} \frac{X^\lambda - 1}{\lambda}, & \lambda \neq 0 \\ \log(X), & \lambda = 0 \end{cases}
+
+🔹 **Best for:** Data that is **not strictly right-skewed** and requires a flexible transformation.\
+🔹 **Only works for positive values!**
+
+### **📌 R: Applying Box-Cox Transformation**
+
+``` r
+library(MASS)
+
+df$income_boxcox <- boxcox(df$income + 1, lambda = seq(-2, 2, by = 0.1))  # Find best lambda
+```
+
+### 📌 Python: Applying Box-Cox Transformation
+
+``` python
+from scipy.stats import boxcox
+
+df['income_boxcox'], lambda_opt = boxcox(df['income'] + 1)  # Apply transformation
+```
+
+✅ **Box-Cox adapts to different types of skewness dynamically.**\
+❌ **Only works on strictly positive values!**
+
+## **4️⃣ Yeo-Johnson Transformation (Handles Negative & Zero Values)**
+
+🔹 **How It Works**\
+Yeo-Johnson is similar to Box-Cox but works **on both positive and negative values**, making it more flexible.
+
+\begin{cases} \frac{(X + 1)^\lambda - 1}{\lambda}, & X \geq 0, \lambda \neq 0 \\ \frac{-(|X| + 1)^{2 - \lambda} - 1}{2 - \lambda}, & X < 0, \lambda \neq 2 \end{cases}
+
+🔹 **Best for:** Right- or left-skewed data, including negative values.\
+🔹 **More robust than Box-Cox, since it handles negatives!**
+
+### **📌 R: Applying Yeo-Johnson Transformation**
+
+``` r
+df$income_yeojohnson <- bestNormalize::yeojohnson(df$income)$x.t
+```
+
+### 📌 Python: Applying Yeo-Johnson Transformation
+
+``` python
+from sklearn.preprocessing import PowerTransformer
+
+yeojohnson = PowerTransformer(method='yeo-johnson')
+df['income_yeojohnson'] = yeojohnson.fit_transform(df[['income']])
+```
+
+✅ **Yeo-Johnson is the best choice when data contains negative values.**\
+❌ **Slightly more computationally expensive than log or Box-Cox transformations.**
+
+## **5️⃣ Feature Binning (Discretization)**
+
+Sometimes, instead of transforming continuous data, **it’s better to convert it into categories** (bins).
+
+🔹 **Best for:**\
+✔ Features that **don’t need fine-grained numeric precision**.\
+✔ Making data **more interpretable** (e.g., income brackets).
+
+### 📌 R: Binning Income into Categories
+
+``` r
+df$income_bin <- cut(df$income, breaks = c(0, 30000, 70000, 150000), labels = c("Low", "Medium", "High"))
+```
+
+### 📌 Python: Binning Income Using `pd.cut()`
+
+``` python
+df['income_bin'] = pd.cut(df['income'], bins=[0, 30000, 70000, 150000], labels=["Low", "Medium", "High"])
+```
+
+✅ **Binning can improve model interpretability, especially in decision trees.**\
+❌ **May lose fine-grained numeric detail.**
+
+## **📌 Summary: Choosing the Right Transformation**
+
+| **Transformation** | **Fixes** | **Handles Negative Values?** | **Best For** |
+|------------------|------------------|------------------|------------------|
+| **Log Transform** | Right-skewed data | ❌ No | Income, sales, house prices |
+| **Box-Cox** | Flexible skew correction | ❌ No | Normally distributed features that need transformation |
+| **Yeo-Johnson** | Both right & left skew | ✅ Yes | Datasets with negatives & zeros |
+| **Feature Binning** | Converts numeric to categories | ✅ Yes | Making features more interpretable |
+
+✅ **By selecting the right transformation, we can make skewed data more usable for models while preserving interpretability.**
+
+# **📌 Chapter 4: Best Practices & Common Pitfalls in Numerical Transformations**
+
+We’ve explored **scaling and transforming numerical features**, but applying these techniques without a strategy can lead to **poor model performance, data leakage, or unnecessary complexity**.
+
+This chapter will focus on:\
+✅ **When to apply transformations before vs. after scaling.**\
+✅ **How to prevent data leakage when using transformations.**\
+✅ **Avoiding overfitting when using feature binning.**
+
+## **1️⃣ Should You Transform Before or After Scaling?**
+
+One common question in preprocessing is: **"Should I apply log transformations or Box-Cox before or after standardization/normalization?"**
+
+🔹 **Always transform first, then scale.**
+
+Why?\
+📌 **Log, Box-Cox, and Yeo-Johnson are meant to fix skewness**—scaling first would distort their effect.\
+📌 **Scaling should be the last step** before feeding data into the model, ensuring all features are on the same scale.
+
+### **📌 Correct Order of Preprocessing Steps**
+
+| **Step** | **What It Does** | **Example Transformation** |
+|----|----|----|
+| 1️⃣ Handle missing values | Avoids issues in transformation | Mean/median imputation |
+| 2️⃣ Apply transformations | Fixes skewed distributions | Log, Box-Cox, Yeo-Johnson |
+| 3️⃣ Scale features | Ensures uniform range | Standardization (Z-score) or Min-Max Scaling |
+
+✅ **This ensures transformations work correctly before values are scaled.**
+
+### 📌 R: Correct Order in a `recipes` Pipeline
+
+``` r
+recipe_pipeline <- recipe(~ income, data = df) %>%
+  step_impute_median(income) %>%  # Handle missing values
+  step_log(income, base = 10) %>%  # Fix skewness
+  step_normalize(income)  # Standardize feature (mean 0, std 1)
+
+prepped_data <- prep(recipe_pipeline) %>% bake(new_data = df)
+```
+
+### 📌 Python: Correct Order in `scikit-learn` Pipeline
+
+``` python
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, FunctionTransformer
+import numpy as np
+
+pipeline = Pipeline([
+    ('log_transform', FunctionTransformer(np.log1p)),  # Apply log transformation
+    ('scaler', StandardScaler())  # Standardize feature
+])
+
+df['income_transformed'] = pipeline.fit_transform(df[['income']])
+```
+
+✅ **Applying transformations before scaling ensures proper feature engineering.**
+
+## **2️⃣ Preventing Data Leakage in Feature Transformations**
+
+Feature transformations should **only be learned from the training set**—if applied to the full dataset before splitting, they can **leak information** into the test set.
+
+🚨 **Common leakage risks:**\
+❌ **Fitting scalers or transformers on the full dataset** (instead of just training data).\
+❌ **Binning continuous values using test set information** (test data should only be transformed using bins learned from training).
+
+### 📌 R: Preventing Leakage in `recipes`
+
+``` r
+recipe_pipeline <- recipe(~ income, data = df_train) %>%
+  step_log(income, base = 10) %>%
+  step_normalize(income)
+
+prepped_train <- prep(recipe_pipeline) %>% bake(new_data = df_train)
+prepped_test <- bake(recipe_pipeline, new_data = df_test)  # Apply transformations to test set
+```
+
+### 📌 Python: Preventing Leakage in `scikit-learn`
+
+``` python
+from sklearn.model_selection import train_test_split
+
+# Split data
+df_train, df_test = train_test_split(df, test_size=0.2, random_state=42)
+
+# Fit transformer on training set only
+pipeline.fit(df_train[['income']])
+
+# Apply transformation separately to test set
+df_train['income_transformed'] = pipeline.transform(df_train[['income']])
+df_test['income_transformed'] = pipeline.transform(df_test[['income']])
+```
+
+✅ **Always fit scalers and transformers on the training set and apply them separately to the test set.**
+
+## **3️⃣ Avoiding Overfitting in Feature Binning**
+
+Binning (discretization) can improve model interpretability, but if **bins are too small**, models may overfit.
+
+🚨 **Common mistakes in binning:**\
+❌ **Using too many bins** → Models memorize categories instead of learning patterns.\
+❌ **Defining bins based on test data** → This introduces **data leakage**.\
+❌ **Creating bins without checking distribution** → May result in **uneven data distribution**.
+
+### **📌 Best Practices for Feature Binning**
+
+✔ Use **quantile-based binning** instead of equal-width bins.\
+✔ Ensure bins **capture meaningful groups** (e.g., income brackets).\
+✔ **Test different bin sizes** to prevent overfitting.
+
+### **📌 R: Creating Quantile-Based Bins**
+
+``` r
+df$income_bins <- cut_number(df$income, n = 4)  # Creates 4 equal-sized bins
+```
+
+### 📌 Python: Creating Quantile-Based Bins
+
+``` python
+df['income_bins'] = pd.qcut(df['income'], q=4, labels=["Low", "Medium", "High", "Very High"])
+```
+
+## **📌 Summary: Best Practices & Pitfalls in Numerical Feature Transformations**
+
+| ✅ Best Practices | ❌ Pitfalls to Avoid |
+|----|----|
+| **Transform before scaling** | Scaling before transformation can distort effects. |
+| **Fit transformers on the training set only** | Applying to full dataset causes data leakage. |
+| **Use quantile-based binning instead of equal-width bins** | Too many bins lead to overfitting. |
+| **Choose the right transformation for the data distribution** | Using log transformations on negative values breaks models. |
+
+✅ **By following these principles, numerical transformations can significantly improve model performance without introducing bias.**
+
+# **📌 Chapter 5: Conclusion & Next Steps**
+
+Numerical feature transformations **play a critical role** in ensuring machine learning models are trained on data that is **well-scaled, properly distributed, and interpretable**. Throughout this article, we’ve explored the **best techniques to transform numerical features**, prevent issues like skewness and overfitting, and **apply these techniques effectively in R and Python**.
+
+## **1️⃣ Key Takeaways**
+
+✔ **Scaling matters for certain models**—linear models, distance-based models, and neural networks benefit from standardization or normalization.\
+✔ **Not all scaling methods are the same**—Standardization (`step_normalize()` in R, `StandardScaler()` in Python) is different from Min-Max Normalization (`step_range()` in R, `MinMaxScaler()` in Python).\
+✔ **Skewed features should be transformed before scaling**—using log, Box-Cox, or Yeo-Johnson transformations.\
+✔ **Prevent data leakage when applying transformations**—always fit transformations on the training set and apply them separately to the test set.\
+✔ **Binning can improve interpretability but must be done carefully**—too many bins can lead to **overfitting** and poor generalization.
+
+✅ **By selecting the right transformation technique, we ensure that numerical data is properly prepared for machine learning models, improving performance and interpretability.**
+
+## **2️⃣ What’s Next?**
+
+This article is part of the **Feature Engineering Series**, where we explore how to create **better predictive models by transforming raw data**.
+
+🚀 **Next up: "Timing is Everything – Feature Engineering for Time-Series Data"**\
+In the next article, we’ll cover:\
+📌 **Time-based aggregations** (rolling averages, cumulative sums).\
+📌 **Extracting date-based features** (day of the week, seasonality indicators).\
+📌 **Lag and lead variables** for forecasting.\
+📌 **Handling missing time-series data effectively.**
+
+🔹 **Want to stay updated?** Keep an eye out for the next post in the series!
+
+💡 **What’s your go-to method for transforming numerical features? Drop your thoughts below!** ⬇⬇⬇

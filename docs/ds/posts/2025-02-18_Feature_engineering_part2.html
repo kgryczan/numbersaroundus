@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Numbers around us">
+<meta name="dcterms.date" content="2025-02-18">
+
+<title>Mastering the Spice Rack – Transforming Categorical Features – Numbers Around Us</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-697306ee647f3aecb60be57249203282.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-3fe3df12cb322cd60d4f50ab5ce79ec8.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-71a1c0b2fece7d4d1d4daa5e23e0c0ad.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-00ab377d17f9c7e1b98bb5b1ff2b2f0e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Numbers Around Us</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../last-articles.html"> 
+<span class="menu-text">Newest articles</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../challenges/index.html"> 
+<span class="menu-text">Challenges</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../bi/index.html"> 
+<span class="menu-text">Business Intelligence</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../ds/index.html"> 
+<span class="menu-text">Data Science</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../dp/index.html"> 
+<span class="menu-text">Data Philosophy</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <a href="https://github.com" title="Github" class="quarto-navigation-tool px-1" aria-label="Github"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Mastering the Spice Rack – Transforming Categorical Features</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Numbers around us </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 18, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><img src="images/FE_2.jpg" class="img-fluid"></p>
+<p>Now that we’ve covered the foundations of feature engineering, it’s time to <strong>dive deeper into categorical data transformation</strong>. Categorical variables are often <strong>overlooked or mishandled</strong>, yet they play a crucial role in many predictive models.</p>
+<p>This article will explore:<br>
+✅ <strong>Why categorical features matter</strong> in machine learning.<br>
+✅ <strong>Beyond one-hot encoding</strong>—better techniques for high-cardinality data.<br>
+✅ <strong>Feature engineering techniques for categorical variables</strong> in <strong>R (<code>recipes</code>, <code>vtreat</code>)</strong> and <strong>Python (<code>pandas</code>, <code>category_encoders</code>)</strong>.<br>
+✅ <strong>Best practices and common pitfalls</strong> when working with categorical data.</p>
+<section id="chapter-1-understanding-categorical-features" class="level1">
+<h1><strong>📌 Chapter 1: Understanding Categorical Features</strong></h1>
+<section id="what-are-categorical-features" class="level3">
+<h3 class="anchored" data-anchor-id="what-are-categorical-features"><strong>1️⃣ What Are Categorical Features?</strong></h3>
+<p>Categorical features represent <strong>distinct groups or labels</strong> rather than continuous numerical values. They can be:</p>
+<p>✔ <strong>Nominal</strong> – No inherent order (e.g., colors: “red,” “blue,” “green”).<br>
+✔ <strong>Ordinal</strong> – Has a meaningful order (e.g., education level: “High School” &lt; “Bachelor” &lt; “Master”).</p>
+<p>Unlike numerical features, categorical data needs <strong>special treatment</strong> to be useful in machine learning models.</p>
+</section>
+<section id="why-are-categorical-features-important" class="level3">
+<h3 class="anchored" data-anchor-id="why-are-categorical-features-important"><strong>2️⃣ Why Are Categorical Features Important?</strong></h3>
+<p>Many real-world datasets rely on categorical variables to <strong>provide key information</strong>. Consider these examples:</p>
+<p>🔹 <strong>Predicting loan default</strong> → Customer’s <strong>employment type (salaried, self-employed, retired)</strong> impacts risk.<br>
+🔹 <strong>Customer churn analysis</strong> → Subscription <strong>plan type (Basic, Premium, Enterprise)</strong> affects churn probability.<br>
+🔹 <strong>Medical diagnosis models</strong> → Patient’s <strong>blood type (A, B, O, AB)</strong> could influence health risks.</p>
+<p>If categorical variables are <strong>not handled properly</strong>, models may <strong>fail to capture valuable patterns</strong> or <strong>become computationally inefficient</strong>.</p>
+</section>
+</section>
+<section id="common-encoding-techniques-their-limitations" class="level1">
+<h1><strong>Common Encoding Techniques &amp; Their Limitations</strong></h1>
+<p>Now that we understand the importance of categorical features, we need to <strong>convert them into numerical representations</strong> so machine learning models can process them effectively. However, <strong>not all encoding methods are equal</strong>, and the wrong choice can introduce <strong>bias, unnecessary complexity, or information loss</strong>.</p>
+<section id="one-hot-encoding-ohe" class="level2">
+<h2 class="anchored" data-anchor-id="one-hot-encoding-ohe"><strong>1️⃣ One-Hot Encoding (OHE)</strong></h2>
+<p><strong>🔹 How It Works</strong><br>
+One-hot encoding converts each unique category into a separate <strong>binary column</strong> (0 or 1).</p>
+<p><strong>📌 Example: Converting “City” into One-Hot Encoding</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>City</th>
+<th>City_NewYork</th>
+<th>City_London</th>
+<th>City_Paris</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>New York</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>London</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>Paris</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p><strong>✅ Advantages:</strong><br>
+✔ Works well with <strong>low-cardinality</strong> categorical features.<br>
+✔ Prevents <strong>ordinal misinterpretation</strong> (e.g., <strong>red ≠ blue ≠ green</strong>).</p>
+<p><strong>❌ Limitations:</strong></p>
+<ul>
+<li><p><strong>Inefficient for high-cardinality variables</strong> (e.g., thousands of ZIP codes).</p></li>
+<li><p><strong>Increases dataset size</strong> significantly (curse of dimensionality).</p></li>
+<li><p><strong>Introduces sparsity</strong>, making some algorithms inefficient.</p></li>
+</ul>
+<section id="r-one-hot-encoding-with-recipes" class="level3">
+<h3 class="anchored" data-anchor-id="r-one-hot-encoding-with-recipes">📌 R: One-Hot Encoding with <code>recipes</code></h3>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidymodels)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>recipe_categorical <span class="ot">&lt;-</span> <span class="fu">recipe</span>(<span class="sc">~</span> City, <span class="at">data =</span> df) <span class="sc">%&gt;%</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_dummy</span>(<span class="fu">all_nominal_predictors</span>())</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>prepped_data <span class="ot">&lt;-</span> <span class="fu">prep</span>(recipe_categorical) <span class="sc">%&gt;%</span> <span class="fu">bake</span>(<span class="at">new_data =</span> df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="python-one-hot-encoding-with-pandas" class="level3">
+<h3 class="anchored" data-anchor-id="python-one-hot-encoding-with-pandas">📌 Python: One-Hot Encoding with <code>pandas</code></h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame({<span class="st">'City'</span>: [<span class="st">'New York'</span>, <span class="st">'London'</span>, <span class="st">'Paris'</span>]})</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>df_encoded <span class="op">=</span> pd.get_dummies(df, columns<span class="op">=</span>[<span class="st">'City'</span>])</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df_encoded)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="label-encoding" class="level2">
+<h2 class="anchored" data-anchor-id="label-encoding"><strong>2️⃣ Label Encoding</strong></h2>
+<p><strong>🔹 How It Works</strong><br>
+Label encoding assigns a <strong>numeric value</strong> to each category.</p>
+<p><strong>📌 Example: Converting “Subscription Plan” into Label Encoding</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Plan</th>
+<th>Encoded Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Basic</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>Premium</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>Enterprise</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p><strong>✅ Advantages:</strong><br>
+✔ <strong>Memory-efficient</strong> (does not expand columns like OHE).<br>
+✔ Works well for <strong>ordinal categories</strong> (e.g., “Low” &lt; “Medium” &lt; “High”).</p>
+<p><strong>❌ Limitations:</strong></p>
+<ul>
+<li><p><strong>Not suitable for nominal categories</strong> (may introduce false relationships).</p></li>
+<li><p><strong>Models may mistakenly assume numeric order matters</strong> (e.g., “New York” &lt; “London” &lt; “Paris” makes no sense).</p></li>
+</ul>
+<section id="r-label-encoding-with-recipes" class="level3">
+<h3 class="anchored" data-anchor-id="r-label-encoding-with-recipes"><strong>📌 R: Label Encoding with <code>recipes</code></strong></h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>recipe_categorical <span class="ot">&lt;-</span> <span class="fu">recipe</span>(<span class="sc">~</span> Plan, <span class="at">data =</span> df) <span class="sc">%&gt;%</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_integer</span>(<span class="fu">all_nominal_predictors</span>())</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>prepped_data <span class="ot">&lt;-</span> <span class="fu">prep</span>(recipe_categorical) <span class="sc">%&gt;%</span> <span class="fu">bake</span>(<span class="at">new_data =</span> df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="python-label-encoding-with-scikit-learn" class="level3">
+<h3 class="anchored" data-anchor-id="python-label-encoding-with-scikit-learn">📌 Python: Label Encoding with <code>scikit-learn</code></h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> LabelEncoder</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>encoder <span class="op">=</span> LabelEncoder()</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'Plan_encoded'</span>] <span class="op">=</span> encoder.fit_transform(df[<span class="st">'Plan'</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>Use Label Encoding only for ordinal categories.</strong><br>
+❌ <strong>Avoid it for nominal categories</strong> (use OHE instead).</p>
+</section>
+</section>
+<section id="target-encoding-mean-encoding" class="level2">
+<h2 class="anchored" data-anchor-id="target-encoding-mean-encoding"><strong>3️⃣ Target Encoding (Mean Encoding)</strong></h2>
+<p><strong>🔹 How It Works</strong><br>
+Replaces categories with the <strong>mean target value</strong> for each category.</p>
+<p><strong>📌 Example: Converting “City” into Target Encoding for predicting House Prices</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>City</th>
+<th>Avg House Price ($)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>New York</td>
+<td>900,000</td>
+</tr>
+<tr class="even">
+<td>London</td>
+<td>750,000</td>
+</tr>
+<tr class="odd">
+<td>Paris</td>
+<td>850,000</td>
+</tr>
+</tbody>
+</table>
+<p><strong>✅ Advantages:</strong><br>
+✔ Reduces dimensionality (<strong>no extra columns</strong> like OHE).<br>
+✔ Retains some predictive power of categories.</p>
+<p><strong>❌ Limitations:</strong></p>
+<ul>
+<li><p><strong>Prone to data leakage</strong> if applied before splitting training/testing sets.</p></li>
+<li><p><strong>May overfit</strong> to small categories if not smoothed.</p></li>
+</ul>
+<section id="r-target-encoding-with-vtreat" class="level3">
+<h3 class="anchored" data-anchor-id="r-target-encoding-with-vtreat"><strong>📌 R: Target Encoding with <code>vtreat</code></strong></h3>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(vtreat)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>treatment <span class="ot">&lt;-</span> <span class="fu">designTreatmentsN</span>(df, <span class="at">varlist =</span> <span class="st">"City"</span>, <span class="at">outcomename =</span> <span class="st">"HousePrice"</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>df_transformed <span class="ot">&lt;-</span> <span class="fu">prepare</span>(treatment, df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="python-target-encoding-with-category_encoders" class="level3">
+<h3 class="anchored" data-anchor-id="python-target-encoding-with-category_encoders">📌 Python: Target Encoding with <code>category_encoders</code></h3>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> category_encoders <span class="im">as</span> ce</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>encoder <span class="op">=</span> ce.TargetEncoder(cols<span class="op">=</span>[<span class="st">'City'</span>])</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'City_encoded'</span>] <span class="op">=</span> encoder.fit_transform(df[<span class="st">'City'</span>], df[<span class="st">'HousePrice'</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>Use target encoding for high-cardinality variables in regression problems.</strong><br>
+❌ <strong>Be cautious with leakage</strong>—always apply it within cross-validation.</p>
+</section>
+</section>
+<section id="frequency-encoding" class="level2">
+<h2 class="anchored" data-anchor-id="frequency-encoding"><strong>4️⃣ Frequency Encoding</strong></h2>
+<p><strong>🔹 How It Works</strong><br>
+Replaces categories with their <strong>frequency of occurrence</strong>.</p>
+<p><strong>📌 Example: Encoding “Car Brand” by Frequency</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Car Brand</th>
+<th>Frequency</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Toyota</td>
+<td>5000</td>
+</tr>
+<tr class="even">
+<td>BMW</td>
+<td>3000</td>
+</tr>
+<tr class="odd">
+<td>Tesla</td>
+<td>2000</td>
+</tr>
+</tbody>
+</table>
+<p><strong>✅ Advantages:</strong><br>
+✔ <strong>Preserves category importance</strong> without adding too many columns.<br>
+✔ <strong>Efficient for high-cardinality variables</strong>.</p>
+<p><strong>❌ Limitations:</strong></p>
+<ul>
+<li><p><strong>May lose interpretability</strong> if categories don’t have a meaningful frequency pattern.</p></li>
+<li><p><strong>Not useful if category frequency is unrelated to the target.</strong></p></li>
+</ul>
+<section id="r-frequency-encoding" class="level3">
+<h3 class="anchored" data-anchor-id="r-frequency-encoding">📌 R: Frequency Encoding</h3>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>CarBrand_encoded <span class="ot">&lt;-</span> <span class="fu">ave</span>(df<span class="sc">$</span>CarBrand, df<span class="sc">$</span>CarBrand, <span class="at">FUN =</span> length)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="python-frequency-encoding" class="level3">
+<h3 class="anchored" data-anchor-id="python-frequency-encoding">📌 Python: Frequency Encoding</h3>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'CarBrand_encoded'</span>] <span class="op">=</span> df.groupby(<span class="st">'CarBrand'</span>)[<span class="st">'CarBrand'</span>].transform(<span class="st">'count'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>Use frequency encoding when dealing with large categorical variables.</strong><br>
+❌ <strong>Avoid it if frequency has no correlation with the target variable.</strong></p>
+</section>
+</section>
+<section id="summary-choosing-the-right-encoding-method" class="level2">
+<h2 class="anchored" data-anchor-id="summary-choosing-the-right-encoding-method"><strong>Summary: Choosing the Right Encoding Method</strong></h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Encoding Method</th>
+<th>Works Best For</th>
+<th>When to Use</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>One-Hot Encoding</strong></td>
+<td>Low-cardinality categories</td>
+<td>When categories have ≤ 10 unique values.</td>
+</tr>
+<tr class="even">
+<td><strong>Label Encoding</strong></td>
+<td>Ordinal categories</td>
+<td>When order matters (e.g., Low &lt; Medium &lt; High).</td>
+</tr>
+<tr class="odd">
+<td><strong>Target Encoding</strong></td>
+<td>High-cardinality categories</td>
+<td>When there’s a strong relationship between category and target.</td>
+</tr>
+<tr class="even">
+<td><strong>Frequency Encoding</strong></td>
+<td>Large categorical variables</td>
+<td>When the category’s frequency is informative.</td>
+</tr>
+</tbody>
+</table>
+<p>✅ <strong>By selecting the right encoding method, we ensure our models make the most of categorical data while avoiding unnecessary complexity.</strong></p>
+</section>
+</section>
+<section id="advanced-feature-engineering-for-categorical-data" class="level1">
+<h1><strong>Advanced Feature Engineering for Categorical Data</strong></h1>
+<p>Now that we’ve covered <strong>basic encoding techniques</strong>, let’s explore <strong>more advanced strategies</strong> to extract additional insights from categorical features.</p>
+<p>This chapter will focus on:<br>
+✅ <strong>Combining categorical features</strong> to create interaction terms.<br>
+✅ <strong>Encoding strategies for tree-based vs.&nbsp;linear models.</strong><br>
+✅ <strong>Using embeddings for categorical data.</strong></p>
+<section id="feature-interactions-for-categorical-variables" class="level2">
+<h2 class="anchored" data-anchor-id="feature-interactions-for-categorical-variables"><strong>1️⃣ Feature Interactions for Categorical Variables</strong></h2>
+<p>Feature interactions help models <strong>capture relationships between categories</strong> that individual features alone may miss. Instead of treating categorical features <strong>independently</strong>, we can <strong>combine them</strong> into new engineered features.</p>
+<section id="example-combining-state-and-product-category" class="level3">
+<h3 class="anchored" data-anchor-id="example-combining-state-and-product-category"><strong>📌 Example: Combining “State” and “Product Category”</strong></h3>
+<p>Imagine we’re predicting <strong>sales revenue</strong>, and our dataset includes:</p>
+<ul>
+<li><p><strong>State</strong>: “California”, “Texas”, “New York”</p></li>
+<li><p><strong>Product Category</strong>: “Electronics”, “Clothing”, “Furniture”</p></li>
+</ul>
+<p>A standard model would <strong>treat these separately</strong>, but what if a product <strong>sells differently depending on the state</strong>?</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>State</th>
+<th>Product Category</th>
+<th>Sales ($)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>California</td>
+<td>Electronics</td>
+<td>120,000</td>
+</tr>
+<tr class="even">
+<td>Texas</td>
+<td>Electronics</td>
+<td>80,000</td>
+</tr>
+<tr class="odd">
+<td>New York</td>
+<td>Electronics</td>
+<td>100,000</td>
+</tr>
+<tr class="even">
+<td>California</td>
+<td>Clothing</td>
+<td>75,000</td>
+</tr>
+<tr class="odd">
+<td>Texas</td>
+<td>Clothing</td>
+<td>50,000</td>
+</tr>
+</tbody>
+</table>
+<p>Instead of separate features, we can <strong>combine</strong> them into a single categorical variable:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>State_Product</th>
+<th>Sales ($)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>California_Electronics</td>
+<td>120,000</td>
+</tr>
+<tr class="even">
+<td>Texas_Electronics</td>
+<td>80,000</td>
+</tr>
+<tr class="odd">
+<td>NewYork_Electronics</td>
+<td>100,000</td>
+</tr>
+<tr class="even">
+<td>California_Clothing</td>
+<td>75,000</td>
+</tr>
+</tbody>
+</table>
+<p>Now, the model can learn <strong>state-specific sales patterns</strong> instead of treating all locations and products the same.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidymodels)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>State_Product <span class="ot">&lt;-</span> <span class="fu">interaction</span>(df<span class="sc">$</span>State, df<span class="sc">$</span>ProductCategory, <span class="at">sep =</span> <span class="st">"_"</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>recipe_categorical <span class="ot">&lt;-</span> <span class="fu">recipe</span>(<span class="sc">~</span> State_Product, <span class="at">data =</span> df) <span class="sc">%&gt;%</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_dummy</span>(<span class="fu">all_nominal_predictors</span>())  <span class="co"># One-hot encode new feature</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>prepped_data <span class="ot">&lt;-</span> <span class="fu">prep</span>(recipe_categorical) <span class="sc">%&gt;%</span> <span class="fu">bake</span>(<span class="at">new_data =</span> df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="python-creating-interaction-features-with-pandas" class="level3">
+<h3 class="anchored" data-anchor-id="python-creating-interaction-features-with-pandas">📌 Python: Creating Interaction Features with <code>pandas</code></h3>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'State_Product'</span>] <span class="op">=</span> df[<span class="st">'State'</span>] <span class="op">+</span> <span class="st">"_"</span> <span class="op">+</span> df[<span class="st">'ProductCategory'</span>]</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.get_dummies(df, columns<span class="op">=</span>[<span class="st">'State_Product'</span>])  <span class="co"># One-hot encode</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>Use feature interactions when categorical variables may have meaningful dependencies.</strong><br>
+❌ <strong>Avoid it if the number of unique combinations is too high</strong> (e.g., thousands of possible pairs).</p>
+</section>
+</section>
+<section id="encoding-strategies-for-tree-based-vs.-linear-models" class="level2">
+<h2 class="anchored" data-anchor-id="encoding-strategies-for-tree-based-vs.-linear-models"><strong>2️⃣ Encoding Strategies for Tree-Based vs.&nbsp;Linear Models</strong></h2>
+<p>Different machine learning models <strong>handle categorical features differently</strong>:</p>
+<p>🔹 <strong>Linear models (logistic regression, linear regression, SVMs)</strong></p>
+<ul>
+<li><p>Prefer <strong>one-hot encoding</strong> or <strong>ordinal encoding</strong>.</p></li>
+<li><p>Work best when categorical features <strong>don’t have too many unique values</strong>.</p></li>
+</ul>
+<p>🔹 <strong>Tree-based models (random forests, XGBoost, LightGBM, CatBoost)</strong></p>
+<ul>
+<li><p>Can handle <strong>raw categorical data directly</strong> (without one-hot encoding).</p></li>
+<li><p>Perform well with <strong>target encoding</strong> and <strong>frequency encoding</strong>.</p></li>
+</ul>
+<section id="example-predicting-customer-churn-using-linear-vs.-tree-based-models" class="level3">
+<h3 class="anchored" data-anchor-id="example-predicting-customer-churn-using-linear-vs.-tree-based-models"><strong>📌 Example: Predicting Customer Churn Using Linear vs.&nbsp;Tree-Based Models</strong></h3>
+<p>We have a dataset with:</p>
+<ul>
+<li><p><strong>Subscription Type</strong>: “Free”, “Basic”, “Premium”, “Enterprise”</p></li>
+<li><p><strong>Churn</strong>: (1 = Yes, 0 = No)</p></li>
+</ul>
+<p>✅ <strong>Use feature interactions when categorical variables may have meaningful dependencies.</strong><br>
+❌ <strong>Avoid it if the number of unique combinations is too high</strong> (e.g., thousands of possible pairs).</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Subscription Type</th>
+<th>Churn Rate (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Free</td>
+<td>80%</td>
+</tr>
+<tr class="even">
+<td>Basic</td>
+<td>50%</td>
+</tr>
+<tr class="odd">
+<td>Premium</td>
+<td>20%</td>
+</tr>
+<tr class="even">
+<td>Enterprise</td>
+<td>5%</td>
+</tr>
+</tbody>
+</table>
+<p>For <strong>linear models</strong>, we use <strong>one-hot encoding</strong>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Free</th>
+<th>Basic</th>
+<th>Premium</th>
+<th>Enterprise</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>For <strong>tree-based models</strong>, we can use <strong>target encoding</strong>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Subscription Type</th>
+<th>Encoded Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Free</td>
+<td>0.80</td>
+</tr>
+<tr class="even">
+<td>Basic</td>
+<td>0.50</td>
+</tr>
+<tr class="odd">
+<td>Premium</td>
+<td>0.20</td>
+</tr>
+<tr class="even">
+<td>Enterprise</td>
+<td>0.05</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="r-encoding-for-linear-models-vs.-tree-based-models" class="level3">
+<h3 class="anchored" data-anchor-id="r-encoding-for-linear-models-vs.-tree-based-models">📌 R: Encoding for Linear Models vs.&nbsp;Tree-Based Models</h3>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidymodels)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co"># One-hot encoding for linear models</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>recipe_linear <span class="ot">&lt;-</span> <span class="fu">recipe</span>(<span class="sc">~</span> SubscriptionType, <span class="at">data =</span> df) <span class="sc">%&gt;%</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_dummy</span>(<span class="fu">all_nominal_predictors</span>())</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Target encoding for tree-based models</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(vtreat)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>treatment <span class="ot">&lt;-</span> <span class="fu">designTreatmentsC</span>(df, <span class="at">varlist =</span> <span class="st">"SubscriptionType"</span>, <span class="at">outcomename =</span> <span class="st">"Churn"</span>)</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>df_transformed <span class="ot">&lt;-</span> <span class="fu">prepare</span>(treatment, df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="python-encoding-for-linear-models-vs.-tree-based-models" class="level3">
+<h3 class="anchored" data-anchor-id="python-encoding-for-linear-models-vs.-tree-based-models">📌 Python: Encoding for Linear Models vs.&nbsp;Tree-Based Models</h3>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> category_encoders <span class="im">as</span> ce</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co"># One-hot encoding (linear models)</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>df_linear <span class="op">=</span> pd.get_dummies(df, columns<span class="op">=</span>[<span class="st">'SubscriptionType'</span>])</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Target encoding (tree-based models)</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>encoder <span class="op">=</span> ce.TargetEncoder(cols<span class="op">=</span>[<span class="st">'SubscriptionType'</span>])</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'SubscriptionType_encoded'</span>] <span class="op">=</span> encoder.fit_transform(df[<span class="st">'SubscriptionType'</span>], df[<span class="st">'Churn'</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>Use target encoding for high-cardinality categorical variables in tree-based models.</strong><br>
+❌ <strong>Avoid one-hot encoding when there are too many categories—it increases feature space dramatically.</strong></p>
+</section>
+</section>
+<section id="using-embeddings-for-categorical-data" class="level2">
+<h2 class="anchored" data-anchor-id="using-embeddings-for-categorical-data"><strong>3️⃣ Using Embeddings for Categorical Data</strong></h2>
+<p><strong>🔹 How It Works</strong><br>
+Categorical embeddings transform categories into <strong>dense numerical vectors</strong> that capture similarities between values.</p>
+<p>Instead of one-hot encoding, we can <strong>train an embedding layer</strong> to represent relationships between categories <strong>automatically</strong>.</p>
+<p><strong>📌 Example: Encoding “Job Role” in a Hiring Model</strong></p>
+<ul>
+<li><p>Instead of <code>"Engineer" → [1,0,0,0]</code>, <code>"Manager" → [0,1,0,0]</code></p></li>
+<li><p>A neural network can learn <code>"Engineer"</code> is <strong>more similar to <code>"Scientist"</code> than <code>"Cashier"</code></strong>, assigning embeddings like:</p></li>
+</ul>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Job Role</th>
+<th>Embedding 1</th>
+<th>Embedding 2</th>
+<th>Embedding 3</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Engineer</td>
+<td>0.85</td>
+<td>0.13</td>
+<td>0.41</td>
+</tr>
+<tr class="even">
+<td>Scientist</td>
+<td>0.88</td>
+<td>0.12</td>
+<td>0.39</td>
+</tr>
+<tr class="odd">
+<td>Cashier</td>
+<td>0.10</td>
+<td>0.95</td>
+<td>0.76</td>
+</tr>
+</tbody>
+</table>
+<section id="python-creating-embeddings-for-categorical-variables-using-tensorflow" class="level3">
+<h3 class="anchored" data-anchor-id="python-creating-embeddings-for-categorical-variables-using-tensorflow"><strong>📌 Python: Creating Embeddings for Categorical Variables Using <code>TensorFlow</code></strong></h3>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> tensorflow <span class="im">as</span> tf</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tensorflow.keras.layers <span class="im">import</span> Embedding</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Define an embedding layer for a categorical feature with 10 unique values</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>embedding_layer <span class="op">=</span> Embedding(input_dim<span class="op">=</span><span class="dv">10</span>, output_dim<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Example: Convert category "Engineer" (ID = 3) into a dense vector</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>category_input <span class="op">=</span> np.array([[<span class="dv">3</span>]])  <span class="co"># Example category index</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>embedded_output <span class="op">=</span> embedding_layer(category_input)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(embedded_output)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>Embeddings are useful when working with large categorical datasets (e.g., text, recommendation systems).</strong><br>
+❌ <strong>Not necessary for small categorical variables (OHE or target encoding is simpler).</strong></p>
+</section>
+<section id="summary-choosing-the-best-advanced-encoding-strategy" class="level3">
+<h3 class="anchored" data-anchor-id="summary-choosing-the-best-advanced-encoding-strategy"><strong>📌 Summary: Choosing the Best Advanced Encoding Strategy</strong></h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Encoding Method</th>
+<th>Works Best For</th>
+<th>When to Use</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Feature Interactions</strong></td>
+<td>Related categorical variables</td>
+<td>When categories influence each other (e.g., State + Product Category).</td>
+</tr>
+<tr class="even">
+<td><strong>Target Encoding</strong></td>
+<td>Tree-based models</td>
+<td>When category values correlate with the target variable.</td>
+</tr>
+<tr class="odd">
+<td><strong>Embeddings</strong></td>
+<td>Deep learning models</td>
+<td>When handling large categorical datasets efficiently.</td>
+</tr>
+</tbody>
+</table>
+<p>✅ <strong>Using advanced encoding techniques ensures categorical variables provide real value to models while maintaining efficiency.</strong></p>
+</section>
+</section>
+</section>
+<section id="best-practices-common-pitfalls-for-categorical-features" class="level1">
+<h1><strong>Best Practices &amp; Common Pitfalls for Categorical Features</strong></h1>
+<p>Now that we’ve explored <strong>categorical encoding techniques</strong>, let’s focus on <strong>best practices and mistakes to avoid</strong> when working with categorical data in machine learning.</p>
+<p>This chapter will cover:<br>
+✅ <strong>Preventing feature leakage when encoding categorical variables.</strong><br>
+✅ <strong>Avoiding overfitting with high-cardinality categorical features.</strong><br>
+✅ <strong>Optimizing categorical encoding based on the type of model.</strong></p>
+<section id="avoiding-feature-leakage-with-categorical-encoding" class="level2">
+<h2 class="anchored" data-anchor-id="avoiding-feature-leakage-with-categorical-encoding"><strong>1️⃣ Avoiding Feature Leakage with Categorical Encoding</strong></h2>
+<p>Feature leakage occurs when a model <strong>has access to information during training that it wouldn’t have in real-world predictions.</strong> This is a <strong>huge issue</strong> in categorical encoding techniques like <strong>target encoding</strong>.</p>
+<section id="example-target-encoding-gone-wrong" class="level3">
+<h3 class="anchored" data-anchor-id="example-target-encoding-gone-wrong"><strong>📌 Example: Target Encoding Gone Wrong</strong></h3>
+<p>Imagine we are predicting <strong>customer churn</strong>, and we use <strong>target encoding</strong> on the “Customer Segment” column:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Customer Segment</th>
+<th>Avg Churn Rate (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Students</td>
+<td>75%</td>
+</tr>
+<tr class="even">
+<td>Freelancers</td>
+<td>40%</td>
+</tr>
+<tr class="odd">
+<td>Corporate</td>
+<td>10%</td>
+</tr>
+</tbody>
+</table>
+<p>❌ <strong>Problem:</strong></p>
+<ul>
+<li><p>If this encoding is applied <strong>before splitting into train/test sets</strong>, the model <strong>already knows the churn rate</strong> for each category.</p></li>
+<li><p>The model will <strong>memorize the target value instead of learning real relationships.</strong></p></li>
+</ul>
+<p>✅ <strong>Solution:</strong></p>
+<ul>
+<li>Perform target encoding <strong>only within cross-validation</strong>—never on the full dataset.</li>
+</ul>
+</section>
+<section id="r-preventing-leakage-in-target-encoding-with-vtreat" class="level3">
+<h3 class="anchored" data-anchor-id="r-preventing-leakage-in-target-encoding-with-vtreat">📌 R: Preventing Leakage in Target Encoding with <code>vtreat</code></h3>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(vtreat)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the target encoding inside cross-validation</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>treatment <span class="ot">&lt;-</span> <span class="fu">designTreatmentsC</span>(df_train, <span class="at">varlist =</span> <span class="st">"CustomerSegment"</span>, <span class="at">outcomename =</span> <span class="st">"Churn"</span>)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply transformation to training and test sets separately</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>df_train_transformed <span class="ot">&lt;-</span> <span class="fu">prepare</span>(treatment, df_train)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>df_test_transformed <span class="ot">&lt;-</span> <span class="fu">prepare</span>(treatment, df_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="python-preventing-leakage-in-target-encoding-with-category_encoders" class="level3">
+<h3 class="anchored" data-anchor-id="python-preventing-leakage-in-target-encoding-with-category_encoders">📌 Python: Preventing Leakage in Target Encoding with <code>category_encoders</code></h3>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> category_encoders <span class="im">as</span> ce</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>encoder <span class="op">=</span> ce.TargetEncoder(cols<span class="op">=</span>[<span class="st">'CustomerSegment'</span>])</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit on training data, transform separately on train and test</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>df_train[<span class="st">'CustomerSegment_encoded'</span>] <span class="op">=</span> encoder.fit_transform(df_train[<span class="st">'CustomerSegment'</span>], df_train[<span class="st">'Churn'</span>])</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>df_test[<span class="st">'CustomerSegment_encoded'</span>] <span class="op">=</span> encoder.transform(df_test[<span class="st">'CustomerSegment'</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>Always encode categorical features using only training data to prevent information from leaking into the test set.</strong></p>
+</section>
+</section>
+<section id="avoiding-overfitting-with-high-cardinality-features" class="level2">
+<h2 class="anchored" data-anchor-id="avoiding-overfitting-with-high-cardinality-features"><strong>2️⃣ Avoiding Overfitting with High-Cardinality Features</strong></h2>
+<p>High-cardinality categorical features (e.g., <strong>Customer ID, Product ID, ZIP Code</strong>) introduce <strong>thousands of unique values</strong>. If not handled properly, they can lead to:</p>
+<ul>
+<li><p><strong>Curse of dimensionality</strong> (too many one-hot encoded columns).</p></li>
+<li><p><strong>Overfitting</strong> to specific training data.</p></li>
+</ul>
+<section id="example-the-zip-code-problem" class="level3">
+<h3 class="anchored" data-anchor-id="example-the-zip-code-problem"><strong>📌 Example: The ZIP Code Problem</strong></h3>
+<p>If we one-hot encode a <strong>ZIP code</strong> variable, it might create <strong>thousands of extra features</strong>, leading to:<br>
+❌ <strong>Sparse matrices</strong> (lots of zeroes).<br>
+❌ <strong>Overfitting</strong> to specific locations.</p>
+<p>✅ <strong>Solutions for High-Cardinality Variables:</strong></p>
+<ol type="1">
+<li><p><strong>Group rare categories together</strong> (step_other in R, <code>pd.cut()</code> in Python).</p></li>
+<li><p><strong>Use frequency encoding instead of one-hot encoding.</strong></p></li>
+<li><p><strong>Use embeddings for categorical variables in deep learning models.</strong></p></li>
+</ol>
+</section>
+<section id="r-reducing-high-cardinality-with-step_other" class="level3">
+<h3 class="anchored" data-anchor-id="r-reducing-high-cardinality-with-step_other">📌 R: Reducing High-Cardinality with <code>step_other()</code></h3>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>recipe_high_cardinality <span class="ot">&lt;-</span> <span class="fu">recipe</span>(<span class="sc">~</span> ZIPCode, <span class="at">data =</span> df) <span class="sc">%&gt;%</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_other</span>(ZIPCode, <span class="at">threshold =</span> <span class="fl">0.05</span>)  <span class="co"># Groups rare ZIP codes together</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="python-reducing-high-cardinality-with-frequency-encoding" class="level3">
+<h3 class="anchored" data-anchor-id="python-reducing-high-cardinality-with-frequency-encoding">📌 Python: Reducing High-Cardinality with Frequency Encoding</h3>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'ZIPCode_encoded'</span>] <span class="op">=</span> df.groupby(<span class="st">'ZIPCode'</span>)[<span class="st">'ZIPCode'</span>].transform(<span class="st">'count'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>By grouping rare categories together or using frequency encoding, we avoid overfitting while keeping useful information.</strong></p>
+</section>
+</section>
+<section id="optimizing-encoding-based-on-model-type" class="level2">
+<h2 class="anchored" data-anchor-id="optimizing-encoding-based-on-model-type"><strong>3️⃣ Optimizing Encoding Based on Model Type</strong></h2>
+<p>Some models work well with <strong>raw categorical data</strong>, while others require <strong>specific encoding methods</strong>.</p>
+<section id="best-encoding-methods-for-different-models" class="level3">
+<h3 class="anchored" data-anchor-id="best-encoding-methods-for-different-models"><strong>📌 Best Encoding Methods for Different Models</strong></h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model Type</th>
+<th>Best Encoding Method</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Linear Models (Logistic Regression, SVMs, Linear Regression)</strong></td>
+<td>One-Hot Encoding, Ordinal Encoding</td>
+</tr>
+<tr class="even">
+<td><strong>Tree-Based Models (Random Forest, XGBoost, LightGBM, CatBoost)</strong></td>
+<td>Target Encoding, Frequency Encoding, Raw Categories (CatBoost)</td>
+</tr>
+<tr class="odd">
+<td><strong>Deep Learning (Neural Networks)</strong></td>
+<td>Embeddings, Frequency Encoding</td>
+</tr>
+</tbody>
+</table>
+<p>✅ <strong>Always select the encoding method based on how the model handles categorical variables.</strong></p>
+</section>
+<section id="example-encoding-for-xgboost-vs.-logistic-regression" class="level3">
+<h3 class="anchored" data-anchor-id="example-encoding-for-xgboost-vs.-logistic-regression"><strong>📌 Example: Encoding for XGBoost vs.&nbsp;Logistic Regression</strong></h3>
+<p>If we use <strong>logistic regression</strong>, we should use <strong>one-hot encoding</strong>:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>df_linear <span class="ot">=</span> <span class="fu">pd.get_dummies</span>(df, <span class="at">columns=</span>[<span class="st">'Category'</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>If we use <strong>XGBoost</strong>, we should use <strong>target encoding</strong>:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>encoder <span class="op">=</span> ce.TargetEncoder(cols<span class="op">=</span>[<span class="st">'Category'</span>])</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'Category_encoded'</span>] <span class="op">=</span> encoder.fit_transform(df[<span class="st">'Category'</span>], df[<span class="st">'Target'</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>Tree-based models like XGBoost handle categorical data differently than linear models—choose encoding methods accordingly.</strong></p>
+</section>
+</section>
+<section id="best-practices-common-pitfalls" class="level2">
+<h2 class="anchored" data-anchor-id="best-practices-common-pitfalls"><strong>Best Practices &amp; Common Pitfalls</strong></h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>✅ Best Practices</th>
+<th>❌ Pitfalls to Avoid</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Prevent leakage</strong> by encoding categories only on the training set.</td>
+<td>Encoding categorical variables <strong>before train-test split</strong> leads to overfitting.</td>
+</tr>
+<tr class="even">
+<td><strong>Reduce high-cardinality categories</strong> using frequency encoding or grouping rare values.</td>
+<td>One-hot encoding <strong>thousands of categories</strong> makes models inefficient.</td>
+</tr>
+<tr class="odd">
+<td><strong>Use encoding methods suited to the model type</strong> (OHE for linear, target encoding for trees).</td>
+<td>Using the <strong>wrong encoding method</strong> can confuse models and reduce accuracy.</td>
+</tr>
+</tbody>
+</table>
+<p>✅ <strong>By following these best practices, we ensure categorical variables are handled effectively without introducing unnecessary complexity.</strong></p>
+</section>
+</section>
+<section id="conclusion-next-steps" class="level1">
+<h1><strong>Conclusion &amp; Next Steps</strong></h1>
+<p>Categorical features are often <strong>overlooked or mishandled</strong>, yet they play a <strong>critical role in predictive modeling</strong>. In this article, we’ve explored <strong>different encoding techniques, advanced feature engineering strategies, and best practices</strong> for handling categorical data effectively.</p>
+<section id="key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways"><strong>1️⃣ Key Takeaways</strong></h2>
+<p>✔ <strong>Not all categorical variables are the same</strong>—Nominal (unordered) and ordinal (ordered) features require <strong>different encoding methods</strong>.<br>
+✔ <strong>One-hot encoding works well for small categories</strong>, but <strong>becomes inefficient</strong> with high-cardinality features.<br>
+✔ <strong>Target encoding and frequency encoding</strong> are powerful alternatives but <strong>must be used carefully</strong> to prevent <strong>feature leakage and overfitting</strong>.<br>
+✔ <strong>Feature interactions</strong> (e.g., combining “State” and “Product Category”) <strong>capture relationships</strong> that individual features might miss.<br>
+✔ <strong>Choosing the right encoding method depends on the model type</strong>:</p>
+<ul>
+<li><p><strong>Linear models (Logistic Regression, SVMs, etc.)</strong> → Prefer <strong>one-hot encoding or ordinal encoding</strong>.</p></li>
+<li><p><strong>Tree-based models (XGBoost, LightGBM, etc.)</strong> → Handle <strong>target encoding, frequency encoding, or raw categorical data</strong> well.</p></li>
+<li><p><strong>Deep learning models</strong> → <strong>Embeddings</strong> work best for high-cardinality features.</p></li>
+</ul>
+<p>✅ <strong>By selecting the right encoding method and avoiding common pitfalls, we can improve model performance while reducing computational complexity.</strong></p>
+</section>
+<section id="whats-next" class="level2">
+<h2 class="anchored" data-anchor-id="whats-next"><strong>2️⃣ What’s Next?</strong></h2>
+<p>This article is part of the <strong>Feature Engineering Series</strong>, where we break down how to create <strong>better predictive models by transforming raw data</strong>.</p>
+<p>🚀 <strong>Next up: “Cooking Temperatures Matter – Scaling &amp; Transforming Numerical Data”</strong><br>
+In the next article, we’ll explore:<br>
+📌 <strong>When to scale numerical features</strong> (and when not to!).<br>
+📌 <strong>Log, power, and polynomial transformations</strong>—how they impact model performance.<br>
+📌 <strong>The difference between standardization and normalization</strong> (and which models need them).<br>
+📌 <strong>Practical R &amp; Python examples</strong> to apply numerical feature transformations effectively.</p>
+<p>🔹 <strong>Want to stay updated?</strong> Keep an eye out for the next post in the series!</p>
+<p>💡 <strong>What’s your favorite way to handle categorical data? Drop your thoughts below!</strong> ⬇⬇⬇</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = true;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>For everybody, not to be fooled by numbers</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
