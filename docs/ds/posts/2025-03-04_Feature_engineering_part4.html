@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Numbers around us">
+<meta name="dcterms.date" content="2025-03-04">
+
+<title>Timing is Everything – Feature Engineering for Time-Series Data – Numbers Around Us</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-697306ee647f3aecb60be57249203282.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-3fe3df12cb322cd60d4f50ab5ce79ec8.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-71a1c0b2fece7d4d1d4daa5e23e0c0ad.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-00ab377d17f9c7e1b98bb5b1ff2b2f0e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Numbers Around Us</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../last-articles.html"> 
+<span class="menu-text">Newest articles</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../challenges/index.html"> 
+<span class="menu-text">Challenges</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../bi/index.html"> 
+<span class="menu-text">Business Intelligence</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../ds/index.html"> 
+<span class="menu-text">Data Science</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../dp/index.html"> 
+<span class="menu-text">Data Philosophy</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <a href="https://github.com" title="Github" class="quarto-navigation-tool px-1" aria-label="Github"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Timing is Everything – Feature Engineering for Time-Series Data</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Numbers around us </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 4, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><img src="images/FE_5.jpg" class="img-fluid"></p>
+<p>In the next installment of our <strong>Feature Engineering Series</strong>, we’re diving into one of the <strong>most unique and complex data types</strong>—<strong>time-series data</strong>. Unlike tabular data, time-series data <strong>comes with a natural order</strong>, and understanding <strong>temporal patterns</strong> is crucial for building effective models.</p>
+<p>This article will cover:<br>
+✅ <strong>Why time matters in modeling.</strong><br>
+✅ <strong>Essential time-based features to extract.</strong><br>
+✅ <strong>Rolling windows, lag features, and cumulative aggregations.</strong><br>
+✅ <strong>Handling missing timestamps in time-series data.</strong><br>
+✅ <strong>Practical examples using R and Python.</strong></p>
+<section id="chapter-1-why-time-series-data-needs-special-treatment-updated" class="level1">
+<h1><strong>📌 Chapter 1: Why Time-Series Data Needs Special Treatment (Updated)</strong></h1>
+<section id="time-is-more-than-just-a-timestamp" class="level3">
+<h3 class="anchored" data-anchor-id="time-is-more-than-just-a-timestamp"><strong>1️⃣ Time Is More Than Just a Timestamp</strong></h3>
+<p>When working with time-series data, the <strong>order of events</strong> matters just as much as the events themselves. Unlike static datasets where rows are independent, time-series data often contains:</p>
+<ul>
+<li><p><strong>Trends</strong> — Overall increases or decreases over time (e.g., sales steadily increasing).</p></li>
+<li><p><strong>Seasonality</strong> — Regular patterns that repeat (e.g., weekly or monthly sales peaks).</p></li>
+<li><p><strong>Shocks &amp; Events</strong> — Sudden outliers caused by special occurrences (e.g., product launches or economic crises).</p></li>
+</ul>
+<p>Ignoring these time-based patterns and treating dates as just another categorical variable can lead to:<br>
+❌ <strong>Loss of valuable temporal relationships</strong><br>
+❌ <strong>Poor forecasting accuracy</strong><br>
+❌ <strong>Overfitting to irrelevant patterns</strong></p>
+</section>
+<section id="extracting-meaningful-time-based-features" class="level3">
+<h3 class="anchored" data-anchor-id="extracting-meaningful-time-based-features"><strong>2️⃣ Extracting Meaningful Time-Based Features</strong></h3>
+<p>Every date or timestamp holds <strong>hidden temporal signals</strong> we can expose through feature engineering. These include:<br>
+✔ <strong>Day of week (Mon, Tue, etc.)</strong><br>
+✔ <strong>Month (Jan, Feb, etc.)</strong><br>
+✔ <strong>Quarter (Q1, Q2, etc.)</strong><br>
+✔ <strong>Weekday/Weekend flag</strong><br>
+✔ <strong>Holiday flag (if you have a holiday calendar)</strong><br>
+✔ <strong>Cumulative days since the first record</strong><br>
+✔ <strong>Yearly day index (day-of-year)</strong></p>
+<section id="r-automatically-extracting-time-features-using-time_tk" class="level4">
+<h4 class="anchored" data-anchor-id="r-automatically-extracting-time-features-using-time_tk"><strong>📌 R: Automatically Extracting Time Features Using <code>time_tk</code></strong></h4>
+<p>Instead of manually creating every feature, the <strong><code>tk_get_timeseries_signature()</code></strong> function from the <strong><code>time_tk</code></strong> package can extract an <strong>entire set of useful time-based features</strong> in <strong>one step</strong>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(timetk)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Date =</span> <span class="fu">as.Date</span>(Date)) <span class="sc">%&gt;%</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(<span class="fu">tk_get_timeseries_signature</span>(df<span class="sc">$</span>Date))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The <code>tk_get_timeseries_signature()</code> function will add columns like:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 11%">
+<col style="width: 6%">
+<col style="width: 9%">
+<col style="width: 7%">
+<col style="width: 5%">
+<col style="width: 10%">
+<col style="width: 12%">
+<col style="width: 6%">
+<col style="width: 8%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Date</th>
+<th>index.num</th>
+<th>year</th>
+<th>quarter</th>
+<th>month</th>
+<th>day</th>
+<th>wday.lbl</th>
+<th>is_weekend</th>
+<th>hour</th>
+<th>minute</th>
+<th>second</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2025-01-01</td>
+<td>1</td>
+<td>2025</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>Wed</td>
+<td>0</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+</tr>
+<tr class="even">
+<td>2025-01-02</td>
+<td>2</td>
+<td>2025</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>Thu</td>
+<td>0</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+</tr>
+</tbody>
+</table>
+<p>✅ This single function saves <strong>a lot of manual coding</strong> while ensuring the <strong>features are consistently extracted</strong> for any datetime column.</p>
+</section>
+<section id="python-manually-extracting-date-features-using-pandas" class="level4">
+<h4 class="anchored" data-anchor-id="python-manually-extracting-date-features-using-pandas"><strong>📌 Python: Manually Extracting Date Features Using <code>pandas</code></strong></h4>
+<p>While Python doesn’t have a direct equivalent to <code>tk_get_timeseries_signature()</code>, you can achieve the same result with <code>pandas</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'Date'</span>] <span class="op">=</span> pd.to_datetime(df[<span class="st">'Date'</span>])</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'day_of_week'</span>] <span class="op">=</span> df[<span class="st">'Date'</span>].dt.day_name()</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'is_weekend'</span>] <span class="op">=</span> df[<span class="st">'day_of_week'</span>].isin([<span class="st">'Saturday'</span>, <span class="st">'Sunday'</span>]).astype(<span class="bu">int</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'month'</span>] <span class="op">=</span> df[<span class="st">'Date'</span>].dt.month</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'quarter'</span>] <span class="op">=</span> df[<span class="st">'Date'</span>].dt.quarter</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'day_of_year'</span>] <span class="op">=</span> df[<span class="st">'Date'</span>].dt.dayofyear</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'cumulative_days'</span>] <span class="op">=</span> (df[<span class="st">'Date'</span>] <span class="op">-</span> df[<span class="st">'Date'</span>].<span class="bu">min</span>()).dt.days <span class="op">+</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="key-takeaway" class="level3">
+<h3 class="anchored" data-anchor-id="key-takeaway"><strong>✅ Key Takeaway</strong></h3>
+<p><strong>In R, <code>tk_get_timeseries_signature()</code> is a time-saver for fast and comprehensive feature extraction, especially for quick exploratory analysis or building time-aware models.</strong><br>
+In Python, we rely on <strong>manual feature creation with <code>pandas</code></strong>, which offers flexibility but requires more effort.</p>
+</section>
+<section id="summary-of-key-time-based-features" class="level3">
+<h3 class="anchored" data-anchor-id="summary-of-key-time-based-features"><strong>📌 Summary of Key Time-Based Features</strong></h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Feature Name</th>
+<th>Example Value</th>
+<th>Why It’s Useful</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Day of Week</td>
+<td>Wednesday</td>
+<td>Captures weekly patterns</td>
+</tr>
+<tr class="even">
+<td>Month</td>
+<td>January</td>
+<td>Captures seasonal patterns</td>
+</tr>
+<tr class="odd">
+<td>Quarter</td>
+<td>Q1</td>
+<td>Tracks quarterly trends</td>
+</tr>
+<tr class="even">
+<td>Is Weekend</td>
+<td>1 (True)</td>
+<td>Captures weekend behavior</td>
+</tr>
+<tr class="odd">
+<td>Day of Year</td>
+<td>125</td>
+<td>Tracks year progress</td>
+</tr>
+<tr class="even">
+<td>Cumulative Days</td>
+<td>200</td>
+<td>Captures time elapsed since start</td>
+</tr>
+</tbody>
+</table>
+<p>✅ <strong>These time-based features allow machine learning models to recognize</strong> trends, cycles, and seasonal effects that are impossible to detect from raw timestamps alone.</p>
+</section>
+</section>
+<section id="chapter-2-lag-features-rolling-windows-aggregations" class="level1">
+<h1><strong>📌 Chapter 2: Lag Features, Rolling Windows &amp; Aggregations</strong></h1>
+<p>When working with time-series data, <strong>the past matters</strong>. Future outcomes are often influenced by recent trends, making <strong>lag features and rolling aggregations</strong> essential for helping models learn from historical patterns.</p>
+<p>This chapter explores:<br>
+✅ <strong>Lag features</strong> — capturing values from prior time periods.<br>
+✅ <strong>Rolling windows</strong> — summarizing recent trends over a time window.<br>
+✅ <strong>Cumulative features</strong> — tracking running totals over time.<br>
+✅ <strong>Practical examples in R and Python.</strong></p>
+<section id="lag-features-learning-from-the-past" class="level2">
+<h2 class="anchored" data-anchor-id="lag-features-learning-from-the-past"><strong>1️⃣ Lag Features – Learning from the Past</strong></h2>
+<section id="what-are-lag-features" class="level3">
+<h3 class="anchored" data-anchor-id="what-are-lag-features"><strong>🔹 What Are Lag Features?</strong></h3>
+<p>A <strong>lag feature</strong> is a copy of a variable shifted back by a given number of time steps. It allows a model to see <strong>past values directly</strong>, which is especially useful in <strong>forecasting and anomaly detection</strong>.</p>
+</section>
+<section id="example-lagging-sales-by-1-day" class="level3">
+<h3 class="anchored" data-anchor-id="example-lagging-sales-by-1-day"><strong>📌 Example: Lagging Sales by 1 Day</strong></h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Date</th>
+<th>Sales</th>
+<th>Lag_1_Sales</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2025-01-01</td>
+<td>100</td>
+<td>NA</td>
+</tr>
+<tr class="even">
+<td>2025-01-02</td>
+<td>150</td>
+<td>100</td>
+</tr>
+<tr class="odd">
+<td>2025-01-03</td>
+<td>80</td>
+<td>150</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>Lag_1_Sales</code> column lets the model <strong>see the previous day’s sales</strong> when predicting today’s.</p>
+<section id="r-creating-lag-features-with-slide-from-slider" class="level4">
+<h4 class="anchored" data-anchor-id="r-creating-lag-features-with-slide-from-slider">📌 R: Creating Lag Features with <code>slide()</code> from <code>slider</code></h4>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slider)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Lag_1_Sales =</span> <span class="fu">slide_dbl</span>(Sales, <span class="sc">~</span> .x, <span class="at">.before =</span> <span class="dv">1</span>, <span class="at">.after =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">complete =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="python-creating-lag-features-with-shift-from-pandas" class="level4">
+<h4 class="anchored" data-anchor-id="python-creating-lag-features-with-shift-from-pandas">📌 Python: Creating Lag Features with <code>shift()</code> from <code>pandas</code></h4>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'Lag_1_Sales'</span>] <span class="op">=</span> df[<span class="st">'Sales'</span>].shift(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>Lag features are critical for models that need to capture time dependence, such as ARIMA, LSTMs, or any time-series regression model.</strong><br>
+❌ <strong>They introduce missing values at the start of the series, which you need to handle (e.g., drop, impute).</strong></p>
+</section>
+</section>
+</section>
+<section id="rolling-features-capturing-trends-over-time" class="level2">
+<h2 class="anchored" data-anchor-id="rolling-features-capturing-trends-over-time"><strong>2️⃣ Rolling Features – Capturing Trends Over Time</strong></h2>
+<section id="what-are-rolling-windows" class="level3">
+<h3 class="anchored" data-anchor-id="what-are-rolling-windows"><strong>🔹 What Are Rolling Windows?</strong></h3>
+<p>Rolling features capture <strong>aggregated values (e.g., mean, sum, min, max)</strong> over a <strong>fixed time window</strong>, helping the model understand <strong>short-term trends</strong>.</p>
+</section>
+<section id="example-3-day-rolling-average-for-sales" class="level3">
+<h3 class="anchored" data-anchor-id="example-3-day-rolling-average-for-sales"><strong>📌 Example: 3-Day Rolling Average for Sales</strong></h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Date</th>
+<th>Sales</th>
+<th>Rolling_3Day_Avg</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2025-01-01</td>
+<td>100</td>
+<td>NA</td>
+</tr>
+<tr class="even">
+<td>2025-01-02</td>
+<td>150</td>
+<td>NA</td>
+</tr>
+<tr class="odd">
+<td>2025-01-03</td>
+<td>80</td>
+<td>110</td>
+</tr>
+<tr class="even">
+<td>2025-01-04</td>
+<td>60</td>
+<td>96.67</td>
+</tr>
+</tbody>
+</table>
+<p>The rolling average <strong>smooths out short-term fluctuations</strong>, helping the model focus on broader trends.</p>
+<section id="r-creating-rolling-features-with-slide_mean-from-slider" class="level4">
+<h4 class="anchored" data-anchor-id="r-creating-rolling-features-with-slide_mean-from-slider">📌 R: Creating Rolling Features with <code>slide_mean()</code> from <code>slider</code></h4>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Rolling_3Day_Avg =</span> <span class="fu">slide_dbl</span>(Sales, mean, <span class="at">.before =</span> <span class="dv">2</span>, <span class="at">.complete =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="python-creating-rolling-features-with-rolling-from-pandas" class="level4">
+<h4 class="anchored" data-anchor-id="python-creating-rolling-features-with-rolling-from-pandas">📌 Python: Creating Rolling Features with <code>rolling()</code> from <code>pandas</code></h4>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'Rolling_3Day_Avg'</span>] <span class="op">=</span> df[<span class="st">'Sales'</span>].rolling(window<span class="op">=</span><span class="dv">3</span>).mean()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>Rolling features are extremely useful in smoothing out noise in time-series data.</strong><br>
+❌ <strong>Like lag features, they introduce missing values at the start, especially for larger windows.</strong></p>
+</section>
+</section>
+</section>
+<section id="cumulative-features-tracking-running-totals" class="level2">
+<h2 class="anchored" data-anchor-id="cumulative-features-tracking-running-totals"><strong>3️⃣ Cumulative Features – Tracking Running Totals</strong></h2>
+<section id="what-are-cumulative-features" class="level3">
+<h3 class="anchored" data-anchor-id="what-are-cumulative-features"><strong>🔹 What Are Cumulative Features?</strong></h3>
+<p>Cumulative features track <strong>the running sum, mean, or other aggregation over the entire time series up to the current point</strong>.</p>
+</section>
+<section id="example-cumulative-sales" class="level3">
+<h3 class="anchored" data-anchor-id="example-cumulative-sales"><strong>📌 Example: Cumulative Sales</strong></h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Date</th>
+<th>Sales</th>
+<th>Cumulative_Sales</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2025-01-01</td>
+<td>100</td>
+<td>100</td>
+</tr>
+<tr class="even">
+<td>2025-01-02</td>
+<td>150</td>
+<td>250</td>
+</tr>
+<tr class="odd">
+<td>2025-01-03</td>
+<td>80</td>
+<td>330</td>
+</tr>
+</tbody>
+</table>
+<p>These features help the model understand <strong>the long-term trajectory</strong>.</p>
+<section id="r-creating-cumulative-features-with-cumsum" class="level4">
+<h4 class="anchored" data-anchor-id="r-creating-cumulative-features-with-cumsum"><strong>📌 R: Creating Cumulative Features with <code>cumsum()</code></strong></h4>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Cumulative_Sales =</span> <span class="fu">cumsum</span>(Sales))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="python-creating-cumulative-features-with-cumsum" class="level4">
+<h4 class="anchored" data-anchor-id="python-creating-cumulative-features-with-cumsum">📌 Python: Creating Cumulative Features with <code>cumsum()</code></h4>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'Cumulative_Sales'</span>] <span class="op">=</span> df[<span class="st">'Sales'</span>].cumsum()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>Cumulative features are particularly useful in financial and inventory forecasting.</strong><br>
+❌ <strong>They don’t work well for cyclical data where seasonality matters more than cumulative trends.</strong></p>
+</section>
+</section>
+</section>
+<section id="combining-lag-rolling-and-cumulative-features" class="level2">
+<h2 class="anchored" data-anchor-id="combining-lag-rolling-and-cumulative-features"><strong>4️⃣ Combining Lag, Rolling, and Cumulative Features</strong></h2>
+<p>The real power comes when you <strong>combine these techniques into feature sets</strong> that capture both <strong>short-term and long-term trends.</strong></p>
+<section id="example" class="level3">
+<h3 class="anchored" data-anchor-id="example"><strong>📌 Example</strong></h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Date</th>
+<th>Sales</th>
+<th>Lag_1</th>
+<th>Rolling_3</th>
+<th>Cumulative</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2025-01-01</td>
+<td>100</td>
+<td>NA</td>
+<td>NA</td>
+<td>100</td>
+</tr>
+<tr class="even">
+<td>2025-01-02</td>
+<td>150</td>
+<td>100</td>
+<td>NA</td>
+<td>250</td>
+</tr>
+<tr class="odd">
+<td>2025-01-03</td>
+<td>80</td>
+<td>150</td>
+<td>110</td>
+<td>330</td>
+</tr>
+<tr class="even">
+<td>2025-01-04</td>
+<td>60</td>
+<td>80</td>
+<td>96.67</td>
+<td>390</td>
+</tr>
+</tbody>
+</table>
+<p>✅ <strong>This kind of combined feature set gives your model the best chance at capturing both local and global trends.</strong></p>
+</section>
+</section>
+<section id="summary-key-temporal-features-for-time-series-models" class="level2">
+<h2 class="anchored" data-anchor-id="summary-key-temporal-features-for-time-series-models"><strong>📌 Summary: Key Temporal Features for Time-Series Models</strong></h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature Type</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Lag Features</strong></td>
+<td>Prior values to capture short-term influence</td>
+<td>Previous day’s sales</td>
+</tr>
+<tr class="even">
+<td><strong>Rolling Features</strong></td>
+<td>Aggregated values over recent time windows</td>
+<td>7-day average sales</td>
+</tr>
+<tr class="odd">
+<td><strong>Cumulative Features</strong></td>
+<td>Running totals capturing long-term trajectory</td>
+<td>Total sales to date</td>
+</tr>
+</tbody>
+</table>
+<p>✅ <strong>Mastering these features is crucial for effective forecasting, anomaly detection, and trend modeling.</strong></p>
+</section>
+</section>
+<section id="chapter-3-handling-irregular-time-series-missing-dates" class="level1">
+<h1><strong>📌 Chapter 3: Handling Irregular Time-Series &amp; Missing Dates</strong></h1>
+<p>Real-world time-series data is <strong>rarely perfect</strong>. Dates may be missing, gaps can appear between observations, and time intervals may be inconsistent. Whether you’re working with <strong>daily sales data, sensor logs, or financial time-series</strong>, <strong>handling these irregularities correctly is critical</strong> to building reliable models.</p>
+<p>In this chapter, we’ll cover:<br>
+✅ <strong>Detecting missing dates in time-series datasets.</strong><br>
+✅ <strong>Filling missing dates with placeholders.</strong><br>
+✅ <strong>Interpolating missing values to keep trends intact.</strong><br>
+✅ <strong>Special considerations for seasonal data.</strong></p>
+<section id="detecting-missing-dates" class="level2">
+<h2 class="anchored" data-anchor-id="detecting-missing-dates"><strong>1️⃣ Detecting Missing Dates</strong></h2>
+<p>The first step is identifying <strong>where the gaps are</strong>—do dates skip weekends, are some weeks partially missing, or do you only have irregular data like log entries from events?</p>
+<section id="r-finding-missing-dates-with-tidyr-and-tibble" class="level4">
+<h4 class="anchored" data-anchor-id="r-finding-missing-dates-with-tidyr-and-tibble"><strong>📌 R: Finding Missing Dates with <code>tidyr</code> and <code>tibble</code></strong></h4>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>all_dates <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">Date =</span> <span class="fu">seq</span>(<span class="fu">min</span>(df<span class="sc">$</span>Date), <span class="fu">max</span>(df<span class="sc">$</span>Date), <span class="at">by =</span> <span class="st">"day"</span>))</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>df_complete <span class="ot">&lt;-</span> <span class="fu">full_join</span>(all_dates, df, <span class="at">by =</span> <span class="st">"Date"</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>missing_dates <span class="ot">&lt;-</span> <span class="fu">filter</span>(df_complete, <span class="fu">is.na</span>(Sales))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="python-finding-missing-dates-with-pandas" class="level4">
+<h4 class="anchored" data-anchor-id="python-finding-missing-dates-with-pandas">📌 Python: Finding Missing Dates with <code>pandas</code></h4>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>all_dates <span class="op">=</span> pd.DataFrame({<span class="st">'Date'</span>: pd.date_range(start<span class="op">=</span>df[<span class="st">'Date'</span>].<span class="bu">min</span>(), end<span class="op">=</span>df[<span class="st">'Date'</span>].<span class="bu">max</span>(), freq<span class="op">=</span><span class="st">'D'</span>)})</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>df_complete <span class="op">=</span> pd.merge(all_dates, df, on<span class="op">=</span><span class="st">'Date'</span>, how<span class="op">=</span><span class="st">'left'</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>missing_dates <span class="op">=</span> df_complete[df_complete[<span class="st">'Sales'</span>].isna()]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="filling-missing-dates-with-placeholders" class="level2">
+<h2 class="anchored" data-anchor-id="filling-missing-dates-with-placeholders"><strong>2️⃣ Filling Missing Dates with Placeholders</strong></h2>
+<p>Once you’ve identified missing dates, you need to <strong>decide how to fill them</strong>. In some cases, the absence of data is meaningful (e.g., no sales on a holiday), but in others, you may need to <strong>fill gaps to maintain a consistent timeline</strong>.</p>
+<section id="options-for-filling-missing-values" class="level3">
+<h3 class="anchored" data-anchor-id="options-for-filling-missing-values"><strong>Options for Filling Missing Values:</strong></h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Approach</th>
+<th>Example</th>
+<th>When to Use</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Fill with Zeros</strong></td>
+<td>No sales = 0</td>
+<td>Retail data where missing = no activity</td>
+</tr>
+<tr class="even">
+<td><strong>Forward Fill</strong></td>
+<td>Carry forward last known value</td>
+<td>Sensor data where readings rarely change</td>
+</tr>
+<tr class="odd">
+<td><strong>Interpolate</strong></td>
+<td>Linearly estimate between known points</td>
+<td>Gradual trends like temperatures</td>
+</tr>
+</tbody>
+</table>
+<section id="r-filling-gaps-with-tidyrfill" class="level4">
+<h4 class="anchored" data-anchor-id="r-filling-gaps-with-tidyrfill"><strong>📌 R: Filling Gaps with <code>tidyr::fill()</code></strong></h4>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>df_complete <span class="ot">&lt;-</span> df_complete <span class="sc">%&gt;%</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fill</span>(Sales, <span class="at">.direction =</span> <span class="st">"down"</span>)  <span class="co"># Forward fill</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="python-filling-gaps-with-fillna" class="level4">
+<h4 class="anchored" data-anchor-id="python-filling-gaps-with-fillna">📌 Python: Filling Gaps with <code>fillna()</code></h4>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>df_complete[<span class="st">'Sales'</span>] <span class="op">=</span> df_complete[<span class="st">'Sales'</span>].fillna(method<span class="op">=</span><span class="st">'ffill'</span>)  <span class="co"># Forward fill</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>Filling gaps ensures models see a complete time-series, rather than fragmented pieces.</strong></p>
+</section>
+</section>
+</section>
+<section id="interpolating-missing-values" class="level2">
+<h2 class="anchored" data-anchor-id="interpolating-missing-values"><strong>3️⃣ Interpolating Missing Values</strong></h2>
+<p>When data should <strong>follow a trend</strong> (e.g., temperatures, financial prices), interpolation can estimate missing values based on the shape of surrounding data.</p>
+<section id="r-interpolation-using-zoo" class="level4">
+<h4 class="anchored" data-anchor-id="r-interpolation-using-zoo"><strong>📌 R: Interpolation Using <code>zoo</code></strong></h4>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(zoo)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>df_complete<span class="sc">$</span>Sales <span class="ot">&lt;-</span> <span class="fu">na.approx</span>(df_complete<span class="sc">$</span>Sales)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="python-interpolation-with-pandas" class="level4">
+<h4 class="anchored" data-anchor-id="python-interpolation-with-pandas">📌 Python: Interpolation with <code>pandas</code></h4>
+<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>df_complete[<span class="st">'Sales'</span>] <span class="op">=</span> df_complete[<span class="st">'Sales'</span>].interpolate()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>Interpolation is especially useful for sensors, environmental data, and continuous tracking.</strong></p>
+</section>
+</section>
+<section id="special-considerations-for-seasonal-data" class="level2">
+<h2 class="anchored" data-anchor-id="special-considerations-for-seasonal-data"><strong>4️⃣ Special Considerations for Seasonal Data</strong></h2>
+<p>If your data follows clear seasonal cycles (daily energy demand, weekly sales peaks), <strong>simple interpolation could distort seasonal patterns</strong>. In those cases, it’s better to:</p>
+<p>✔ <strong>Use seasonal averages to fill gaps (e.g., average Tuesday sales).</strong><br>
+✔ <strong>Avoid interpolation across seasonal breaks (e.g., year-end).</strong></p>
+<section id="r-seasonal-gap-filling-with-grouped-averages" class="level4">
+<h4 class="anchored" data-anchor-id="r-seasonal-gap-filling-with-grouped-averages"><strong>📌 R: Seasonal Gap Filling with Grouped Averages</strong></h4>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>df_complete <span class="ot">&lt;-</span> df_complete <span class="sc">%&gt;%</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">day_of_week =</span> <span class="fu">weekdays</span>(Date)) <span class="sc">%&gt;%</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(day_of_week) <span class="sc">%&gt;%</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Sales =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(Sales), <span class="fu">mean</span>(Sales, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), Sales)) <span class="sc">%&gt;%</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="python-seasonal-gap-filling-with-grouped-averages" class="level4">
+<h4 class="anchored" data-anchor-id="python-seasonal-gap-filling-with-grouped-averages">📌 Python: Seasonal Gap Filling with Grouped Averages</h4>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>df_complete[<span class="st">'day_of_week'</span>] <span class="op">=</span> df_complete[<span class="st">'Date'</span>].dt.day_name()</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>df_complete[<span class="st">'Sales'</span>] <span class="op">=</span> df_complete.groupby(<span class="st">'day_of_week'</span>)[<span class="st">'Sales'</span>].transform(<span class="kw">lambda</span> x: x.fillna(x.mean()))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>This preserves seasonal effects while filling gaps, which is crucial for forecasting seasonal data.</strong></p>
+</section>
+</section>
+<section id="summary-handling-missing-dates-values-in-time-series-data" class="level2">
+<h2 class="anchored" data-anchor-id="summary-handling-missing-dates-values-in-time-series-data"><strong>5️⃣ Summary: Handling Missing Dates &amp; Values in Time-Series Data</strong></h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Challenge</th>
+<th>Solution</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Missing dates</td>
+<td>Rebuild full timeline</td>
+<td>Add missing dates with NA sales</td>
+</tr>
+<tr class="even">
+<td>Missing values</td>
+<td>Forward fill</td>
+<td>Carry forward last known sales value</td>
+</tr>
+<tr class="odd">
+<td>Gaps in continuous data</td>
+<td>Interpolate</td>
+<td>Linearly estimate missing values</td>
+</tr>
+<tr class="even">
+<td>Missing seasonal data</td>
+<td>Fill with seasonal averages</td>
+<td>Use typical Tuesday sales for missing Tuesdays</td>
+</tr>
+</tbody>
+</table>
+<p>✅ <strong>Handling missing dates correctly keeps your time-series intact, so models can detect real patterns instead of reacting to data gaps.</strong></p>
+</section>
+</section>
+<section id="chapter-4-best-practices-common-pitfalls-for-time-series-feature-engineering" class="level1">
+<h1><strong>📌 Chapter 4: Best Practices &amp; Common Pitfalls for Time-Series Feature Engineering</strong></h1>
+<p>Feature engineering for time-series data comes with <strong>unique challenges</strong> that don’t exist in typical tabular datasets. The <strong>order of data matters</strong>, and failing to respect that order can lead to <strong>data leakage, unrealistic results, and models that fail in production</strong>.</p>
+<p>In this chapter, we’ll cover:<br>
+✅ <strong>The importance of respecting time order when engineering features.</strong><br>
+✅ <strong>Common pitfalls with lag features, rolling windows, and cumulative features.</strong><br>
+✅ <strong>The right way to handle time-aware cross-validation.</strong><br>
+✅ <strong>Practical guidelines for building reliable time-based models.</strong></p>
+<section id="always-respect-time-order-no-peeking-into-the-future" class="level2">
+<h2 class="anchored" data-anchor-id="always-respect-time-order-no-peeking-into-the-future"><strong>1️⃣ Always Respect Time Order – No Peeking into the Future</strong></h2>
+<p>The golden rule for time-series modeling:</p>
+<blockquote class="blockquote">
+<p><strong>You can only use information available up to the prediction point.</strong></p>
+</blockquote>
+<section id="common-mistake-calculating-global-statistics-using-the-full-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="common-mistake-calculating-global-statistics-using-the-full-dataset">❌ Common Mistake: Calculating global statistics using the full dataset</h3>
+<p>If you compute, for example, the <strong>average daily sales</strong> using the entire dataset, your training data accidentally <strong>sees the future</strong>—this is <strong>data leakage</strong>.</p>
+<p>✅ <strong>Instead:</strong></p>
+<ul>
+<li><p>Compute historical rolling averages that only use data <strong>before the prediction point</strong>.</p></li>
+<li><p>Use <strong>expanding windows</strong> (cumulative metrics up to that date) instead of <strong>sliding windows that see future data</strong>.</p></li>
+</ul>
+<section id="example-in-python-expanding-mean-no-leakage" class="level4">
+<h4 class="anchored" data-anchor-id="example-in-python-expanding-mean-no-leakage">📌 Example in Python – Expanding Mean (No Leakage)</h4>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'Cumulative_Avg_Sales'</span>] <span class="ot">=</span> df[<span class="st">'Sales'</span>]<span class="fu">.expanding</span>()<span class="fu">.mean</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ This approach only uses <strong>past data</strong> at each point.</p>
+</section>
+<section id="example-in-r-expanding-mean-with-slider" class="level4">
+<h4 class="anchored" data-anchor-id="example-in-r-expanding-mean-with-slider">📌 Example in R – Expanding Mean with <code>slider</code></h4>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">&lt;-</span> df <span class="op">%&gt;%</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  mutate(Cumulative_Avg_Sales <span class="op">=</span> slide_dbl(Sales, mean, .before <span class="op">=</span> Inf, .complete <span class="op">=</span> TRUE))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+</section>
+<section id="lag-features-handle-missing-data-gaps-properly" class="level2">
+<h2 class="anchored" data-anchor-id="lag-features-handle-missing-data-gaps-properly"><strong>2️⃣ Lag Features – Handle Missing Data &amp; Gaps Properly</strong></h2>
+<p>Lag features are powerful, but they break if your time-series <strong>has irregular gaps</strong>. If a date is missing, the “Lag 1” feature could actually <strong>reference data from days (or even weeks) earlier</strong>.</p>
+<p>✅ <strong>Instead:</strong></p>
+<ul>
+<li><p><strong>Fill in missing dates first</strong>, even if you just insert placeholders.</p></li>
+<li><p><strong>Create lag features after ensuring all dates are present.</strong></p></li>
+</ul>
+<section id="common-pitfall-using-raw-shift-or-slide-on-irregular-data" class="level3">
+<h3 class="anchored" data-anchor-id="common-pitfall-using-raw-shift-or-slide-on-irregular-data"><strong>Common Pitfall: Using Raw <code>shift()</code> or <code>slide()</code> on Irregular Data</strong></h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Date</th>
+<th>Sales</th>
+<th>Lag_1 (wrong)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2025-01-01</td>
+<td>100</td>
+<td>NA</td>
+</tr>
+<tr class="even">
+<td>2025-01-04</td>
+<td>80</td>
+<td>100</td>
+</tr>
+</tbody>
+</table>
+<p>✅ <strong>Solution: Use a complete date index and then calculate lags.</strong></p>
+</section>
+</section>
+<section id="rolling-aggregates-dont-use-future-data" class="level2">
+<h2 class="anchored" data-anchor-id="rolling-aggregates-dont-use-future-data"><strong>3️⃣ Rolling Aggregates – Don’t Use Future Data</strong></h2>
+<p>Rolling averages and cumulative metrics are valuable, but they must only use <strong>data up to the point being predicted</strong>.</p>
+<section id="pitfall-centered-rolling-windows-leakage" class="level3">
+<h3 class="anchored" data-anchor-id="pitfall-centered-rolling-windows-leakage">❌ Pitfall: Centered Rolling Windows (Leakage)</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Date</th>
+<th>Sales</th>
+<th>Centered 3-Day Avg (wrong)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2025-01-02</td>
+<td>150</td>
+<td>Avg(2025-01-01, 02, 03)</td>
+</tr>
+</tbody>
+</table>
+<p>The centered average <strong>includes future data</strong>, which wouldn’t be available at prediction time.</p>
+<p>✅ <strong>Only use trailing windows.</strong></p>
+<section id="example-in-python-proper-trailing-rolling-average" class="level4">
+<h4 class="anchored" data-anchor-id="example-in-python-proper-trailing-rolling-average">📌 Example in Python – Proper Trailing Rolling Average</h4>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">'Rolling_3Day_Avg'</span>] <span class="ot">=</span> df[<span class="st">'Sales'</span>]<span class="fu">.rolling</span>(<span class="at">window=</span><span class="dv">3</span>)<span class="fu">.mean</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="example-in-r-trailing-rolling-average-with-slider" class="level4">
+<h4 class="anchored" data-anchor-id="example-in-r-trailing-rolling-average-with-slider">📌 Example in R – Trailing Rolling Average with <code>slider</code></h4>
+<div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">&lt;-</span> df <span class="op">%&gt;%</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  mutate(Rolling_3Day_Avg <span class="op">=</span> slide_dbl(Sales, mean, .before <span class="op">=</span> <span class="dv">2</span>, .complete <span class="op">=</span> TRUE))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+</section>
+<section id="time-based-cross-validation-avoid-shuffling" class="level2">
+<h2 class="anchored" data-anchor-id="time-based-cross-validation-avoid-shuffling"><strong>4️⃣ Time-Based Cross-Validation – Avoid Shuffling</strong></h2>
+<p>In regular machine learning, we often shuffle data into random training and testing sets.</p>
+<section id="pitfall-shuffling-time-series-data" class="level3">
+<h3 class="anchored" data-anchor-id="pitfall-shuffling-time-series-data">❌ Pitfall: Shuffling Time-Series Data</h3>
+<p>Shuffling <strong>destroys the time order</strong>, making it impossible to test if the model can predict future data based on past data.</p>
+<p>✅ <strong>Instead:</strong></p>
+<ul>
+<li><p>Use <strong>time-based cross-validation</strong> (each fold trains on a past window and tests on the next future window).</p></li>
+<li><p>Ensure the test set always comes <strong>after</strong> the training set.</p></li>
+</ul>
+<section id="example-in-r-time-based-resampling-with-rsample" class="level4">
+<h4 class="anchored" data-anchor-id="example-in-r-time-based-resampling-with-rsample">📌 Example in R – Time-Based Resampling with <code>rsample</code></h4>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rsample)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>splits <span class="ot">&lt;-</span> <span class="fu">rolling_origin</span>(df, <span class="at">initial =</span> <span class="dv">365</span>, <span class="at">assess =</span> <span class="dv">30</span>, <span class="at">cumulative =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="example-in-python-time-based-split-with-sklearn" class="level4">
+<h4 class="anchored" data-anchor-id="example-in-python-time-based-split-with-sklearn">📌 Example in Python – Time-Based Split with <code>sklearn</code></h4>
+<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> TimeSeriesSplit</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>tscv <span class="op">=</span> TimeSeriesSplit(n_splits<span class="op">=</span><span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>✅ <strong>This setup ensures every test set simulates real-world future prediction scenarios.</strong></p>
+</section>
+</section>
+</section>
+<section id="summary-best-practices-for-time-series-feature-engineering" class="level2">
+<h2 class="anchored" data-anchor-id="summary-best-practices-for-time-series-feature-engineering"><strong>5️⃣ Summary: Best Practices for Time-Series Feature Engineering</strong></h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Best Practice</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Respect time order</td>
+<td>Use only data available up to the prediction point</td>
+</tr>
+<tr class="even">
+<td>Fill gaps before creating lags</td>
+<td>Avoid misaligned lag features</td>
+</tr>
+<tr class="odd">
+<td>Use trailing windows only</td>
+<td>Centered windows cause future leakage</td>
+</tr>
+<tr class="even">
+<td>Time-aware cross-validation</td>
+<td>Ensure train data always precedes test data</td>
+</tr>
+<tr class="odd">
+<td>Avoid global transformations</td>
+<td>Any computation across full data (means, medians) leaks future info</td>
+</tr>
+</tbody>
+</table>
+<p>✅ <strong>Following these best practices ensures your time-based features are valid, reliable, and production-ready.</strong></p>
+</section>
+</section>
+<section id="conclusion-next-steps" class="level1">
+<h1><strong>📌 Conclusion &amp; Next Steps</strong></h1>
+<p>Time-series feature engineering is a <strong>critical skill</strong> for building robust forecasting and predictive models. Unlike traditional tabular data, <strong>time-order matters</strong>, and failing to respect it can lead to <strong>data leakage, overfitting, or misleading predictions</strong>.</p>
+<section id="key-takeaways-from-this-guide" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways-from-this-guide"><strong>1️⃣ Key Takeaways from This Guide</strong></h2>
+<p>✔ <strong>Time is more than just a timestamp</strong>—Extracting meaningful features (day of the week, seasonality, cumulative trends) can significantly improve model performance.<br>
+✔ <strong>Lag features help capture past trends</strong>—but they must be carefully aligned, especially when handling missing timestamps.<br>
+✔ <strong>Rolling and cumulative aggregations reveal patterns</strong>—but should only use past data to avoid leakage.<br>
+✔ <strong>Handling missing timestamps is crucial</strong>—Always fill gaps properly before engineering features.<br>
+✔ <strong>Cross-validation for time-series must be time-aware</strong>—Random shuffling is not an option!</p>
+<p>✅ <strong>Mastering these techniques allows you to extract real value from time-series data and build stronger predictive models.</strong></p>
+</section>
+<section id="whats-next" class="level2">
+<h2 class="anchored" data-anchor-id="whats-next"><strong>2️⃣ What’s Next?</strong></h2>
+<p>This article is part of the <strong>Feature Engineering Series</strong>, where we explore how to transform raw data into meaningful insights.</p>
+<p>🚀 <strong>Next up: “Beyond the Numbers – Feature Engineering for Text Data”</strong><br>
+In the next article, we’ll cover:<br>
+📌 <strong>Text vectorization techniques</strong> (TF-IDF, word embeddings).<br>
+📌 <strong>Extracting meaningful text-based features</strong> (sentiment, keyword frequency).<br>
+📌 <strong>NLP-powered feature engineering for machine learning.</strong></p>
+<p>🔹 <strong>Want to stay updated?</strong> Keep an eye out for the next post in the series!</p>
+<p>💡 <strong>What’s your favorite time-series feature engineering trick? Drop your thoughts below!</strong> ⬇⬇⬇</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = true;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>For everybody, not to be fooled by numbers</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

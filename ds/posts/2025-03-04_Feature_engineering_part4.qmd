@@ -1,0 +1,514 @@
+---
+title: "Timing is Everything – Feature Engineering for Time-Series Data"
+author: "Numbers around us"
+date: "2025-03-04"
+format: html
+---
+
+![](images/FE_5.jpg)
+
+In the next installment of our **Feature Engineering Series**, we’re diving into one of the **most unique and complex data types**—**time-series data**. Unlike tabular data, time-series data **comes with a natural order**, and understanding **temporal patterns** is crucial for building effective models.
+
+This article will cover:\
+✅ **Why time matters in modeling.**\
+✅ **Essential time-based features to extract.**\
+✅ **Rolling windows, lag features, and cumulative aggregations.**\
+✅ **Handling missing timestamps in time-series data.**\
+✅ **Practical examples using R and Python.**
+
+# **📌 Chapter 1: Why Time-Series Data Needs Special Treatment (Updated)**
+
+### **1️⃣ Time Is More Than Just a Timestamp**
+
+When working with time-series data, the **order of events** matters just as much as the events themselves. Unlike static datasets where rows are independent, time-series data often contains:
+
+-   **Trends** — Overall increases or decreases over time (e.g., sales steadily increasing).
+
+-   **Seasonality** — Regular patterns that repeat (e.g., weekly or monthly sales peaks).
+
+-   **Shocks & Events** — Sudden outliers caused by special occurrences (e.g., product launches or economic crises).
+
+Ignoring these time-based patterns and treating dates as just another categorical variable can lead to:\
+❌ **Loss of valuable temporal relationships**\
+❌ **Poor forecasting accuracy**\
+❌ **Overfitting to irrelevant patterns**
+
+### **2️⃣ Extracting Meaningful Time-Based Features**
+
+Every date or timestamp holds **hidden temporal signals** we can expose through feature engineering. These include:\
+✔ **Day of week (Mon, Tue, etc.)**\
+✔ **Month (Jan, Feb, etc.)**\
+✔ **Quarter (Q1, Q2, etc.)**\
+✔ **Weekday/Weekend flag**\
+✔ **Holiday flag (if you have a holiday calendar)**\
+✔ **Cumulative days since the first record**\
+✔ **Yearly day index (day-of-year)**
+
+#### **📌 R: Automatically Extracting Time Features Using `time_tk`**
+
+Instead of manually creating every feature, the **`tk_get_timeseries_signature()`** function from the **`time_tk`** package can extract an **entire set of useful time-based features** in **one step**.
+
+``` R
+library(timetk)
+
+df <- df %>%
+  mutate(Date = as.Date(Date)) %>%
+  bind_cols(tk_get_timeseries_signature(df$Date))
+```
+
+The `tk_get_timeseries_signature()` function will add columns like:
+
+| Date       | index.num | year | quarter | month | day | wday.lbl | is_weekend | hour | minute | second |
+|------------|-----------|------|---------|-------|-----|----------|------------|------|--------|--------|
+| 2025-01-01 | 1         | 2025 | 1       | 1     | 1   | Wed      | 0          | NA   | NA     | NA     |
+| 2025-01-02 | 2         | 2025 | 1       | 1     | 2   | Thu      | 0          | NA   | NA     | NA     |
+
+✅ This single function saves **a lot of manual coding** while ensuring the **features are consistently extracted** for any datetime column.
+
+#### **📌 Python: Manually Extracting Date Features Using `pandas`**
+
+While Python doesn’t have a direct equivalent to `tk_get_timeseries_signature()`, you can achieve the same result with `pandas`:
+
+``` python
+import pandas as pd
+
+df['Date'] = pd.to_datetime(df['Date'])
+df['day_of_week'] = df['Date'].dt.day_name()
+df['is_weekend'] = df['day_of_week'].isin(['Saturday', 'Sunday']).astype(int)
+df['month'] = df['Date'].dt.month
+df['quarter'] = df['Date'].dt.quarter
+df['day_of_year'] = df['Date'].dt.dayofyear
+df['cumulative_days'] = (df['Date'] - df['Date'].min()).dt.days + 1
+```
+
+### **✅ Key Takeaway**
+
+**In R, `tk_get_timeseries_signature()` is a time-saver for fast and comprehensive feature extraction, especially for quick exploratory analysis or building time-aware models.**\
+In Python, we rely on **manual feature creation with `pandas`**, which offers flexibility but requires more effort.
+
+### **📌 Summary of Key Time-Based Features**
+
+| Feature Name    | Example Value | Why It’s Useful                   |
+|-----------------|---------------|-----------------------------------|
+| Day of Week     | Wednesday     | Captures weekly patterns          |
+| Month           | January       | Captures seasonal patterns        |
+| Quarter         | Q1            | Tracks quarterly trends           |
+| Is Weekend      | 1 (True)      | Captures weekend behavior         |
+| Day of Year     | 125           | Tracks year progress              |
+| Cumulative Days | 200           | Captures time elapsed since start |
+
+✅ **These time-based features allow machine learning models to recognize** trends, cycles, and seasonal effects that are impossible to detect from raw timestamps alone.
+
+# **📌 Chapter 2: Lag Features, Rolling Windows & Aggregations**
+
+When working with time-series data, **the past matters**. Future outcomes are often influenced by recent trends, making **lag features and rolling aggregations** essential for helping models learn from historical patterns.
+
+This chapter explores:\
+✅ **Lag features** — capturing values from prior time periods.\
+✅ **Rolling windows** — summarizing recent trends over a time window.\
+✅ **Cumulative features** — tracking running totals over time.\
+✅ **Practical examples in R and Python.**
+
+## **1️⃣ Lag Features – Learning from the Past**
+
+### **🔹 What Are Lag Features?**
+
+A **lag feature** is a copy of a variable shifted back by a given number of time steps. It allows a model to see **past values directly**, which is especially useful in **forecasting and anomaly detection**.
+
+### **📌 Example: Lagging Sales by 1 Day**
+
+| Date       | Sales | Lag_1_Sales |
+|------------|-------|-------------|
+| 2025-01-01 | 100   | NA          |
+| 2025-01-02 | 150   | 100         |
+| 2025-01-03 | 80    | 150         |
+
+The `Lag_1_Sales` column lets the model **see the previous day’s sales** when predicting today’s.
+
+#### 📌 R: Creating Lag Features with `slide()` from `slider`
+
+``` R
+library(slider)
+
+df <- df %>%
+  mutate(Lag_1_Sales = slide_dbl(Sales, ~ .x, .before = 1, .after = -1, complete = TRUE))
+```
+
+#### 📌 Python: Creating Lag Features with `shift()` from `pandas`
+
+``` python
+df['Lag_1_Sales'] = df['Sales'].shift(1)
+```
+
+✅ **Lag features are critical for models that need to capture time dependence, such as ARIMA, LSTMs, or any time-series regression model.**\
+❌ **They introduce missing values at the start of the series, which you need to handle (e.g., drop, impute).**
+
+## **2️⃣ Rolling Features – Capturing Trends Over Time**
+
+### **🔹 What Are Rolling Windows?**
+
+Rolling features capture **aggregated values (e.g., mean, sum, min, max)** over a **fixed time window**, helping the model understand **short-term trends**.
+
+### **📌 Example: 3-Day Rolling Average for Sales**
+
+| Date       | Sales | Rolling_3Day_Avg |
+|------------|-------|------------------|
+| 2025-01-01 | 100   | NA               |
+| 2025-01-02 | 150   | NA               |
+| 2025-01-03 | 80    | 110              |
+| 2025-01-04 | 60    | 96.67            |
+
+The rolling average **smooths out short-term fluctuations**, helping the model focus on broader trends.
+
+#### 📌 R: Creating Rolling Features with `slide_mean()` from `slider`
+
+``` r
+df <- df %>%
+  mutate(Rolling_3Day_Avg = slide_dbl(Sales, mean, .before = 2, .complete = TRUE))
+```
+
+#### 📌 Python: Creating Rolling Features with `rolling()` from `pandas`
+
+``` python
+df['Rolling_3Day_Avg'] = df['Sales'].rolling(window=3).mean()
+```
+
+✅ **Rolling features are extremely useful in smoothing out noise in time-series data.**\
+❌ **Like lag features, they introduce missing values at the start, especially for larger windows.**
+
+## **3️⃣ Cumulative Features – Tracking Running Totals**
+
+### **🔹 What Are Cumulative Features?**
+
+Cumulative features track **the running sum, mean, or other aggregation over the entire time series up to the current point**.
+
+### **📌 Example: Cumulative Sales**
+
+| Date       | Sales | Cumulative_Sales |
+|------------|-------|------------------|
+| 2025-01-01 | 100   | 100              |
+| 2025-01-02 | 150   | 250              |
+| 2025-01-03 | 80    | 330              |
+
+These features help the model understand **the long-term trajectory**.
+
+#### **📌 R: Creating Cumulative Features with `cumsum()`**
+
+``` r
+df <- df %>%
+  mutate(Cumulative_Sales = cumsum(Sales))
+```
+
+#### 📌 Python: Creating Cumulative Features with `cumsum()`
+
+``` python
+df['Cumulative_Sales'] = df['Sales'].cumsum()
+```
+
+✅ **Cumulative features are particularly useful in financial and inventory forecasting.**\
+❌ **They don’t work well for cyclical data where seasonality matters more than cumulative trends.**
+
+## **4️⃣ Combining Lag, Rolling, and Cumulative Features**
+
+The real power comes when you **combine these techniques into feature sets** that capture both **short-term and long-term trends.**
+
+### **📌 Example**
+
+| Date       | Sales | Lag_1 | Rolling_3 | Cumulative |
+|------------|-------|-------|-----------|------------|
+| 2025-01-01 | 100   | NA    | NA        | 100        |
+| 2025-01-02 | 150   | 100   | NA        | 250        |
+| 2025-01-03 | 80    | 150   | 110       | 330        |
+| 2025-01-04 | 60    | 80    | 96.67     | 390        |
+
+✅ **This kind of combined feature set gives your model the best chance at capturing both local and global trends.**
+
+## **📌 Summary: Key Temporal Features for Time-Series Models**
+
+| Feature Type | Description | Example |
+|----|----|----|
+| **Lag Features** | Prior values to capture short-term influence | Previous day’s sales |
+| **Rolling Features** | Aggregated values over recent time windows | 7-day average sales |
+| **Cumulative Features** | Running totals capturing long-term trajectory | Total sales to date |
+
+✅ **Mastering these features is crucial for effective forecasting, anomaly detection, and trend modeling.**
+
+# **📌 Chapter 3: Handling Irregular Time-Series & Missing Dates**
+
+Real-world time-series data is **rarely perfect**. Dates may be missing, gaps can appear between observations, and time intervals may be inconsistent. Whether you’re working with **daily sales data, sensor logs, or financial time-series**, **handling these irregularities correctly is critical** to building reliable models.
+
+In this chapter, we’ll cover:\
+✅ **Detecting missing dates in time-series datasets.**\
+✅ **Filling missing dates with placeholders.**\
+✅ **Interpolating missing values to keep trends intact.**\
+✅ **Special considerations for seasonal data.**
+
+## **1️⃣ Detecting Missing Dates**
+
+The first step is identifying **where the gaps are**—do dates skip weekends, are some weeks partially missing, or do you only have irregular data like log entries from events?
+
+#### **📌 R: Finding Missing Dates with `tidyr` and `tibble`**
+
+``` r
+library(tidyr)
+library(tibble)
+
+all_dates <- tibble(Date = seq(min(df$Date), max(df$Date), by = "day"))
+df_complete <- full_join(all_dates, df, by = "Date")
+missing_dates <- filter(df_complete, is.na(Sales))
+```
+
+#### 📌 Python: Finding Missing Dates with `pandas`
+
+``` python
+import pandas as pd
+
+all_dates = pd.DataFrame({'Date': pd.date_range(start=df['Date'].min(), end=df['Date'].max(), freq='D')})
+df_complete = pd.merge(all_dates, df, on='Date', how='left')
+missing_dates = df_complete[df_complete['Sales'].isna()]
+```
+
+## **2️⃣ Filling Missing Dates with Placeholders**
+
+Once you’ve identified missing dates, you need to **decide how to fill them**. In some cases, the absence of data is meaningful (e.g., no sales on a holiday), but in others, you may need to **fill gaps to maintain a consistent timeline**.
+
+### **Options for Filling Missing Values:**
+
+| Approach | Example | When to Use |
+|----|----|----|
+| **Fill with Zeros** | No sales = 0 | Retail data where missing = no activity |
+| **Forward Fill** | Carry forward last known value | Sensor data where readings rarely change |
+| **Interpolate** | Linearly estimate between known points | Gradual trends like temperatures |
+
+#### **📌 R: Filling Gaps with `tidyr::fill()`**
+
+``` r
+df_complete <- df_complete %>%
+  fill(Sales, .direction = "down")  # Forward fill
+```
+
+#### 📌 Python: Filling Gaps with `fillna()`
+
+``` python
+df_complete['Sales'] = df_complete['Sales'].fillna(method='ffill')  # Forward fill
+```
+
+✅ **Filling gaps ensures models see a complete time-series, rather than fragmented pieces.**
+
+## **3️⃣ Interpolating Missing Values**
+
+When data should **follow a trend** (e.g., temperatures, financial prices), interpolation can estimate missing values based on the shape of surrounding data.
+
+#### **📌 R: Interpolation Using `zoo`**
+
+``` r
+library(zoo)
+
+df_complete$Sales <- na.approx(df_complete$Sales)
+```
+
+#### 📌 Python: Interpolation with `pandas`
+
+``` python
+df_complete['Sales'] = df_complete['Sales'].interpolate()
+```
+
+✅ **Interpolation is especially useful for sensors, environmental data, and continuous tracking.**
+
+## **4️⃣ Special Considerations for Seasonal Data**
+
+If your data follows clear seasonal cycles (daily energy demand, weekly sales peaks), **simple interpolation could distort seasonal patterns**. In those cases, it’s better to:
+
+✔ **Use seasonal averages to fill gaps (e.g., average Tuesday sales).**\
+✔ **Avoid interpolation across seasonal breaks (e.g., year-end).**
+
+#### **📌 R: Seasonal Gap Filling with Grouped Averages**
+
+``` r
+library(dplyr)
+
+df_complete <- df_complete %>%
+  mutate(day_of_week = weekdays(Date)) %>%
+  group_by(day_of_week) %>%
+  mutate(Sales = ifelse(is.na(Sales), mean(Sales, na.rm = TRUE), Sales)) %>%
+  ungroup()
+```
+
+#### 📌 Python: Seasonal Gap Filling with Grouped Averages
+
+``` python
+df_complete['day_of_week'] = df_complete['Date'].dt.day_name()
+df_complete['Sales'] = df_complete.groupby('day_of_week')['Sales'].transform(lambda x: x.fillna(x.mean()))
+```
+
+✅ **This preserves seasonal effects while filling gaps, which is crucial for forecasting seasonal data.**
+
+## **5️⃣ Summary: Handling Missing Dates & Values in Time-Series Data**
+
+| Challenge | Solution | Example |
+|----|----|----|
+| Missing dates | Rebuild full timeline | Add missing dates with NA sales |
+| Missing values | Forward fill | Carry forward last known sales value |
+| Gaps in continuous data | Interpolate | Linearly estimate missing values |
+| Missing seasonal data | Fill with seasonal averages | Use typical Tuesday sales for missing Tuesdays |
+
+✅ **Handling missing dates correctly keeps your time-series intact, so models can detect real patterns instead of reacting to data gaps.**
+
+# **📌 Chapter 4: Best Practices & Common Pitfalls for Time-Series Feature Engineering**
+
+Feature engineering for time-series data comes with **unique challenges** that don’t exist in typical tabular datasets. The **order of data matters**, and failing to respect that order can lead to **data leakage, unrealistic results, and models that fail in production**.
+
+In this chapter, we’ll cover:\
+✅ **The importance of respecting time order when engineering features.**\
+✅ **Common pitfalls with lag features, rolling windows, and cumulative features.**\
+✅ **The right way to handle time-aware cross-validation.**\
+✅ **Practical guidelines for building reliable time-based models.**
+
+## **1️⃣ Always Respect Time Order – No Peeking into the Future**
+
+The golden rule for time-series modeling:
+
+> **You can only use information available up to the prediction point.**
+
+### ❌ Common Mistake: Calculating global statistics using the full dataset
+
+If you compute, for example, the **average daily sales** using the entire dataset, your training data accidentally **sees the future**—this is **data leakage**.
+
+✅ **Instead:**
+
+-   Compute historical rolling averages that only use data **before the prediction point**.
+
+-   Use **expanding windows** (cumulative metrics up to that date) instead of **sliding windows that see future data**.
+
+#### 📌 Example in Python – Expanding Mean (No Leakage)
+
+``` r
+df['Cumulative_Avg_Sales'] = df['Sales'].expanding().mean()
+```
+
+✅ This approach only uses **past data** at each point.
+
+#### 📌 Example in R – Expanding Mean with `slider`
+
+``` python
+df <- df %>%
+  mutate(Cumulative_Avg_Sales = slide_dbl(Sales, mean, .before = Inf, .complete = TRUE))
+```
+
+## **2️⃣ Lag Features – Handle Missing Data & Gaps Properly**
+
+Lag features are powerful, but they break if your time-series **has irregular gaps**. If a date is missing, the "Lag 1" feature could actually **reference data from days (or even weeks) earlier**.
+
+✅ **Instead:**
+
+-   **Fill in missing dates first**, even if you just insert placeholders.
+
+-   **Create lag features after ensuring all dates are present.**
+
+### **Common Pitfall: Using Raw `shift()` or `slide()` on Irregular Data**
+
+| Date       | Sales | Lag_1 (wrong) |
+|------------|-------|---------------|
+| 2025-01-01 | 100   | NA            |
+| 2025-01-04 | 80    | 100           |
+
+✅ **Solution: Use a complete date index and then calculate lags.**
+
+## **3️⃣ Rolling Aggregates – Don’t Use Future Data**
+
+Rolling averages and cumulative metrics are valuable, but they must only use **data up to the point being predicted**.
+
+### ❌ Pitfall: Centered Rolling Windows (Leakage)
+
+| Date       | Sales | Centered 3-Day Avg (wrong) |
+|------------|-------|----------------------------|
+| 2025-01-02 | 150   | Avg(2025-01-01, 02, 03)    |
+
+The centered average **includes future data**, which wouldn’t be available at prediction time.
+
+✅ **Only use trailing windows.**
+
+#### 📌 Example in Python – Proper Trailing Rolling Average
+
+``` r
+df['Rolling_3Day_Avg'] = df['Sales'].rolling(window=3).mean()
+```
+
+#### 📌 Example in R – Trailing Rolling Average with `slider`
+
+``` python
+df <- df %>%
+  mutate(Rolling_3Day_Avg = slide_dbl(Sales, mean, .before = 2, .complete = TRUE))
+```
+
+## **4️⃣ Time-Based Cross-Validation – Avoid Shuffling**
+
+In regular machine learning, we often shuffle data into random training and testing sets.
+
+### ❌ Pitfall: Shuffling Time-Series Data
+
+Shuffling **destroys the time order**, making it impossible to test if the model can predict future data based on past data.
+
+✅ **Instead:**
+
+-   Use **time-based cross-validation** (each fold trains on a past window and tests on the next future window).
+
+-   Ensure the test set always comes **after** the training set.
+
+#### 📌 Example in R – Time-Based Resampling with `rsample`
+
+``` r
+library(rsample)
+
+splits <- rolling_origin(df, initial = 365, assess = 30, cumulative = TRUE)
+```
+
+#### 📌 Example in Python – Time-Based Split with `sklearn`
+
+``` python
+from sklearn.model_selection import TimeSeriesSplit
+
+tscv = TimeSeriesSplit(n_splits=5)
+```
+
+✅ **This setup ensures every test set simulates real-world future prediction scenarios.**
+
+## **5️⃣ Summary: Best Practices for Time-Series Feature Engineering**
+
+| Best Practice | Explanation |
+|----|----|
+| Respect time order | Use only data available up to the prediction point |
+| Fill gaps before creating lags | Avoid misaligned lag features |
+| Use trailing windows only | Centered windows cause future leakage |
+| Time-aware cross-validation | Ensure train data always precedes test data |
+| Avoid global transformations | Any computation across full data (means, medians) leaks future info |
+
+✅ **Following these best practices ensures your time-based features are valid, reliable, and production-ready.**
+
+# **📌 Conclusion & Next Steps**
+
+Time-series feature engineering is a **critical skill** for building robust forecasting and predictive models. Unlike traditional tabular data, **time-order matters**, and failing to respect it can lead to **data leakage, overfitting, or misleading predictions**.
+
+## **1️⃣ Key Takeaways from This Guide**
+
+✔ **Time is more than just a timestamp**—Extracting meaningful features (day of the week, seasonality, cumulative trends) can significantly improve model performance.\
+✔ **Lag features help capture past trends**—but they must be carefully aligned, especially when handling missing timestamps.\
+✔ **Rolling and cumulative aggregations reveal patterns**—but should only use past data to avoid leakage.\
+✔ **Handling missing timestamps is crucial**—Always fill gaps properly before engineering features.\
+✔ **Cross-validation for time-series must be time-aware**—Random shuffling is not an option!
+
+✅ **Mastering these techniques allows you to extract real value from time-series data and build stronger predictive models.**
+
+## **2️⃣ What’s Next?**
+
+This article is part of the **Feature Engineering Series**, where we explore how to transform raw data into meaningful insights.
+
+🚀 **Next up: "Beyond the Numbers – Feature Engineering for Text Data"**\
+In the next article, we’ll cover:\
+📌 **Text vectorization techniques** (TF-IDF, word embeddings).\
+📌 **Extracting meaningful text-based features** (sentiment, keyword frequency).\
+📌 **NLP-powered feature engineering for machine learning.**
+
+🔹 **Want to stay updated?** Keep an eye out for the next post in the series!
+
+💡 **What’s your favorite time-series feature engineering trick? Drop your thoughts below!** ⬇⬇⬇
