@@ -1,0 +1,448 @@
+---
+title: "The Final Cut – Choosing the Right Features for the Job"
+author: "Numbers around us"
+date: "2025-04-29"
+format: html
+---
+
+![](images/FE_7.jpg)
+
+You’ve created dozens—maybe hundreds—of new features: cleaned, transformed, encoded, engineered.\
+But now comes a critical decision:
+
+🔪 **Which features stay, and which must go?**
+
+Choosing the right features is about **maximizing model performance while minimizing complexity**. Good feature selection can:\
+✅ Improve model generalization\
+✅ Reduce overfitting\
+✅ Speed up training and inference\
+✅ Enhance model interpretability
+
+This final article in the Feature Engineering Series will walk through:\
+✅ **Why feature selection matters**\
+✅ **Simple filtering techniques (correlation, variance)**\
+✅ **Model-driven feature importance (tree models, permutation)**\
+✅ **Selection methods (filter, wrapper, embedded)**\
+✅ **Best practices for pruning without hurting performance**
+
+## **Why Choosing Features Matters**
+
+More features ≠ better models.\
+In fact, **too many irrelevant or redundant features** can actively hurt your model by:\
+❌ Increasing noise and variance\
+❌ Leading to overfitting\
+❌ Slowing down training and prediction\
+❌ Making models harder to explain
+
+📌 **Feature selection is about keeping what matters—and cutting what doesn't.**\
+It’s a mix of **art and science**, where we balance **domain knowledge**, **data-driven decisions**, and **model feedback**.
+
+### **📌 Simple Thought Exercise**
+
+Imagine you're predicting house prices.\
+You have features like:
+
+-   `square_footage`
+
+-   `number_of_bathrooms`
+
+-   `zip_code`
+
+-   `price_of_dog_food_in_region`
+
+🛑 Even if "dog food price" technically varies across regions, it’s noise. It **adds confusion**, **increases data collection cost**, and **risks spurious correlations**. You need **only the features that directly contribute to your target**.
+
+✅ Good feature selection leads to:
+
+-   **Simpler, faster models**
+
+-   **Better generalization to new data**
+
+-   **Clearer understanding of what drives predictions**
+
+**Feature engineering without feature selection is like cooking without tasting.**\
+You need to trim the dish before serving it.
+
+# **Filter Methods – Quick Wins for Cutting Features**
+
+**Filter methods** are your **first line of defense** in feature selection.\
+They evaluate each feature **independently of any machine learning model**, based purely on statistics.\
+✅ Fast\
+✅ Intuitive\
+✅ Great for initial cleanup before deeper analysis
+
+In this chapter, we’ll cover:\
+✅ Removing features with low variance\
+✅ Removing highly correlated features\
+✅ Univariate statistical tests (optional advanced filtering)
+
+## **1️⃣ Removing Low-Variance Features**
+
+If a feature barely changes across your dataset, it’s unlikely to help your model.\
+Examples:
+
+-   A product code that's always the same
+
+-   A "country" field that's 99% "USA"
+
+🔹 **Low-variance features are boring. Models can safely ignore them—or better yet, you should remove them.**
+
+### 📌 R: Using `recipes::step_nzv()`
+
+``` r
+
+recipe <- recipe(target ~ ., data = df) %>%
+  step_nzv(all_predictors())  # Near zero variance
+```
+
+### 📌 Python: Using `VarianceThreshold`
+
+``` python
+from sklearn.feature_selection import VarianceThreshold
+
+selector = VarianceThreshold(threshold=0.01)  # Remove features with variance < 0.01
+X_reduced = selector.fit_transform(X)
+```
+
+✅ Simple, no model required, and **often removes dozens of useless columns in wide datasets**.
+
+## **2️⃣ Removing Highly Correlated Features**
+
+Having two features that are **nearly identical** doesn't add information—it **adds redundancy**.\
+High correlation (e.g., \> 0.9) between two features suggests **keeping only one**.
+
+📌 **Why?**
+
+-   Reduces multicollinearity (important for linear models)
+
+-   Speeds up training
+
+-   Improves model stability
+
+### 📌 R: Correlation Matrix with `corrr` + Manual Cutoff
+
+``` r
+library(corrr)
+
+cor_matrix <- correlate(df)
+# Find feature pairs with absolute correlation > 0.9
+high_corr_pairs <- stretch(cor_matrix) %>%
+  filter(abs(r) > 0.9, x != y)
+```
+
+### 📌 Python: Correlation Matrix + Manual Cutoff
+
+``` python
+import pandas as pd
+
+corr_matrix = df.corr().abs()
+upper = corr_matrix.where(pd.np.triu(pd.np.ones(corr_matrix.shape), k=1).astype(bool))
+
+# Find columns to drop
+to_drop = [column for column in upper.columns if any(upper[column] > 0.9)]
+df_reduced = df.drop(columns=to_drop)
+```
+
+✅ Helps models generalize better, especially **linear, logistic regression, and LASSO models**.
+
+## **3️⃣ (Optional) Statistical Tests for Feature Relevance**
+
+Sometimes you want a **quick univariate check** for how strongly each feature relates to the target.
+
+-   For classification → Chi-squared test, ANOVA F-test
+
+-   For regression → Pearson/Spearman correlation
+
+These are **rough guides**, not gospel.
+
+### 📌 Python: Select K Best Features
+
+``` python
+from sklearn.feature_selection import SelectKBest, f_classif
+
+selector = SelectKBest(f_classif, k=10)
+X_new = selector.fit_transform(X, y)
+```
+
+✅ **Statistical filters** can help shortlist candidates **before** deeper model-driven selection.
+
+## **📌 Quick Recap: When to Use Filter Methods**
+
+| Use Case                 | Filter to Apply                       |
+|--------------------------|---------------------------------------|
+| Too many static features | Remove low variance                   |
+| Redundant twin features  | Remove highly correlated              |
+| Very wide datasets       | Univariate feature ranking (optional) |
+
+✅ **Filter methods are fast, interpretable, and perfect for early-stage pruning before feeding data into heavier model-based feature selectors.**
+
+# **Wrapper Methods – Model-Driven Feature Selection**
+
+While filter methods **rank features individually**, wrapper methods **evaluate subsets of features together** based on how well they actually perform in a model.\
+✅ More accurate\
+✅ Takes feature interactions into account\
+❌ Slower and more computationally expensive
+
+In this chapter, we’ll cover:\
+✅ What wrapper methods are\
+✅ Recursive Feature Elimination (RFE)\
+✅ Stepwise Selection\
+✅ When and why to use them
+
+## **1️⃣ What Are Wrapper Methods?**
+
+Instead of looking at each feature in isolation, wrapper methods:\
+🔹 Train a model on different combinations of features\
+🔹 Evaluate model performance (accuracy, RMSE, AUC, etc.)\
+🔹 Keep the combinations that **improve the metric**
+
+📌 **Think of it as: "Train → Evaluate → Keep the best."**
+
+## **2️⃣ Recursive Feature Elimination (RFE)**
+
+RFE **starts with all features**, trains a model, **removes the least important feature**, retrains, and **repeats** until only the strongest features remain.
+
+✅ Good for:
+
+-   Logistic regression, linear models
+
+-   Small- to mid-sized feature sets
+
+-   Cases where you want **compact, high-quality feature subsets**
+
+### 📌 Python: RFE Example with `sklearn`
+
+``` python
+from sklearn.feature_selection import RFE
+from sklearn.ensemble import RandomForestClassifier
+
+rfe = RFE(estimator=RandomForestClassifier(), n_features_to_select=10)
+X_rfe = rfe.fit_transform(X, y)
+```
+
+### 📌 R: RFE Example with `caret`
+
+``` r
+library(caret)
+
+control <- rfeControl(functions = rfFuncs, method = "cv", number = 5)
+rfe_result <- rfe(df[, predictors], df$target, sizes = c(5, 10, 15), rfeControl = control)
+```
+
+✅ RFE **optimizes based on model performance**—not just correlation or variance.
+
+## **3️⃣ Stepwise Feature Selection**
+
+**Stepwise selection** builds a model **by adding or removing features one at a time**, depending on how much they improve model performance.
+
+-   **Forward selection** starts with no features and adds the most useful one at each step.
+
+-   **Backward elimination** starts with all features and removes the least useful one at each step.
+
+-   **Bidirectional selection** combines both approaches.
+
+✅ Good for:
+
+-   Smaller feature spaces
+
+-   Quick-and-dirty baselines for interpretable models
+
+### 📌 R: Stepwise Selection with `MASS::stepAIC`
+
+``` r
+library(MASS)
+
+model_full <- lm(target ~ ., data = df)
+stepwise_model <- stepAIC(model_full, direction = "both")
+```
+
+✅ Stepwise works well when **interpretability** is critical (e.g., regression reports).
+
+## **4️⃣ Pros and Cons of Wrapper Methods**
+
+| Pros                           | Cons                                   |
+|--------------------------------|----------------------------------------|
+| Produces strong feature sets   | Slow (lots of model training)          |
+| Considers feature interactions | Can overfit if not cross-validated     |
+| Model-specific (customized)    | Not always scalable for very wide data |
+
+✅ Use wrapper methods when **accuracy matters more than speed**—especially in smaller datasets or final feature polishing.
+
+## **📌 Summary: When to Use Wrapper Methods**
+
+| Situation                                  | Method                        |
+|------------------------------------------|------------------------------|
+| Need very compact, strong feature set      | RFE                           |
+| Quick model explainability (linear models) | Stepwise                      |
+| Feature interactions matter                | RFE or bidirectional stepwise |
+
+✅ **Wrapper methods are your scalpel—precise, careful, and best used after initial filtering.**
+
+# **Embedded Methods – Feature Selection Built Into Models**
+
+Embedded methods are **the smartest feature selectors**:\
+they **integrate feature selection into the model training process itself**.\
+Instead of preprocessing or wrapper-based evaluation, the model **naturally identifies and reduces less important features while learning**.
+
+This chapter covers:\
+✅ What embedded methods are\
+✅ Feature selection via regularization (LASSO)\
+✅ Feature importance from tree-based models\
+✅ When and how to use them efficiently
+
+## **1️⃣ What Are Embedded Methods?**
+
+Unlike filters or wrappers that work outside of the model, embedded methods:\
+🔹 Train the model\
+🔹 Penalize or reward features automatically\
+🔹 Give **built-in signals** about which features matter
+
+📌 **Feature selection happens during model fitting—not as a separate step.**
+
+## **2️⃣ Regularization: LASSO for Shrinking Features**
+
+**LASSO (Least Absolute Shrinkage and Selection Operator)** is a type of linear regression that **shrinks** less important feature coefficients **toward zero**.
+
+-   Coefficients that become exactly **zero** are effectively **removed** from the model.
+
+✅ Great for:
+
+-   High-dimensional data (many features, few samples)
+
+-   Finding compact linear models
+
+### 📌 R: LASSO with `glmnet`
+
+``` r
+library(glmnet)
+
+X <- model.matrix(target ~ ., df)[, -1]
+y <- df$target
+
+lasso_model <- cv.glmnet(X, y, alpha = 1)
+coef(lasso_model, s = "lambda.min")
+```
+
+### 📌 Python: LASSO with `sklearn`
+
+``` python
+from sklearn.linear_model import LassoCV
+
+lasso = LassoCV(cv=5).fit(X, y)
+selected_features = X.columns[(lasso.coef_ != 0)]
+```
+
+✅ **LASSO shrinks weak features out of the model, automatically cleaning your feature set.**
+
+## **3️⃣ Tree-Based Models: Natural Feature Importance**
+
+Decision trees, random forests, and gradient boosting models naturally **rank feature importance** based on **how much each feature improves splits**.
+
+✅ Good for:
+
+-   Nonlinear feature interactions
+
+-   Handling messy, mixed-type data without heavy preprocessing
+
+-   Quick feature importance ranking
+
+### 📌 R: Feature Importance from `ranger`
+
+``` r
+library(ranger)
+
+model <- ranger(target ~ ., data = df, importance = "impurity")
+importance(model)
+```
+
+### 📌 Python: Feature Importance from `RandomForestClassifier`
+
+``` python
+from sklearn.ensemble import RandomForestClassifier
+
+model = RandomForestClassifier().fit(X, y)
+importances = model.feature_importances_
+```
+
+✅ **Models like XGBoost, LightGBM, and CatBoost also offer similar importance scores.**
+
+## **4️⃣ Pros and Cons of Embedded Methods**
+
+| Pros | Cons |
+|------------------------------------|------------------------------------|
+| Efficient: selection happens while training | Model-specific |
+| Handles large feature sets well | Might discard features useful for other models |
+| Captures nonlinear interactions (trees) | Can overfit without tuning (especially small data) |
+
+✅ Embedded methods are **fast, smart, and directly tied to model objectives**.
+
+## **📌 Summary: When to Use Embedded Feature Selection**
+
+| Situation | Embedded Method |
+|------------------------------------|------------------------------------|
+| High-dimensional linear models | LASSO |
+| Nonlinear or tree-based models | Random Forest / XGBoost feature importance |
+| Need automatic selection without extra loops | Any embedded method |
+
+✅ **Embedded methods are your autopilot—they work while you train.**
+
+# **Best Practices & Common Mistakes in Feature Selection**
+
+Feature selection sounds simple: **keep the good, throw away the bad.**\
+But in practice, it’s very easy to **introduce biases, overfit, or accidentally destroy predictive power** if you’re not careful.
+
+This chapter covers:\
+✅ The most common mistakes made during feature selection\
+✅ Best practices to keep models honest\
+✅ A simple checklist to build your final feature set
+
+## **1️⃣ Common Mistakes to Avoid**
+
+| Mistake | Why It's Dangerous |
+|------------------------------------|------------------------------------|
+| 🔁 Selecting features on the full dataset | **Leaks test set info** → fake performance boost |
+| 📦 Blindly trusting feature importance | Importance ≠ necessity (some features help in combos) |
+| 🛠 Overfitting during wrapper methods | Small datasets + too many selections = fragile models |
+| 🧽 Over-cleaning (dropping weak but synergistic features) | Sometimes features interact in ways you can't see alone |
+
+### **📌 Real-World Example of Leakage**
+
+If you compute feature importance, correlation, or do stepwise selection **before splitting train/test**,\
+you’re giving your model information it wouldn't have at prediction time.
+
+✅ **Always split your data first** → only perform selection based on the training set.
+
+## **2️⃣ Best Practices for Robust Feature Selection**
+
+✔ **Always split first** — Train/test split (or CV folds) before any feature importance evaluation.\
+✔ **Use multiple methods** — Combine filter (variance/correlation), wrapper (RFE), and embedded (tree importance) techniques.\
+✔ **Cross-validate selection** — Don’t just trust one random split; validate across folds if possible.\
+✔ **Prioritize simplicity** — Favor smaller, interpretable feature sets if predictive power remains stable.\
+✔ **Use domain knowledge wisely** — Don’t blindly delete a variable just because it’s weak statistically; it might still matter logically.\
+✔ **Don’t panic about slight drops** — Sometimes, dropping noisy features *slightly* worsens training accuracy but **improves generalization**.
+
+## **3️⃣ Practical Checklist: How to Choose Features Like a Pro**
+
+| Step | Action |
+|------------------------------------|------------------------------------|
+| 1️⃣ | Train/test split (or CV setup) |
+| 2️⃣ | Filter out near-zero variance and highly correlated features |
+| 3️⃣ | Run simple univariate filters (optional) |
+| 4️⃣ | Apply wrapper method (RFE / stepwise) if time allows |
+| 5️⃣ | Validate against model-specific embedded importance |
+| 6️⃣ | Build multiple models (full vs selected) and compare metrics |
+| 7️⃣ | Choose the **smallest feature set** with acceptable or better validation performance |
+| 8️⃣ | Document feature selection steps for reproducibility |
+
+✅ **Systematic selection \> Gut feeling**—but combining both often works best!
+
+## **📌 Quick Summary: Mastering the Final Cut**
+
+| Do | Avoid |
+|------------------------------------|------------------------------------|
+| Split data first | Feature selection on the full dataset |
+| Cross-validate selections | Overfitting on a lucky split |
+| Favor smaller, simpler models | Keeping everything just in case |
+| Combine filter, wrapper, and embedded signals | Trusting only one method |
+
+✅ **Feature selection isn’t just cleaning—it's strategic model crafting.**
