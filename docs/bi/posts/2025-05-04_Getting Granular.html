@@ -6,8 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Numbers around us">
+<meta name="dcterms.date" content="2025-05-04">
 
-<title>Business intelligence – Numbers Around Us</title>
+<title>Getting Granular: How Tableau and Power BI Handle Level of Detail – Numbers Around Us</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,22 +25,20 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="../site_libs/quarto-nav/headroom.min.js"></script>
-<script src="../site_libs/quarto-listing/list.min.js"></script>
-<script src="../site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="../site_libs/clipboard/clipboard.min.js"></script>
-<script src="../site_libs/quarto-html/quarto.js"></script>
-<script src="../site_libs/quarto-html/popper.min.js"></script>
-<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../site_libs/quarto-html/anchor.min.js"></script>
-<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-697306ee647f3aecb60be57249203282.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-3fe3df12cb322cd60d4f50ab5ce79ec8.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-71a1c0b2fece7d4d1d4daa5e23e0c0ad.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-00ab377d17f9c7e1b98bb5b1ff2b2f0e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-697306ee647f3aecb60be57249203282.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-3fe3df12cb322cd60d4f50ab5ce79ec8.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-71a1c0b2fece7d4d1d4daa5e23e0c0ad.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-00ab377d17f9c7e1b98bb5b1ff2b2f0e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "language": {
     "search-no-results-text": "No results",
@@ -54,65 +54,7 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
 
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-listing .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-image','listing-date','listing-title','listing-word-count','listing-reading-time',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-title","listing-author","listing-date","listing-image","listing-description"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
-
-  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 </head>
 
@@ -123,7 +65,7 @@ window.Quarto = {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="../index.html">
+    <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">Numbers Around Us</span>
     </a>
   </div>
@@ -133,27 +75,27 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../index.html"> 
+    <a class="nav-link" href="../../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../last-articles.html"> 
+    <a class="nav-link" href="../../last-articles.html"> 
 <span class="menu-text">Newest articles</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../challenges/index.html"> 
+    <a class="nav-link" href="../../challenges/index.html"> 
 <span class="menu-text">Challenges</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="../bi/index.html" aria-current="page"> 
+    <a class="nav-link" href="../../bi/index.html"> 
 <span class="menu-text">Business Intelligence</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../ds/index.html"> 
+    <a class="nav-link" href="../../ds/index.html"> 
 <span class="menu-text">Data Science</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../dp/index.html"> 
+    <a class="nav-link" href="../../dp/index.html"> 
 <span class="menu-text">Data Philosophy</span></a>
   </li>  
 </ul>
@@ -175,14 +117,26 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Business intelligence</h1>
+<h1 class="title">Getting Granular: How Tableau and Power BI Handle Level of Detail</h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Numbers around us </p>
+          </div>
+  </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">May 4, 2025</p>
+    </div>
+  </div>
   
     
   </div>
@@ -192,557 +146,383 @@ window.Quarto = {
 </header>
 
 
+<p><img src="images/Getting Granular.png" class="img-fluid"></p>
+<section id="the-hidden-complexity-of-aggregation" class="level1">
+<h1><strong>The Hidden Complexity of Aggregation</strong></h1>
+<p>At first glance, most BI tools make working with data feel effortless:<br>
+Just drag a field into a chart, pick a measure, and boom — a sum, an average, a count.</p>
+<p>But this ease masks a subtle complexity:</p>
+<blockquote class="blockquote">
+<p><strong>What if you need a metric that ignores the current chart granularity?</strong><br>
+<strong>What if you want to summarize per customer but display per segment?</strong><br>
+<strong>What if your filter affects one metric but not another?</strong></p>
+</blockquote>
+<p>That’s where <strong>Level of Detail</strong> (LOD) comes in — and where different tools offer very different solutions.</p>
+<p>In <strong>Tableau</strong>, you’ll reach for LOD expressions like:</p>
+<pre class="{tableau}"><code>{FIXED [Customer ID] : SUM(Sales)}</code></pre>
+<p>Or even:</p>
+<pre class="tableau"><code>{FIXED : COUNTD([Customer ID])}</code></pre>
+<p>…to get a constant or a sub-grain result that’s independent of your chart’s current breakdown.</p>
+<p>In <strong>Power BI</strong>, the same idea involves <code>CALCULATE()</code> and friends:</p>
+<pre class="{dax}"><code>CALCULATE(SUM(Sales), REMOVEFILTERS(Customer))</code></pre>
+<p>Or even:</p>
+<pre class="dax"><code>CALCULATE(DISTINCTCOUNT(Customer[ID]), REMOVEFILTERS())</code></pre>
+<p>Both tools allow you to <strong>break out of the default aggregation logic</strong>, but the way they handle it is rooted in very different models:</p>
+<ul>
+<li><p>Tableau thinks in terms of <strong>viz grain</strong> and <strong>data scope</strong></p></li>
+<li><p>Power BI thinks in terms of <strong>filter context</strong> and <strong>evaluation order</strong></p></li>
+</ul>
+<p>This article explores how these tools let you:</p>
+<ul>
+<li><p>Calculate <strong>metrics at different levels</strong> than the visible one</p></li>
+<li><p>Create <strong>stable denominators</strong> for % of total</p></li>
+<li><p>Handle <strong>filters that affect one metric but not another</strong></p></li>
+<li><p>Think more clearly about <strong>what granularity your calculation actually needs</strong></p></li>
+</ul>
+<p>Because once you go beyond drag-and-drop…</p>
+<blockquote class="blockquote">
+<p>You’re not just visualizing the data — you’re shaping the <em>logic</em> behind the numbers.</p>
+</blockquote>
+</section>
+<section id="the-problem-one-chart-two-granularities" class="level1">
+<h1><strong>The Problem: One Chart, Two Granularities</strong></h1>
+<p>BI tools love to aggregate. Drag a numeric field into a chart, and it happily sums, counts, or averages — usually at the level defined by your visual:</p>
+<blockquote class="blockquote">
+<p><strong>“Sales by Region”</strong> means Tableau or Power BI groups your sales records by region, then aggregates them.</p>
+</blockquote>
+<p>This works beautifully… until it doesn’t.</p>
+<section id="real-world-problems-that-break-the-default-grain" class="level3">
+<h3 class="anchored" data-anchor-id="real-world-problems-that-break-the-default-grain">🔍 Real-World Problems That Break the Default Grain</h3>
+<p>Let’s say you want to show:</p>
+<ul>
+<li><p><strong>% of Total Sales per Category</strong> — but the total should be <strong>overall</strong>, not filtered by Region</p></li>
+<li><p><strong>Average Sales per Customer</strong> — even though you’re visualizing by Product Sub-Category</p></li>
+<li><p><strong>Top 1 Product per Region</strong> — which requires aggregating sales, <strong>then slicing</strong> by region</p></li>
+<li><p><strong>Customer Count per Segment</strong>, but with filters that <strong>don’t apply</strong> to that metric</p></li>
+</ul>
+<p>These are <strong>common analytical questions</strong> — and they all require a <strong>different level of detail</strong> than the current view.</p>
+</section>
+<section id="why-this-trips-people-up" class="level3">
+<h3 class="anchored" data-anchor-id="why-this-trips-people-up">⚠️ Why This Trips People Up</h3>
+<p>By default:</p>
+<ul>
+<li><p><strong>Tableau</strong> calculates at the <strong>visual level of detail (vizLOD)</strong></p></li>
+<li><p><strong>Power BI</strong> evaluates filters based on <strong>visual context and slicers</strong></p></li>
+</ul>
+<p>Which means:</p>
+<ul>
+<li><p>You often get a result, but <strong>not the one you intended</strong>.</p></li>
+<li><p>Worse: the chart looks fine — until someone asks:</p>
+<blockquote class="blockquote">
+<p>“Wait… why isn’t that total matching what I expected?”</p>
+</blockquote></li>
+</ul>
+</section>
+<section id="the-core-problem" class="level3">
+<h3 class="anchored" data-anchor-id="the-core-problem">🎯 The Core Problem:</h3>
+<blockquote class="blockquote">
+<p><strong>You want to display data at one level… but calculate it at another.</strong></p>
+</blockquote>
+<p>And that’s where tools diverge in how they handle <strong>explicit granularity control</strong>.</p>
+<p>In the next sections, we’ll look at how Tableau uses <strong>LOD expressions</strong> and <strong>context filters</strong>, and how Power BI uses <strong>DAX filter functions</strong> to give you that control.</p>
+</section>
+</section>
+<section id="tableaus-approach-lod-expressions-and-context-filters" class="level1">
+<h1><strong>Tableau’s Approach — LOD Expressions and Context Filters</strong></h1>
+<p>In Tableau, the default behavior is to <strong>aggregate at the level of the visualization</strong>.<br>
+So if you drag <code>[Sales]</code> into a view broken down by <code>[Category]</code>, Tableau will return <code>SUM(Sales)</code> for each category — simple and automatic.</p>
+<p>But what if you want to:</p>
+<ul>
+<li><p>Count unique customers <strong>regardless of the view’s granularity</strong>?</p></li>
+<li><p>Calculate sales <strong>per customer</strong>, then average <strong>per region</strong>?</p></li>
+<li><p>Compare a product’s sales <strong>to the total across all products</strong>, even when filtering?</p></li>
+</ul>
+<p>That’s where <strong>Level of Detail (LOD) Expressions</strong> come in.</p>
+<section id="the-lod-syntax" class="level3">
+<h3 class="anchored" data-anchor-id="the-lod-syntax">🔹 The LOD Syntax</h3>
+<p>LOD expressions allow you to <strong>override the default level of detail</strong>.</p>
+<pre class="tableau"><code>{FIXED [Dimension(s)] : AGG([Measure])}
+{INCLUDE [Dimension(s)] : AGG([Measure])}
+{EXCLUDE [Dimension(s)] : AGG([Measure])}</code></pre>
+<p>Let’s walk through each.</p>
+</section>
+<section id="fixed-lock-to-a-specific-level" class="level3">
+<h3 class="anchored" data-anchor-id="fixed-lock-to-a-specific-level">✅ <code>{FIXED}</code> — Lock to a Specific Level</h3>
+<p>This expression <strong>removes the influence of the view’s granularity</strong> and uses only the dimensions you specify.</p>
+<pre class="tableau"><code>{FIXED [Customer Segment] : COUNTD([Customer ID])}</code></pre>
+<p>This counts <strong>unique customers per segment</strong>, even if your view is showing something else — like products or sub-categories.</p>
+<p>You can also use <code>{FIXED : ...}</code> with <strong>no dimension</strong>, which gives you a <strong>global total</strong>:</p>
+<pre class="tableau"><code>{FIXED : COUNTD([Customer ID])}</code></pre>
+<p>Use this when you want to:</p>
+<ul>
+<li><p>Create a constant denominator for % of total</p></li>
+<li><p>Create a reference value (e.g., max profit overall)</p></li>
+</ul>
+</section>
+<section id="include-add-dimensions-temporarily" class="level3">
+<h3 class="anchored" data-anchor-id="include-add-dimensions-temporarily">✅ <code>{INCLUDE}</code> — Add Dimensions Temporarily</h3>
+<p>This is like telling Tableau:</p>
+<blockquote class="blockquote">
+<p>“Break this down further than the view does — then aggregate back up.”</p>
+</blockquote>
+<p>Example:</p>
+<pre class="tableau"><code>{INCLUDE [Product Name] : AVG([Sales])}</code></pre>
+<p>If your view is showing <code>[Region]</code>, this will calculate the <strong>average sales per product</strong>, then <strong>average those within each region</strong>.</p>
+<p>Use when:</p>
+<ul>
+<li><p>You want to bring in row-level granularity temporarily</p></li>
+<li><p>You’re working on ratio or per-item metrics</p></li>
+</ul>
+</section>
+<section id="exclude-remove-dimensions-from-the-view" class="level3">
+<h3 class="anchored" data-anchor-id="exclude-remove-dimensions-from-the-view">✅ <code>{EXCLUDE}</code> — Remove Dimensions from the View</h3>
+<p>The opposite of INCLUDE. You’re saying:</p>
+<blockquote class="blockquote">
+<p>“I know the view is grouped by X and Y — but calculate as if it was just by X.”</p>
+</blockquote>
+<p>Example:</p>
+<pre class="tableau"><code>{EXCLUDE [Region] : SUM([Sales])}</code></pre>
+<p>This removes Region from the calculation, even if it’s present in the visual — useful for:</p>
+<ul>
+<li><p>Baselines</p></li>
+<li><p>Reference lines</p></li>
+<li><p>High-level metrics in detailed views</p></li>
+</ul>
+</section>
+<section id="lod-expression-gotchas" class="level3">
+<h3 class="anchored" data-anchor-id="lod-expression-gotchas">⚠️ LOD Expression Gotchas</h3>
+<ul>
+<li><p><strong>Filters can interfere</strong> with LODs — which leads us to <strong>Context Filters</strong></p></li>
+<li><p><code>{FIXED}</code> expressions are evaluated <strong>before most filters</strong></p></li>
+<li><p>If you want a filter to apply <strong>before</strong> the LOD expression, it must be set as a <strong>Context Filter</strong></p></li>
+</ul>
+</section>
+<section id="context-filters" class="level3">
+<h3 class="anchored" data-anchor-id="context-filters">🔸 Context Filters</h3>
+<p>When you want a filter (like <code>[Order Date]</code>) to affect a <code>{FIXED}</code> expression, right-click it and choose <strong>“Add to Context”</strong>. This changes the filter’s evaluation order so it’s applied <strong>before the FIXED calculation runs</strong>.</p>
+<p>If you don’t do this, your numbers may seem “wrong” — when in fact, they’re just not including your filter at the right time.</p>
+</section>
+<section id="summary" class="level3">
+<h3 class="anchored" data-anchor-id="summary">🧠 Summary</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 43%">
+<col style="width: 56%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Use Case</th>
+<th>Expression Type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Count customers per region</td>
+<td><code>{FIXED [Region] : COUNTD(Customer ID)}</code></td>
+</tr>
+<tr class="even">
+<td>Compare product sales to total</td>
+<td><code>{FIXED : SUM(Sales)}</code></td>
+</tr>
+<tr class="odd">
+<td>Avg sales per item in view</td>
+<td><code>{INCLUDE [Product Name] : AVG(Sales)}</code></td>
+</tr>
+<tr class="even">
+<td>Ignore one dimension</td>
+<td><code>{EXCLUDE [Region] : SUM(Sales)}</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="a-real-world-ratio-most-of-the-time-its-fixed" class="level3">
+<h3 class="anchored" data-anchor-id="a-real-world-ratio-most-of-the-time-its-fixed">🔸 A Real-World Ratio: Most of the Time, It’s FIXED</h3>
+<p>If you work with Tableau regularly, you’ll notice a pattern:</p>
+<blockquote class="blockquote">
+<p><strong>Roughly 80% of the time, what you need is a <code>{FIXED}</code> expression.</strong></p>
+</blockquote>
+<ul>
+<li><p>You’re locking a metric to a specific business grouping (e.g., customer, region, segment)</p></li>
+<li><p>You want to isolate the calculation from the view’s grain</p></li>
+<li><p>You need something stable and reusable across charts</p></li>
+</ul>
+<p><code>{INCLUDE}</code> and <code>{EXCLUDE}</code> have their place — especially for row-level tricks or nested LOD logic —<br>
+but in most use cases, <strong>FIXED gives you the control and predictability you’re after.</strong></p>
+<p>This doesn’t mean you should avoid the other types — just that understanding FIXED deeply will solve <strong>most real-world LOD challenges</strong>.</p>
+</section>
+</section>
+<section id="power-bis-approach-calculate-and-context-control" class="level1">
+<h1><strong>Power BI’s Approach — CALCULATE and Context Control</strong></h1>
+<p>While Tableau gives you explicit keywords to manipulate granularity, <strong>Power BI</strong> uses a different strategy:</p>
+<blockquote class="blockquote">
+<p>It lets you control the <strong>filter context</strong> applied to any calculation — dynamically, precisely, and programmatically.</p>
+</blockquote>
+<p>At the core of this logic is DAX’s most important function:</p>
+<pre class="dax"><code>CALCULATE(&lt;expression&gt;, &lt;filter1&gt;, &lt;filter2&gt;, ...)</code></pre>
+<section id="what-calculate-does" class="level3">
+<h3 class="anchored" data-anchor-id="what-calculate-does">🧠 What CALCULATE Does</h3>
+<blockquote class="blockquote">
+<p><strong>CALCULATE</strong> evaluates an expression in a <strong>modified filter context</strong>.</p>
+</blockquote>
+<p>This means:</p>
+<ul>
+<li><p>You can <strong>change what filters apply</strong></p></li>
+<li><p>You can <strong>remove</strong>, <strong>override</strong>, or <strong>narrow</strong> filters from visuals, slicers, or page filters</p></li>
+<li><p>You’re not controlling “levels of detail” per se — you’re controlling the <strong>filter logic that defines granularity</strong></p></li>
+</ul>
+</section>
+<section id="common-filter-modifiers-in-dax" class="level3">
+<h3 class="anchored" data-anchor-id="common-filter-modifiers-in-dax">✅ Common Filter Modifiers in DAX</h3>
+<p>Let’s look at the key functions you’ll use with <code>CALCULATE()</code> to handle different levels of context:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 26%">
+<col style="width: 73%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>DAX Function</th>
+<th>What It Does</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>REMOVEFILTERS()</code></td>
+<td>Ignores filters from visuals/slicers</td>
+</tr>
+<tr class="even">
+<td><code>ALL()</code></td>
+<td>Removes all filters — useful for total / denominator</td>
+</tr>
+<tr class="odd">
+<td><code>ALLEXCEPT()</code></td>
+<td>Keeps only specified filters, removes others</td>
+</tr>
+<tr class="even">
+<td><code>KEEPFILTERS()</code></td>
+<td>Applies filters without replacing existing ones</td>
+</tr>
+<tr class="odd">
+<td><code>FILTER()</code></td>
+<td>Builds custom row filters inside CALCULATE</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples" class="level3">
+<h3 class="anchored" data-anchor-id="examples">🔍 Examples</h3>
+<section id="global-unique-count-of-customers-like-fixed-countd...-in-tableau" class="level4">
+<h4 class="anchored" data-anchor-id="global-unique-count-of-customers-like-fixed-countd...-in-tableau">🔹 Global unique count of customers (like <code>{FIXED : COUNTD(...)}</code> in Tableau):</h4>
+<pre class="dax"><code>CustomerCountGlobal = CALCULATE(DISTINCTCOUNT('Customers'[CustomerID]), REMOVEFILTERS())</code></pre>
+<p>🔹 Count customers per segment:</p>
+<pre class="dax"><code>CustomerPerSegment = CALCULATE(DISTINCTCOUNT('Customers'[CustomerID]))</code></pre>
+<p>🔹 Keep only one filter dimension (like Tableau’s <code>{FIXED [Segment] : ...}</code>):</p>
+<pre class="dax"><code>CustomerPerSegmentOnly = CALCULATE(
+  DISTINCTCOUNT('Customers'[CustomerID]),
+  ALLEXCEPT('Customers', 'Customers'[Segment])
+)</code></pre>
+<p>This says: “Remove all filters except Segment” — even if the visual also includes Region or Product.<br>
+<br>
+⚠️ Things to Watch For</p>
+<ul>
+<li><p>DAX has <strong>row context</strong> and <strong>filter context</strong> — and they’re evaluated differently. This trips people up fast.</p></li>
+<li><p>You must <strong>explicitly control context</strong> for complex calculations. There is no “LOD” keyword — it’s all logic.</p></li>
+<li><p>It’s easy to make the formula work, but <strong>hard to explain why</strong> if you’re not careful with variable naming and structuring.</p></li>
+</ul>
+</section>
+</section>
+<section id="practical-patterns" class="level3">
+<h3 class="anchored" data-anchor-id="practical-patterns">✍️ Practical Patterns</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Use Case</th>
+<th>Tableau</th>
+<th>Power BI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Global % of Total</td>
+<td><code>{FIXED : SUM(Sales)}</code></td>
+<td><code>CALCULATE(SUM(Sales), REMOVEFILTERS())</code></td>
+</tr>
+<tr class="even">
+<td>Segment-level count</td>
+<td><code>{FIXED [Segment] : COUNTD(ID)}</code></td>
+<td><code>CALCULATE(DISTINCTCOUNT(ID), ALLEXCEPT(...))</code></td>
+</tr>
+<tr class="odd">
+<td>Top N inside group</td>
+<td>FIXED with rank filter</td>
+<td><code>RANKX</code> + <code>CALCULATE(...)</code> per group</td>
+</tr>
+<tr class="even">
+<td>Metric ignoring a slicer</td>
+<td>FIXED LOD + context filter</td>
+<td><code>REMOVEFILTERS(SlicerTable[Field])</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="key-takeaway-for-power-bi-users" class="level3">
+<h3 class="anchored" data-anchor-id="key-takeaway-for-power-bi-users">🧠 Key Takeaway for Power BI Users</h3>
+<blockquote class="blockquote">
+<p>You’re not thinking in terms of “level of detail” — you’re thinking in <strong>filter logic</strong>.</p>
+</blockquote>
+<p>Power BI doesn’t show you what level it’s summarizing at — it just responds to whatever filters (visual, page, slicer) are in play.<br>
+So <strong>your job is to override those filters</strong> when needed.</p>
+</section>
+</section>
+<section id="final-thoughts-takeaways" class="level1">
+<h1>Final Thoughts &amp; Takeaways</h1>
+<p>When we talk about “level of detail,” we’re really talking about <strong>control</strong>.</p>
+<p>Most of the time, BI tools do a good job guessing how you want to aggregate your data. But when you start asking more specific, more meaningful questions — <strong>“How many customers are we serving regardless of category?”</strong> or <strong>“What was the average per transaction, not per visual group?”</strong> — you need to take control.</p>
+<p>And that’s where things diverge.</p>
+<section id="tableaus-approach" class="level3">
+<h3 class="anchored" data-anchor-id="tableaus-approach">🔷 Tableau’s Approach</h3>
+<ul>
+<li><p>Tableau gives you <strong>straightforward LOD expressions</strong> (<code>FIXED</code>, <code>INCLUDE</code>, <code>EXCLUDE</code>) that are <strong>explicit, readable, and scoped.</strong></p></li>
+<li><p>You say what you want to include or ignore — and Tableau does it.</p></li>
+<li><p>In most real-world scenarios, <strong><code>FIXED</code> covers 80% of use cases</strong>.</p></li>
+</ul>
+<p>Its strength is clarity — but you do need to understand <strong>context filters</strong> and <strong>evaluation order</strong> when things get tricky.</p>
+</section>
+<section id="power-bis-approach" class="level3">
+<h3 class="anchored" data-anchor-id="power-bis-approach">🔶 Power BI’s Approach</h3>
+<ul>
+<li><p>Power BI uses <strong>DAX functions like <code>CALCULATE()</code></strong>, paired with filter functions like <code>ALL()</code>, <code>REMOVEFILTERS()</code>, and <code>ALLEXCEPT()</code>.</p></li>
+<li><p>Instead of writing one-off LOD logic, you <strong>modify the filter context</strong> in which your measure is evaluated.</p></li>
+<li><p>It’s <strong>more flexible</strong>, but also more verbose and less intuitive at first.</p></li>
+</ul>
+<p>Its strength is power — but you must deeply understand how <strong>row context and filter context</strong> interact.</p>
+</section>
+<section id="what-they-have-in-common" class="level3">
+<h3 class="anchored" data-anchor-id="what-they-have-in-common">🧠 What They Have in Common</h3>
+<ul>
+<li><p>Both tools make <strong>assumptions</strong> about aggregation unless you tell them otherwise.</p></li>
+<li><p>Both allow you to calculate at <strong>different levels</strong> than what’s shown in the visual.</p></li>
+<li><p>Both reward you for thinking clearly about <strong>intent</strong> — what is the grain of your calculation?</p></li>
+</ul>
+</section>
+<section id="final-tip" class="level3">
+<h3 class="anchored" data-anchor-id="final-tip">✍️ Final Tip</h3>
+<blockquote class="blockquote">
+<p>Don’t just ask “what do I want to show?”<br>
+Ask: <strong>“At what level should this number be calculated?”</strong></p>
+</blockquote>
+<p>That shift in thinking separates good dashboard builders from great analysts.</p>
 
 
+</section>
+</section>
 
-
-<div class="quarto-listing quarto-listing-container-grid" id="listing-listing">
-<div class="list grid quarto-listing-cols-3">
-<div class="g-col-1" data-index="0" data-listing-date-sort="1746309600000" data-listing-file-modified-sort="1746356566332" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="11" data-listing-word-count-sort="2053">
-<a href="../bi/posts/2025-05-04_Getting Granular.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="posts\images\Getting Granular.png" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Getting Granular: How Tableau and Power BI Handle Level of Detail
-</h5>
-<div class="listing-reading-time card-text text-muted">
-11 min
-</div>
-<div class="card-attribution card-text-small end">
-<div class="listing-date">
-May 4, 2025
-</div>
-</div>
-<table class="card-other-values">
-<tbody><tr>
-<td>
-Word Count
-</td>
-<td class="word-count">
-2053 words
-</td>
-</tr>
-</tbody></table>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="1" data-listing-date-sort="1745704800000" data-listing-file-modified-sort="1745777188924" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="16" data-listing-word-count-sort="3029">
-<a href="../bi/posts/2025-03-02_Chart_anatomy_shapes.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="posts\images\20250427_1901_Chart Fusion Symphony_simple_compose_01jsw32x4xf9j8c1e6ahf4swgz.png" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Visualizing Form and Structure: Get in Shape with Data
-</h5>
-<div class="listing-reading-time card-text text-muted">
-16 min
-</div>
-<div class="card-attribution card-text-small end">
-<div class="listing-date">
-Apr 27, 2025
-</div>
-</div>
-<table class="card-other-values">
-<tbody><tr>
-<td>
-Word Count
-</td>
-<td class="word-count">
-3029 words
-</td>
-</tr>
-</tbody></table>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="2" data-listing-date-sort="1740870000000" data-listing-file-modified-sort="1745353848708" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="17" data-listing-word-count-sort="3209">
-<a href="../bi/posts/2025-03-02_Chart_anatomy_line.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="posts\images\Anatomy_of_charts_line.jpg" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Connecting the Dots: When Line Charts Are Your Best Friend
-</h5>
-<div class="listing-reading-time card-text text-muted">
-17 min
-</div>
-<div class="card-attribution card-text-small end">
-<div class="listing-date">
-Mar 2, 2025
-</div>
-</div>
-<table class="card-other-values">
-<tbody><tr>
-<td>
-Word Count
-</td>
-<td class="word-count">
-3209 words
-</td>
-</tr>
-</tbody></table>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="3" data-listing-date-sort="1740265200000" data-listing-file-modified-sort="1740395515399" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="16" data-listing-word-count-sort="3165">
-<a href="../bi/posts/2025-02-23_Chart_anatomy_Bar.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="posts\images\Anatomy_of_charts_bar.jpg" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-A Data Analyst Walks Into a Bar… Chart
-</h5>
-<div class="listing-reading-time card-text text-muted">
-16 min
-</div>
-<div class="card-attribution card-text-small end">
-<div class="listing-date">
-Feb 23, 2025
-</div>
-</div>
-<table class="card-other-values">
-<tbody><tr>
-<td>
-Word Count
-</td>
-<td class="word-count">
-3165 words
-</td>
-</tr>
-</tbody></table>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="4" data-listing-date-sort="1739660400000" data-listing-file-modified-sort="1739907073538" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="13" data-listing-word-count-sort="2491">
-<a href="../bi/posts/2025-02-16_Dynamic_Zone_Visibility.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="posts\images\DVZ_feature_tableau.jpg" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Now You See It, Now You Don’t – Dynamic Zone Visibility in Tableau
-</h5>
-<div class="listing-reading-time card-text text-muted">
-13 min
-</div>
-<div class="card-attribution card-text-small end">
-<div class="listing-date">
-Feb 16, 2025
-</div>
-</div>
-<table class="card-other-values">
-<tbody><tr>
-<td>
-Word Count
-</td>
-<td class="word-count">
-2491 words
-</td>
-</tr>
-</tbody></table>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="5" data-listing-date-sort="1739055600000" data-listing-file-modified-sort="1739222324636" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="13" data-listing-word-count-sort="2473">
-<a href="../bi/posts/2025-02-09_Data Storytelling The Ancient Bard vs. The Modern Strategist.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="posts\images\datastorytelling.jpg" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Data Storytelling: The Ancient Bard vs.&nbsp;The Modern Strategist
-</h5>
-<div class="listing-reading-time card-text text-muted">
-13 min
-</div>
-<div class="card-attribution card-text-small end">
-<div class="listing-date">
-Feb 9, 2025
-</div>
-</div>
-<table class="card-other-values">
-<tbody><tr>
-<td>
-Word Count
-</td>
-<td class="word-count">
-2473 words
-</td>
-</tr>
-</tbody></table>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="6" data-listing-date-sort="1738450800000" data-listing-file-modified-sort="1738528208674" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="12" data-listing-word-count-sort="2375">
-<a href="../bi/posts/2025-02-02_From Clicks to Insights A Precise Comparison of Power BI and Tableau Interactivity.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="posts\images\customizationtvspbi.jpg" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-From Clicks to Insights: A Precise Comparison of Power BI and Tableau Interactivity
-</h5>
-<div class="listing-reading-time card-text text-muted">
-12 min
-</div>
-<div class="card-attribution card-text-small end">
-<div class="listing-date">
-Feb 2, 2025
-</div>
-</div>
-<table class="card-other-values">
-<tbody><tr>
-<td>
-Word Count
-</td>
-<td class="word-count">
-2375 words
-</td>
-</tr>
-</tbody></table>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="7" data-listing-date-sort="1737846000000" data-listing-file-modified-sort="1737929702371" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="10" data-listing-word-count-sort="1964">
-<a href="../bi/posts/2024-01-26_How to Create Efficient Navigation Menus in Power BI and Tableau Tips and Tricks.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="posts\images\BI_Nav.jpg" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-How to Create Efficient Navigation Menus in Power BI and Tableau: Tips and Tricks
-</h5>
-<div class="listing-reading-time card-text text-muted">
-10 min
-</div>
-<div class="card-attribution card-text-small end">
-<div class="listing-date">
-Jan 26, 2025
-</div>
-</div>
-<table class="card-other-values">
-<tbody><tr>
-<td>
-Word Count
-</td>
-<td class="word-count">
-1964 words
-</td>
-</tr>
-</tbody></table>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="8" data-listing-date-sort="1737241200000" data-listing-file-modified-sort="1737324360236" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="11" data-listing-word-count-sort="2041">
-<a href="../bi/posts/2024-01-19_From Sketch to Masterpiece Tableau Workspace for Beginners.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="posts\images\Tableau Workspace.jpg" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-From Sketch to Masterpiece: Tableau Workspace for Beginners
-</h5>
-<div class="listing-reading-time card-text text-muted">
-11 min
-</div>
-<div class="card-attribution card-text-small end">
-<div class="listing-date">
-Jan 19, 2025
-</div>
-</div>
-<table class="card-other-values">
-<tbody><tr>
-<td>
-Word Count
-</td>
-<td class="word-count">
-2041 words
-</td>
-</tr>
-</tbody></table>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="9" data-listing-date-sort="1727906400000" data-listing-file-modified-sort="1736533263337" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="10" data-listing-word-count-sort="1817">
-<a href="../bi/posts/2024-10-03_Choosing-the-Right-Chart--A-Personal-Guide-to-Better-Data-Visualization-490696c7774a.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="posts\images\choose-report.jpg" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Choosing the Right Chart: A Personal Guide to Better Data Visualization
-</h5>
-<div class="listing-reading-time card-text text-muted">
-10 min
-</div>
-<div class="card-attribution card-text-small end">
-<div class="listing-date">
-Oct 3, 2024
-</div>
-</div>
-<table class="card-other-values">
-<tbody><tr>
-<td>
-Word Count
-</td>
-<td class="word-count">
-1817 words
-</td>
-</tr>
-</tbody></table>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="10" data-listing-date-sort="1727301600000" data-listing-file-modified-sort="1736532850795" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="19" data-listing-word-count-sort="3654">
-<a href="../bi/posts/2024-09-26_Blueprint-for-SUCCESS--The-Architecture-of-Structured-Reports-73131806b808.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="posts\images\structure.jpg" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Blueprint for SUCCESS: The Architecture of Structured Reports
-</h5>
-<div class="listing-reading-time card-text text-muted">
-19 min
-</div>
-<div class="card-attribution card-text-small end">
-<div class="listing-date">
-Sep 26, 2024
-</div>
-</div>
-<table class="card-other-values">
-<tbody><tr>
-<td>
-Word Count
-</td>
-<td class="word-count">
-3654 words
-</td>
-</tr>
-</tbody></table>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="11" data-listing-date-sort="1726696800000" data-listing-file-modified-sort="1736532568165" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="15" data-listing-word-count-sort="2972">
-<a href="../bi/posts/2024-09-19_Keep-It-Simple--Extracting-Value-from-the-Noise-of-Data-Overload-0a79095d844f.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="posts\images\simplify.jpg" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Keep It Simple: Extracting Value from the Noise of Data Overload
-</h5>
-<div class="listing-reading-time card-text text-muted">
-15 min
-</div>
-<div class="card-attribution card-text-small end">
-<div class="listing-date">
-Sep 19, 2024
-</div>
-</div>
-<table class="card-other-values">
-<tbody><tr>
-<td>
-Word Count
-</td>
-<td class="word-count">
-2972 words
-</td>
-</tr>
-</tbody></table>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="12" data-listing-date-sort="1726092000000" data-listing-file-modified-sort="1736532258667" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="31" data-listing-word-count-sort="6039">
-<a href="../bi/posts/2024-09-12_Express-to-Impress--Leveraging-IBCS-Standards-for-Powerful-Data-Presentations-3c3a269f0ec0.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="posts\images\express.jpg" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Express to Impress: Leveraging IBCS Standards for Powerful Data Presentations
-</h5>
-<div class="listing-reading-time card-text text-muted">
-31 min
-</div>
-<div class="card-attribution card-text-small end">
-<div class="listing-date">
-Sep 12, 2024
-</div>
-</div>
-<table class="card-other-values">
-<tbody><tr>
-<td>
-Word Count
-</td>
-<td class="word-count">
-6039 words
-</td>
-</tr>
-</tbody></table>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="13" data-listing-date-sort="1725487200000" data-listing-file-modified-sort="1736531828405" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="30" data-listing-word-count-sort="5880">
-<a href="../bi/posts/2024-09-05_Guarding-Against-Misleading-Data-503424ecd457.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="posts\images\check.jpg" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Guarding Against Misleading Data
-</h5>
-<div class="listing-reading-time card-text text-muted">
-30 min
-</div>
-<div class="card-attribution card-text-small end">
-<div class="listing-date">
-Sep 5, 2024
-</div>
-</div>
-<table class="card-other-values">
-<tbody><tr>
-<td>
-Word Count
-</td>
-<td class="word-count">
-5880 words
-</td>
-</tr>
-</tbody></table>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="14" data-listing-date-sort="1724882400000" data-listing-file-modified-sort="1736461627809" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="27" data-listing-word-count-sort="5310">
-<a href="../bi/posts/2024-08-29_Condense--Enhancing-Reporting-Efficiency-through-IBCS-Standards-5a7e40d05787.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="posts\images\condense.jpg" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Condense: Enhancing Reporting Efficiency through IBCS Standards
-</h5>
-<div class="listing-reading-time card-text text-muted">
-27 min
-</div>
-<div class="card-attribution card-text-small end">
-<div class="listing-date">
-Aug 29, 2024
-</div>
-</div>
-<table class="card-other-values">
-<tbody><tr>
-<td>
-Word Count
-</td>
-<td class="word-count">
-5310 words
-</td>
-</tr>
-</tbody></table>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="15" data-listing-date-sort="1720648800000" data-listing-file-modified-sort="1736461685369" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="18" data-listing-word-count-sort="3580">
-<a href="../bi/posts/2024-07-11_Unify--How-to-Eliminate-Ambiguity-and-Achieve-Consistent-Business-Communication-67be0ed8bf6a.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="posts\images\unify.jpg" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Unify: How to Eliminate Ambiguity and Achieve Consistent Business Communication
-</h5>
-<div class="listing-reading-time card-text text-muted">
-18 min
-</div>
-<div class="card-attribution card-text-small end">
-<div class="listing-date">
-Jul 11, 2024
-</div>
-</div>
-<table class="card-other-values">
-<tbody><tr>
-<td>
-Word Count
-</td>
-<td class="word-count">
-3580 words
-</td>
-</tr>
-</tbody></table>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="16" data-listing-date-sort="1720044000000" data-listing-file-modified-sort="1736461746033" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="17" data-listing-word-count-sort="3369">
-<a href="../bi/posts/2024-07-04_Say-What-You-Mean--Mastering-Clarity-in-Business-Communication-09812e59be40.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="posts\images\say.jpg" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Say What You Mean: Mastering Clarity in Business Communication
-</h5>
-<div class="listing-reading-time card-text text-muted">
-17 min
-</div>
-<div class="card-attribution card-text-small end">
-<div class="listing-date">
-Jul 4, 2024
-</div>
-</div>
-<table class="card-other-values">
-<tbody><tr>
-<td>
-Word Count
-</td>
-<td class="word-count">
-3369 words
-</td>
-</tr>
-</tbody></table>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="17" data-listing-date-sort="1719439200000" data-listing-file-modified-sort="1736532322101" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="13" data-listing-word-count-sort="2520">
-<a href="../bi/posts/2024-06-27_Introduction-to-Standardization-in-Business-Reporting-c00bbffa1dcd.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="posts\images\standard.jpg" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Introduction to Standardization in Business Reporting
-</h5>
-<div class="listing-reading-time card-text text-muted">
-13 min
-</div>
-<div class="card-attribution card-text-small end">
-<div class="listing-date">
-Jun 27, 2024
-</div>
-</div>
-<table class="card-other-values">
-<tbody><tr>
-<td>
-Word Count
-</td>
-<td class="word-count">
-2520 words
-</td>
-</tr>
-</tbody></table>
-</div>
-</div>
-</a>
-</div>
-</div>
-<div class="listing-no-matching d-none">
-No matching items
-</div>
-</div></main> <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
