@@ -1,0 +1,396 @@
+---
+title: "The Hidden Missing: What Your Data Isn’t Telling You"
+author: "Numbers around us"
+date: "2025-06-09"
+format: html
+---
+
+![](images/ds_missing_values.png)
+
+You run a summary on your dataset. No `NA`s, no `NULL`s, no errors in sight. Everything looks pristine — a data scientist’s dream. And yet, your analysis leads to odd conclusions: strange averages, inconsistent totals, suspicious gaps in time. Something’s off.
+
+That “something” is *missing data* — just not the kind you were taught to expect.
+
+In most data workflows, we’re trained to hunt for the obvious culprits: the `NA`s, the blanks, the `NaN`s. But not all missing data is so polite as to announce itself. Sometimes it hides behind a zero, an empty string, a vague “unknown,” or worse — it disappears entirely, leaving no trace in your rows.
+
+This article explores these **hidden forms of missingness**. We’ll break down the different types, show you how to spot them, and give you practical tools to clean them up. Because in data analysis, the gaps you can’t see are often the ones that do the most damage.
+
+## Redefining “Missing Data”
+
+When most people think of missing data, they picture something literal: a blank cell in Excel, an `NA` in R, a `NULL` in SQL. These are **explicit missing values** — easy to find, easy to filter, and usually easy to fix.
+
+But real-world data is messier than that. Often, what’s *functionally* missing doesn’t look empty at all.
+
+Imagine a column filled with `"unknown"` or `"—"` or just `"."`. Technically, those are values. But they tell you nothing. They’re **implicit missing values** — not labeled as missing, but carrying no usable information. Worse yet, they can fly under the radar during cleaning and quietly sabotage your summaries, visualizations, or model performance.
+
+So here’s the key insight:
+
+> **Missing data isn’t just about absence — it’s about absence of meaning.**
+
+To analyze data well, we need to stop thinking only in terms of `NA`s and start considering missingness as a broader concept. That means re-evaluating:
+
+-   What counts as a “real” value?
+
+-   Which values carry meaningful information?
+
+-   And what gaps in structure might be hiding the truth?
+
+Up next, we’ll walk through common types of hidden missing data — the kind that doesn’t show up as `NA`, but still distorts your analysis.
+
+## The Many Faces of Hidden Missing Data
+
+Not all missing data shows up in your `is.na()` check. In fact, many of the most insidious gaps are hidden in plain sight. Here are the most common ways missing data sneaks into clean-looking datasets:
+
+### 1. **Placeholders in Disguise**
+
+Sometimes missing values are “filled in” with strings that sound like answers but mean nothing.
+
+**Common culprits**:
+
+-   `"unknown"`, `"n/a"`, `"missing"`, `"not applicable"`
+
+-   Symbols like `"-"`, `"."`, `"?"`
+
+These placeholders often appear during manual data entry, survey exports, or Excel-based inputs. They’re especially dangerous when automatically converted to strings or factors — suddenly, your `"unknown"`s are treated like meaningful categories.
+
+### 2. **Zeros That Lie**
+
+A `0` can mean many things:
+
+-   Zero sales (an actual value),
+
+-   No entry (a missing event),
+
+-   Or default filler when data wasn't recorded.
+
+For example, a row with `0` revenue could mean "no sale occurred" — or that no one entered the data yet. In time series or transactional data, this nuance is crucial.
+
+**Tip**: Always ask, “Is 0 a true measurement, or a stand-in for nothing?”
+
+### 3. **Blank Strings and Invisible Blanks**
+
+An empty string (`""`) isn’t technically `NA`, but it’s often just as meaningless.
+
+This happens when:
+
+-   Text fields are left blank in Excel.
+
+-   White space or tabs are entered by mistake.
+
+-   `read_csv()` or other import functions don’t automatically treat blanks as `NA`.
+
+These silent gaps pass `is.na()` but break summaries, joins, and visualizations.
+
+### 4. **Implicitly Missing Rows or Combinations**
+
+Sometimes missingness doesn’t exist *in* the data — it’s missing *from* the data.
+
+Examples:
+
+-   A product has no sales in February, so no row is recorded at all.
+
+-   A region is completely missing from a cross-tab.
+
+These structural gaps are common in transactional datasets and make it seem like something “didn’t happen” when in fact it just wasn’t logged.
+
+**Tool to use**: `tidyr::complete()` helps surface these hidden absences by expanding expected combinations.
+
+### 5. **Inconsistent Categories**
+
+Data can be “present” but still broken.
+
+**Example**:\
+A gender column with: `"Male"`, `"male"`, `"M"`, `"man"`, `""`\
+Are they the same? Yes.\
+Will they be treated the same? Definitely not.
+
+This is a form of *semantic missingness*: when inconsistency masks true values, leading to undercounts and poor grouping.
+
+**Fix with**: `stringr::str_to_lower()`, `forcats::fct_collapse()`, or domain-specific mappings.
+
+## Detecting the Invisible
+
+The worst kind of missing data is the kind you don’t notice. Fortunately, you can train yourself — and your code — to spot it. Here are some tidy strategies to make the invisible visible:
+
+### 🔎 **Scan for Common Placeholder Patterns**
+
+Use `dplyr` and `stringr` to find likely stand-ins for missing values:
+
+``` r
+library(dplyr)
+library(stringr)
+
+df %>%
+  summarise(across(everything(), ~sum(str_detect(.x, "^(unknown|n/?a|\\-|\\.)$"), na.rm = TRUE)))
+```
+
+This quickly tells you how often placeholder values show up across your dataset.
+
+### 📊 **Check Category Frequency and Odd Levels**
+
+Suspiciously high numbers of `"other"` or `"none"`? Run a quick frequency check:
+
+``` r
+df %>%
+  count(gender, sort = TRUE)
+```
+
+You’ll spot typos, inconsistent spellings, and hidden blanks (`""`) just by looking at the top counts.
+
+### 📐 **Visualize Missingness**
+
+Use packages like `naniar` or `visdat` to create heatmaps and summaries:
+
+``` r
+library(naniar)
+vis_miss(df)
+
+miss_var_summary(df)
+```
+
+These tools help surface missing values *and* patterns — for example, fields that are always missing together.
+
+### 📦 **Look for Missing Combinations**
+
+Are you missing entire rows — not just values? `tidyr::complete()` is your friend:
+
+``` r
+library(tidyr)
+
+df %>%
+  complete(month = 1:12, region)
+```
+
+This expands the dataset to include all expected combinations, revealing gaps in grouped data.
+
+### 🚩 **Anti-Joins as Absence Detectors**
+
+Want to know which expected IDs or codes are missing from another table?
+
+``` r
+anti_join(reference_table, raw_data, by = "id")
+```
+
+This technique is simple and powerful for checking completeness.
+
+### 🧼 **Check for Structural Blanks and Whitespace**
+
+Strings that *look* empty can slip through if they contain space or tab characters:
+
+``` r
+df %>%
+  summarise(across(everything(), ~sum(str_trim(.x) == "", na.rm = TRUE)))
+```
+
+Cleaning tools like `stringr::str_trim()` and `janitor::remove_empty()` help catch these.
+
+By combining textual pattern detection, visual inspection, and structure-aware tools like `complete()` and `anti_join()`, you create a robust toolkit for uncovering hidden missingness before it hurts your analysis.
+
+## Not Just NA: When Numbers Misbehave
+
+Some missingness hides not behind strings or empty rows, but behind **weird numeric values** that most analysts overlook. These aren’t *technically* `NA`, but they’re not usable either — and if left untreated, they can break models, inflate summaries, or simply vanish in charts without explanation.
+
+Let’s unpack the main offenders:
+
+### 🧮 **`NaN` — Not a Number**
+
+`NaN` (Not a Number) typically shows up after invalid operations, like:
+
+``` r
+0 / 0
+sqrt(-1)
+```
+
+While `NA` indicates a missing value, `NaN` means “this computation failed.” In modeling or plotting, these can cause unexpected skips or warnings — and `NaN`s are often silently dropped.
+
+**Detect with**:
+
+``` r
+is.nan(x)
+```
+
+### 🔁 **`Inf` and `-Inf` — Infinite Values**
+
+These often result from divisions like:
+
+``` r
+1 / 0  # Inf
+-1 / 0 # -Inf
+```
+
+They’re technically numeric but **can’t be visualized meaningfully** or used in summaries. For instance, calculating the mean of a vector with `Inf` will return `Inf`, breaking downstream logic.
+
+**Detect with**:
+
+``` r
+is.infinite(x)
+```
+
+**Clean with**::
+
+``` r
+x[is.infinite(x)] <- NA
+```
+
+### 🧱 **`NULL` — The Absence of an Object**
+
+Less common in tidy workflows, but relevant in programming contexts (`list`, `purrr`, API responses). Unlike `NA`, which is a placeholder, `NULL` means “nothing here at all” — no memory allocation, no structure.
+
+In data frames, `NULL`s typically don’t show up, but they *do* appear in nested lists or when working with APIs, R6, or reactive Shiny components.
+
+**Use with caution** — don’t assume `length(NULL) == 1`.
+
+### 👀 **Why It Matters**
+
+While these aren’t hidden the same way as `"unknown"` or `""`, they *are* often **forgotten** in early cleaning stages. Worse, they:
+
+-   Don’t always trigger missing value warnings
+
+-   Can silently distort statistical functions
+
+-   Often sneak past `is.na()`
+
+✅ **Quick Check Template**
+
+``` r
+df %>%
+  summarise(across(where(is.numeric), list(
+    na = ~sum(is.na(.)),
+    nan = ~sum(is.nan(.)),
+    inf = ~sum(is.infinite(.))
+  ))
+```
+
+Consider this your cleanup checklist for the “non-missing” missing values — the mathematically broken pieces of your dataset that need just as much attention as `NA`s.
+
+## Fixing the Problem
+
+Once you’ve uncovered hidden missing values, the next step is to clean them — systematically and reproducibly. Here’s how to do it using tidyverse tools.
+
+### 🧽 **Standardize Known Placeholders to NA**
+
+Start by replacing known placeholder strings with real `NA`s:
+
+``` r
+df_clean <- df %>%
+  mutate(across(
+    where(is.character),
+    ~na_if(.x, "unknown")
+  )) %>%
+  mutate(across(
+    where(is.character),
+    ~na_if(.x, "n/a")
+  ))
+```
+
+Or wrap it up in a single step using `case_when()` or a custom function:
+
+``` r
+replace_missing <- function(x) {
+  na_if(trimws(tolower(x)), "unknown") %>%
+    na_if("n/a") %>%
+    na_if("-") %>%
+    na_if(".")
+}
+
+df_clean <- df %>%
+  mutate(across(where(is.character), replace_missing))
+```
+
+🎛 **Clean Blank and Whitespace-Only Strings**
+
+``` r
+df_clean <- df_clean %>%
+  mutate(across(where(is.character), ~na_if(str_trim(.x), "")))
+```
+
+This removes invisible blanks that otherwise pass unnoticed.
+
+### 🔢 **Differentiate Real Zeros from Structural Zeros**
+
+Use domain knowledge or logic to reinterpret misleading zeros:
+
+``` r
+df_clean <- df_clean %>%
+  mutate(revenue = if_else(event_logged == FALSE, NA_real_, revenue))
+```
+
+Or flag suspect zeroes for manual review:
+
+``` r
+df_clean <- df_clean %>%
+  mutate(zero_suspect = revenue == 0 & event_logged == FALSE)
+```
+
+### 🧱 **Rebuild the Structure with `complete()`**
+
+To ensure all expected combinations are represented:
+
+``` r
+df_complete <- df_clean %>%
+  complete(product, month = 1:12, fill = list(sales = 0))
+```
+
+This is especially useful for grouped time series or faceted charts that expect consistent row structures.
+
+### 🔠 **Unify Inconsistent Categories**
+
+Clean categorical variables using `stringr` and `forcats`:
+
+``` r
+df_clean <- df_clean %>%
+  mutate(gender = str_to_lower(gender)) %>%
+  mutate(gender = fct_collapse(gender,
+                               male = c("male", "m", "man"),
+                               female = c("female", "f", "woman")))
+```
+
+This avoids category fragmentation during grouping or modeling.
+
+### 🔁 **Automate with Modular Cleaning Functions**
+
+Wrap these steps into reusable helpers. Example:
+
+``` r
+clean_column <- function(x) {
+  x %>%
+    str_trim() %>%
+    str_to_lower() %>%
+    na_if("") %>%
+    na_if("unknown") %>%
+    na_if("n/a")
+}
+
+df_clean <- df %>%
+  mutate(across(where(is.character), clean_column))
+```
+
+These small changes drastically improve the accuracy of your summaries, aggregations, joins, and models. Clean data isn’t just free of `NA`s — it’s free of ambiguity.
+
+## Conclusion
+
+The most dangerous kind of missing data is the one you don’t know is missing.
+
+You’ve now seen that missingness isn’t just about `NA`s. It hides behind placeholder strings, lurks in empty text fields and unexpected zeros, and sometimes vanishes entirely in the form of unrecorded combinations. It also disguises itself as **numeric edge cases** — `NaN`, `Inf`, or `NULL` — that silently break your calculations or skip rows in charts.
+
+These values don’t always raise red flags. But they distort your summaries, pollute your models, and make your data look more complete than it really is.
+
+The fix? Don’t just clean your data — interrogate it.
+
+Make it a habit to:
+
+-   Look beyond `is.na()`
+
+-   Normalize suspicious placeholders and broken numeric values
+
+-   Rebuild expected structures with `complete()`
+
+-   Visualize not only what exists — but also what’s missing
+
+Clean data isn’t just `NA`-free — it’s ambiguity-free.
+
+So next time you’re handed a dataset that looks “clean,” ask yourself:
+
+> *“What’s missing that I can’t see?”*
+
+Because often, the story your data isn’t telling is the one that matters most.
