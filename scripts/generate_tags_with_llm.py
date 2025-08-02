@@ -118,7 +118,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = os.getenv("OAKEY")
     if not api_key and not args.dry_run:
         raise SystemExit(
             "OPENAI_API_KEY is not set. Use --dry-run to run without calling the API."
