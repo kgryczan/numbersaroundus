@@ -1,0 +1,39 @@
+contract_name: customer_orders
+version: 1.0.0
+owner: sales_system
+consumers:
+  - analytics_team
+  - ml_platform
+schema:
+  customer_id:
+    type: integer
+    nullable: false
+    description: "Primary key linking to customer master"
+  order_date:
+    type: date
+    nullable: false
+    description: "Event date in YYYY-MM-DD"
+  order_value:
+    type: numeric
+    nullable: false
+    description: "Gross order value in company currency"
+  status:
+    type: character
+    nullable: false
+    allowed_values: [pending, completed, cancelled]
+    description: "Order lifecycle state"
+rules:
+  - id: R1
+    description: "order_value must be positive"
+    severity: error
+  - id: R2
+    description: "order_date cannot be in the future"
+    severity: error
+  - id: R3
+    description: "At least 99.9% completeness for required fields"
+    severity: warning
+quality:
+  completeness: 0.999
+  freshness: 5m
+evolution:
+  breaking_change_notice_days: 30

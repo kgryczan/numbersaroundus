@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Numbers around us">
-<meta name="dcterms.date" content="2023-08-28">
+<meta name="dcterms.date" content="2026-02-09">
 
-<title>The Swiss Army Knife of Data Preprocessing: Unfolding the Layers of recipes package – Numbers Around Us</title>
+<title>Data Contracts: The Prenuptial Agreement Your Pipelines Need – Numbers Around Us</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -151,10 +151,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">The Swiss Army Knife of Data Preprocessing: Unfolding the Layers of recipes package</h1>
+<h1 class="title">Data Contracts: The Prenuptial Agreement Your Pipelines Need</h1>
   <div class="quarto-categories">
-    <div class="quarto-category">machine-learning</div>
-    <div class="quarto-category">tutorials</div>
+    <div class="quarto-category">data-engineering</div>
+    <div class="quarto-category">data-quality</div>
   </div>
   </div>
 
@@ -172,7 +172,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">August 28, 2023</p>
+      <p class="date">February 9, 2026</p>
     </div>
   </div>
   
@@ -184,81 +184,220 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p><img src="images/recipes.jpg" class="img-fluid"></p>
-<p>Data preprocessing is the backstage work that seldom receives the limelight but ensures that the main act — machine learning models — shine. Think of it as tuning the instruments before an orchestra’s performance. Within the Tidymodels ecosystem, one package serves as the Swiss Army Knife for this critical process: <code>recipes</code>. Just as a Swiss Army Knife has a tool for every need, <code>recipes</code> offers a step for every preprocessing requirement you could imagine.</p>
-<p>In this post, we will unfold the layers of this multipurpose package, exploring its functionalities and showing how it integrates seamlessly with other Tidymodels packages. Whether you’re a data analyst fine-tuning your methods or a data science veteran seeking a more efficient pipeline, this guide aims to equip you with the versatility that <code>recipes</code> brings to the table.</p>
-<section id="the-layers-of-recipes" class="level2">
-<h2 class="anchored" data-anchor-id="the-layers-of-recipes">The Layers of <code>recipes</code></h2>
-<p>Picture a Swiss Army Knife in your mind. Each component, whether a blade, screwdriver, or tweezer, serves a specific function. The <code>recipes</code> package mimics this multifaceted utility by offering a wide array of steps for data preprocessing. At the core, <code>recipes</code> revolves around three primary elements: steps, roles, and operations.</p>
+<p><img src="images/data-contracts/hero.jpg" class="img-fluid"></p>
+<p>It’s 3 AM. Your dashboard shows revenue down 40% and the phone won’t stop ringing. After three days of firefighting the cause appears trivial: an upstream system renamed <code>total_revenue</code> to <code>gross_revenue</code> and subtly changed the calculation. Structural checks passed — but every reported metric was wrong. This is what happens when systems exchange data without an explicit agreement.</p>
+<section id="what-we-will-build" class="level3">
+<h3 class="anchored" data-anchor-id="what-we-will-build">What we will build</h3>
+<p>We’ll construct a practical, testable pattern for data contracts-as-code. Deliverables:</p>
+<ul>
+<li>A readable contract format (YAML) that describes schema, semantics and SLAs.</li>
+<li>R code using <code>pointblank</code> + <code>tidyverse</code> for schema and semantic checks.</li>
+<li>A simple contract test runner suitable for CI.</li>
+<li>Versioning and evolution practices, monitoring hooks, and policies for handling violations.</li>
+</ul>
+<p>The goal: fail fast at the producer boundary, provide clear diagnostics, and give consumers confidence.</p>
+</section>
+<section id="quick-example-inputs" class="level3">
+<h3 class="anchored" data-anchor-id="quick-example-inputs">Quick example inputs</h3>
+<p>Good batch (CSV):</p>
+<p>customer_id,order_date,order_value,status 1001,2026-02-08,150.00,completed 1002,2026-02-08,75.50,pending</p>
+<p>Bad batch (CSV):</p>
+<p>customer_id,order_date,order_value,status , ,150.00,completed # missing customer_id 1002,2026-12-01,-75.50,invalid # future date, negative value, unknown status</p>
+</section>
+<section id="step-by-step-solution" class="level3">
+<h3 class="anchored" data-anchor-id="step-by-step-solution">Step-by-step solution</h3>
+<section id="step-1-contract-structure-yaml" class="level4">
+<h4 class="anchored" data-anchor-id="step-1-contract-structure-yaml">Step 1 — Contract structure (YAML)</h4>
+<p>Keep contracts small and explicit. Key sections:</p>
+<ul>
+<li><code>metadata</code> (name, version, owner)</li>
+<li><code>schema</code> (columns, types, nullability)</li>
+<li><code>semantics</code> (human-readable field meaning)</li>
+<li><code>rules</code> (business checks with severities)</li>
+<li><code>quality</code> (completeness, freshness thresholds)</li>
+<li><code>evolution</code> (notice periods, versioning rules)</li>
+</ul>
+<p>Example <code>customer_orders.yaml</code> (created in this repo):</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">contract_name</span><span class="kw">:</span><span class="at"> customer_orders</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">version</span><span class="kw">:</span><span class="at"> </span><span class="fl">1.0.0</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">owner</span><span class="kw">:</span><span class="at"> sales_system</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">consumers</span><span class="kw">:</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> analytics_team</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> ml_platform</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">schema</span><span class="kw">:</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">customer_id</span><span class="kw">:</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">type</span><span class="kw">:</span><span class="at"> integer</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">nullable</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">"Primary key linking to customer master"</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">order_date</span><span class="kw">:</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">type</span><span class="kw">:</span><span class="at"> date</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">nullable</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">"Event date in YYYY-MM-DD"</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">order_value</span><span class="kw">:</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">type</span><span class="kw">:</span><span class="at"> numeric</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">nullable</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">"Gross order value in company currency"</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">status</span><span class="kw">:</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">type</span><span class="kw">:</span><span class="at"> character</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">nullable</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">allowed_values</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">pending</span><span class="kw">,</span><span class="at"> completed</span><span class="kw">,</span><span class="at"> cancelled</span><span class="kw">]</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">"Order lifecycle state"</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="fu">rules</span><span class="kw">:</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">id</span><span class="kw">:</span><span class="at"> R1</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">"order_value must be positive"</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">severity</span><span class="kw">:</span><span class="at"> error</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">id</span><span class="kw">:</span><span class="at"> R2</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">"order_date cannot be in the future"</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">severity</span><span class="kw">:</span><span class="at"> error</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">id</span><span class="kw">:</span><span class="at"> R3</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">"At least 99.9% completeness for required fields"</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">severity</span><span class="kw">:</span><span class="at"> warning</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="fu">quality</span><span class="kw">:</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">completeness</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.999</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">freshness</span><span class="kw">:</span><span class="at"> 5m</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="fu">evolution</span><span class="kw">:</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">breaking_change_notice_days</span><span class="kw">:</span><span class="at"> </span><span class="dv">30</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Why this layout? YAML is human-editable, diff-friendly, and fits into Git-driven workflows.</p>
+</section>
+<section id="step-2-schema-validation-producer-boundary" class="level4">
+<h4 class="anchored" data-anchor-id="step-2-schema-validation-producer-boundary">Step 2 — Schema validation (producer boundary)</h4>
+<p>Use <code>pointblank</code> to codify schema checks. Build an agent from the contract and interrogate incoming batches.</p>
+<p>Key checks:</p>
+<ul>
+<li>Column presence</li>
+<li>Nullability</li>
+<li>Basic type heuristics</li>
+</ul>
+<p>Example builder (in <code>scripts/run_contract_tests.R</code>):</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pointblank)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(yaml)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>build_schema_agent <span class="ot">&lt;-</span> <span class="cf">function</span>(contract) {</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  agent <span class="ot">&lt;-</span> <span class="fu">create_agent</span>()</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (col <span class="cf">in</span> <span class="fu">names</span>(contract<span class="sc">$</span>schema)) {</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    spec <span class="ot">&lt;-</span> contract<span class="sc">$</span>schema[[col]]</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    agent <span class="ot">&lt;-</span> agent <span class="sc">%&gt;%</span> <span class="fu">col_exists</span>(<span class="fu">vars</span>(<span class="sc">!!</span>rlang<span class="sc">::</span><span class="fu">sym</span>(col)))</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span><span class="fu">isTRUE</span>(spec<span class="sc">$</span>nullable)) agent <span class="ot">&lt;-</span> agent <span class="sc">%&gt;%</span> <span class="fu">col_vals_not_null</span>(<span class="fu">vars</span>(<span class="sc">!!</span>rlang<span class="sc">::</span><span class="fu">sym</span>(col)))</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (spec<span class="sc">$</span>type <span class="sc">==</span> <span class="st">"numeric"</span>) agent <span class="ot">&lt;-</span> agent <span class="sc">%&gt;%</span> <span class="fu">col_is_numeric</span>(<span class="fu">vars</span>(<span class="sc">!!</span>rlang<span class="sc">::</span><span class="fu">sym</span>(col)))</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (spec<span class="sc">$</span>type <span class="sc">==</span> <span class="st">"integer"</span>) agent <span class="ot">&lt;-</span> agent <span class="sc">%&gt;%</span> <span class="fu">col_is_integer</span>(<span class="fu">vars</span>(<span class="sc">!!</span>rlang<span class="sc">::</span><span class="fu">sym</span>(col)))</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (spec<span class="sc">$</span>type <span class="sc">==</span> <span class="st">"date"</span>) agent <span class="ot">&lt;-</span> agent <span class="sc">%&gt;%</span> <span class="fu">col_is_date</span>(<span class="fu">vars</span>(<span class="sc">!!</span>rlang<span class="sc">::</span><span class="fu">sym</span>(col)))</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  agent</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Run this at write-time (producer) or at the ingestion boundary. The <code>pointblank</code> report gives row-level diagnostics suitable for alerting or quarantining.</p>
+</section>
+<section id="step-3-semantic-validation-business-rules" class="level4">
+<h4 class="anchored" data-anchor-id="step-3-semantic-validation-business-rules">Step 3 — Semantic validation (business rules)</h4>
+<p>Add rules that require domain knowledge. Keep rules small and testable.</p>
+<p>Examples:</p>
+<ul>
+<li><code>order_value &gt; 0</code> (error)</li>
+<li><code>order_date &lt;= Sys.Date()</code> (error)</li>
+<li><code>status in allowed_values</code> (error)</li>
+<li>Business aggregate sanity: daily revenue not 10x historical median (warning)</li>
+</ul>
+<p>Implementation sketch (also in <code>scripts/run_contract_tests.R</code>):</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>validate_semantics <span class="ot">&lt;-</span> <span class="cf">function</span>(df, contract) {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  problems <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># R1: order_value &gt; 0</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  bad_vals <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">is.na</span>(order_value) <span class="sc">|</span> order_value <span class="sc">&lt;=</span> <span class="dv">0</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">nrow</span>(bad_vals) <span class="sc">&gt;</span> <span class="dv">0</span>) problems<span class="sc">$</span>R1 <span class="ot">&lt;-</span> <span class="fu">nrow</span>(bad_vals)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># R2: future dates</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  bad_dates <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">as.Date</span>(order_date) <span class="sc">&gt;</span> <span class="fu">Sys.Date</span>())</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">nrow</span>(bad_dates) <span class="sc">&gt;</span> <span class="dv">0</span>) problems<span class="sc">$</span>R2 <span class="ot">&lt;-</span> <span class="fu">nrow</span>(bad_dates)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># R3: status</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  allowed <span class="ot">&lt;-</span> contract<span class="sc">$</span>schema<span class="sc">$</span>status<span class="sc">$</span>allowed_values</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  bad_status <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="sc">!</span>status <span class="sc">%in%</span> allowed)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">nrow</span>(bad_status) <span class="sc">&gt;</span> <span class="dv">0</span>) problems<span class="sc">$</span>R3 <span class="ot">&lt;-</span> <span class="fu">nrow</span>(bad_status)</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  problems</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Decide policy for each rule (error vs warning). Errors should stop critical flows; warnings may trigger alerts and quarantine.</p>
+</section>
+<section id="step-4-monitoring-and-slas" class="level4">
+<h4 class="anchored" data-anchor-id="step-4-monitoring-and-slas">Step 4 — Monitoring and SLAs</h4>
+<p>Persist per-batch metrics and surface trends:</p>
+<ul>
+<li>completeness (% of required fields present)</li>
+<li>semantic pass rate (fraction of rows passing rules)</li>
+<li>lateness (max age of rows)</li>
+</ul>
+<p>Alert when metrics cross thresholds. Prefer alerting on sustained degradation (e.g., 3 consecutive failing batches) to reduce noise.</p>
+</section>
+<section id="step-5-versioning-and-evolution" class="level4">
+<h4 class="anchored" data-anchor-id="step-5-versioning-and-evolution">Step 5 — Versioning and evolution</h4>
+<p>Treat contracts like software APIs. Use semantic versioning:</p>
+<ul>
+<li><code>MAJOR</code>: incompatible changes (rename, semantic change)</li>
+<li><code>MINOR</code>: additive, backward compatible (new optional columns)</li>
+<li><code>PATCH</code>: doc or metadata changes</li>
+</ul>
+<p>When introducing a breaking change:</p>
 <ol type="1">
-<li><strong>Steps:</strong> These are the individual “tools” within the <code>recipes</code> package. Each step serves to perform a specific transformation on your data—be it normalization, encoding, or imputation.</li>
-<li><strong>Roles:</strong> Think of roles as the category labels for each “tool.” They define how a particular variable or feature should be treated during the preprocessing phase.</li>
-<li><strong>Operations:</strong> This refers to executing the steps you’ve set up. Like a Swiss Army Knife that’s not useful until you actually employ its tools, <code>recipes</code> demands action to enact changes on your dataset.</li>
+<li>Publish new contract version (e.g., <code>1.0.0 -&gt; 2.0.0</code>).</li>
+<li>Support both versions concurrently for the grace period.</li>
+<li>Provide migration guide and compatibility tests.</li>
 </ol>
-<p>In essence, <code>recipes</code> is your go-to toolkit for transforming raw data into a format optimized for machine learning. The package’s structure allows for straightforward, tidy, and replicable code—essential traits for any data scientist or analyst.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A simple example of defining a recipe</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(recipes)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>recipe <span class="ot">&lt;-</span> <span class="fu">recipe</span>(Sale_Price <span class="sc">~</span> ., <span class="at">data =</span> housing_data) <span class="sc">%&gt;%</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_center</span>(<span class="fu">all_numeric</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_scale</span>(<span class="fu">all_numeric</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="why-recipes-stands-out" class="level2">
-<h2 class="anchored" data-anchor-id="why-recipes-stands-out">Why <code>recipes</code> Stands Out</h2>
-<p>In the realm of R’s rich package ecosystem, <code>recipes</code> has carved its niche as the Swiss Army Knife of data preprocessing. So, what makes it stand out? The key lies in its compatibility and cohesion with the broader Tidymodels ecosystem.</p>
-<p>Firstly, <code>recipes</code> embraces the Tidyverse philosophy, making it intuitive for anyone familiar with <code>dplyr</code>, <code>ggplot2</code>, or other Tidyverse packages. It incorporates the pipe operator (<code>%&gt;%</code>), enabling smooth and readable workflows.</p>
-<p>Secondly, <code>recipes</code> is not an isolated tool; it’s part of a larger toolkit. It works in harmony with other Tidymodels packages like <code>parsnip</code>, <code>tune</code>, and <code>yardstick</code>, allowing for a seamless data science pipeline from preprocessing to modeling and evaluation.</p>
-<p>This integration enables <code>recipes</code> to not just be a jack of all trades but also a master of many, providing the versatility and power to handle a broad range of preprocessing tasks with ease.</p>
+<section id="step-6-ci-integration-contract-tests" class="level4">
+<h4 class="anchored" data-anchor-id="step-6-ci-integration-contract-tests">Step 6 — CI integration (contract tests)</h4>
+<p>Add contract checks to PR pipelines. A minimal GitHub Actions sketch is included in this repo; the <code>scripts/run_contract_tests.R</code> script runs schema + semantic checks on fixture datasets and fails when <code>severity: error</code> rules are violated.</p>
+<p>Example CI job (sketch):</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> Contract checks</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">on</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">push</span><span class="kw">,</span><span class="at"> pull_request</span><span class="kw">]</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">jobs</span><span class="kw">:</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">contract-test</span><span class="kw">:</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">runs-on</span><span class="kw">:</span><span class="at"> ubuntu-latest</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v3</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Setup R</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> r-lib/actions/setup-r@v2</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Install deps</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">run</span><span class="kw">:</span><span class="at"> Rscript -e 'install.packages(c("pointblank","yaml","dplyr","readr","rlang"))'</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Run contract tests</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">run</span><span class="kw">:</span><span class="at"> Rscript scripts/run_contract_tests.R</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The test script returns non-zero on critical failures so the job fails and the PR blocks.</p>
 </section>
-<section id="getting-started-with-recipes" class="level2">
-<h2 class="anchored" data-anchor-id="getting-started-with-recipes">Getting Started with <code>recipes</code></h2>
-<p>Imagine you’ve just been gifted a Swiss Army Knife. It’s packed with functionalities, but how do you make the most of it? Similarly, <code>recipes</code> is loaded with preprocessing steps, but it comes to life when you start actually using them. To help you get your feet wet, let’s walk through a simple example using the well-known <code>iris</code> dataset.</p>
-<p>Suppose you want to preprocess the <code>iris</code> dataset for machine learning, perhaps to predict species based on the other features. Here’s how you could use <code>recipes</code> to center and scale all numeric variables:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Loading the recipes package</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(recipes)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating a sample recipe for the iris dataset</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>recipe <span class="ot">&lt;-</span> <span class="fu">recipe</span>(Species <span class="sc">~</span> ., <span class="at">data =</span> iris) <span class="sc">%&gt;%</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a> <span class="fu">step_center</span>(<span class="fu">all_numeric</span>(), <span class="sc">-</span><span class="fu">all_outcomes</span>()) <span class="sc">%&gt;%</span> <span class="co"># Centering all numeric variables except the outcome</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a> <span class="fu">step_scale</span>(<span class="fu">all_numeric</span>(), <span class="sc">-</span><span class="fu">all_outcomes</span>()) <span class="co"># Scaling all numeric variables except the outcome</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Preparing and baking the recipe</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>trained_recipe <span class="ot">&lt;-</span> <span class="fu">prep</span>(recipe, <span class="at">training =</span> iris)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>processed_data <span class="ot">&lt;-</span> <span class="fu">bake</span>(trained_recipe, <span class="at">new_data =</span> iris)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>In this example, we first load the <code>recipes</code> package and then define our recipe. We use <code>step_center</code> and <code>step_scale</code> to center and scale all numeric variables, respectively. Finally, we “prepare” the recipe with <code>prep</code> and “bake” it with <code>bake</code> to get our processed data.</p>
-<p>This code snippet showcases how <code>recipes</code> allows for a clean, straightforward, and highly readable workflow, making your data science code both effective and maintainable.</p>
 </section>
-<section id="deep-dive-into-selected-tools" class="level2">
-<h2 class="anchored" data-anchor-id="deep-dive-into-selected-tools">Deep Dive into Selected Tools</h2>
-<p>The Swiss Army Knife is celebrated not just for its multitude of tools, but for the specificity each one offers for different tasks. Likewise, the <code>recipes</code> package shines when we dig deep into the specialized steps it offers for various preprocessing needs.</p>
-<ol type="1">
-<li><strong>Data Imputation with <code>step_impute_median()</code>:</strong> This step replaces missing values in your dataset with the median of the feature. For example, you could use <code>step_impute_median(all_numeric(), -all_outcomes())</code> to impute all numeric variables, except the outcome. Other methods for imputation include <code>step_impute_knn()</code> and <code>step_impute_mean()</code>.</li>
-<li><strong>Encoding Categorical Variables with <code>step_dummy()</code>:</strong> Converting categorical variables into a machine-usable format is seamless with <code>step_dummy()</code>. You can encode all nominal variables except the outcome using <code>step_dummy(all_nominal(), -all_outcomes())</code>. If you’re looking for alternatives, consider <code>step_other()</code> or <code>step_integer()</code>.</li>
-<li><strong>Data Normalization with <code>step_normalize()</code>:</strong> To normalize your data, <code>step_normalize()</code> scales all numeric features to have a mean of zero and standard deviation of one. Utilize <code>step_normalize(all_numeric(), -all_outcomes())</code> to apply this step. Alternative methods for scaling include <code>step_center()</code> and <code>step_scale()</code>.</li>
-<li><strong>Text Preprocessing with <code>step_tokenize()</code>:</strong> Breaking down text into smaller pieces or tokens becomes straightforward with <code>step_tokenize(text_column)</code>. If you’re dealing with text data, you could also look at <code>step_textfilter()</code> or <code>step_tfidf()</code> as alternative strategies.</li>
-<li><strong>Feature Engineering with <code>step_interact()</code>:</strong> If you’re interested in creating new features based on interactions between existing ones, <code>step_interact(~ var1 * var2)</code> has got you covered. For more advanced feature engineering, you may consider <code>step_poly()</code> or <code>step_ns()</code>.</li>
-<li><strong>Outlier Detection with <code>step_novel()</code>:</strong> Detecting outliers is another tool in the Swiss Army Knife of <code>recipes</code>. Use <code>step_novel(all_numeric())</code> to flag unusual data points. For other outlier-handling techniques, check out <code>step_knnimpute()</code> or <code>step_impute_bag()</code>.</li>
-<li><strong>Box-Cox Transformation with <code>step_BoxCox()</code>:</strong> Non-normal data can be transformed to approximate normality with <code>step_BoxCox(all_numeric(), -all_outcomes())</code>. If Box-Cox doesn’t fit your needs, try <code>step_YeoJohnson()</code> or <code>step_sqrt()</code>.</li>
-<li><strong>PCA with <code>step_pca()</code>:</strong> For reducing the dimensionality of your dataset while retaining essential information, <code>step_pca(all_numeric())</code> is highly effective. Other dimensionality reduction techniques include <code>step_ica()</code> and <code>step_kpca()</code>.</li>
-<li><strong>Data Binning with <code>step_bin2factor()</code>:</strong> Sometimes, numeric precision is less important than categorical interpretation. To convert numerical variables into bins, use <code>step_bin2factor(numeric_column)</code>. Other options for binning data include <code>step_cut()</code> and <code>step_nzv()</code>.</li>
-<li><strong>Time-Series Preprocessing with <code>step_lag()</code>:</strong> For time-series data, creating lagged variables can help account for temporal dependencies. Use <code>step_lag(time_series_column)</code> to achieve this. If you’re looking for other ways to preprocess time-series data, <code>step_diff()</code> and <code>step_rollapply()</code> are also available.</li>
-</ol>
-<p>Each of these specific tools in <code>recipes</code> can be thought of as a unique attachment in your Swiss Army Knife, ready to tackle the challenges your dataset presents.</p>
+<section id="variants-and-edge-cases" class="level3">
+<h3 class="anchored" data-anchor-id="variants-and-edge-cases">Variants and Edge Cases</h3>
+<ul>
+<li>Hard fail vs soft fail: choose based on downstream impact (billing vs dashboarding).</li>
+<li>Multiple consumers: publish consumer-specific SLAs or require producer to meet the strictest.</li>
+<li>Legacy systems: use an adapter or transformation layer that enforces contracts.</li>
+<li>Performance: sample for heavy checks, or validate asynchronously and quarantine.</li>
+<li>Partial evolution: require deprecation windows for renames and semantic changes.</li>
+</ul>
 </section>
-<section id="real-world-examples-where-recipes-proves-invaluable" class="level2">
-<h2 class="anchored" data-anchor-id="real-world-examples-where-recipes-proves-invaluable">Real-world examples where <code>recipes</code> proves invaluable</h2>
-<p>The Swiss Army Knife isn’t just a novelty; it’s a trusted companion in various real-world scenarios. Similarly, the <code>recipes</code> package has proven itself invaluable in a number of real-world data science projects.</p>
-<ol type="1">
-<li><strong>Customer Segmentation:</strong> In marketing analytics, <code>recipes</code> can be invaluable for preparing data for clustering algorithms. With its data normalization and dimensionality reduction steps, the package can help you identify distinct customer segments with precision.</li>
-<li><strong>Sentiment Analysis:</strong> When it comes to text data, <code>recipes</code> offers steps for text tokenization and TF-IDF calculation, providing the preprocessing needed for effective sentiment analysis.</li>
-<li><strong>Predictive Maintenance:</strong> In manufacturing, predictive maintenance is critical. <code>recipes</code> excels here, allowing for feature engineering that can highlight patterns and anomalies, thereby aiding in predictive modeling.</li>
-<li><strong>Fraud Detection:</strong> By using outlier detection methods and feature interactions, <code>recipes</code> helps in making your dataset robust enough to train machine learning models that can identify fraudulent transactions.</li>
-<li><strong>Time Series Forecasting:</strong> The time-series steps like <code>step_lag()</code> or <code>step_diff()</code> provide essential transformations for dealing with sequential data, making <code>recipes</code> a must-have tool in time-series analysis.</li>
-</ol>
-<p>In the same way that a Swiss Army Knife becomes an extension of one’s hand, mastering <code>recipes</code> can make you a more effective and efficient data scientist or analyst. The package’s thoughtful design, flexibility, and robust set of tools empower you to handle almost any data preprocessing task with ease. Understanding the core principles and individual tools of <code>recipes</code> not only adds a powerful asset to your data science toolkit but also enriches your overall analytical capabilities.</p>
+<section id="why-it-works" class="level3">
+<h3 class="anchored" data-anchor-id="why-it-works">Why it works</h3>
+<p>Contracts make implicit assumptions explicit, producing testable, versioned artifacts. They reduce mean time to detect and mean time to repair by making failures loud and descriptive.</p>
 </section>
-<section id="additional-resource" class="level2">
-<h2 class="anchored" data-anchor-id="additional-resource">Additional Resource</h2>
-<p>One of my favorite resources for diving deeper into the <code>tidymodels</code> framework is Julia Silge’s YouTube channel. Her tutorials are insightful, well-explained, and cover a range of topics within the <code>tidymodels</code> ecosystem. I highly recommend checking out her content to further enhance your data science skills. You can find her channel <a href="https://www.youtube.com/@JuliaSilge"><strong>here</strong></a>.</p>
+<section id="practical-tools" class="level3">
+<h3 class="anchored" data-anchor-id="practical-tools">Practical tools</h3>
+<ul>
+<li>R: <code>pointblank</code>, <code>validate</code>, <code>assertr</code>, <code>yaml</code>, <code>readr</code></li>
+<li>Python: <code>great_expectations</code>, <code>pandera</code>, <code>soda-core</code></li>
+<li>Platform: <code>dbt</code>, Protobuf/Avro, Apache Iceberg</li>
+</ul>
+</section>
+<section id="checklist-tldr" class="level3">
+<h3 class="anchored" data-anchor-id="checklist-tldr">Checklist / TL;DR</h3>
+<ul>
+<li>Define and version a YAML contract (schema + semantics + SLAs)</li>
+<li>Validate at producer boundary; verify at consumer boundary</li>
+<li>Fail fast for critical data; quarantine or warn for non-critical</li>
+<li>Add contract tests to CI and monitor metrics over time</li>
+<li>Communicate breaking changes and support a migration window</li>
+</ul>
+</section>
+<section id="closing" class="level3">
+<h3 class="anchored" data-anchor-id="closing">Closing</h3>
+<p>Data contracts are a small upfront investment that dramatically reduce emergency debugging and restore trust in metrics. Start with your riskiest feed: define the contract, implement validation, and automate the tests. You’ll sleep better and spend less time in war rooms.</p>
 
 
 </section>

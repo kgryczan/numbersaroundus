@@ -1,0 +1,243 @@
+---
+title: "Data Contracts: The Prenuptial Agreement Your Pipelines Need"
+author: "Numbers around us"
+date: "2026-02-09"
+format: html
+categories: [data-engineering, data-quality]
+tags: [data-contracts, validation, pipelines]
+---
+
+![](images/data-contracts/hero.jpg)
+
+
+
+It's 3 AM. Your dashboard shows revenue down 40% and the phone won't stop ringing. After three days of firefighting the cause appears trivial: an upstream system renamed `total_revenue` to `gross_revenue` and subtly changed the calculation. Structural checks passed — but every reported metric was wrong. This is what happens when systems exchange data without an explicit agreement.
+
+### What we will build
+
+We'll construct a practical, testable pattern for data contracts-as-code. Deliverables:
+
+-   A readable contract format (YAML) that describes schema, semantics and SLAs.
+-   R code using `pointblank` + `tidyverse` for schema and semantic checks.
+-   A simple contract test runner suitable for CI.
+-   Versioning and evolution practices, monitoring hooks, and policies for handling violations.
+
+The goal: fail fast at the producer boundary, provide clear diagnostics, and give consumers confidence.
+
+### Quick example inputs
+
+Good batch (CSV):
+
+customer_id,order_date,order_value,status 1001,2026-02-08,150.00,completed 1002,2026-02-08,75.50,pending
+
+Bad batch (CSV):
+
+customer_id,order_date,order_value,status , ,150.00,completed \# missing customer_id 1002,2026-12-01,-75.50,invalid \# future date, negative value, unknown status
+
+### Step-by-step solution
+
+#### Step 1 — Contract structure (YAML)
+
+Keep contracts small and explicit. Key sections:
+
+-   `metadata` (name, version, owner)
+-   `schema` (columns, types, nullability)
+-   `semantics` (human-readable field meaning)
+-   `rules` (business checks with severities)
+-   `quality` (completeness, freshness thresholds)
+-   `evolution` (notice periods, versioning rules)
+
+Example `customer_orders.yaml` (created in this repo):
+
+``` yaml
+contract_name: customer_orders
+version: 1.0.0
+owner: sales_system
+consumers:
+  - analytics_team
+  - ml_platform
+schema:
+  customer_id:
+    type: integer
+    nullable: false
+    description: "Primary key linking to customer master"
+  order_date:
+    type: date
+    nullable: false
+    description: "Event date in YYYY-MM-DD"
+  order_value:
+    type: numeric
+    nullable: false
+    description: "Gross order value in company currency"
+  status:
+    type: character
+    nullable: false
+    allowed_values: [pending, completed, cancelled]
+    description: "Order lifecycle state"
+rules:
+  - id: R1
+    description: "order_value must be positive"
+    severity: error
+  - id: R2
+    description: "order_date cannot be in the future"
+    severity: error
+  - id: R3
+    description: "At least 99.9% completeness for required fields"
+    severity: warning
+quality:
+  completeness: 0.999
+  freshness: 5m
+evolution:
+  breaking_change_notice_days: 30
+```
+
+Why this layout? YAML is human-editable, diff-friendly, and fits into Git-driven workflows.
+
+#### Step 2 — Schema validation (producer boundary)
+
+Use `pointblank` to codify schema checks. Build an agent from the contract and interrogate incoming batches.
+
+Key checks:
+
+-   Column presence
+-   Nullability
+-   Basic type heuristics
+
+Example builder (in `scripts/run_contract_tests.R`):
+
+``` r
+library(pointblank)
+library(yaml)
+library(dplyr)
+
+build_schema_agent <- function(contract) {
+  agent <- create_agent()
+  for (col in names(contract$schema)) {
+    spec <- contract$schema[[col]]
+    agent <- agent %>% col_exists(vars(!!rlang::sym(col)))
+    if (!isTRUE(spec$nullable)) agent <- agent %>% col_vals_not_null(vars(!!rlang::sym(col)))
+    if (spec$type == "numeric") agent <- agent %>% col_is_numeric(vars(!!rlang::sym(col)))
+    if (spec$type == "integer") agent <- agent %>% col_is_integer(vars(!!rlang::sym(col)))
+    if (spec$type == "date") agent <- agent %>% col_is_date(vars(!!rlang::sym(col)))
+  }
+  agent
+}
+```
+
+Run this at write-time (producer) or at the ingestion boundary. The `pointblank` report gives row-level diagnostics suitable for alerting or quarantining.
+
+#### Step 3 — Semantic validation (business rules)
+
+Add rules that require domain knowledge. Keep rules small and testable.
+
+Examples:
+
+-   `order_value > 0` (error)
+-   `order_date <= Sys.Date()` (error)
+-   `status in allowed_values` (error)
+-   Business aggregate sanity: daily revenue not 10x historical median (warning)
+
+Implementation sketch (also in `scripts/run_contract_tests.R`):
+
+``` r
+validate_semantics <- function(df, contract) {
+  problems <- list()
+
+  # R1: order_value > 0
+  bad_vals <- df %>% filter(is.na(order_value) | order_value <= 0)
+  if (nrow(bad_vals) > 0) problems$R1 <- nrow(bad_vals)
+
+  # R2: future dates
+  bad_dates <- df %>% filter(as.Date(order_date) > Sys.Date())
+  if (nrow(bad_dates) > 0) problems$R2 <- nrow(bad_dates)
+
+  # R3: status
+  allowed <- contract$schema$status$allowed_values
+  bad_status <- df %>% filter(!status %in% allowed)
+  if (nrow(bad_status) > 0) problems$R3 <- nrow(bad_status)
+
+  problems
+}
+```
+
+Decide policy for each rule (error vs warning). Errors should stop critical flows; warnings may trigger alerts and quarantine.
+
+#### Step 4 — Monitoring and SLAs
+
+Persist per-batch metrics and surface trends:
+
+-   completeness (% of required fields present)
+-   semantic pass rate (fraction of rows passing rules)
+-   lateness (max age of rows)
+
+Alert when metrics cross thresholds. Prefer alerting on sustained degradation (e.g., 3 consecutive failing batches) to reduce noise.
+
+#### Step 5 — Versioning and evolution
+
+Treat contracts like software APIs. Use semantic versioning:
+
+-   `MAJOR`: incompatible changes (rename, semantic change)
+-   `MINOR`: additive, backward compatible (new optional columns)
+-   `PATCH`: doc or metadata changes
+
+When introducing a breaking change:
+
+1.  Publish new contract version (e.g., `1.0.0 -> 2.0.0`).
+2.  Support both versions concurrently for the grace period.
+3.  Provide migration guide and compatibility tests.
+
+#### Step 6 — CI integration (contract tests)
+
+Add contract checks to PR pipelines. A minimal GitHub Actions sketch is included in this repo; the `scripts/run_contract_tests.R` script runs schema + semantic checks on fixture datasets and fails when `severity: error` rules are violated.
+
+Example CI job (sketch):
+
+``` yaml
+name: Contract checks
+on: [push, pull_request]
+jobs:
+  contract-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+      - name: Install deps
+        run: Rscript -e 'install.packages(c("pointblank","yaml","dplyr","readr","rlang"))'
+      - name: Run contract tests
+        run: Rscript scripts/run_contract_tests.R
+```
+
+The test script returns non-zero on critical failures so the job fails and the PR blocks.
+
+### Variants and Edge Cases
+
+-   Hard fail vs soft fail: choose based on downstream impact (billing vs dashboarding).
+-   Multiple consumers: publish consumer-specific SLAs or require producer to meet the strictest.
+-   Legacy systems: use an adapter or transformation layer that enforces contracts.
+-   Performance: sample for heavy checks, or validate asynchronously and quarantine.
+-   Partial evolution: require deprecation windows for renames and semantic changes.
+
+### Why it works
+
+Contracts make implicit assumptions explicit, producing testable, versioned artifacts. They reduce mean time to detect and mean time to repair by making failures loud and descriptive.
+
+### Practical tools
+
+-   R: `pointblank`, `validate`, `assertr`, `yaml`, `readr`
+-   Python: `great_expectations`, `pandera`, `soda-core`
+-   Platform: `dbt`, Protobuf/Avro, Apache Iceberg
+
+### Checklist / TL;DR
+
+-   Define and version a YAML contract (schema + semantics + SLAs)
+-   Validate at producer boundary; verify at consumer boundary
+-   Fail fast for critical data; quarantine or warn for non-critical
+-   Add contract tests to CI and monitor metrics over time
+-   Communicate breaking changes and support a migration window
+
+### Closing
+
+Data contracts are a small upfront investment that dramatically reduce emergency debugging and restore trust in metrics. Start with your riskiest feed: define the contract, implement validation, and automate the tests. You’ll sleep better and spend less time in war rooms.
+
+
