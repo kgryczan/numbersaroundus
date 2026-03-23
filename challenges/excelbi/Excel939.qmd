@@ -1,0 +1,157 @@
+---
+title: "Excel BI - Excel Challenge 939"
+description: "🔰 Update the location for every row based on the latest date for that specific name."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-23"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 939](/challenges/images/exc939.jpg)
+
+## Challenge Description
+
+🔰 Update the Location column for every row based on the latest date for that specific Name.
+
+Ex.
+For Charlie, latest date is 31-Oct-23 and corresponding location is NC.
+Hence, all locations for Charlie gets updated to NC.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "939 Location Update.xlsx"
+input <- read_excel(path, range = "A2:C22")
+test  <- read_excel(path, range = "E2:G22")
+
+result <- input |>
+  group_by(Name) |>
+  mutate(Location = Location[which.max(Date)]) |>
+  ungroup()
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Group the data by `Name`.
+
+    -   Within each group, identify the row with the latest `Date` using `which.max(Date)`.
+
+    -   Pull the corresponding `Location` from that row.
+
+    -   Write that location back to every row in the group.
+
+-   **Strengths**:
+
+    -   **Compactness**:
+
+        -   The whole transformation happens in one short grouped pipeline.
+
+    -   **Clarity**:
+
+        -   The rule "latest location per name" is visible directly in the `mutate`.
+
+    -   **No Join Needed**:
+
+        -   There is no need to build an intermediate lookup table.
+
+-   **Areas for Improvement**:
+
+    -   **Ties on Latest Date**:
+
+        -   If multiple rows shared the same maximum date for one name, the code would implicitly take the first match.
+
+-   **Gem**:
+
+    -   `Location[which.max(Date)]` is a neat grouped trick that both finds the winning row and broadcasts the answer across the full group.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "939 Location Update.xlsx"
+input = pd.read_excel(path, usecols="A:C", skiprows=1, nrows=20)
+test = pd.read_excel(path, usecols="E:G", skiprows=1, nrows=20)
+test.columns = input.columns
+
+latest_loc = (
+    input.loc[input.groupby("Name")["Date"].idxmax(), ["Name", "Location"]]
+    .set_index("Name")["Location"]
+)
+result = input.copy()
+result["Location"] = result["Name"].map(latest_loc)
+
+print(result.equals(test))
+# True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Group by `Name` and use `idxmax()` to find the row index of the latest `Date` for each person.
+
+    -   Extract the corresponding `Location` values from those rows.
+
+    -   Build a `Name -> Location` mapping.
+
+    -   Map that location back to every row in the original table.
+
+-   **Strengths**:
+
+    -   **Explicit Mapping**:
+
+        -   The intermediate lookup series makes the logic easy to inspect.
+
+    -   **Scalability**:
+
+        -   The approach works well for larger datasets and mirrors a common `pandas` pattern.
+
+    -   **Separation of Steps**:
+
+        -   Identifying the latest row and broadcasting the result are clearly separated.
+
+-   **Areas for Improvement**:
+
+    -   **Latest-Date Ties**:
+
+        -   As in the R version, ties on the latest date would resolve to the first maximum index.
+
+-   **Gem**:
+
+    -   `groupby(...).idxmax()` is a very elegant way to find the exact source row for the value you later want to reuse everywhere else.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   Requires grouped logic rather than row-by-row replacement.
+
+-   Involves identifying the latest record per entity and propagating that value back across the dataset.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - Excel Challenge 938](Excel938.qmd)
