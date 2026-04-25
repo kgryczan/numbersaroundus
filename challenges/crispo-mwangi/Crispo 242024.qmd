@@ -1,0 +1,129 @@
+---
+title: "Crispo - Excel Challenge 24 2024"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2024-06-16"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 24 2024](/challenges/images/Crispo242024.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Date & Orders Month Closing Order Easy Sunday Excel Challenge ⭐Get the last order for each Month marks for Legacy solutions or PowerQuery Solution
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/Excel Challenge 16th June.xlsx"
+input = read_excel(path, range = "B2:B22")
+test  = read_excel(path, range = "D2:E5")
+
+result = input %>%
+  as.list() %>%
+  unlist() %>%
+  matrix(ncol = 2, byrow = TRUE) %>%
+  as_tibble() %>%
+  setNames(c("Date", "Value")) %>%
+  mutate(Date = as.Date(Date, origin = "1899-12-30"),
+         Month = month(Date)) %>%
+  summarise(`Closing Order` = last(Value), .by = Month) 
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "files/Excel Challenge 16th June.xlsx"
+input = pd.read_excel(path, skiprows=1, usecols="B")
+test = pd.read_excel(path, skiprows=1, usecols="D:E", nrows = 3)
+
+result = pd.DataFrame(input.values.reshape(-1, 2), columns=['A', 'B'])
+result['month'] = result['A'].dt.month
+result = result.groupby('month').tail(1)
+result = result[['month', 'B']].reset_index(drop=True)
+result = result.astype('int64')
+
+result.columns = test.columns
+
+print(result.equals(test)) # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 23 2024](Crispo 232024.qmd)
+-   [Crispo - Excel Challenge 25 2024](Crispo 252024.qmd)

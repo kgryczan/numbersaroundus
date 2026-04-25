@@ -1,0 +1,130 @@
+---
+title: "Excel BI - PowerQuery Challenge 157"
+description: "Group Except the Group column, for every other column, log the value within a group if value changes."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 157](/challenges/images/exc157pq.jpg)
+
+## Challenge Description
+
+Group Except the Group column, for every other column, log the value within a group if value changes.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("Power Query/PQ_Challenge_157.xlsx", range = "A1:E31")
+test  = read_excel("Power Query/PQ_Challenge_157.xlsx", range = "G1:K31") %>%
+  mutate(across(everything(), as.character))
+
+log_changes <- function(data) {
+  data %>%
+    mutate(across(everything(), as.character)) %>%
+    group_by(Group) %>%
+    mutate(across(everything(),
+                  ~if_else(lag(.x) != .x & !is.na(lag(.x)), .x, NA_character_))) %>%
+    ungroup()
+}
+
+result = log_changes(input) 
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input_data = pd.read_excel("PQ_Challenge_157.xlsx", usecols="A:E", nrows=31)
+test = pd.read_excel("PQ_Challenge_157.xlsx", usecols="G:K", nrows=31).astype(str)
+
+result = input_data.astype(str).copy()
+
+def mark_changes(group):
+    out = group.copy()
+    for col in out.columns:
+        out[col] = out[col].where(out[col].shift().ne(out[col]) & out[col].shift().notna())
+    return out
+
+result = result.groupby("Group", group_keys=False).apply(mark_changes).reset_index(drop=True)
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 156](Excel156pq.qmd)

@@ -1,0 +1,114 @@
+---
+title: "Omid - Challenge 134"
+description: "🔰 From the 'transactions' in the provided table, filter those that occurred in the last 7 days of the month."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 134](/challenges/images/OmidC134.jpg)
+
+## Challenge Description
+
+🔰 From the "transactions" in the provided table, filter those that occurred in the last 7 days of the month.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-134 Final Week of the Month.xlsx"
+input = read_excel(path, range = "C2:E27")
+test  = read_excel(path, range = "G2:I5")
+
+result = input %>%
+  mutate(day = day(Date),
+         month_end = ceiling_date(Date, "month") - days(1)) %>%
+  filter(day >= day(month_end) - 6) %>%
+  select(-day, -month_end)
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-134 Final Week of the Month.xlsx"
+input = pd.read_excel(path, usecols= "C:E", skiprows= 1, nrows= 27)
+test = pd.read_excel(path, usecols="G:I", skiprows=1, nrows=3).rename(columns=lambda x: x.split('.')[0])
+ 
+input['Date'] = pd.to_datetime(input['Date'])
+input['EoM'] = input['Date'] + pd.offsets.MonthEnd(0)
+input = input[input['EoM'] - input['Date'] < pd.Timedelta(days=7)]
+
+result = input[["Date","Product","Qty"]].reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 133](OmidC133.qmd)
+-   [Omid - Challenge 135](OmidC135.qmd)
+-   [Omid - Challenge 136](OmidC136.qmd)

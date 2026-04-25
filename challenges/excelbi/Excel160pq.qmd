@@ -1,0 +1,126 @@
+---
+title: "Excel BI - PowerQuery Challenge 160"
+description: "x, y coordinates are given for different cities. Prepare the distance between cities grid where distance between 2 cities are calculated by usual distance formula of coordinate geometry which is represented as SQRT((x2-x1)^2+(y2-y1)^2) in Excel."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 160](/challenges/images/exc160pq.jpg)
+
+## Challenge Description
+
+x, y coordinates are given for different cities. Prepare the distance between cities grid where distance between 2 cities are calculated by usual distance formula of coordinate geometry which is represented as SQRT((x2-x1)^2+(y2-y1)^2) in Excel.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("Power Query/PQ_Challenge_160.xlsx", range = "A1:C8")
+test  = read_excel("Power Query/PQ_Challenge_160.xlsx", range = "F1:M8")
+
+grid = crossing(city1 = input$Cities, city2 = input$Cities) %>%
+  mutate(x1 = input$x[match(city1, input$Cities)],
+         y1 = input$y[match(city1, input$Cities)],
+         x2 = input$x[match(city2, input$Cities)],
+         y2 = input$y[match(city2, input$Cities)], 
+         dist = round(sqrt((x2 - x1)^2 + (y2 - y1)^2),2)) %>%
+  select(Cities = city1, city2, dist) %>%
+  pivot_wider(names_from = city2, values_from = dist)
+
+identical(test, grid)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import numpy as np
+import pandas as pd
+
+input_data = pd.read_excel("PQ_Challenge_160.xlsx", usecols="A:C", nrows=8)
+test = pd.read_excel("PQ_Challenge_160.xlsx", usecols="F:M", nrows=8)
+
+rows = []
+for _, r1 in input_data.iterrows():
+    row = {"Cities": r1["Cities"]}
+    for _, r2 in input_data.iterrows():
+        dist = round(np.sqrt((r2["x"] - r1["x"]) ** 2 + (r2["y"] - r1["y"]) ** 2), 2)
+        row[r2["Cities"]] = dist
+    rows.append(row)
+result = pd.DataFrame(rows)
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 159](Excel159pq.qmd)

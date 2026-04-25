@@ -1,0 +1,126 @@
+---
+title: "Excel BI - Excel Challenge 912"
+description: "🔰 912 Overlapped DateTime.xlsx says: > List the group IDs, StartDatetime and EndDatetime if StartDatetime overlaps with previous record's End Datetime."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 912](/challenges/images/exc912.jpg)
+
+## Challenge Description
+
+🔰 The prompt in 912 Overlapped DateTime.xlsx says: List the group IDs, StartDatetime and EndDatetime if StartDatetime overlaps with previous record's End Datetime. A new group must start if overlap doesn't happen. Data is already sorted on Start Datetime. The input consists of: The goal is to group consecutive overlapping records and return:
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(lubridate)
+
+path <- "Excel/900-999/912/912 Overlapped DateTime.xlsx"
+input <- read_excel(path, range = "A2:C15")
+test <- read_excel(path, range = "E2:G7")
+
+result = input %>%
+  mutate(Int = interval(`Start Datetime`, `End Datetime`)) %>%
+  arrange(`Start Datetime`) %>%
+  mutate(
+    Group = cumsum(if_else(
+      row_number() == 1,
+      TRUE,
+      int_overlaps(lag(Int), Int) == FALSE
+    ))
+  ) %>%
+  mutate(
+    `Group Start` = first(`Start Datetime`),
+    `Group End` = last(`End Datetime`),
+    .by = Group
+  ) %>%
+  summarise(
+    Group = paste(ID, collapse = ", "),
+    .by = c(`Group Start`, `Group End`)
+  ) %>%
+  relocate(Group, .before = everything())
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Build an interval object for each row.; Compare each interval with the previous one.; Start a new group whenever overlap does not occur..
+- **Strengths**: This puzzle is really about overlap chains, not just pairwise overlap.
+- **Areas for Improvement**: The approach assumes the workbook structure and naming conventions stay stable, so any changed input shape would need minor adjustments.
+- **Gem**: If interval B overlaps A, and interval C overlaps B, then A, B, and C all belong to the same grouped block even if A and C do not overlap directly.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel/900-999/912/912 Overlapped DateTime.xlsx"
+input = pd.read_excel(path, skiprows=1, usecols="A:C", nrows=14)
+test = pd.read_excel(path, skiprows=1, usecols="E:G", nrows=5)
+
+input['Int'] = list(zip(input['Start Datetime'], input['End Datetime']))
+
+input = input.sort_values(by='Start Datetime').reset_index(drop=True)
+
+def assign_groups(df):
+    groups = []
+    current_group = 1
+    for i, row in df.iterrows():
+        if i == 0:
+            groups.append(current_group)
+        else:
+            prev_interval = df.loc[i - 1, 'Int']
+            current_interval = row['Int']
+            if prev_interval[1] < current_interval[0]:
+                current_group += 1
+            groups.append(current_group)
+    return groups
+
+input['Group'] = assign_groups(input)
+
+grouped = input.groupby('Group').agg(
+    Group_Start=('Start Datetime', 'first'),
+    Group_End=('End Datetime', 'last'),
+    ID=('ID', lambda x: ", ".join(map(str, x)))
+).reset_index()
+
+grouped = grouped[['ID', 'Group_Start', 'Group_End']]
+grouped.columns = ['Group', 'Group Start', 'Group End']
+
+print(grouped.equals(test))
+```
+
+### Python
+
+The Python version follows the same structure: sort rows by start datetime.; walk through the intervals in order..
+
+## **Difficulty Level**
+
+**Easy**
+
+Once the core pattern is recognized, the implementation is short and direct.
+
+### Related Challenges
+
+- [Excel Challenge 924](/challenges/excelbi/Excel924.html)
+- [Excel Challenge 930](/challenges/excelbi/Excel930.html)
+- [Excel Challenge 918](/challenges/excelbi/Excel918.html)

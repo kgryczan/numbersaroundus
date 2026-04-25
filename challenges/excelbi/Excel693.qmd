@@ -1,0 +1,85 @@
+---
+title: "Excel BI - Excel Challenge 693"
+description: "🔰 Generate a sequence taking first 4 numbers as 1, 2, 3, 4."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 693](/challenges/images/exc693.jpg)
+
+## Challenge Description
+
+🔰 Generate a sequence taking first 4 numbers as 1, 2, 3, 4. In this sequence, take the block of last 4 numbers and next 2 numbers would sum of first and third term and sum of second and fourth terms. Derive 100 terms of this series.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/693 Generate a sequence.xlsx"
+test  = read_excel(path, range = "A1:A101")
+
+start = list(1, 2, 3, 4)
+for (i in 1:50) {
+  start = append(start, c(sum(start[[length(start) - 3]], start[[length(start) - 1]]),
+                          sum(start[[length(start) - 2]], start[[length(start)]])))
+}
+df = data.frame(a = unlist(start[1:100]))
+all.equal(df$a, test$`Answer Expected`)
+# TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "693 Generate a sequence.xlsx"
+test = pd.read_excel(path, usecols="A", nrows=101)
+
+start = [1, 2, 3, 4]
+while len(start) < 101:
+    start += [start[-4] + start[-2], start[-3] + start[-1]]
+start = start[:100]
+df = pd.DataFrame({'Sequence': start})
+
+print(df["Sequence"].equals(test["Answer Expected"])) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 694](/challenges/excelbi/Excel694.html)
+- [Excel Challenge 695](/challenges/excelbi/Excel695.html)
+- [Excel Challenge 696](/challenges/excelbi/Excel696.html)

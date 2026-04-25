@@ -1,0 +1,130 @@
+---
+title: "Omid - Challenge 159"
+description: "🔰 Extract the date ranges where each sensor reports the same value for more than four consecutive days."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 159](/challenges/images/OmidC159.jpg)
+
+## Challenge Description
+
+🔰 Extract the date ranges where each sensor reports the same value for more than four consecutive days.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-159 Data Cleaning.xlsx"
+input = read_excel(path, range = "C2:I27")
+test  = read_excel(path, range = "K2:N6")
+
+result = input %>%
+  pivot_longer(-Date, names_to = "Sensor", values_to = "Temperature") %>%
+  arrange(Sensor, Date) %>%
+  mutate(group = cumsum(lag(Temperature, default = first(Temperature)) != Temperature), .by = Sensor) %>%
+  mutate(length = n(), .by = c(Sensor, group)) %>%
+  filter(length >= 4) %>%
+  summarise(From = min(Date), TO = max(Date), Temperature = first(Temperature), Sensor = first(Sensor), .by = group) %>%
+  select(From, TO, Sensor, Temperature)
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-159 Data Cleaning.xlsx"
+input = pd.read_excel(path, usecols="C:I", skiprows=1, nrows=25)
+test = pd.read_excel(path, usecols="K:N", skiprows=1, nrows=4)
+
+input = input.melt(id_vars=["Date"], var_name="Sensor", value_name="Temperature").sort_values(by=["Sensor", "Date"])
+input['group'] = input.groupby('Sensor')['Temperature'].diff().ne(0).cumsum()
+result = input[input.groupby(['Sensor', 'group'])['Temperature'].transform('size') >= 4].groupby('group').agg(
+    From=('Date', 'min'),
+    TO=('Date', 'max'),
+    Sensor=('Sensor', 'first'),
+    Temperature=('Temperature', 'first')
+).reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 158](OmidC158.qmd)
+-   [Omid - Challenge 160](OmidC160.qmd)
+-   [Omid - Challenge 161](OmidC161.qmd)

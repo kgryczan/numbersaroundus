@@ -1,0 +1,117 @@
+---
+title: "Excel BI - Excel Challenge 802"
+description: "🔰 has been assigned candidate numbers, you must find all the subsets of candidate numbers, each subset contains one number from each group, such that the conditions are fully satisf…"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 802](/challenges/images/exc802.jpg)
+
+## Challenge Description
+
+🔰 has been assigned candidate numbers, you must find all the subsets of candidate numbers, each subset contains one number from each group, such that the conditions are fully satisfied. For example the number in group B must be less than the number in A, <A, and less than the number in C, <C, therefor if 6 is selected for B, A could not be 1, 2, 3 or 6 and C could not be 5. There is exactly one solution for the given data but your answer should be able to identify all solutions for any set of candidates assinged.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(rlang)
+
+path = "Excel/800-899/802/802 Conditionals.xlsx"
+input = read_excel(path, range = "A1:C5")
+test  = read_excel(path, range = "E1:E5") %>% pull()
+
+solve_candidates = function(df){
+  rules = df %>%
+    mutate(Conditions = str_replace_all(Conditions, "^=", "==")) %>%
+    mutate(Conditions = str_replace_all(Conditions, "(<=|>=|<|>|==)", paste0(Group, " \\1 "))) %>%
+    pull(Conditions) %>%
+    str_split("&") %>%
+    map_chr(~ paste(str_trim(.x), collapse = " & ")) %>%
+    paste(collapse = " & ")
+  
+  grid = crossing(!!!set_names(df$Candidates, df$Group))
+  filter(grid, !!parse_expr(rules))
+}
+
+input = input %>%
+  mutate(Candidates = str_split(Candidates, ",")) %>%
+  mutate(Candidates = map(Candidates, \(x) as.numeric(str_trim(x))))
+
+result = solve_candidates(input) %>% unlist() %>% unname()
+all(result == test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+import itertools
+import re
+
+path = "800-899/802/802 Conditionals.xlsx"
+input_df = pd.read_excel(path, usecols="A:C", nrows=5)
+test = pd.read_excel(path, usecols="E", nrows=5).squeeze()
+
+def solve_candidates(df):
+    def prep_condition(row):
+        cond = row['Conditions']
+        cond = re.sub(r'^=', '==', cond)
+        cond = re.sub(r'(<=|>=|<|>|==)', f"{row['Group']} \\1 ", cond)
+        return cond
+
+    conditions = df.apply(prep_condition, axis=1).tolist()
+    rules = " & ".join([f"({c})" for c in conditions])
+
+    groups = df['Group'].tolist()
+    candidates = df['Candidates'].tolist()
+    grid = pd.DataFrame(list(itertools.product(*candidates)), columns=groups)
+
+    filtered = grid.query(rules)
+    return filtered.values.flatten()
+
+input_df['Candidates'] = input_df['Candidates'].apply(lambda x: [float(i.strip()) for i in str(x).split(',')])
+
+result = solve_candidates(input_df)
+print(np.all(result == test))
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 803](/challenges/excelbi/Excel803.html)
+- [Excel Challenge 804](/challenges/excelbi/Excel804.html)
+- [Excel Challenge 805](/challenges/excelbi/Excel805.html)

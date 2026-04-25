@@ -1,0 +1,90 @@
+---
+title: "Excel BI - Excel Challenge 674"
+description: "🔰 List consecutive numbers into different columns."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 674](/challenges/images/exc674.jpg)
+
+## Challenge Description
+
+🔰 List consecutive numbers into different columns.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/674  Consecutive Numbers.xlsx"
+input = read_excel(path, range = "A1:A14")
+test  = read_excel(path, range = "B2:E5", col_names = c("1","2","3","4"))
+
+result = input %>%
+  mutate(n = consecutive_id(Numbers)) %>%
+  group_by(n) %>%
+  filter(n() > 1) %>%
+  mutate(rn = row_number()) %>%
+  pivot_wider(names_from = n, values_from = Numbers) %>%
+  select(-rn)
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Reshape the result into the workbook output format.
+- **Strengths**: The transformation is organized around the correct grouping level, which keeps the business logic clear.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The key move is solving the problem at the right grain before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "674  Consecutive Numbers.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=14)
+test = pd.read_excel(path, usecols="B:E", nrows=4, names=["1", "2", "3", "4"]).fillna('')
+test['3'] = test['3'].astype('float64')
+
+input['Group'] = (input['Numbers'] != input['Numbers'].shift()).cumsum()
+filtered_input = input.groupby('Group').filter(lambda x: len(x) > 1)
+filtered_input['RowNumber'] = filtered_input.groupby('Group').cumcount() + 1
+filtered_input = filtered_input.pivot(index='RowNumber', columns='Group', values='Numbers').fillna('').reset_index(drop=True)
+filtered_input.columns = test.columns
+
+print(filtered_input.equals(test)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 675](/challenges/excelbi/Excel675.html)
+- [Excel Challenge 676](/challenges/excelbi/Excel676.html)
+- [Excel Challenge 677](/challenges/excelbi/Excel677.html)

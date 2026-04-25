@@ -1,0 +1,125 @@
+---
+title: "Excel BI - PowerQuery Challenge 267"
+description: "Amount Running Total RESULT PROBLEM Work out the running total for first 10 entries, then next 9 entries, then next 8 entries till you reach 1 entry. After that running total will be only for 1 entry for each entry."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 267](/challenges/images/exc267pq.jpg)
+
+## Challenge Description
+
+Amount Running Total RESULT PROBLEM Work out the running total for first 10 entries, then next 9 entries, then next 8 entries till you reach 1 entry. After that running total will be only for 1 entry for each entry.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_267.xlsx"
+input = read_excel(path, range = "A1:A62")
+test  = read_excel(path, range = "C1:D62")
+
+main = rep(1:10, 10:1)
+rest_count = nrow(input) - length(main)
+rest = rep(10 + 1:rest_count, 1)
+groups = c(main, rest)
+
+result = input %>%
+  bind_cols(tibble(groups = groups)) %>%
+  mutate(running_total = cumsum(Amount), .by = groups) %>%
+  select(-groups)
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "PQ_Challenge_267.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=62)
+test = pd.read_excel(path, usecols="C:D", nrows=62)
+
+main = [i for i in range(1, 11) for _ in range(11 - i)][:len(input)]
+groups = main + list(range(11, 11 + len(input) - len(main)))
+
+input['groups'] = groups
+input['Running Total'] = input.groupby('groups')['Amount'].cumsum()
+result = input.drop(columns=['groups'])
+
+print(result['Running Total'].equals(test['Running Total'])) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The transformation rule is readable, but the final layout still requires a careful implementation.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 266](Excel266pq.qmd)
+-   [Excel BI - Excel Challenge 647](Excel647.qmd)

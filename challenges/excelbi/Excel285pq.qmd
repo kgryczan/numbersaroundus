@@ -1,0 +1,146 @@
+---
+title: "Excel BI - PowerQuery Challenge 285"
+description: "Transpose the table as shown."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 285](/challenges/images/exc285pq.jpg)
+
+## Challenge Description
+
+Transpose the table as shown.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(unpivotr)
+library(tidyxl)
+
+path = "Power Query/200-299/285/PQ_Challenge_285.xlsx"
+test = read_excel(path, range = "A10:F16")
+
+input = xlsx_cells(path)
+
+cells_subset <- input %>%
+  filter(row >= 1 & row <= 5, col >= 1 & col <= 9)
+
+result = cells_subset %>%
+  behead("up", "Quarter") %>%
+  behead("up-left", "Measure") %>%
+  behead("left", "Fruits") %>%
+  select(Quarter, Measure, Fruits, numeric) %>%
+  fill(Quarter, .direction = "down") %>%
+  pivot_wider(names_from = Quarter, values_from = numeric) %>%
+  select(Fruits, Quarters = Measure, everything()) %>%
+  arrange(Fruits) %>%
+  mutate(Fruits = ifelse(Quarters == "Quantity", NA, Fruits))
+
+all.equal(result, test)
+# TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+test = pd.read_excel("PQ_Challenge_285.xlsx", usecols="A:F", skiprows=9, nrows=7)
+input_data = pd.read_excel("PQ_Challenge_285.xlsx", header=None, nrows=5, usecols="A:I")
+
+quarters = input_data.iloc[0, 1:].ffill()
+measures = input_data.iloc[1, 1:]
+rows = []
+for r in range(2, input_data.shape[0]):
+    fruit = input_data.iloc[r, 0]
+    for c in range(1, input_data.shape[1]):
+        rows.append({
+            "Quarter": quarters.iloc[c - 1],
+            "Measure": measures.iloc[c - 1],
+            "Fruits": fruit,
+            "numeric": input_data.iloc[r, c],
+        })
+result = pd.DataFrame(rows)
+result = result.pivot_table(index=["Fruits", "Measure"], columns="Quarter", values="numeric", aggfunc="first").reset_index()
+result = result.rename(columns={"Measure": "Quarters"})
+result = result.sort_values("Fruits").reset_index(drop=True)
+result["Fruits"] = result["Fruits"].where(result["Quarters"] != "Quantity")
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 284](Excel284pq.qmd)
+-   [Excel BI - Excel Challenge 665](Excel665.qmd)

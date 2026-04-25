@@ -1,0 +1,173 @@
+---
+title: "Excel BI - PowerQuery Challenge 152"
+description: "Calculate the number of workdays for all Type of Leaves for every Name."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 152](/challenges/images/exc152pq.jpg)
+
+## Challenge Description
+
+Calculate the number of workdays for all Type of Leaves for every Name.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("Power Query/PQ_Challenge_152.xlsx", range = "A1:D17") %>%
+  janitor::clean_names()
+test  = read_excel("Power Query/PQ_Challenge_152.xlsx", range = "F1:I5") %>%
+  janitor::clean_names()
+
+result = input %>%
+  mutate(seq = map2(from_date, to_date, seq, by = "day")) %>%
+  unnest_longer(seq) %>%
+  select(-c(from_date, to_date)) %>%
+  mutate(value = 1) %>%
+  pivot_wider(names_from = type_of_leave, values_from = value, values_fill = 0) %>%
+  select(name, seq, ML, PL, CL) %>%
+  mutate(sum = ML + PL + CL,
+         concat = paste0(ML, PL, CL) %>% as.numeric(),
+         main_leave = case_when(sum == 1 & ML == 1 ~ "ML",
+                                sum == 1 & PL == 1 ~ "PL",
+                                sum == 1 & CL == 1 ~ "CL",
+                                sum == 2 & concat >= 100 ~ "ML",
+                                sum == 2 & concat < 100 ~ "PL",
+                                sum == 3 ~ "ML",
+                                TRUE ~ "NA"),
+         wday = wday(seq, week_start = 1)) %>%
+  filter(!wday %in% c(6, 7)) %>%
+  select(name, seq, main_leave) %>%
+  mutate(main_leave = str_to_lower(main_leave)) %>%
+  group_by(name, main_leave) %>%
+  summarise(days = n() %>% as.numeric()) %>%
+  ungroup() %>%
+  pivot_wider(names_from = main_leave, values_from = days, values_fill = 0)
+
+identical(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input_data = pd.read_excel("PQ_Challenge_152.xlsx", usecols="A:D", nrows=17)
+input_data.columns = [c.strip().lower().replace(" ", "_") for c in input_data.columns]
+test = pd.read_excel("PQ_Challenge_152.xlsx", usecols="F:I", nrows=5)
+test.columns = [c.strip().lower() for c in test.columns]
+
+result = input_data.copy()
+result["seq"] = result.apply(lambda r: pd.date_range(r["from_date"], r["to_date"], freq="D"), axis=1)
+result = result.explode("seq").drop(columns=["from_date", "to_date"])
+result["value"] = 1
+wide = result.pivot_table(index=["name", "seq"], columns="type_of_leave", values="value", fill_value=0, aggfunc="sum").reset_index()
+wide = wide[["name", "seq", "ML", "PL", "CL"]]
+wide["sum"] = wide["ML"] + wide["PL"] + wide["CL"]
+wide["concat"] = (wide["ML"].astype(str) + wide["PL"].astype(str) + wide["CL"].astype(str)).astype(int)
+wide["main_leave"] = wide.apply(
+    lambda r: "ML" if (r["sum"] == 1 and r["ML"] == 1) or (r["sum"] == 2 and r["concat"] >= 100) or (r["sum"] == 3)
+    else ("PL" if (r["sum"] == 1 and r["PL"] == 1) or (r["sum"] == 2 and r["concat"] < 100)
+    else ("CL" if r["sum"] == 1 and r["CL"] == 1 else "NA")),
+    axis=1,
+)
+wide["wday"] = pd.to_datetime(wide["seq"]).dt.weekday + 1
+wide = wide[~wide["wday"].isin([6, 7])]
+result2 = (
+    wide.assign(main_leave=wide["main_leave"].str.lower())
+    .groupby(["name", "main_leave"], as_index=False)
+    .size()
+    .rename(columns={"size": "days"})
+    .pivot(index="name", columns="main_leave", values="days")
+    .fillna(0)
+    .reset_index()
+)
+result2.columns.name = None
+for col in ["ml", "pl", "cl"]:
+    if col not in result2.columns:
+        result2[col] = 0
+result2 = result2[["name", "ml", "pl", "cl"]]
+
+print(result2.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 151](Excel151pq.qmd)

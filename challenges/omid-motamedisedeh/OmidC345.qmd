@@ -1,0 +1,111 @@
+---
+title: "Omid - Challenge 345"
+description: "🔰 Question Result 🧩 Adding Explanations If you want to include explanations or extra notes: 🌐 Sharing External Content 🗣 Feedback I always appreciate your feedback — feel…"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 345](/challenges/images/OmidC345.jpg)
+
+## Challenge Description
+
+🔰 Question Result 🧩 Adding Explanations If you want to include explanations or extra notes: 🌐 Sharing External Content 🗣 Feedback I always appreciate your feedback — feel…
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(charcuterie)
+
+path <- "300-399/345/CH-345 Pattern Recongnition.xlsx"
+input <- read_excel(path, range = "B3:B8")
+test <- read_excel(path, range = "C3:C8")
+
+result = input %>%
+  mutate(Pattern = map(Pattern, chars)) %>%
+  mutate(Count = map_int(Pattern, ~ sum(.x[-length(.x)] != .x[-1])))
+
+# difference in 3 example.
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "300-399/345/CH-345 Pattern Recongnition.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=2, nrows=6)
+test = pd.read_excel(path, usecols="C", skiprows=2, nrows=6)
+
+input["Count"] = input["Pattern"].apply(
+    lambda x: sum(a != b for a, b in zip(x, x[1:]))
+)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 344](OmidC344.qmd)
+-   [Omid - Challenge 346](OmidC346.qmd)
+-   [Omid - Challenge 347](OmidC347.qmd)

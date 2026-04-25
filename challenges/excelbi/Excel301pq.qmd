@@ -1,0 +1,169 @@
+---
+title: "Excel BI - PowerQuery Challenge 301"
+description: "From each alphabetic row prepare the combinations of alphabets and sum the numbers appearing beneath those alphabetic rows."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 301](/challenges/images/exc301pq.jpg)
+
+## Challenge Description
+
+From each alphabetic row prepare the combinations of alphabets and sum the numbers appearing beneath those alphabetic rows.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/300-399/301/PQ_Challenge_301.xlsx"
+input = read_excel(path, range = "A1:E9")
+test  = read_excel(path, range = "G1:I21")
+
+result = input %>%
+  mutate(type = ifelse(str_detect(Col1, "\\d"), "Value", "Text"), 
+         cumsum = cumsum(type == "Text")) %>%
+  pivot_longer(cols = -c(type, cumsum), 
+             names_to = "Column", 
+             values_to = "Value") %>%
+  pivot_wider(names_from = type, 
+            values_from = Value) %>%
+  select(-Column) %>%
+  na.omit() %>%
+  unite( "Combined", Text, Value, sep = "-", remove = TRUE) %>%
+  nest_by(cumsum) %>%
+  mutate(data1 = map(data, ~ expand.grid(.x, .x) %>% as_tibble() %>%
+                       separate(Var1, into = c("Text1", "Value1"), sep = "-", remove = TRUE, convert = TRUE) %>%
+                       separate(Var2, into = c("Text2", "Value2"), sep = "-", remove = TRUE, convert = TRUE) %>%
+                       filter(Text1 < Text2))) %>%
+  ungroup() %>%
+  unnest(data1) %>%
+  select(Letter1 = Text1, Letter2 = Text2, Value1, Value2) %>%
+  mutate(Total = Value1 + Value2) %>%
+  select(Letter1, Letter2, Total) %>%
+  arrange(Letter1, Letter2)
+
+all.equal(result, test)         
+# > TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+from itertools import product
+
+path = "300-399/301/PQ_Challenge_301.xlsx"
+input = pd.read_excel(path, usecols="A:E", nrows=9)
+test = pd.read_excel(path, usecols="G:I", nrows=21)
+
+input['type'] = np.where(input['Col1'].str.contains(r'\d'), 'Value', 'Text')
+input['cumsum'] = input['type'].eq('Text').cumsum()
+
+result = (
+    input.melt(id_vars=['type', 'cumsum'], var_name='Column', value_name='Value')
+    .groupby(['cumsum', 'Column', 'type'], as_index=False).first()
+    .pivot(index=['cumsum', 'Column'], columns='type', values='Value')
+    .reset_index().drop(columns='Column').dropna()
+    .assign(Combined=lambda df: df['Text'] + '-' + df['Value'].astype(str))
+    .groupby('cumsum', group_keys=False)
+    .apply(lambda g: pd.DataFrame(
+        [(x, y) for x, y in product(g['Combined'], repeat=2) if x < y],
+        columns=['Var1', 'Var2']
+    ))
+    .reset_index(drop=True)
+    .assign(**{
+        'Text1': lambda df: df['Var1'].str.split('-').str[0],
+        'Value1': lambda df: df['Var1'].str.split('-').str[1].astype(int),
+        'Text2': lambda df: df['Var2'].str.split('-').str[0],
+        'Value2': lambda df: df['Var2'].str.split('-').str[1].astype(int),
+        'Total': lambda df: df['Value1'] + df['Value2']
+    })
+    .query('Text1 < Text2')
+    .loc[:, ['Text1', 'Text2', 'Total']]
+    .rename(columns={'Text1': 'Letter1', 'Text2': 'Letter2'})
+    .sort_values(['Letter1', 'Letter2'])
+)
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 300](Excel300pq.qmd)
+-   [Excel BI - Excel Challenge 681](Excel681.qmd)

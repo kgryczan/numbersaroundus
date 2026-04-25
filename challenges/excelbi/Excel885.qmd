@@ -1,0 +1,103 @@
+---
+title: "Excel BI - Excel Challenge 885"
+description: "🔰 Sum ifS"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 885](/challenges/images/exc885.jpg)
+
+## Challenge Description
+
+🔰 Sum ifS
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/885/885 Case Position Swap Cipher.xlsx"
+input <- read_excel(path, range = "A1:A20")
+test <- read_excel(path, range = "B1:B20")
+
+swap_case_pos <- function(s) {
+  up = str_which(str_split(s, "")[[1]], "[A-Z]")
+  low = str_which(str_split(s, "")[[1]], "[a-z]")
+  s_vec = str_split(s, "")[[1]]
+  for (i in seq_along(up)) {
+    pos = up[i]
+    if (i <= length(low)) {
+      swap_pos = low[i]
+      temp = s_vec[pos]
+      s_vec[pos] = s_vec[swap_pos]
+      s_vec[swap_pos] = temp
+    }
+  }
+  return(paste0(s_vec, collapse = ""))
+}
+result <- input %>%
+  mutate(Output = map_chr(CipherText, swap_case_pos))
+
+all.equal(result$Output, test$`Answer Expected`)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel\\800-899\\885\\885 Case Position Swap Cipher.xlsx"
+input = pd.read_excel(path, usecols="A", nrows = 19)
+test = pd.read_excel(path, usecols="B", nrows = 19)
+
+def swap_case_pos(s):
+    x = list(s)
+    up = [i for i,c in enumerate(x) if c.isupper()]
+    lo = [i for i,c in enumerate(x) if c.islower()]
+    n = min(len(up), len(lo))
+    for i in range(n):
+        x[up[i]], x[lo[i]] = x[lo[i]], x[up[i]]
+    return "".join(x)
+
+result = input.assign(Output=input["CipherText"].map(swap_case_pos))
+print(result['Output'].equals(test['Answer Expected'])) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Medium / Hard**
+
+The challenge relies on a non-obvious iterative rule rather than a single straight aggregation.
+
+### Related Challenges
+
+- [Excel Challenge 886](/challenges/excelbi/Excel886.html)
+- [Excel Challenge 887](/challenges/excelbi/Excel887.html)
+- [Excel Challenge 888](/challenges/excelbi/Excel888.html)

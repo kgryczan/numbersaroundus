@@ -1,0 +1,101 @@
+---
+title: "Excel BI - Excel Challenge 930"
+description: "🔰 Pair machine Start and Stop events into runtime sessions and compute total run minutes."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-23"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 930](/challenges/images/exc930.jpg)
+
+## Challenge Description
+
+🔰 Create running sessions by pairing each `Start` event with the next `Stop` event for the same machine, then compute the total runtime in minutes.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "900-999/930/930 Start Stop RunTime.xlsx"
+input <- read_excel(path, range = "A2:C22")
+test <- read_excel(path, range = "E2:H13")
+
+result <- input %>%
+  mutate(rn = row_number(), .by = c(Machine, EventType)) %>%
+  pivot_wider(names_from = EventType, values_from = EventTime) %>%
+  arrange(Machine, rn) %>%
+  replace_na(list(Stop = as.POSIXct("2024-03-01 19:00:00"))) %>%
+  mutate(RunMinutes = as.numeric(difftime(Stop, Start, units = "mins"))) %>%
+  select(Machine, StartTime = Start, StopTime = Stop, RunMinutes)
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Number start and stop events separately inside each machine, reshape them into paired rows, then compute runtime from the timestamp difference.
+- **Strengths**: The sequence-based pairing avoids messy joins on timestamps and stays compact.
+- **Areas for Improvement**: Missing `Stop` events rely on a fallback timestamp, so the business rule for unmatched sessions should be explicit.
+- **Gem**: The pairing works by relative position in each machine’s event stream, not by direct time matching.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from datetime import datetime
+
+path = "900-999/930/930 Start Stop RunTime.xlsx"
+
+input = pd.read_excel(path, skiprows=1, usecols="A:C", nrows=20)
+test = pd.read_excel(path, skiprows=1, usecols="E:H", nrows=11).rename(columns=lambda c: c.rstrip(".1"))
+
+result = (
+    input
+    .assign(rn=lambda df: df.groupby(["Machine", "EventType"]).cumcount())
+    .pivot(index=["Machine", "rn"], columns="EventType", values="EventTime")
+    .reset_index()
+    .sort_values(["Machine", "rn"])
+    .assign(
+        Stop=lambda df: df["Stop"].fillna(datetime(2024, 3, 1, 18, 0, 0)),
+        RunMinutes=lambda df: ((df["Stop"] - df["Start"]).dt.total_seconds() / 60).astype("int64"),
+    )
+    .rename(columns={"Start": "StartTime", "Stop": "StopTime"})
+    [["Machine", "StartTime", "StopTime", "RunMinutes"]]
+    .reset_index(drop=True)
+)
+
+print(result.equals(test))
+# True
+```
+
+### Python
+
+The Python solution mirrors the R approach with `cumcount()` as the pairing key. That gives each machine’s first start, second start, first stop, and second stop a stable sequence number, which makes the pivot straightforward. One nuance is that the Python file uses a different fallback stop time from the R file, although that difference does not affect the workbook-aligned tested cases.
+
+## **Difficulty Level**
+
+**Medium**
+
+The task is concise, but the non-obvious part is realizing that sequence numbers are enough to align start and stop events correctly.
+
+### Related Challenges
+
+- [Excel Challenge 929](/challenges/excelbi/Excel929.html)
+- [Excel Challenge 910](/challenges/excelbi/Excel910.html)
+- [Excel Challenge 905](/challenges/excelbi/Excel905.html)

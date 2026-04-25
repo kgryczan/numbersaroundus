@@ -1,0 +1,135 @@
+---
+title: "Omid - Challenge 318"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 318](/challenges/images/OmidC318.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(janitor)
+
+path = "files/300-399/318/CH-318 Table Transformation.xlsx"
+input = read_excel(path, range = "B2:E10", col_names = FALSE)
+test  = read_excel(path, range = "G2:J7")
+
+m = as.matrix(input)
+m[str_starts(m, "Column")] = NA
+
+df = m %>%
+    as_tibble() %>%
+    map_df(~ {
+        x = na.omit(.x)
+        c(x, rep(NA, nrow(m) - length(x)))
+    }) %>%
+    row_to_names(1) %>%
+    drop_na() %>%
+    mutate(Date = excel_numeric_to_date(as.numeric(Date)) %>% as.POSIXct(),
+        Quantity = as.numeric(Quantity))
+
+all.equal(result, test)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "300-399/318/CH-318 Table Transformation.xlsx"
+input = pd.read_excel(path, usecols="B:E", skiprows=1, nrows=9, header=None).to_numpy()
+test = pd.read_excel(path, usecols="G:J", skiprows=1, nrows=5).rename(columns=lambda c: c.replace('.1', ''))  
+
+m = np.where(np.char.startswith(input.astype(str), 'Column'), np.nan, input)
+
+for j in range(m.shape[1]):
+    col = m[:, j][~pd.isna(m[:, j])]
+    m[:len(col), j] = col
+    m[len(col):, j] = np.nan
+
+result = pd.DataFrame(m, columns=test.columns)
+result = result.iloc[1:][~pd.isna(result['Date'])].reset_index(drop=True)
+if 'Date' in result.columns:
+    result['Date'] = pd.to_datetime(result['Date']).dt.strftime('%Y-%m-%d %H:%M')
+
+print((result == test).all().all())
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 317](OmidC317.qmd)
+-   [Omid - Challenge 319](OmidC319.qmd)
+-   [Omid - Challenge 320](OmidC320.qmd)

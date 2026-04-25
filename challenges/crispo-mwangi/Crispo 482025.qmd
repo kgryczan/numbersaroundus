@@ -1,0 +1,123 @@
+---
+title: "Crispo - Excel Challenge 48 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-11-30"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 48 2025](/challenges/images/Crispo482025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ <figure class="table"><table class="ck-table-resized" style="border-collapse:collapse;width:376,52pt;" border="0" cellpadding="0" cellspacing="0" width="502" height="50"><colgroup><col style="width:100%;" width="502"></colgroup><tbody><tr style="height:38,00pt;" height="50"><td class="et3" style="height:38,00pt;width:376,50pt;" height="50" width="502" x:str="">
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path <- "2025-11-30/Challenge 81.xlsx"
+input <- read_excel(path, range = "B2:B6")
+test <- read_excel(path, range = "D2:D6")
+
+result = input %>%
+  mutate(across(everything(), ~ str_remove_all(., "<.*?>"))) %>%
+  mutate(across(everything(), ~ str_replace_all(., "&nbsp;", ""))) %>%
+  mutate(across(everything(), ~ str_squish(.)))
+
+all.equal(result$Problem, test$Solution)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+    -   Uses direct text-pattern extraction instead of manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "2025-11-30/Challenge 81.xlsx"
+input = pd.read_excel(path, usecols="B", nrows = 4, skiprows = 2)
+test = pd.read_excel(path, usecols="D", nrows=4, skiprows=2).rename(columns=lambda c: c.replace('.1', ''))
+
+def clean_text(s):
+    return s if pd.isnull(s) else " ".join(re.sub(r"<.*?>", "", str(s)).replace("&nbsp;", "").split())
+
+result = input.map(clean_text)
+
+print(result.equals(test)) # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Uses direct text-pattern extraction instead of manual cleanup
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines familiar Excel-style logic with at least one non-trivial reshape, grouping, or parsing step.
+
+-   The answer depends on getting the output layout exactly right.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 47 2025](Crispo 472025.qmd)
+-   [Crispo - Excel Challenge 49 2025](Crispo 492025.qmd)

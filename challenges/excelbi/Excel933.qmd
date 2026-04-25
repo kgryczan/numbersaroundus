@@ -1,0 +1,120 @@
+---
+title: "Excel BI - Excel Challenge 933"
+description: "🔰 Generate a mirrored number pattern where each row grows by triangular-number logic and reflects across the center."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-23"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 933](/challenges/images/exc933.jpg)
+
+## Challenge Description
+
+🔰 Generate the given pattern for numbers given in column A, where the input value is equal to the number of rows to be generated. The target output is an `n x (2n - 1)` matrix whose rows are built from triangular-number ranges and mirrored across the center.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "900-999/933/933 Number Pattern.xlsx"
+input1 <- read_excel(path, sheet = 2, range = "A2", col_names = FALSE) %>% pull()
+test1 <- read_excel(path, sheet = 2, range = "C2:G4", col_names = FALSE) %>%
+  as.matrix() %>%
+  replace(is.na(.), 0)
+input2 <- read_excel(path, sheet = 2, range = "A6", col_names = FALSE) %>% pull()
+test2 <- read_excel(path, sheet = 2, range = "C6:I9", col_names = FALSE) %>%
+  as.matrix() %>%
+  replace(is.na(.), 0)
+input3 <- read_excel(path, sheet = 2, range = "A11", col_names = FALSE) %>% pull()
+test3 <- read_excel(path, sheet = 2, range = "C11:Q18", col_names = FALSE) %>%
+  as.matrix() %>%
+  replace(is.na(.), 0)
+
+fill_matrix <- function(n) {
+  mat <- matrix(data = 0, nrow = n, ncol = n * 2 - 1)
+  for (r in n:1) {
+    t_val <- (r * (r + 1)) / 2
+    max_offset <- n - 1
+    min_offset <- n - r
+
+    for (offset in min_offset:max_offset) {
+      val <- t_val - (offset - min_offset)
+      mat[r, n - offset] <- val
+      mat[r, n + offset] <- val
+    }
+  }
+  mat
+}
+
+all.equal(test1, fill_matrix(input1), check.attributes = FALSE)
+all.equal(test2, fill_matrix(input2), check.attributes = FALSE)
+all.equal(test3, fill_matrix(input3), check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Build an output matrix of zeros, compute the triangular-number endpoint for each row, then place mirrored values outward from the center.
+- **Strengths**: The coordinate logic maps directly to the visual pattern and keeps the symmetry explicit.
+- **Areas for Improvement**: The offset arithmetic takes a moment to parse if you are seeing the pattern for the first time.
+- **Gem**: The pattern is not arbitrary; each row is driven by a triangular-number range and then reflected.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import numpy as np
+import pandas as pd
+
+path = "900-999/933/933 Number Pattern.xlsx"
+
+input1 = pd.read_excel(path, sheet_name="Sheet1 (2)", usecols="A", skiprows=1, nrows=1, header=None).iloc[0, 0]
+test1 = pd.read_excel(path, sheet_name="Sheet1 (2)", usecols="C:G", skiprows=1, nrows=3, header=None).fillna(0).astype(int).to_numpy()
+input2 = pd.read_excel(path, sheet_name="Sheet1 (2)", usecols="A", skiprows=5, nrows=1, header=None).iloc[0, 0]
+test2 = pd.read_excel(path, sheet_name="Sheet1 (2)", usecols="C:I", skiprows=5, nrows=4, header=None).fillna(0).astype(int).to_numpy()
+input3 = pd.read_excel(path, sheet_name="Sheet1 (2)", usecols="A", skiprows=10, nrows=1, header=None).iloc[0, 0]
+test3 = pd.read_excel(path, sheet_name="Sheet1 (2)", usecols="C:Q", skiprows=10, nrows=8, header=None).fillna(0).astype(int).to_numpy()
+
+def fill_matrix(n):
+    mat = np.zeros((n, 2 * n - 1), dtype=int)
+    for r in range(1, n + 1):
+        v = np.arange(r * (r - 1) // 2 + 1, r * (r + 1) // 2 + 1)
+        mat[r - 1, :r] = v
+        mat[r - 1, 2 * n - r - 1:] = v[::-1]
+    return mat
+
+print(np.array_equal(test1, fill_matrix(input1)))
+print(np.array_equal(test2, fill_matrix(input2)))
+print(np.array_equal(test3, fill_matrix(input3)))
+# True
+```
+
+### Python
+
+The Python version makes the row construction especially clear. For each row `r`, it generates the triangular-number slice for that row, writes it on the left edge, and writes the reversed slice on the right edge. The symmetry is built directly into the assignment rather than derived afterward.
+
+## **Difficulty Level**
+
+**Medium**
+
+The main challenge is seeing that the pattern is driven by triangular-number ranges, not by a simple row or column count.
+
+### Related Challenges
+
+- [Excel Challenge 937](/challenges/excelbi/Excel937.html)
+- [Excel Challenge 928](/challenges/excelbi/Excel928.html)
+- [Excel Challenge 904](/challenges/excelbi/Excel904.html)

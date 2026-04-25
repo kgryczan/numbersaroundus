@@ -1,0 +1,123 @@
+---
+title: "Omid - Challenge 155"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 155](/challenges/images/OmidC155.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl) 
+library(janitor)
+
+path = "files/CH-155 Table Transformation.xlsx"
+input = read_excel(path, range = "C2:E23")
+test  = read_excel(path, range = "G2:I11")
+
+result = input %>%
+  mutate(Description = lead(Description), 
+         Qty = lead(Qty,2) %>% as.character()) %>%
+  remove_empty("rows") %>%
+  replace_na(list(Qty = "-")) %>%
+  fill(Date, .direction = "down")
+
+all.equal(result[2:3], test[2:3], check.attributes = FALSE)  
+# [1] TRUE
+
+# structure correct, have some problems with date
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-155 Table Transformation.xlsx"
+input = pd.read_excel(path, usecols="C:E", skiprows=1, nrows=21)
+test = pd.read_excel(path, usecols="G:I", skiprows=1, nrows=10)
+test.columns = input.columns
+
+input.columns = ["Date", "Description", "Qty"]
+input["Date"] = input["Date"].ffill()
+input["Description"] = input["Description"].shift(-1)
+input["Qty"] = input["Qty"].shift(-2)
+input.loc[(input["Description"].notna()) & (input["Qty"].isna()), "Qty"] = "-"
+input.dropna(inplace=True)
+input["Date"] = pd.to_datetime(input["Date"]).dt.strftime('%d-%m-%Y')
+input.reset_index(drop=True, inplace=True)
+
+# had the same values, but cannot convert to common format. :D
+print(input)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 154](OmidC154.qmd)
+-   [Omid - Challenge 156](OmidC156.qmd)
+-   [Omid - Challenge 157](OmidC157.qmd)

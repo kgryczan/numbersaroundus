@@ -1,0 +1,155 @@
+---
+title: "Excel BI - PowerQuery Challenge 374"
+description: "ResourceID Project StartDate EndDate R-101 Alpha"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 374](/challenges/images/exc374pq.jpg)
+
+## Challenge Description
+
+ResourceID Project StartDate EndDate R-101 Alpha
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyr)
+library(readxl)
+library(lubridate)
+
+path <- "300-399/374/PQ_Challenge_374.xlsx"
+input <- read_excel(path, range = "A1:D21")
+test <- read_excel(path, range = "G1:J13")
+
+result = input %>%
+  arrange(Project, ResourceID) %>%
+  group_by(Project, ResourceID) %>%
+  mutate(interval = interval(StartDate, EndDate)) %>%
+  mutate(
+    grp = cumsum(
+      int_overlaps(interval, lag(interval, default = first(interval))) == FALSE
+    )
+  ) %>%
+  ungroup() %>%
+  summarise(
+    ResourceID = first(ResourceID),
+    Project = first(Project),
+    StartDate = min(StartDate),
+    EndDate = max(EndDate),
+    .by = c(Project, ResourceID, grp)
+  ) %>%
+  select(-grp)
+
+# Provided structute not correct. For Theta should be 2 intevals.
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "300-399/374/PQ_Challenge_374.xlsx"
+input_df = pd.read_excel(path, usecols="A:D", nrows=20)
+test = pd.read_excel(path, usecols="G:J", nrows=12)
+
+
+def merge_intervals(df):
+    df = df.sort_values("StartDate").reset_index(drop=True)
+    merged = []
+    for _, row in df.iterrows():
+        if not merged or row["StartDate"] > merged[-1]["EndDate"]:
+            merged.append({"StartDate": row["StartDate"], "EndDate": row["EndDate"]})
+        else:
+            merged[-1]["EndDate"] = max(merged[-1]["EndDate"], row["EndDate"])
+    return pd.DataFrame(merged)
+
+
+result = (
+    input_df
+    .groupby(["ResourceID", "Project"], sort=False)
+    .apply(merge_intervals, include_groups=False)
+    .reset_index(level=[0, 1])
+    .reset_index(drop=True)
+    [["ResourceID", "Project", "StartDate", "EndDate"]]
+    .sort_values(["ResourceID", "Project", "StartDate"])
+    .reset_index(drop=True)
+)
+
+print(result.equals(test))
+# Provided structute not correct. For Theta should be 2 intevals.
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 373](Excel373pq.qmd)
+-   [Excel BI - Excel Challenge 754](Excel754.qmd)

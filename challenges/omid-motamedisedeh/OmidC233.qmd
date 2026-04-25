@@ -1,0 +1,133 @@
+---
+title: "Omid - Challenge 233"
+description: "🔰 Challenge 233: Custom Grouping!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 233](/challenges/images/OmidC233.jpg)
+
+## Challenge Description
+
+🔰 Challenge 233: Custom Grouping!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/233/CH-233 Custom Grouping.xlsx"
+input = read_excel(path, range = "B2:B102")
+test = read_excel(path, range = "F2:G11")
+
+compute_range_table = function(x) {
+  x = sort(as.numeric(unlist(x)))
+  n = length(x)
+
+  map_dfr(seq(10, 90, by = 10), function(pct) {
+    k = ceiling(pct / 100 * n)
+    diffs = x[k:n] - x[1:(n - k + 1)]
+    i = which.min(diffs)
+    tibble(
+      `%` = pct / 100,
+      Range = paste0(x[i], "-", x[i + k - 1])
+    )
+  })
+}
+
+result = compute_range_table(input)
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "200-299/233/CH-233 Custom Grouping.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=100)
+test = pd.read_excel(path, usecols="F:G", skiprows=1, nrows=9)
+
+def compute_range_table(x):
+    x = np.sort(np.ravel(x))
+    x = x[~np.isnan(x)]
+    n = len(x)
+    rows = []
+    for pct in range(10, 100, 10):
+        k = int(np.ceil(pct / 100 * n))
+        i = np.argmin(x[k-1:] - x[:n-k+1])
+        rows.append({'%': pct / 100, 'Range': f"{int(x[i])}-{int(x[i+k-1])}"})
+    return pd.DataFrame(rows)
+
+result = compute_range_table(input.values)
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 232](OmidC232.qmd)
+-   [Omid - Challenge 234](OmidC234.qmd)
+-   [Omid - Challenge 235](OmidC235.qmd)

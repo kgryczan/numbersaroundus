@@ -1,0 +1,132 @@
+---
+title: "Omid - Challenge 73"
+description: "🔰 Result Question Info A B C Date Product"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 73](/challenges/images/OmidC73.jpg)
+
+## Challenge Description
+
+🔰 Result Question Info A B C Date Product
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-073 Custom splitter 2.xlsx"
+input = read_xlsx(path, range = "B2:B15")
+test  = read_xlsx(path, range = "D2:F24")
+
+date_pattern = "[0-9]{4}\\/[0-9]{1,2}\\/[0-9]{1,2}"
+product_quant_pattern = "([A-Z]+[0-9]+)"
+
+result = input %>%
+  mutate(
+    Date = str_extract(Info, date_pattern),
+    Info2 = str_remove(Info, date_pattern),
+    prod_quant = map(Info2, ~ unlist(str_extract_all(.x, product_quant_pattern)))
+  ) %>%
+  unnest(prod_quant) %>%
+  select(Date, prod_quant) %>%
+  extract(prod_quant, into = c("Product", "Quantity"), regex = "([A-Z]+)([0-9]+)") %>%
+  mutate(Quantity = as.numeric(Quantity))
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "CH-073 Custom Splitter 2.xlsx"
+input = pd.read_excel(path, usecols= "B", skiprows=1, nrows = 13)
+test  = pd.read_excel(path, usecols= "D:F", skiprows=1)
+
+date_pattern = r"\d{4}/\d{1,2}/\d{1,2}"
+product_quant_pattern = r"([A-Z]+\d+)"
+
+input['Date'] = input['Info'].apply(lambda x: re.search(date_pattern, x).group())
+input['Info2'] = input['Info'].apply(lambda x: re.sub(date_pattern, '', x))
+input['prod_quant'] = input['Info2'].apply(lambda x: re.findall(product_quant_pattern, x))
+input = input.explode('prod_quant')
+input[['Product', 'Quantity']] = input['prod_quant'].str.extract(r"([A-Z]+)(\d+)")
+input['Quantity'] = input['Quantity'].astype("int64")
+result = input[['Date', 'Product', 'Quantity']].reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 72](OmidC72.qmd)
+-   [Omid - Challenge 74](OmidC74.qmd)
+-   [Omid - Challenge 75](OmidC75.qmd)

@@ -1,0 +1,137 @@
+---
+title: "Omid - Challenge 375"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 375](/challenges/images/OmidC375.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/375/CH-375 Table Transformation.xlsx"
+input <- read_excel(
+  path,
+  range = "B4:C11",
+  col_types = c("text", "text"),
+  col_names = F
+) %>%
+  as.matrix()
+test <- read_excel(path, range = "E3:G8")
+
+result = input %>%
+  matrix(., ncol = 1, byrow = TRUE) %>%
+  na.omit() %>%
+  as.data.frame() %>%
+  mutate(group = cumsum(str_detect(V1, "^[0-9]{5}"))) %>%
+  mutate(nr = row_number(), .by = group) %>%
+  pivot_wider(names_from = nr, values_from = V1) %>%
+  select(Date = `1`, Product = `3`, Sale = `2`) %>%
+  mutate(
+    Date = janitor::excel_numeric_to_date(as.numeric(Date)) %>% as.POSIXct(),
+    Sale = as.numeric(Sale)
+  ) %>%
+  arrange(Date, desc(Product), desc(Sale))
+
+all.equal(result, test, check.attributes = FALSE)
+# different Product mapping.
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "300-399/375/CH-375 Table Transformation.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=2, nrows=9)
+test = pd.read_excel(path, usecols="E:G", skiprows=2, nrows=5)
+
+input_matrix = input.values
+input_array = input_matrix.flatten()
+input_array = input_array[~pd.isnull(input_array)]
+cell_types = len(set([type(cell) for cell in input_array]))
+input_array = input_array.reshape(-1, cell_types)
+input_df = pd.DataFrame(input_array, columns=["Date", "Product", "Sale"])
+
+print((input_df == test).all().all())
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 374](OmidC374.qmd)
+-   [Omid - Challenge 376](OmidC376.qmd)
+-   [Omid - Challenge 377](OmidC377.qmd)

@@ -1,0 +1,126 @@
+---
+title: "Omid - Challenge 45"
+description: "🔰 Result UD1OP3PL EL8DC6JK TO1TS9RU QB6JT5SA NG6GM5 RE4EA3R PN6PU"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 45](/challenges/images/OmidC45.jpg)
+
+## Challenge Description
+
+🔰 Result UD1OP3PL EL8DC6JK TO1TS9RU QB6JT5SA NG6GM5 RE4EA3R PN6PU
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-045 Text Split.xlsx", range = "B2:B17")
+test  = read_excel("files/CH-045 Text Split.xlsx", range = "D2:H17")
+
+
+split = function(text) {
+  pattern =  "(\\D+|\\d+)"
+  result = str_extract_all(text, pattern, simplify = TRUE) %>% 
+    as_tibble() 
+  return(result)
+}
+
+result = input$ID %>%
+  map_dfr(split) %>%
+  mutate(across(c(2,4), as.numeric))
+  
+colnames(result) = colnames(test)
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+input = pd.read_excel("CH-045 Text Split.xlsx", usecols="B", skiprows=1)
+test = pd.read_excel("CH-045 Text Split.xlsx", usecols="D:H", skiprows=1)
+
+
+split_text = input['ID'].str.extractall(r'(\D+|\d+)')
+split_text = split_text.unstack().droplevel(0, axis=1)
+split_text.columns = test.columns
+split_text['Part 2'] = split_text['Part 2'].astype('int64')
+split_text['Part 4'] = split_text['Part 4'].astype('float64')
+
+print(split_text.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 44](OmidC44.qmd)
+-   [Omid - Challenge 46](OmidC46.qmd)
+-   [Omid - Challenge 47](OmidC47.qmd)

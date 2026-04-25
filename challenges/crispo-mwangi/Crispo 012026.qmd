@@ -1,0 +1,137 @@
+---
+title: "Crispo - Excel Challenge 01 2026"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-01-04"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 01 2026](/challenges/images/Crispo012026.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Problem Solution Chapter Pages Chapter 1 Section 1
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path <- "2026-01-04/Challenge 89.xlsx"
+input1 <- read_excel(path, range = "B4:C6")
+input2 <- read_excel(path, range = "B9:C11")
+test <- read_excel(path, range = "F4:G11", col_names = FALSE) %>%
+  select(`0` = 1, `1` = 2)
+
+result = crossing(input1, input2) %>%
+  mutate(Pages = as.character(Pages)) %>%
+  pivot_longer(
+    cols = everything(),
+    names_to = "type",
+    values_to = "value"
+  ) %>%
+  mutate(id = (row_number() + 1) %% 2, id2 = (row_number() + 1) %/% 2) %>%
+  pivot_wider(
+    id_cols = id2,
+    names_from = id,
+    values_from = value
+  ) %>%
+  select(-id2)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data to the grain required by the task
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "2026-01-04/Challenge 89.xlsx"
+
+input1 = pd.read_excel(path, usecols="B:C", skiprows=3, nrows=2)
+input2 = pd.read_excel(path, usecols="B:C", skiprows=8, nrows=2)
+test = pd.read_excel(path, usecols="F:G", skiprows=3, nrows=8, header=None, dtype=str)
+
+test.columns = [0, 1]
+input1['Pages'] = input1['Pages'].astype(str)
+
+result = input1.merge(input2, how="cross")[["Chapter", "Pages", "Section", "Part"]].to_numpy().reshape(-1, 2)
+
+out = pd.DataFrame(result, columns=[0, 1]).reset_index(drop=True)
+test = test.reset_index(drop=True)
+
+print(out.equals(test))  # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines familiar Excel-style logic with at least one non-trivial reshape, grouping, or parsing step.
+
+-   The answer depends on getting the output layout exactly right.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 52 2025](Crispo 522025.qmd)
+-   [Crispo - Excel Challenge 02 2026](Crispo 022026.qmd)

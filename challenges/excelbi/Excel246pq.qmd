@@ -1,0 +1,120 @@
+---
+title: "Excel BI - PowerQuery Challenge 246"
+description: "Deal ID Date Designation Name Mgr GM"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 246](/challenges/images/exc246pq.jpg)
+
+## Challenge Description
+
+Deal ID Date Designation Name Mgr GM
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_246.xlsx"
+input = read_excel(path, range = "A1:D14")
+test  = read_excel(path, range = "F1:I5")
+
+result = input %>%
+  filter(Date == max(Date), .by = `Deal ID`) %>%
+  select(-Date) %>%
+  pivot_wider(names_from = Designation, values_from = Name, values_fn =  ~ str_c(.x, collapse = ", ")) %>%
+  select(`Deal ID`, Mgr, GM, VP)
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "PQ_Challenge_246.xlsx"
+input = pd.read_excel(path, usecols="A:D", nrows=14)
+test = pd.read_excel(path, usecols="F:I", nrows=4).rename(columns=lambda x: x.split('.')[0])
+
+result = input[input['Date'] == input.groupby('Deal ID')['Date'].transform('max')].pivot_table(
+    index='Deal ID', columns='Designation', values='Name', aggfunc=', '.join).reset_index()[['Deal ID', 'Mgr', 'GM', 'VP']].rename_axis(None, axis=1)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 245](Excel245pq.qmd)

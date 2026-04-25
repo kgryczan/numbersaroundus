@@ -1,0 +1,101 @@
+---
+title: "Excel BI - Excel Challenge 823"
+description: "🔰 Answer Expected Names Points Alpha, Beta, Gamma 12, 79, 64 Alpha Delta 34 Beta Epsilon, Zeta"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 823](/challenges/images/exc823.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Names Points Alpha, Beta, Gamma 12, 79, 64 Alpha Delta 34 Beta Epsilon, Zeta
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/823/823 VSTACK.xlsx"
+input = read_excel(path, range = "A2:B7")
+test  = read_excel(path, range = "D2:E13")
+
+result = input %>%
+  mutate(
+    Names = str_split(Names, "\\s*,\\s*"),
+    Points = str_split(Points, "\\s*,\\s*")
+  ) %>%
+  mutate(len = map2_int(Names, Points, ~max(length(.x), length(.y)))) %>%
+  mutate(
+    Names = map2(Names, len, ~c(.x, rep(NA, .y - length(.x)))),
+    Points = map2(Points, len, ~c(.x, rep("0", .y - length(.x))))
+  ) %>%
+  select(-len) %>%
+  unnest(c(Names, Points)) %>%
+  mutate(Points = as.integer(Points),
+         Points = replace_na(Points, 0))
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "800-899/823/823 VSTACK.xlsx"
+
+input = pd.read_excel(path, usecols="A:B", skiprows=1, nrows=5)
+test = pd.read_excel(path, usecols="D:E", skiprows=1, nrows=11).rename(columns=lambda x: x.replace('.1', ''))
+
+def split_and_pad(row):
+    names = [n.strip() for n in str(row['Names']).split(',')]
+    points = [p.strip() for p in str(row['Points']).split(',')]
+    l = max(len(names), len(points))
+    return pd.DataFrame({'Names': names + [np.nan]*(l-len(names)), 'Points': points + ['0']*(l-len(points))})
+
+result = pd.concat([split_and_pad(r) for _, r in input.iterrows()], ignore_index=True)
+result['Points'] = pd.to_numeric(result['Points'], errors='coerce').fillna(0).astype(int)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 824](/challenges/excelbi/Excel824.html)
+- [Excel Challenge 825](/challenges/excelbi/Excel825.html)
+- [Excel Challenge 826](/challenges/excelbi/Excel826.html)

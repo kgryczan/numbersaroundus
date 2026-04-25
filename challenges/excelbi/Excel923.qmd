@@ -1,0 +1,104 @@
+---
+title: "Excel BI - Excel Challenge 923"
+description: "🔰 Extract part numbers and packed dimension expressions from product text, then sum the dimensions by part."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-23"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 923](/challenges/images/exc923.jpg)
+
+## Challenge Description
+
+🔰 Extract the part numbers and dimensions from each text row, then sum the dimension components for each part number. Dimensions appear as expressions with two or more numbers separated by `x`, `X`, or `*`, such as `15 x 8 x 2`.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/900-999/923/923 Parts and Dimensions.xlsx"
+input <- read_excel(path, range = "A2:A20")
+test <- read_excel(path, range = "C2:D20")
+
+pattern_dims <- "\\b\\d+(?:\\.\\d+)?(?:\\s*[xX*]\\s*\\d+(?:\\.\\d+)?)+\\b"
+pattern_part <- "P[A-Z0-9]{5}"
+
+result <- input %>%
+  mutate(
+    `Part No.` = map_chr(str_extract_all(Data, pattern_part), ~ paste(.x, collapse = ", ")),
+    dimensions = str_extract_all(Data, pattern_dims)
+  ) %>%
+  unnest(dimensions) %>%
+  mutate(
+    dims = map(dimensions, ~ str_split(.x, "\\s*[xX*]\\s*")[[1]]) %>%
+      map(as.numeric) %>%
+      map_dbl(sum)
+  ) %>%
+  summarise(`Sum of Dimensions` = sum(dims, na.rm = TRUE) %>% as.character(), .by = `Part No.`)
+
+all.equal(result, test, check.attributes = FALSE)
+# one result incorrect
+```
+
+### R Analysis
+
+- **Logic**: Extract part numbers and dimension expressions with regex, explode multiple dimensions into rows, split each expression into numeric components, and sum by part number.
+- **Strengths**: The extraction patterns are flexible enough to handle `x`, `X`, and `*` separators without changing the downstream logic.
+- **Areas for Improvement**: One workbook comparison row appears to be wrong, so the validation table should be reviewed manually.
+- **Gem**: The dimension regex captures a whole chain of linked numbers, not just isolated numeric tokens.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "Excel/900-999/923/923 Parts and Dimensions.xlsx"
+input = pd.read_excel(path, usecols="A", skiprows=1, nrows=19)
+test = pd.read_excel(path, usecols="C:D", skiprows=1, nrows=19).sort_values("Part No.").reset_index(drop=True)
+
+pattern_dims = r"\b\d+(?:\.\d+)?(?:\s*[xX*]\s*\d+(?:\.\d+)?)+\b"
+pattern_part = r"P[A-Z0-9]{5}"
+
+input["Part No."] = input["Data"].apply(lambda data: ", ".join(re.findall(pattern_part, data)))
+input["dimensions"] = input["Data"].apply(lambda data: re.findall(pattern_dims, data))
+input = input.explode("dimensions")
+input["dims"] = input["dimensions"].apply(
+    lambda x: sum(map(float, re.split(r"\s*[xX*]\s*", x))) if pd.notna(x) else 0
+)
+
+summary = input.groupby("Part No.")["dims"].sum().reset_index(name="dims")
+print(summary["dims"].eq(test["Sum of Dimensions"]).all())
+# one result is incorrect
+```
+
+### Python
+
+The Python version keeps the text-mining flow very explicit: find part numbers, find dimension phrases, explode repeated matches, then split and sum the numeric pieces. The logic matches the workbook wording even though one supplied comparison row appears to be incorrect.
+
+## **Difficulty Level**
+
+**Medium**
+
+The challenge is mostly about finding the right text patterns and then aggregating them at the correct entity level.
+
+### Related Challenges
+
+- [Excel Challenge 929](/challenges/excelbi/Excel929.html)
+- [Excel Challenge 922](/challenges/excelbi/Excel922.html)
+- [Excel Challenge 928](/challenges/excelbi/Excel928.html)

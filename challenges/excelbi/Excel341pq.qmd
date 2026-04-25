@@ -1,0 +1,159 @@
+---
+title: "Excel BI - PowerQuery Challenge 341"
+description: "Pivot the table as shown."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 341](/challenges/images/exc341pq.jpg)
+
+## Challenge Description
+
+Pivot the table as shown.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Power Query/300-399/341/PQ_Challenge_341.xlsx"
+input <- read_excel(path, range = "A1:D11")
+test  <- read_excel(path, range = "G1:K11")
+
+result = input %>%
+  t() %>%
+  as.data.frame() %>%
+  rownames_to_column("dept") %>%
+  pivot_longer(-dept, names_to = "col", values_to = "score") %>%
+  mutate(col = (parse_number(col)+1) %/% 2) %>%
+  mutate(rn = row_number(), .by = c(dept, col)) %>%
+  pivot_wider(names_from = rn, values_from = score) %>%
+  select(-col) %>%
+  separate_wider_delim(`2`,delim = ", ", names = c("Age", "Nationality","Salary")) %>%
+  na.omit() %>%
+  distinct() %>%
+  select(Dept = dept, Employee = '1', Age, Nationality,Salary) %>%
+  mutate(across(c(Age, Salary), as.numeric))
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Power Query/300-399/341/PQ_Challenge_341.xlsx"
+input = pd.read_excel(path,  usecols="A:D", nrows=11)
+test = pd.read_excel(path, usecols="G:K", nrows=11).rename(columns=lambda x: x.rstrip())
+
+input_t = input.T
+input_t["Dept"] = input_t.index
+input_long = input_t.reset_index(drop=True).melt(id_vars="Dept", var_name="col", value_name="score")
+
+input_long["col"] = input_long["col"].astype(str)
+input_long["col_group"] = input_long["col"].str.extract(r"(\d+)").astype(int)  // 2
+
+input_long["rn"] = input_long.groupby(["Dept", "col_group"]).cumcount()
+
+pivoted = input_long.pivot_table(
+    index=["Dept", "col_group"],
+    columns="rn",
+    values="score",
+    aggfunc="first"
+).reset_index()
+
+pivoted = pivoted.drop(columns="col_group")
+pivoted = pivoted.rename(columns={0: "Employee", 1: "data"})
+data_split = pivoted["data"].str.split(", ", expand=True)
+data_split.columns = ["Age", "Nationality", "Salary"]
+
+data_split["Age"] = pd.to_numeric(data_split["Age"], errors="coerce")
+data_split["Salary"] = pd.to_numeric(data_split["Salary"], errors="coerce")
+
+pivoted = pd.concat([pivoted.drop(columns="data"), data_split], axis=1)
+pivoted = pivoted.drop_duplicates()
+
+pivoted = pivoted.sort_values(by=["Dept", "Employee"]).reset_index(drop=True)
+test = test.sort_values(by=["Dept", "Employee"]).reset_index(drop=True)
+
+print(pivoted.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 340](Excel340pq.qmd)
+-   [Excel BI - Excel Challenge 721](Excel721.qmd)

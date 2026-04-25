@@ -1,0 +1,159 @@
+---
+title: "Omid - Challenge 90"
+description: "🔰 In the question table, the travel costs between cities are provided (not symetric)."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 90](/challenges/images/OmidC90.jpg)
+
+## Challenge Description
+
+🔰 In the question table, the travel costs between cities are provided (not symetric).
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(combinat)
+
+path = "files/CH-90 TSP.xlsx"
+input = read_excel(path, range = "B2:G7")
+test  = read_excel(path, range = "J2:K26") %>%
+  arrange(Cost)
+
+mid_cities = c("B", "C", "D", "E")
+city_order_perm = permn(mid_cities) 
+
+city_order = map(city_order_perm, ~c("A", .x, "A")) %>% 
+  map_chr(~paste(.x, collapse = "-")) %>%
+  tibble(city_order = ., to_sep = .) %>%
+  separate_rows(to_sep, sep = "-") %>%
+  mutate(lead = lead(to_sep), .by = city_order) %>%
+  filter(!is.na(lead))
+
+dist = input %>%
+  pivot_longer(names_to = "to", values_to = "dist", -1) %>%
+  rename(from = `From To`) 
+
+result = city_order %>%
+  left_join(dist, by = c("to_sep" = "from","lead" = "to")) %>%
+  mutate(city_order = str_remove_all(city_order, "-")) %>%
+  summarise(cost = sum(dist), .by = city_order) %>%
+  arrange(cost)
+
+identical(result$cost, test$Cost)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import itertools
+
+path = "CH-90 TSP.xlsx"
+input = pd.read_excel(path,  usecols = "B:G", skiprows=1, nrows = 5)
+test = pd.read_excel(path, usecols="J:K", skiprows = 1).sort_values(by="Cost").reset_index(drop=True)
+\
+
+mid_cities = ["B", "C", "D", "E"]
+city_order_perm = itertools.permutations(mid_cities)
+
+city_order = []
+for perm in city_order_perm:
+    order = ["A"] + list(perm) + ["A"]
+    city_order.append("-".join(order))
+
+city_order_df = pd.DataFrame(city_order, columns=["city_order"])
+city_order_df["to_sep"] = city_order_df["city_order"].str.split("-")
+city_order_df = city_order_df.explode("to_sep")
+city_order_df["lead"] = city_order_df["to_sep"].shift(-1)
+city_order_df = city_order_df.dropna()
+
+dist = input.melt(id_vars=["From To"], var_name="to", value_name="dist")
+
+result = city_order_df.merge(dist, left_on=["to_sep", "lead"], right_on=["From To", "to"])
+result["city_order"] = result["city_order"].str.replace("-", "")
+result = result.groupby("city_order").agg(Cost=("dist", "sum")).reset_index()
+result = result.sort_values(by="Cost").sort_values(by ="Cost").reset_index(drop=True)
+
+print(result["Cost"].equals(test["Cost"])) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 89](OmidC89.qmd)
+-   [Omid - Challenge 91](OmidC91.qmd)
+-   [Omid - Challenge 92](OmidC92.qmd)

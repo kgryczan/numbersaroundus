@@ -1,0 +1,125 @@
+---
+title: "Omid - Challenge 316"
+description: "🔰 Challenge 316: Convert Text In the question table, convert lowercase characters to uppercase and vice versa."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 316](/challenges/images/OmidC316.jpg)
+
+## Challenge Description
+
+🔰 Challenge 316: Convert Text In the question table, convert lowercase characters to uppercase and vice versa.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/300-399/316/CH-316 Convert Text.xlsx"
+input = read_excel(path, range = "B1:B6")
+test  = read_excel(path, range = "C1:C6")
+
+result = input %>%
+  mutate(Result = chartr("[a-zA-Z]", "[A-Za-z]", Question))
+
+all.equal(result$Result, test$Result) 
+# some result provided are not correct)
+
+# Solution 2 - more expanded
+result2 = input %>%
+  mutate(Split = strsplit(Question, split = "")) %>%
+  unnest(Split) %>%
+  mutate(Split = ifelse(Split == str_to_lower(Split), str_to_upper(Split), str_to_lower(Split))) %>%
+  summarise(Result = paste0(Split, collapse = ""), .by = Question)
+
+all.equal(result2$Result, test$Result)         
+# some result provided are not correct)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "300-399/316/CH-316 Convert Text.xlsx"
+
+input = pd.read_excel(path, usecols="B", nrows=6)
+test = pd.read_excel(path, usecols="C", nrows=6)
+
+result = input.copy()
+result['Question'] = input['Question'].str.swapcase()
+
+print(result.equals(test)) #not all answers provided are correct
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 315](OmidC315.qmd)
+-   [Omid - Challenge 317](OmidC317.qmd)
+-   [Omid - Challenge 318](OmidC318.qmd)

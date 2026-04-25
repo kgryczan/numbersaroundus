@@ -1,0 +1,141 @@
+---
+title: "Excel BI - PowerQuery Challenge 294"
+description: "Group Group C - Item3 - 12 Group A - Item2 - 59 Group C - Item2 - 46 Group B - Item2 - 54 Group A - Item1 - 89"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 294](/challenges/images/exc294pq.jpg)
+
+## Challenge Description
+
+Group Group C - Item3 - 12 Group A - Item2 - 59 Group C - Item2 - 46 Group B - Item2 - 54 Group A - Item1 - 89
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/200-299/294/PQ_Challenge_294.xlsx"
+input = read_excel(path, range = "A1:A12")
+test = read_excel(path, range = "C1:F4")
+
+result = input %>%
+  filter(str_detect(Data, "Group")) %>%
+  separate_wider_delim(Data, " - ", names = c("Group", "Item", "Value")) %>%
+  type_convert() %>%
+  mutate(Group = str_remove(Group, "Group ")) %>%
+  pivot_wider(names_from = Item, values_from = Value, values_fn = sum) %>%
+  select(Group, sort(names(.))) %>%
+  arrange(Group)
+
+all.equal(result, test, check.attributes = FALSE)
+# wrong expected result.
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "200-299/294/PQ_Challenge_294.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=12, names=["Data"])
+test = pd.read_excel(path, usecols="C:F", nrows=3)
+
+result = (
+    input[input["Data"].str.contains("Group", na=False)]
+    .Data.str.split(" - ", expand=True)
+    .rename(columns={0: "Group", 1: "Item", 2: "Value"})
+    .assign(
+        Group=lambda df: df["Group"].str.replace("Group ", "", regex=False),
+        Value=lambda df: pd.to_numeric(df["Value"], errors="coerce")
+    )
+    .pivot_table(index="Group", columns="Item", values="Value", aggfunc="sum")
+    .reset_index()
+)
+
+result = result[["Group"] + sorted([col for col in result.columns if col != "Group"])]
+result = result.sort_values("Group").reset_index(drop=True)
+result.columns.name = None
+
+# Expected output - incorrect
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 293](Excel293pq.qmd)
+-   [Excel BI - Excel Challenge 674](Excel674.qmd)

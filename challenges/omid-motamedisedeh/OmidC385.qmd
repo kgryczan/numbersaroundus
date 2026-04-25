@@ -1,0 +1,120 @@
+---
+title: "Omid - Challenge 385"
+description: "🔰 Result Question Total Sales Product ID Date Customer ID XNM-13 XNM-07"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 385](/challenges/images/OmidC385.jpg)
+
+## Challenge Description
+
+🔰 Result Question Total Sales Product ID Date Customer ID XNM-13 XNM-07
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/385/CH-385 Replacement.xlsx"
+input <- read_excel(path, range = "B3:E10")
+test <- read_excel(path, range = "G3:J10")
+
+result <- input |>
+  mutate(
+    `Customer ID` = if_else(
+      Date >= as.POSIXct("2024-08-14"),
+      str_replace(`Customer ID`, "X", "C"),
+      `Customer ID`
+    )
+  )
+
+all.equal(result, test)
+## [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "300-399/385/CH-385 Replacement.xlsx"
+input = pd.read_excel(path, usecols="B:E", skiprows=2, nrows=7)
+test  = pd.read_excel(path, usecols="G:J", skiprows=2, nrows=7).rename(columns=lambda c: __import__("re").sub(r"\.\d+$", "", c))
+
+result = input.copy()
+mask = result["Date"] >= pd.Timestamp("2024-08-14")
+result.loc[mask, "Customer ID"] = result.loc[mask, "Customer ID"].str.replace("X", "C", n=1)
+
+print((result == test).all().all())
+## Output: True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 384](OmidC384.qmd)
+-   [Omid - Challenge 386](OmidC386.qmd)
+-   [Omid - Challenge 387](OmidC387.qmd)

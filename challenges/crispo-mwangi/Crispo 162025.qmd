@@ -1,0 +1,139 @@
+---
+title: "Crispo - Excel Challenge 16 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-04-20"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 16 2025](/challenges/images/Crispo162025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Monthly Requirement Requisition Plan Current Jan Feb Mar
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/Challenge15-2025.xlsx"
+input = read_excel(path, range = "B3:G5")
+test = read_excel(path, range = "I3:K13")
+
+result = input %>%
+  rename(product = ...1) %>%
+  pivot_longer(cols = -product, names_to = "month", values_to = "sales") %>%
+  fill(sales, .direction = "down") %>%
+  mutate(m_diff = sales - lag(sales, 1), .by = product) %>%
+  replace_na(list(m_diff = 0)) %>%
+  filter(m_diff > 0) %>%
+  select(-sales) %>%
+  uncount(m_diff) %>%
+  mutate(Required = 1)
+
+names(result) = names(test)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data to the grain required by the task
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Challenge15-2025.xlsx"
+input_data = pd.read_excel(path, usecols="B:G", skiprows=2, nrows=3)
+test = pd.read_excel(path, usecols="I:K", skiprows=2, nrows=11)
+
+result = (
+    input_data.rename(columns={input_data.columns[0]: "product"})
+    .melt(id_vars="product", var_name="month", value_name="sales")
+    .sort_values(["product", "month"])
+)
+result["sales"] = result.groupby("product")["sales"].ffill()
+result["m_diff"] = result.groupby("product")["sales"].diff().fillna(0)
+result = result.loc[result["m_diff"] > 0, ["product", "month", "m_diff"]]
+result = result.loc[result.index.repeat(result["m_diff"].astype(int))].reset_index(drop=True)
+result["Required"] = 1
+result.columns = test.columns
+
+print(result.equals(test))
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data to the grain required by the task
+
+    -   Aggregates or ranks values at the correct grouping level
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines familiar Excel-style logic with at least one non-trivial reshape, grouping, or parsing step.
+
+-   The answer depends on getting the output layout exactly right.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 15 2025](Crispo 152025.qmd)
+-   [Crispo - Excel Challenge 17 2025](Crispo 172025.qmd)

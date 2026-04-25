@@ -1,0 +1,130 @@
+---
+title: "Omid - Challenge 365"
+description: "🔰 🧩 Adding Explanations If you want to include explanations or extra notes: 🌐 Sharing External Content 🗣 Feedback I always appreciate your feedback — feel free to share an…"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 365](/challenges/images/OmidC365.jpg)
+
+## Challenge Description
+
+🔰 🧩 Adding Explanations If you want to include explanations or extra notes: 🌐 Sharing External Content 🗣 Feedback I always appreciate your feedback — feel free to share an…
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/365/CH-365 Matrix Calculation.xlsx"
+input <- read_excel(path, range = "C4:G7", col_names = FALSE) %>%
+  as.matrix()
+test <- read_excel(path, range = "K4:O7", col_names = FALSE) %>%
+  as.matrix()
+
+add_surrounding = function(mat) {
+  result <- matrix(0, nrow = nrow(mat), ncol = ncol(mat))
+  for (i in 1:nrow(mat)) {
+    for (j in 1:ncol(mat)) {
+      rows <- max(1, i - 1):min(nrow(mat), i + 1)
+      cols <- max(1, j - 1):min(ncol(mat), j + 1)
+      result[i, j] <- sum(mat[rows, cols]) - mat[i, j]
+    }
+  }
+  return(result)
+}
+result = add_surrounding(input)
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+path = "300-399/365/CH-365 Matrix Calculation.xlsx"
+
+input = pd.read_excel(path, usecols="C:G", skiprows=3, nrows=4, header=None).to_numpy()
+test = pd.read_excel(path, usecols="K:O", skiprows=3, nrows=4, header=None).to_numpy()
+
+def add_surrounding(mat):
+    result = np.zeros_like(mat)
+    for i in range(mat.shape[0]):
+        for j in range(mat.shape[1]):
+            rows = slice(max(0, i - 1), min(mat.shape[0], i + 2))
+            cols = slice(max(0, j - 1), min(mat.shape[1], j + 2))
+            result[i, j] = np.sum(mat[rows, cols]) - mat[i, j]
+    return result
+result = add_surrounding(input)
+
+comparison = np.allclose(result, test, equal_nan=True)
+print(comparison) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 364](OmidC364.qmd)
+-   [Omid - Challenge 366](OmidC366.qmd)
+-   [Omid - Challenge 367](OmidC367.qmd)

@@ -1,0 +1,111 @@
+---
+title: "Omid - Challenge 283"
+description: "🔰 Question Result 2023 2024 2025 Product ID MN-11 MN-12"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 283](/challenges/images/OmidC283.jpg)
+
+## Challenge Description
+
+🔰 Question Result 2023 2024 2025 Product ID MN-11 MN-12
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/283/CH-283 Advanced Sorting.xlsx"
+input = read_excel(path, range = "B2:E9")
+test  = read_excel(path, range = "G2:J9")
+
+result = input %>% 
+  arrange(desc(pmap_dbl(select(., -`Product ID`), ~max(...))),
+          desc(pmap_dbl(select(., -`Product ID`), ~sort(c(...), TRUE)[2])))
+
+all.equal(result, test, check.attributes = FALSE)
+# > [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "200-299/283/CH-283 Advanced Sorting.xlsx"
+input = pd.read_excel(path, usecols="B:E", skiprows=1, nrows=7)
+test = pd.read_excel(path, usecols="G:J", skiprows=1, nrows=7)
+test.columns = input.columns
+
+result = input.loc[
+    input.drop("Product ID", axis=1)
+      .apply(lambda r: (-r.nlargest(2)).tolist(), axis=1)
+      .argsort()
+].reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 282](OmidC282.qmd)
+-   [Omid - Challenge 284](OmidC284.qmd)
+-   [Omid - Challenge 285](OmidC285.qmd)

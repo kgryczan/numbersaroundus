@@ -1,0 +1,100 @@
+---
+title: "Excel BI - Excel Challenge 814"
+description: "🔰 Extract the sequence of alphabets where next alphabet > previous alphabet."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 814](/challenges/images/exc814.jpg)
+
+## Challenge Description
+
+🔰 Extract the sequence of alphabets where next alphabet > previous alphabet.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/814/814 Increasing Alphabets.xlsx"
+input = read_excel(path, range = "A1:A10")
+test  = read_excel(path, range = "B1:B10") %>% replace_na(list(`Answer Expected` = ""))
+
+split_increasing = function(s) {
+  chars = strsplit(s, "")[[1]]
+  idx = cumsum(c(FALSE, diff(utf8ToInt(s)) <= 0))
+  tibble(chars, idx) %>%
+    group_by(idx) %>%
+    summarise(substr = paste0(chars, collapse = ""), .groups = "drop") %>%
+    pull(substr) %>%
+    discard(~ nchar(.x) < 2) %>%
+    paste(collapse = ", ")
+}
+
+result = input %>%
+  mutate(`Answer Expected` = map_chr(Data, split_increasing)) 
+
+all.equal(result$`Answer Expected`, test$`Answer Expected`)  
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The transformation is organized around the correct grouping level, which keeps the business logic clear.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The key move is solving the problem at the right grain before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "800-899/814/814 Increasing Alphabets.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=10)
+test = pd.read_excel(path, usecols="B", nrows=10).fillna({"Answer Expected": ""})
+
+def split_increasing(s):
+    chars = list(str(s))
+    idx = [0]
+    for i in range(1, len(chars)):
+        idx.append(idx[-1] + (ord(chars[i]) <= ord(chars[i-1])))
+    groups = {}
+    for i, g in enumerate(idx):
+        groups.setdefault(g, []).append(chars[i])
+    return ', '.join(''.join(g) for g in groups.values() if len(g) >= 2)
+
+input['Answer Expected'] = input.iloc[:,0].apply(split_increasing)
+print(input["Answer Expected"].equals(test["Answer Expected"])) # TRUE
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 815](/challenges/excelbi/Excel815.html)
+- [Excel Challenge 816](/challenges/excelbi/Excel816.html)
+- [Excel Challenge 817](/challenges/excelbi/Excel817.html)

@@ -1,0 +1,97 @@
+---
+title: "Excel BI - Excel Challenge 666"
+description: "🔰 Fill in the blanks with (Total - Sum of non Blanks Values)/Number of Blanks"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 666](/challenges/images/exc666.jpg)
+
+## Challenge Description
+
+🔰 Fill in the blanks with (Total - Sum of non Blanks Values)/Number of Blanks
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/666 Fill in Blanks.xlsx"
+input = read_excel(path, range = "A2:D11")
+test  = read_excel(path, range = "F2:I11")
+
+fill_missing_values <- function(row) {
+  na_index <- which(is.na(row[-1])) + 1
+  if (length(na_index) > 0) {
+    row[na_index] <- (row$Total - sum(row[-1], na.rm = TRUE)) / length(na_index)
+  }
+  return(row)
+}
+
+result = input
+for (i in 1:nrow(input)) {
+  result[i,] <- fill_missing_values(input[i,])
+}
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "666 Fill in Blanks.xlsx"
+input = pd.read_excel(path, usecols="A:D", skiprows=1, nrows=9)
+test = pd.read_excel(path, usecols="F:I", skiprows=1, nrows=9).rename(columns=lambda x: x.split('.')[0])
+
+def fill(input_df, rn):
+    row = input_df.iloc[rn]
+    na_positions = row[row.isna()].index
+    if not na_positions.empty:
+        row[na_positions] = (row[0] - row[1:].sum()) / len(na_positions)
+    return row
+
+
+result = input.apply(lambda row: fill(input, row.name).astype('int64'), axis=1)
+print(result.equals(test))  # True
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 667](/challenges/excelbi/Excel667.html)
+- [Excel Challenge 668](/challenges/excelbi/Excel668.html)
+- [Excel Challenge 669](/challenges/excelbi/Excel669.html)

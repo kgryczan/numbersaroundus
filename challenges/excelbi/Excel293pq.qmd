@@ -1,0 +1,135 @@
+---
+title: "Excel BI - PowerQuery Challenge 293"
+description: "Transpose the table as shown with a Total row."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 293](/challenges/images/exc293pq.jpg)
+
+## Challenge Description
+
+Transpose the table as shown with a Total row.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input <- read_excel("Power Query/200-299/293/PQ_Challenge_293.xlsx", range = "A1:J6", col_names = FALSE)
+test  <- read_excel("Power Query/200-299/293/PQ_Challenge_293.xlsx", range = "A10:J15")
+
+clean <- input[-c(1,2), ] %>%
+  setNames(ifelse(is.na(input[1,]), input[2,], paste0(input[1,], "-", input[2,]))) %>%
+  type_convert()
+
+total <- bind_rows(
+  clean,
+  clean %>%
+    summarise(
+      Country = "Total", Capital = "EU",
+      across(starts_with("Q", ignore.case = TRUE), ~sum(as.numeric(.), na.rm = TRUE))
+    )
+) %>%
+  select(Country, Capital, starts_with("Q1"), starts_with("Q2"), starts_with("Q3"), starts_with("Q4"))
+
+all.equal(total, test)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "200-299/293/PQ_Challenge_293.xlsx"
+input = pd.read_excel(path, header=None, nrows=6, usecols="A:J")
+test = pd.read_excel(path, header=0, skiprows=9, nrows=6, usecols="A:J")
+
+col_names = [
+    f"{input.iloc[0, i]}-{input.iloc[1, i]}" if pd.notna(input.iloc[0, i]) else input.iloc[1, i]
+    for i in range(input.shape[1])
+]
+clean = input.iloc[2:].copy()
+clean.columns = col_names
+clean = clean.apply(pd.to_numeric, errors='ignore')
+
+q_cols = [c for c in clean.columns if str(c).lower().startswith('q')]
+summary = {'Country': 'Total', 'Capital': 'EU', **{col: clean[col].sum() for col in q_cols}}
+total = pd.concat([clean, pd.DataFrame([summary])], ignore_index=True)
+
+cols = ['Country', 'Capital'] + sorted([c for c in total.columns if c.startswith(('Q1', 'Q2', 'Q3', 'Q4'))])
+total = total[cols]
+
+print(total.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The transformation rule is readable, but the final layout still requires a careful implementation.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 292](Excel292pq.qmd)
+-   [Excel BI - Excel Challenge 673](Excel673.qmd)

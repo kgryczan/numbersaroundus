@@ -1,0 +1,98 @@
+---
+title: "Excel BI - Excel Challenge 781"
+description: "🔰 Find the animals which are common between any 2 columns."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 781](/challenges/images/exc781.jpg)
+
+## Challenge Description
+
+🔰 Find the animals which are common between any 2 columns. So, common between Animals1 & 2, Animals2 & 3 and Animals3 and 1.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/781/781 Common Between 2 Columns.xlsx"
+input = read_excel(path, range = "A1:C12")
+test  = read_excel(path, range = "D1:D7") %>% arrange(`Answer Expected`)
+
+k = 2
+result = input %>% 
+  select(starts_with("Animals")) %>%
+  pivot_longer(everything(), values_to = "a") %>%
+  filter(!is.na(a)) %>% distinct(name, a) %>% count(a) %>%
+  filter(n >= k) %>%
+  select(a) %>%
+  arrange(a)
+
+all.equal(result$a, test$`Answer Expected`)
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from itertools import combinations
+
+path = "700-799/781/781 Common Between 2 Columns.xlsx"
+input = pd.read_excel(path, usecols="A:C", nrows=12)
+test = pd.read_excel(path, usecols="D", nrows=6).sort_values("Answer Expected").reset_index(drop=True)
+
+cols  = [c for c in input.columns if c.startswith("Animals")]
+sets  = {c: set(input[c].dropna().unique()) for c in cols}
+pairs = {f"{a} & {b}": sorted(sets[a] & sets[b]) for a, b in combinations(cols, 2)}
+
+k = 2
+common_k = (
+    input[cols].melt(var_name="col", value_name="a")
+      .dropna().drop_duplicates(["col","a"])
+      .value_counts("a")
+      .loc[lambda s: s >= k].index.tolist()
+)
+common_k.sort()
+
+print(common_k == test["Answer Expected"].to_list()) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 782](/challenges/excelbi/Excel782.html)
+- [Excel Challenge 783](/challenges/excelbi/Excel783.html)
+- [Excel Challenge 784](/challenges/excelbi/Excel784.html)

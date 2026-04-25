@@ -1,0 +1,134 @@
+---
+title: "Omid - Challenge 171"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 171](/challenges/images/OmidC171.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-171 Table Transformation.xlsx"
+input = read_excel(path, range = "C2:C148")
+test = read_excel(path, range = "E2:H8") %>%
+  mutate(across(c(From, To), ~ str_replace(., "availabe", "available")))
+
+r1 = input %>% filter(row_number() %% 2 == 1)
+r2 = input %>% filter(row_number() %% 2 == 0) %>% rename(Value = Name)
+
+result = cbind(r1, r2) %>%
+  filter(Name %in% c('From', 'To', 'Status') | Value == "Process") %>%
+  mutate(group = ifelse(Value == "Process", Name, NA)) %>%
+  fill(group) %>%
+  filter(group != Name) %>%
+  pivot_wider(names_from = Name, values_from = Value)
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-171 Table Transformation.xlsx"
+input = pd.read_excel(path, usecols="C", skiprows=1, nrows=148, names=["Name"])
+test = pd.read_excel(path, usecols="E:H", skiprows=1, nrows=6).rename(columns=lambda x: x.split('.')[0])
+test[['From', 'To']] = test[['From', 'To']].replace("availabe", "available", regex=True)
+test = test.sort_values(by='Name').reset_index(drop=True)
+
+even_rows, odd_rows = input.iloc[::2].reset_index(drop=True), input.iloc[1::2].reset_index(drop=True)
+result = pd.DataFrame({'Name': even_rows['Name'], 'Value': odd_rows['Name']})
+result = result[(result['Name'].isin(['From', 'To', 'Status'])) | (result['Value'] == "Process")]
+result['group'] = result.apply(lambda row: row['Name'] if row['Value'] == "Process" else None, axis=1).ffill()
+result = result[result['Name'] != result['group']]
+
+pivot_result = result.pivot(index='group', columns='Name', values='Value').reset_index().rename(columns={'group': 'Name'})
+pivot_result = pivot_result[['Name', 'From', 'To', 'Status']]
+
+print(pivot_result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 170](OmidC170.qmd)
+-   [Omid - Challenge 172](OmidC172.qmd)
+-   [Omid - Challenge 173](OmidC173.qmd)

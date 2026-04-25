@@ -1,0 +1,104 @@
+---
+title: "Excel BI - Excel Challenge 777"
+description: "🔰 N Answer Expected Generate the triangles shown corresponding to number of rows shown in column A."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 777](/challenges/images/exc777.jpg)
+
+## Challenge Description
+
+🔰 N Answer Expected Generate the triangles shown corresponding to number of rows shown in column A.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/777/777 Reverse Flyod Triangle.xlsx"
+input1 = read_excel(path, range = "A2:A2", col_names = FALSE) %>% pull()
+input2 = read_excel(path, range = "A5:A5", col_names = FALSE) %>% pull()
+input3 = read_excel(path, range = "A9:A9", col_names = FALSE) %>% pull()
+test1  = read_excel(path, range = "C2:D3", col_names = FALSE) %>% as.matrix()
+test2  = read_excel(path, range = "C5:E7", col_names = FALSE) %>% as.matrix()
+test3  = read_excel(path, range = "C9:L18", col_names = FALSE) %>% as.matrix()
+
+tri_matrix = function(n) {
+  M = matrix(NA, n, n)
+  for (i in seq_len(n)) {
+    M[i, 1:i] = rev(seq_len(i) + i * (i - 1) / 2)
+  }
+  M
+}
+
+all.equal(tri_matrix(input1), test1, check.attributes = FALSE) # TRUE
+all.equal(tri_matrix(input2), test2, check.attributes = FALSE) # TRUE
+all.equal(tri_matrix(input3), test3, check.attributes = FALSE) # TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "700-799/777/777 Reverse Flyod Triangle.xlsx"
+
+input1 = pd.read_excel(path, usecols="A", skiprows=1, nrows=1, header=None).iloc[0, 0]
+input2 = pd.read_excel(path, usecols="A", skiprows=4, nrows=1, header=None).iloc[0, 0]
+input3 = pd.read_excel(path, usecols="A", skiprows=8, nrows=1, header=None).iloc[0, 0]
+
+test1 = pd.read_excel(path, usecols="C:D", skiprows=1, nrows=2, header=None).values
+test2 = pd.read_excel(path, usecols="C:E", skiprows=4, nrows=3, header=None).values
+test3 = pd.read_excel(path, usecols="C:L", skiprows=8, nrows=10, header=None).values
+
+def tri_matrix(n):
+    mat = np.full((n, n), np.nan)
+    for i in range(n):
+        start = (i + 1) * (i + 2) // 2
+        mat[i, :i+1] = np.arange(start, start - i - 1, -1)
+    return mat
+
+print(np.array_equal(tri_matrix(input1), test1, equal_nan=True)) # True
+print(np.array_equal(tri_matrix(input2), test2, equal_nan=True)) # True
+print(np.array_equal(tri_matrix(input3), test3, equal_nan=True)) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 778](/challenges/excelbi/Excel778.html)
+- [Excel Challenge 779](/challenges/excelbi/Excel779.html)
+- [Excel Challenge 780](/challenges/excelbi/Excel780.html)

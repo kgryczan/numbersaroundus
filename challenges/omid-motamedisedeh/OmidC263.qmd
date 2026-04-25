@@ -1,0 +1,124 @@
+---
+title: "Omid - Challenge 263"
+description: "🔰 Group Challenge 263: UnGrouping!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 263](/challenges/images/OmidC263.jpg)
+
+## Challenge Description
+
+🔰 Group Challenge 263: UnGrouping!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/263/CH-263 UnGrouping.xlsx"
+input = read_excel(path, range = "B2:C5")
+test  = read_excel(path, range = "G2:H17")
+
+result = input %>%
+  separate_wider_delim(Group, "-", names = c("From", "To")) %>%
+  mutate(Date = map2(From, To, ~seq(as.Date(.x), as.Date(.y), by = "day"))) %>%
+  unnest(Date) %>%
+  mutate(n_days = n_distinct(Date),
+         Sales = `Total Sales` / n_days,
+         Date = as.POSIXct(Date), .by = From) %>%
+  select(Date, Sales)
+
+all.equal(result, test, check.attributes = FALSE)
+# > [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "200-299/263/CH-263 UnGrouping.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=3)
+test = pd.read_excel(path, usecols="G:H", skiprows=1, nrows=16)
+
+input[['From', 'To']] = input['Group'].str.split('-', expand=True)
+result = (
+    input
+    .explode('Date', ignore_index=True)
+    if 'Date' in input.columns else
+    input.assign(Date=input.apply(lambda r: pd.date_range(r['From'], r['To']), axis=1)).explode('Date')
+)
+result['Sales'] = input.loc[result.index, 'Total Sales'].values / result.groupby('From')['Date'].transform('nunique')
+result = result[['Date', 'Sales']].reset_index(drop=True)
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 262](OmidC262.qmd)
+-   [Omid - Challenge 264](OmidC264.qmd)
+-   [Omid - Challenge 265](OmidC265.qmd)

@@ -1,0 +1,114 @@
+---
+title: "Excel BI - Excel Challenge 679"
+description: "🔰 For production runs, number of items (say N) to be selected in one go is given in every column."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 679](/challenges/images/exc679.jpg)
+
+## Challenge Description
+
+🔰 For production runs, number of items (say N) to be selected in one go is given in every column. First it selects N items from the front and then N items from the back and then N from the front, then N from back and keeps repeating. Find the last item to be selected.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/679 Last Item to be Selected.xlsx"
+input = read_excel(path, range = "A2:D19")
+test  = read_excel(path, range = "F2:G6")
+ 
+last_item <- function(data) {
+  N <- as.numeric(data[1])
+  items <- na.omit(data[-1])
+  front <- TRUE
+  
+  while (length(items) > N) {
+    items <- if (front) items[(N + 1):length(items)] else items[1:(length(items) - N)]
+    front <- !front
+  }
+  
+  items[length(items)]
+}
+
+result = data.frame(
+  Run = names(input),
+  items = map_chr(input, last_item)
+)
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "679 Last Item to be Selected.xlsx"
+input = pd.read_excel(path, usecols="A:D", skiprows=1, nrows=18)
+test = pd.read_excel(path,  usecols="F:G", skiprows=1, nrows=4)
+
+df = input.fillna('')
+
+def last_item(data):
+    N = int(data[0])
+    items = [i for i in data[1:] if i]
+    front = True
+
+    while len(items) > N:
+        if front:
+            items = items[N:]
+        else:
+            items = items[:-N]
+        front = not front
+
+    return items[-1]
+
+result = pd.DataFrame({
+    'Run': df.columns,
+    'Last Item': [last_item(df[column].tolist()) for column in df.columns]
+})
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Medium / Hard**
+
+The challenge relies on a non-obvious iterative rule rather than a single straight aggregation.
+
+### Related Challenges
+
+- [Excel Challenge 680](/challenges/excelbi/Excel680.html)
+- [Excel Challenge 681](/challenges/excelbi/Excel681.html)
+- [Excel Challenge 682](/challenges/excelbi/Excel682.html)

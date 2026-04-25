@@ -1,0 +1,83 @@
+---
+title: "Excel BI - Excel Challenge 795"
+description: "🔰 Summarize the table as shown."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 795](/challenges/images/exc795.jpg)
+
+## Challenge Description
+
+🔰 Summarize the table as shown.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/795/795 Summarize.xlsx"
+input = read_excel(path, range = "A2:C10")
+test  = read_excel(path, range = "E2:G6")
+
+result = input %>%
+  fill(Supplier) %>%
+  summarise(Items = paste0(Items, collapse = " - "),
+            Cost = paste0(Cost, collapse = " - "),
+            .by = Supplier)
+
+all.equal(result, test)
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/795/795 Summarize.xlsx"
+input = pd.read_excel(path, usecols="A:C", skiprows=1, nrows=8, dtype=str)
+test = pd.read_excel(path, usecols="E:G", skiprows=1, nrows=4, dtype=str).rename(columns=lambda col: col.replace('.1', ''))
+
+result = input.ffill().groupby('Supplier', as_index=False).agg({'Items': ' - '.join, 'Cost': ' - '.join})
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 796](/challenges/excelbi/Excel796.html)
+- [Excel Challenge 797](/challenges/excelbi/Excel797.html)
+- [Excel Challenge 798](/challenges/excelbi/Excel798.html)

@@ -1,0 +1,132 @@
+---
+title: "Excel BI - PowerQuery Challenge 334"
+description: "Year Quarter Value From Date To Date Q1"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 334](/challenges/images/exc334pq.jpg)
+
+## Challenge Description
+
+Year Quarter Value From Date To Date Q1
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/300-399/334/PQ_Challenge_334.xlsx"
+input = read_excel(path, range = "A1:C8")
+test  = read_excel(path, range = "E1:H22")
+
+result = input %>%
+  fill(Year) %>%
+  mutate(date = yq(paste0(Year, Quarter))) %>%
+  rowwise() %>%
+  mutate(month = list(seq(date, date + months(3) - days(1), by = "month"))) %>%
+  unnest(month) %>%
+  mutate(eom = ceiling_date(month, "month") - days(1),
+         Value = Value / 3) %>%
+  select(Year, `From Date` = month, `To Date` = eom, Value) %>%
+  mutate(across(c(`From Date`, `To Date`), as.POSIXct))
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from pandas.tseries.offsets import MonthEnd
+from dateutil.relativedelta import relativedelta
+
+path = "300-399/334/PQ_Challenge_334.xlsx"
+input = pd.read_excel(path, usecols="A:C", nrows=7).ffill()
+test = pd.read_excel(path, usecols="E:H", nrows=21).rename(columns=lambda c: c.replace('.1', ''))
+
+def yq(y, q): return pd.Timestamp(year=int(y), month={'Q1':1,'Q2':4,'Q3':7,'Q4':10}[str(q)], day=1)
+
+input['date'] = [yq(y, q) for y, q in zip(input['Year'], input['Quarter'])]
+rows = [
+    {'Year': r['Year'], 'From Date': d, 'To Date': d + MonthEnd(0), 'Value': r['Value'] / 3}
+    for _, r in input.iterrows() for d in [r['date'] + relativedelta(months=i) for i in range(3)]
+]
+result = pd.DataFrame(rows)
+result[['From Date', 'To Date']] = result[['From Date', 'To Date']].astype('datetime64[ns]')
+result[['Year', 'Value']] = result[['Year', 'Value']].astype(int)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The transformation rule is readable, but the final layout still requires a careful implementation.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 333](Excel333pq.qmd)
+-   [Excel BI - Excel Challenge 714](Excel714.qmd)

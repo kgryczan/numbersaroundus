@@ -1,0 +1,143 @@
+---
+title: "Excel BI - PowerQuery Challenge 300"
+description: "Transpose"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 300](/challenges/images/exc300pq.jpg)
+
+## Challenge Description
+
+Transpose
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/300-399/300/PQ_Challenge_300.xlsx"
+input = read_excel(path, range = "A1:F12", col_names = FALSE)
+test  = read_excel(path, range = "H1:L21")
+
+result = input %>%
+  mutate(Factory = ifelse(str_detect( `...1`, "Factory"), str_sub(`...1`, -1, -1), NA)) %>%
+  fill(Factory, `...1`) %>%
+  filter(str_detect(`...1`, "Factory", negate = T)) %>%
+  rename(Project = `...1`, 
+         Type = `...2`, 
+         Q1 = `...3`, 
+         Q2 = `...4`, 
+         Q3 = `...5`, 
+         Q4 = `...6`,
+         Factory = Factory) %>%
+  pivot_longer(cols = c(Q1, Q2, Q3, Q4), 
+               names_to = "Quarter", 
+               values_to = "Value") %>%
+  mutate(Value = as.numeric(Value)) %>%
+  pivot_wider(names_from = Type, values_from = Value) %>%
+  select(Factory, Quarter, Project, Budget, Actual) 
+
+all.equal(result, test)
+# > [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "300-399/300/PQ_Challenge_300.xlsx"
+input = pd.read_excel(path, sheet_name=0, header=None, usecols="A:F", nrows=12)
+test = pd.read_excel(path, sheet_name=0, usecols="H:L", nrows=21)
+
+input['Factory'] = input[0].where(input[0].astype(str).str.contains('Factory')).str[-1].ffill()
+input = input[~input[0].astype(str).str.contains('Factory')]
+input.columns = ['Project', 'Type', 'Q1', 'Q2', 'Q3', 'Q4', 'Factory']
+input['Project'] = input['Project'].ffill()
+
+df = input.melt(id_vars=['Factory', 'Project', 'Type'], value_vars=['Q1','Q2','Q3','Q4'],
+                var_name='Quarter', value_name='Value')
+
+result = df.pivot(index=['Factory','Quarter','Project'], columns='Type', values='Value').reset_index()
+result = result[['Factory', 'Quarter', 'Project', 'Budget', 'Actual']].astype({'Budget': int, 'Actual': int})
+result.columns.name = None
+result = result.sort_values(['Factory', 'Project']).reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 299](Excel299pq.qmd)
+-   [Excel BI - Excel Challenge 680](Excel680.qmd)

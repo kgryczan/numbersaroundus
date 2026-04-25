@@ -1,0 +1,128 @@
+---
+title: "Crispo - Excel Challenge 19 2024"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2024-05-12"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 19 2024](/challenges/images/Crispo192024.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ ⭐Count Quarters with 3 Consecutive L.T.I
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/Excel Challenge 5th May.xlsx", range = "B2:D41")
+
+result = input %>%
+  mutate(Month = floor_date(Date, "month"),
+         quarter = quarter(Month), 
+         year = year(Date)) %>%
+  summarise(`Man Hour` = sum(`Man Hour`),
+            `LTI Recorded` = sum(`LTI Recorded`),
+            .by = c(year, Month, quarter)) %>%
+  mutate(valid = ifelse(all(`LTI Recorded` > 0), 1, 0), .by = c(year, quarter)) %>%
+  summarise(n = n_distinct(paste(year, quarter, sep = "-")), .by = valid) %>%
+  filter(valid == 1) %>%
+  pull(n)
+
+print(result)
+# [1] 3L
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from pandas.tseries.offsets import MonthEnd
+
+input = pd.read_excel("files/Excel Challenge 5th May.xlsx", sheet_name="Sheet1", header=1, usecols="B:D")
+
+input['Month'] = pd.to_datetime(input['Date']).dt.to_period('M').dt.to_timestamp() 
+input['quarter'] = input['Month'].dt.quarter
+input['year'] = input['Date'].dt.year
+
+result = input.groupby(['year', 'Month', 'quarter']).agg({'Man Hour': 'sum', 'LTI Recorded': 'sum'}).reset_index()
+result['valid'] = result['LTI Recorded'].gt(0).astype(int)
+result['valid'] = result.groupby(['year', 'quarter'])['valid'].transform('all').astype(int)
+result = result[["year", "quarter", "valid"]].drop_duplicates()
+result = result.agg({'valid': 'sum'}).reset_index()
+
+print(result) # 3
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 20 2024](Crispo 202024.qmd)

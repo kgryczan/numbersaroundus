@@ -1,0 +1,104 @@
+---
+title: "Excel BI - Excel Challenge 753"
+description: "🔰 Answer Expected Data Name Smith : 2024-40, 2025-45 Smith Lisa : 2021-80, 2022-45, 46, 2024-88 Lisa Anne : 2022-99, 2023-89, 2024-83 Anne Robert : 2025-45, 34, 20"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 753](/challenges/images/exc753.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Data Name Smith : 2024-40, 2025-45 Smith Lisa : 2021-80, 2022-45, 46, 2024-88 Lisa Anne : 2022-99, 2023-89, 2024-83 Anne Robert : 2025-45, 34, 20
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/753/753 Pivot on Years.xlsx"
+input = read_excel(path, range = "A2:A6")
+test  = read_excel(path, range = "C2:H6")
+
+result = input %>%
+  separate_wider_delim(col = "Data",
+                       delim = " : ", 
+                       names = c("Name", "Years")) %>%
+  separate_longer_delim(col = "Years",
+                       delim = ", ") %>%
+  separate_wider_delim(col = "Years",
+                       delim = "-",
+                       names = c("Year", "Value"),
+                       too_few = "align_end") %>%
+  fill(Year) %>%
+  mutate(Value = as.numeric(Value)) %>%
+  pivot_wider(names_from = Year, 
+              values_from = Value, 
+              values_fn = sum) %>%
+  select(Name, `2021`, `2022`, `2023`, `2024`, `2025`) 
+
+all.equal(result, test)
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/753/753 Pivot on Years.xlsx"
+
+input = pd.read_excel(path, usecols="A", skiprows=1, nrows=5)
+test = pd.read_excel(path, usecols="C:H", skiprows=1, nrows=5).sort_values(by="Name").reset_index(drop=True)
+
+
+result = (
+    input["Data"]
+    .str.split(" : |, |-", expand=True)
+    .rename(columns={0: "Name", 1: "Year", 2: "Value"})
+    .ffill()
+    .pivot_table(index="Name", columns="Year", values="Value", aggfunc="sum")
+    .reset_index()
+)
+result.columns = test.columns
+
+print(result.equals(test))
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 754](/challenges/excelbi/Excel754.html)
+- [Excel Challenge 755](/challenges/excelbi/Excel755.html)
+- [Excel Challenge 756](/challenges/excelbi/Excel756.html)

@@ -1,0 +1,107 @@
+---
+title: "Excel BI - Excel Challenge 789"
+description: "🔰 Words Expected Answer xz xyz aeb abcdedcb flint fghijklkjijklmnopqrst nest nmlkjihgfefghijklmnopqrst"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 789](/challenges/images/exc789.jpg)
+
+## Challenge Description
+
+🔰 Words Expected Answer xz xyz aeb abcdedcb flint fghijklkjijklmnopqrst nest nmlkjihgfefghijklmnopqrst
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/789/789 Fill in Missing Alphabets.xlsx"
+input = read_excel(path, range = "A1:A10")
+test  = read_excel(path, range = "B1:B10")
+
+fill_letters = function(s) {
+  chars = str_split_1(s, "")
+  filled = chars[1]
+  for (i in 2:length(chars)) {
+    prev = chars[i - 1]
+    curr = chars[i]
+    if (prev == curr) {
+      filled = paste0(filled, curr)
+    } else {
+      seq_chars = intToUtf8(seq(utf8ToInt(prev), utf8ToInt(curr), 
+                                 by = ifelse(prev < curr, 1, -1)))
+      filled = paste0(filled, substring(seq_chars, 2))
+    }
+  }
+  filled
+}
+
+result = input %>%
+  mutate(`Expected Answer` = map_chr(Words, fill_letters))
+
+all.equal(result$`Expected Answer`, test$`Expected Answer`)
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Apply the business rule conditions explicitly.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/789/789 Fill in Missing Alphabets.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=10)
+test = pd.read_excel(path, usecols="B", nrows=10)
+
+def fill(s):
+    return s[:1] + ''.join(
+        b if a==b else ''.join(
+            chr(c) for c in range(ord(a)+(1 if a<b else -1),
+                                  ord(b)+(1 if a<b else -1),
+                                  1 if a<b else -1)
+        )
+        for a,b in zip(s, s[1:])
+    )
+
+input['Expected Answer'] = input['Words'].apply(fill)
+
+print(input['Expected Answer'].equals(test['Expected Answer'])) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Medium / Hard**
+
+The challenge relies on a non-obvious iterative rule rather than a single straight aggregation.
+
+### Related Challenges
+
+- [Excel Challenge 790](/challenges/excelbi/Excel790.html)
+- [Excel Challenge 791](/challenges/excelbi/Excel791.html)
+- [Excel Challenge 792](/challenges/excelbi/Excel792.html)

@@ -1,0 +1,106 @@
+---
+title: "Omid - Challenge 67"
+description: "🔰 Question ID Ref 1 Ref 2 Ref 3 Ref 4 Ref 5 Ref 6 Index 1"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 67](/challenges/images/OmidC67.jpg)
+
+## Challenge Description
+
+🔰 Question ID Ref 1 Ref 2 Ref 3 Ref 4 Ref 5 Ref 6 Index 1
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-067 Index Selections.xlsx", range = "B2:H17")
+test  = read_excel("files/CH-067 Index Selections.xlsx", range = "J2:J7")
+
+result = input %>%
+  rowwise() %>%
+  filter(sum(c_across(2:7) <= 7, na.rm = TRUE) >= 2) %>%
+  ungroup() %>%
+  select(`Selected Indexes` = 1)
+  
+identical(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input = pd.read_excel("CH-067 Index Selections.xlsx", usecols="B:H", skiprows= 1, nrows = 15)
+test  = pd.read_excel("CH-067 Index Selections.xlsx", usecols="J", skiprows=1, nrows = 5)
+
+result = input[(input.iloc[:, 1:6] <= 7).sum(axis=1) >= 2].iloc[:,0].reset_index(drop=True)
+
+print(result.tolist() == test.iloc[:,0].tolist()) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 66](OmidC66.qmd)
+-   [Omid - Challenge 68](OmidC68.qmd)
+-   [Omid - Challenge 69](OmidC69.qmd)

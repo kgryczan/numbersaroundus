@@ -1,0 +1,139 @@
+---
+title: "Omid - Challenge 147"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 147](/challenges/images/OmidC147.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(janitor)
+
+path = "files/CH-147 Table Transformation.xlsx"
+input = read_excel(path, range = "C2:C27", col_types = "text")
+test  = read_excel(path, range = "E2:G12") %>%
+  mutate(Date = as.Date(Date, format = "%Y-%m-%d"))
+
+
+result = input %>%
+  mutate(Date = str_extract(`Column 1`, "\\d{5}")) %>%
+  fill(Date, .direction = "down") %>%
+  filter(`Column 1` != Date) %>%
+  mutate(clmn = rep(c("Product", "Quantity"), length.out = n()),
+         group = cumsum(clmn == "Product")) %>%
+  pivot_wider(names_from = clmn, values_from = `Column 1`) %>%
+  select(-group) %>%
+  mutate(Quantity = as.numeric(Quantity),
+         Date = excel_numeric_to_date(as.numeric(Date)))
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-147 Table Transformation.xlsx"
+input = pd.read_excel(path, usecols="C", skiprows=1, nrows=25, dtype=str)
+test = pd.read_excel(path, usecols="E:G", skiprows=1, nrows=10, parse_dates=['Date'])
+
+input['Date'] = pd.to_datetime(input['Column 1'], errors='coerce').ffill()
+
+input['Group_Index'] = input.groupby('Date').cumcount()
+input = input[input['Group_Index'] != 0].reset_index()
+
+input['clmn'] = ['Product', 'Quantity'] * (len(input) // 2) + ['Product'] * (len(input) % 2)
+input['group'] = (input['clmn'] == 'Product').cumsum()
+
+result = input.pivot_table(index=['Date', 'group'], columns='clmn', values='Column 1', aggfunc='first').reset_index()
+result = result.drop(columns=['group'])
+result.columns.name = None
+result['Quantity'] = result['Quantity'].astype('int64')
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 146](OmidC146.qmd)
+-   [Omid - Challenge 148](OmidC148.qmd)
+-   [Omid - Challenge 149](OmidC149.qmd)

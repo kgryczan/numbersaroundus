@@ -1,0 +1,110 @@
+---
+title: "Omid - Challenge 213"
+description: "🔰 Group Challenge 213: Custom Grouping!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 213](/challenges/images/OmidC213.jpg)
+
+## Challenge Description
+
+🔰 Group Challenge 213: Custom Grouping!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-213 Custom Grouping.xlsx"
+input = read_excel(path, range = "B2:C18")
+test  = read_excel(path, range = "G2:H5")
+
+result = count(input, cut(Temperature, c(-Inf, 10, 24, Inf), c("Cold", "Mild", "Hot"))) %>%
+  select(Group = 1, `No Days` = 2) %>%
+  mutate(Group = as.character(Group))
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-213 Custom Grouping.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=16)
+test = pd.read_excel(path, usecols="G:H", skiprows=1, nrows=3)
+
+input['Group'] = pd.cut(input['Temperature'], bins=[-float('inf'), 10, 24, float('inf')], labels=['Cold', 'Mild', 'Hot'])
+input['Group'] = input['Group'].astype(str)
+result = input['Group'].value_counts().sort_values(ascending=True).reset_index().rename(columns={'count': 'No days'})
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 212](OmidC212.qmd)
+-   [Omid - Challenge 214](OmidC214.qmd)
+-   [Omid - Challenge 215](OmidC215.qmd)

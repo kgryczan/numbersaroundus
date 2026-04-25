@@ -1,0 +1,210 @@
+---
+title: "Omid - Challenge 230"
+description: "🔰 Based on this information, and assuming Task 1 starts on 1/4/2025, calculate the start and finish dates for all the tasks."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 230](/challenges/images/OmidC230.jpg)
+
+## Challenge Description
+
+🔰 Based on this information, and assuming Task 1 starts on 1/4/2025, calculate the start and finish dates for all the tasks.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/230/CH-230 Project scheduling.xlsx"
+test = read_excel(path, range = "F2:H11") %>%
+  mutate(across(c(Start, Finish), ~ as.Date(.x, origin = "1899-12-30")))
+input = read_excel(path, range = "B3:D11", col_names = c('id', 'dur', 'pred'))
+
+parse_rel <- function(x) {
+  str_remove_all(x, " days?") %>%
+    str_split(",", simplify = FALSE) %>%
+    unlist() %>%
+    map_dfr(
+      ~ {
+        m <- str_match(.x, "(\\d+)(FS|FF)?(?:\\+([0-9]+))?")
+        pred <- as.integer(m[2])
+        type <- ifelse(is.na(m[3]), "FS", m[3])
+        lag <- as.integer(m[4])
+        lag <- replace_na(lag, 0L)
+        tibble(pred, type, lag)
+      }
+    )
+}
+
+input <- input %>%
+  mutate(
+    start = as.Date(NA),
+    finish = as.Date(NA)
+  ) %>%
+  arrange(id)
+
+input$start[input$id == 1] <- ymd("2025-04-01")
+input$finish[input$id == 1] <- input$start[input$id == 1] +
+  days(input$dur[input$id == 1] - 1)
+
+while (any(is.na(input$start))) {
+  walk(input$id[is.na(input$start)], function(i) {
+    if (is.na(input$pred[i])) return()
+    rels <- parse_rel(input$pred[i])
+    if (!all(rels$pred %in% input$id[!is.na(input$finish)])) return()
+
+    cand_st <- rels %>%
+      mutate(
+        st = case_when(
+          type == "FS" ~ input$finish[pred] + days(lag + 1),
+          type == "FF" ~
+            (input$finish[pred] + days(lag)) - days(input$dur[i] - 1)
+        )
+      ) %>%
+      pull(st)
+
+    st_i <- max(cand_st)
+    input$start[i] <<- st_i
+    input$finish[i] <<- st_i + days(input$dur[i] - 1)
+  })
+}
+
+result = input %>%
+  select(`Task Name` = id, Start = start, Finish = finish)
+
+all.equal(test, result, check.attributes = FALSE)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import re
+import pandas as pd
+
+path = "CH-230 Project scheduling.xlsx"
+test = pd.read_excel(path, usecols="F:H", skiprows=1, nrows=10)
+input_data = pd.read_excel(path, usecols="B:D", skiprows=2, nrows=9, names=["id", "dur", "pred"])
+
+def parse_rel(text):
+    parts = []
+    for item in re.sub(r" days?", "", str(text)).split(","):
+        item = item.strip()
+        if not item or item == "nan":
+            continue
+        m = re.fullmatch(r"(\d+)(FS|FF)?(?:\+(\d+))?", item)
+        pred = int(m.group(1))
+        rel_type = m.group(2) or "FS"
+        lag = int(m.group(3) or 0)
+        parts.append((pred, rel_type, lag))
+    return parts
+
+input_data = input_data.sort_values("id").reset_index(drop=True)
+input_data["start"] = pd.NaT
+input_data["finish"] = pd.NaT
+mask = input_data["id"] == 1
+input_data.loc[mask, "start"] = pd.Timestamp("2025-04-01")
+input_data.loc[mask, "finish"] = input_data.loc[mask, "start"] + pd.to_timedelta(input_data.loc[mask, "dur"] - 1, unit="D")
+
+while input_data["start"].isna().any():
+    progress = False
+    for idx, row in input_data[input_data["start"].isna()].iterrows():
+        if pd.isna(row["pred"]):
+            continue
+        rels = parse_rel(row["pred"])
+        known = input_data.dropna(subset=["finish"]).set_index("id")
+        if not all(pred in known.index for pred, _, _ in rels):
+            continue
+        starts = []
+        for pred, rel_type, lag in rels:
+            pred_finish = known.loc[pred, "finish"]
+            if rel_type == "FS":
+                st = pred_finish + pd.Timedelta(days=lag + 1)
+            else:
+                st = (pred_finish + pd.Timedelta(days=lag)) - pd.Timedelta(days=row["dur"] - 1)
+            starts.append(st)
+        st = max(starts)
+        input_data.loc[idx, "start"] = st
+        input_data.loc[idx, "finish"] = st + pd.Timedelta(days=row["dur"] - 1)
+        progress = True
+    if not progress:
+        break
+
+result = input_data[["id", "start", "finish"]].rename(columns={"id": "Task Name", "start": "Start", "finish": "Finish"})
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate to challenging**:
+
+-   It depends on a non-trivial iterative or rule-based transformation.
+
+-   Getting the expected output requires more than one straightforward dataframe step.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 229](OmidC229.qmd)
+-   [Omid - Challenge 231](OmidC231.qmd)
+-   [Omid - Challenge 232](OmidC232.qmd)

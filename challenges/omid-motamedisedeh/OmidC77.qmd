@@ -1,0 +1,154 @@
+---
+title: "Omid - Challenge 77"
+description: "🔰 Create a formula to receive a number n as input and generate a rhombus with a diameter equal to n using '*' characters."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 77](/challenges/images/OmidC77.jpg)
+
+## Challenge Description
+
+🔰 Create a formula to receive a number n as input and generate a rhombus with a diameter equal to n using "*" characters.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-77 Character-Based Rhombus.xlsx"
+test = read_xlsx(path, range = "C2:Q16", col_names = FALSE) %>%
+  map_df(~replace_na(.x, "_")) %>%
+  unite("rhombus", everything(), sep = "")
+
+draw_rhombus = function(diag) {
+  if (diag %% 2 == 0) {
+    stop("diag must be an odd number")
+  }
+  
+  rhombus = matrix(NA, nrow = diag, ncol = diag)
+  seq = seq(1, diag, by = 2)
+  rev_seq = rev(seq)[-1] 
+  seq = c(seq, rev_seq)
+  
+  for (i in 1:diag) {
+    rhombus[i, 1:seq[i]] = "*"
+  }
+  
+  rhombus = as_tibble(rhombus) %>%
+    mutate_all(as.character) %>%
+    unite("rhombus", everything(), sep = "", na.rm = TRUE) %>%
+    mutate(rhombus = str_pad(rhombus, diag, side = "both", pad = "_"))
+  
+  return(rhombus)
+}
+
+result = draw_rhombus(15)
+
+identical(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "CH-77 Character-Based Rhombus.xlsx"
+test = pd.read_excel(path, header=None, usecols="C:Q", skiprows=1, nrows=16)
+test = test.fillna("_")
+test = test.apply(lambda x: "".join(x), axis=1)
+
+def draw_rhombus(diag):
+    if diag % 2 == 0:
+        raise ValueError("diag must be an odd number")
+    
+    rhombus = np.full((diag, diag), "_")
+    seq = np.arange(1, diag+1, 2)
+    rev_seq = np.flip(seq)[1:]
+    seq = np.concatenate((seq, rev_seq))
+    
+    for i in range(diag):
+        rhombus[i, diag//2-seq[i]//2:diag//2+seq[i]//2+1] = "*"
+
+    rhombus = pd.DataFrame(rhombus)
+    rhombus = rhombus.apply(lambda x: "".join(x), axis=1)
+
+    return rhombus
+
+result = draw_rhombus(15)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate to challenging**:
+
+-   It depends on a non-trivial iterative or rule-based transformation.
+
+-   Getting the expected output requires more than one straightforward dataframe step.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 76](OmidC76.qmd)
+-   [Omid - Challenge 78](OmidC78.qmd)
+-   [Omid - Challenge 79](OmidC79.qmd)

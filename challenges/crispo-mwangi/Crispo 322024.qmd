@@ -1,0 +1,123 @@
+---
+title: "Crispo - Excel Challenge 32 2024"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2024-08-11"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 32 2024](/challenges/images/Crispo322024.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ ⭐Sort Cookies into 2 groups: with Duplicate Price & with Unique prices
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/Excel Challenge 11th August.xlsx"
+input = read_excel(path, range = "B2:C14")
+test  = read_excel(path, range = "E2:F9") 
+dup_test =  pull(test, `Duplicate Price`) %>% sort()
+uniq_test = pull(test, `Unique Price`) %>% sort()
+
+result = input %>%
+  mutate(unique = n(), .by = Price) %>%
+  mutate(uniqueness = if_else(unique == 1, "Unique Price", "Duplicata Price")) %>%
+  select(Cookies, uniqueness)
+
+dup_result = filter(result, uniqueness == "Duplicata Price") %>% pull(Cookies) %>% sort()
+uniq_result = filter(result, uniqueness == "Unique Price") %>% pull(Cookies) %>% sort()
+
+identical(dup_test, dup_result) && identical(uniq_test, uniq_result)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "files/Excel Challenge 11th August.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1)
+test  = pd.read_excel(path, usecols="E:F", skiprows=1, nrows = 7)
+
+input['Count'] = input.groupby('Price')['Price'].transform('count')
+
+dupes = input["Cookies"][input['Count'] > 1].reset_index(drop=True)
+unique = input["Cookies"][input['Count'] == 1].reset_index(drop=True)
+
+print(sorted(dupes) == sorted(test["Duplicate Price"]) and sorted(unique) == sorted(test["Unique Price"][0:5]))
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 31 2024](Crispo 312024.qmd)
+-   [Crispo - Excel Challenge 33 2024](Crispo 332024.qmd)

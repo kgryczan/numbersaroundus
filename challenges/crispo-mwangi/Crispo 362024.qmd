@@ -1,0 +1,126 @@
+---
+title: "Crispo - Excel Challenge 36 2024"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2024-09-08"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 36 2024](/challenges/images/Crispo362024.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Count ⭐Count Stalls Stocking either Apple or Kiwi
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/Excel Challenge September 8th.xlsx"
+input = read_excel(path, range = "B2:C7")
+
+search_vec = list("Apple", "Kiwi")
+
+result = input %>%
+  mutate(Stock = str_remove_all(Stock, "\\s") %>% str_split(",")) %>%
+  mutate(Found = map_lgl(Stock, ~any(search_vec %in% .x))) %>%
+  summarise(Count = sum(Found))
+
+result
+#   3
+#   
+#   True
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+    -   Uses direct text-pattern extraction instead of manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "files/Excel Challenge September 8th.xlsx"
+input = pd.read_excel(path, usecols = "B:C", skiprows = 1, nrows = 5, names = ["Stall","Stock"])
+
+search_vec = ["Apple", "Kiwi"]
+result = input
+result["Stock"] = result["Stock"].str.replace(" ", "").str.split(",")
+result = result.explode("Stock")
+result = result[result["Stock"].isin(search_vec)]["Stall"].nunique()
+
+print(result) # 3 
+# True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines familiar Excel-style logic with at least one non-trivial reshape, grouping, or parsing step.
+
+-   The answer depends on getting the output layout exactly right.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 33 2024](Crispo 332024.qmd)
+-   [Crispo - Excel Challenge 37 2024](Crispo 372024.qmd)

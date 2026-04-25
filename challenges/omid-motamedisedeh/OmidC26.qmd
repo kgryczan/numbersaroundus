@@ -1,0 +1,179 @@
+---
+title: "Omid - Challenge 26"
+description: "🔰 Calculate Spending Time The highlighted cells are calculated by dividing the meeting duration between person D and person C (1:30) by the total meeting duration of perso…"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 26](/challenges/images/OmidC26.jpg)
+
+## Challenge Description
+
+🔰 Calculate Spending Time The highlighted cells are calculated by dividing the meeting duration between person D and person C (1:30) by the total meeting duration of perso…
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-026 Calculate the spending time.xlsx", range = "B2:E18")
+test  = read_excel("files/CH-026 Calculate the spending time.xlsx", range = "G2:L7") %>%
+  mutate(across(where(is.numeric), ~round(., 2))) 
+
+r1 <- input %>%
+  separate(Duration, into = c("date", "time"), sep = " ") %>%
+  separate(time, into = c("hours", "minutes", "seconds"), sep = ":") %>%
+  mutate(Duration = as.numeric(hours) * 3600 + as.numeric(minutes) * 60) %>%
+  select(1:3,8)
+
+r2 = r1 %>%
+  unite(`Person 1`, `Person 2`, col = "pair", sep = "_") %>%
+  mutate(pair = map_chr(pair, ~paste(sort(unlist(strsplit(., "_"))), collapse = "_"))) %>%
+  separate(pair, into = c("P1", "P2"), sep = "_") %>%
+  group_by(P1) %>%
+  arrange(P1) %>%
+  select(-Date)
+
+r3 = expand.grid(P1 = LETTERS[1:5], P2 = LETTERS[1:5]) %>%
+  left_join(r2, by = c("P1", "P2")) %>%
+  replace_na(list(Duration = 0)) %>%
+  pivot_wider(names_from = P2, values_from = Duration, values_fn = sum) %>%
+  column_to_rownames(var = "P1") 
+
+r4 = expand.grid(P1 = LETTERS[1:5], P2 = LETTERS[1:5]) %>%
+  left_join(r2, by = c("P1", "P2")) %>%
+  replace_na(list(Duration = 0)) %>% 
+  pivot_wider(names_from = P1, values_from = Duration, values_fn = sum) %>%
+  column_to_rownames(var = "P2")
+
+r5 = r3 + r4
+
+r6 = r5 %>%
+  mutate(across(everything(), ~./rowSums(r5))) %>%
+  mutate(across(everything(), ~round(., 2))) %>%
+  rownames_to_column(var = "Month")%>% mutate(across(- Month, as.numeric)) %>%
+  as_tibble()
+
+identical(r6, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from itertools import product
+import itertools
+
+# Read Excel files
+input = pd.read_excel("CH-026 Calculate the spending time.xlsx", usecols="B:E", skiprows=1, nrows=17)
+test = pd.read_excel("CH-026 Calculate the spending time.xlsx", usecols="G:L", skiprows=1, nrows=5)
+test = test.round(2)  # Round numeric columns to 2 decimal places
+
+# Process input
+input[['hours', 'minutes', 'seconds']] = input['Duration'].astype('str').str.split(':', expand=True)
+input['Duration'] = pd.to_numeric(input['hours']) * 3600 + pd.to_numeric(input['minutes']) * 60
+input = input.iloc[:, [0, 1, 2, 3]]  # select columns by index
+
+# Combine and sort names to create pairs, then rearrange columns
+input['pair'] = input[['Person 1', 'Person 2']].apply(lambda x: '_'.join(sorted(x)), axis=1)
+input[['P1', 'P2']] = input['pair'].str.split('_', expand=True)
+input = input.groupby('P1').apply(lambda x: x.sort_values('P1')).reset_index(drop=True)
+input.drop(columns=['Date'], inplace=True)
+
+pairs = list(product(['A', 'B', 'C', 'D', 'E'], repeat=2))
+pairs = pd.DataFrame(pairs, columns=['P1', 'P2'])
+
+r2 = input[["P1", "P2", "Duration"]]
+r2 = pairs.merge(r2, how='left', on=['P1', 'P2']).fillna(0)
+r2['Duration'] = r2.groupby(['P1', 'P2'])['Duration'].transform('sum')
+r2.drop_duplicates(inplace=True)
+r2.reset_index(drop=True, inplace=True)
+
+r3 = r2.pivot(index='P1', columns='P2', values='Duration')
+r3.rename_axis(index='Month', columns='Interacted With', inplace=True)
+
+r4 = r2.pivot(index='P2', columns='P1', values='Duration')
+r4.rename_axis(index='Month', columns='Interacted With', inplace=True)
+
+r5 = r4.add(r3, fill_value=0)
+r5 = r5.div(r5.sum(axis=1), axis=0).round(2)
+r5 = r5.reset_index().rename_axis(None, axis=1)  
+
+print(r5.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 25](OmidC25.qmd)
+-   [Omid - Challenge 27](OmidC27.qmd)
+-   [Omid - Challenge 28](OmidC28.qmd)

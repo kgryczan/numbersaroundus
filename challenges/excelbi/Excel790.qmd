@@ -1,0 +1,96 @@
+---
+title: "Excel BI - Excel Challenge 790"
+description: "🔰 Answer Expected Data Name Salary Age Department Name: Robert Robert Salary: 30000 Ana"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 790](/challenges/images/exc790.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Data Name Salary Age Department Name: Robert Robert Salary: 30000 Ana
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/790/790 Pivot.xlsx"
+input = read_excel(path, range = "A2:A12")
+test  = read_excel(path, range = "C2:F6")
+
+result = input %>% 
+   mutate(Name = ifelse(str_detect(Data, "Name"), Data, NA) %>% 
+                 str_remove("Name: ")) %>%
+  fill(Name) %>%
+  separate_wider_delim(Data, delim = ": ", names = c("Key", "Value")) %>%
+  filter(Name != Value) %>%
+  pivot_wider(names_from = Key, values_from = Value) %>%
+  separate_longer_delim(Department, delim = " | ") %>%
+  mutate(Age = as.integer(Age),
+         Salary = parse_number(Salary))
+
+all.equal(result, test)
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/790/790 Pivot.xlsx"
+input = pd.read_excel(path, usecols="A", skiprows=1, nrows=11)
+test = pd.read_excel(path, usecols="C:F", skiprows=1, nrows=4).fillna({"Age":0,"Department":""}).sort_values(["Age","Department"]).reset_index(drop=True)
+
+input["Name"] = input["Data"].str.extract(r"Name: (.*)").ffill()
+input[["Key", "Value"]] = input["Data"].str.split(": ", n=1, expand=True)
+result = input[input["Name"] != input["Value"]].pivot(index="Name", columns="Key", values="Value").reset_index()
+result = result.assign(Department=result["Department"].str.split(" \| ")).explode("Department")
+result = result[["Name", "Salary", "Age", "Department"]].fillna({"Age":0,"Salary":0,"Department":""})
+result["Age"] = result["Age"].astype(float)
+result["Salary"] = result["Salary"].astype(int)
+result = result.sort_values(["Age","Department"]).reset_index(drop=True)
+result.columns.name = None
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 791](/challenges/excelbi/Excel791.html)
+- [Excel Challenge 792](/challenges/excelbi/Excel792.html)
+- [Excel Challenge 793](/challenges/excelbi/Excel793.html)

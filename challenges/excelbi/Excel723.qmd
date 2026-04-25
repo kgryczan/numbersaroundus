@@ -1,0 +1,108 @@
+---
+title: "Excel BI - Excel Challenge 723"
+description: "🔰 In every row, find the product of 3 consecutive cells."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 723](/challenges/images/exc723.jpg)
+
+## Challenge Description
+
+🔰 In every row, find the product of 3 consecutive cells. List the numbers where product of 3 consecutive cells is maximum.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(slider)
+
+path = "Excel/700-799/723/723 Maximum for 3 Consecutive Cells in a Row.xlsx"
+input = read_excel(path, range = "A2:J11", col_names = FALSE) %>% as.matrix()
+test = read_excel(path, range = "L1:L2") %>% pull()
+
+max_consecutive_values = function(input) {
+  rows = split(input, row(input))
+  triplets = map(rows, function(row) {
+    windows = slide(row, ~.x, .before = 0, .after = 2, .complete = TRUE)
+    windows = keep(windows, ~ length(.x) == 3)
+    best_idx = which.max(map_dbl(windows, sum))
+    windows[[best_idx]]
+  })
+  max_triplet = map_dbl(triplets, sum) %>% which.max()
+  return(triplets[[max_triplet]] %>% paste(collapse = ", "))
+}
+
+result = max_consecutive_values(input)
+
+all.equal(result, test)
+# TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "700-799/723/723 Maximum for 3 Consecutive Cells in a Row.xlsx"
+input_df = pd.read_excel(path, header=None, skiprows=1, nrows=10, usecols="A:J")
+input_matrix = input_df.values
+test = pd.read_excel(path, usecols="L", nrows=1).values[0][0]
+
+def max_consecutive_values(input_matrix):
+    triplets = []
+    for row in input_matrix:
+        windows = [row[i:i+3] for i in range(len(row)-2)]
+        if not windows:
+            continue
+        sums = [np.sum(w) for w in windows]
+        best_idx = int(np.argmax(sums))
+        triplets.append(windows[best_idx])
+    if not triplets:
+        return ""
+    max_triplet_idx = int(np.argmax([np.sum(t) for t in triplets]))
+    return ", ".join(str(int(x)) for x in triplets[max_triplet_idx])
+
+result = max_consecutive_values(input_matrix)
+
+print(result == test) #True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 724](/challenges/excelbi/Excel724.html)
+- [Excel Challenge 725](/challenges/excelbi/Excel725.html)
+- [Excel Challenge 726](/challenges/excelbi/Excel726.html)

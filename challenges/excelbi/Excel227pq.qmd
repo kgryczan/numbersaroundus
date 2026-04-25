@@ -1,0 +1,141 @@
+---
+title: "Excel BI - PowerQuery Challenge 227"
+description: "T1 T2 Sequence Name Weight Bonus %"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 227](/challenges/images/exc227pq.jpg)
+
+## Challenge Description
+
+T1 T2 Sequence Name Weight Bonus %
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_227.xlsx"
+input1 = read_excel(path, range = "A2:D13")
+input2 = read_excel(path, range = "F2:H6")
+test  = read_excel(path, range = "J2:N11") %>%
+  arrange(Sequence, Name)
+
+input2 = input2 %>%
+  mutate(pattern_seq = c("^1.*", "321", ".*", ".*8$"),
+         pattern_name = c("^M.*", "^S.*", ".*[aA]$", ".*"))
+
+input = input1 %>%
+  cross_join(input2) %>%
+  mutate(check_seq = str_detect(string = Sequence.x, pattern = pattern_seq),
+         check_name = str_detect(string = Name.x, pattern = pattern_name),
+         both_conditions = check_seq & check_name) %>%
+  filter(both_conditions) %>%
+  select(Sequence = Sequence.x,Name = Name.x, Weight, `Bonus %`, Salary) %>%
+  arrange(Sequence, Name)
+
+all.equal(input, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "PQ_Challenge_227.xlsx"
+input1 = pd.read_excel(path,  usecols="A:D", skiprows=1, nrows=11)
+input2 = pd.read_excel(path,  usecols="F:H", skiprows=1, nrows=4)
+test = pd.read_excel(path, usecols="J:N", skiprows=1, nrows=9).rename(columns=lambda x: x.replace('.1', '').replace('.2', ''))\
+    .sort_values(by=['Sequence', 'Name']).reset_index(drop=True)
+
+input2['pattern_seq'] = ["^1.*", "321", ".*", ".*8$"]
+input2['pattern_name'] = ["^M.*", "^S.*", ".*[aA]$", ".*"]
+
+input = input1.assign(key=1).merge(input2.assign(key=1), on='key').drop('key', axis=1)
+
+input['both_conditions'] = input.apply(
+    lambda row: bool(re.match(row['pattern_seq'], str(row['Sequence']))) and 
+                bool(re.match(row['pattern_name'], str(row['Name']))), axis=1)
+
+input = input[input['both_conditions']].copy().reset_index(drop=True)
+input = input[['Sequence', 'Name', 'Weight', 'Bonus %', 'Salary']].sort_values(by=['Sequence', 'Name']).reset_index(drop=True)
+
+print(input.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 226](Excel226pq.qmd)

@@ -1,0 +1,153 @@
+---
+title: "Omid - Challenge 180"
+description: "🔰 Result Question Table Parent Child A B C D"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 180](/challenges/images/OmidC180.jpg)
+
+## Challenge Description
+
+🔰 Result Question Table Parent Child A B C D
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(igraph)
+
+path <- "files/CH-180 Hierarchical Structure.xlsx"
+input <- read_excel(path, range = "B2:C13")
+test <- read_excel(path, range = "E2:F14") %>% arrange(Code)
+
+in2 <- input %>% mutate(code = row_number(), .by = Parent)
+g <- graph_from_data_frame(in2, directed = TRUE)
+all_paths <- all_simple_paths(g, from = "A", to = V(g))
+
+df <- map_df(all_paths, ~ data.frame(paths = paste(names(.x), collapse = "-")))
+
+result <- df %>%
+  mutate(IDs = str_extract(paths, "\\w$"), rn = row_number()) %>%
+  mutate(path = str_replace_all(paths, "\\d", ~ in2$code[as.numeric(.x)])) %>%
+  separate_rows(paths, sep = "-") %>%
+  left_join(in2 %>% add_row(Parent = NA, Child = "A", code = 1), by = c("paths" = "Child")) %>%
+  summarise(Code = paste0(code, collapse = "-"), .by = IDs) %>%
+  select(Code, IDs) %>%
+  add_row(Code = "1", IDs = "A") %>%
+  arrange(Code)
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd 
+from itertools import groupby
+from operator import itemgetter
+
+path = "CH-180 Hierarchical Structure.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=11)
+test = pd.read_excel(path, usecols="E:F", skiprows=1, nrows=13)
+test['Code'] = test['Code'].astype(str)
+
+def get_hierarchical_code(data, target, root="A"):
+    data = sorted([(str(parent), str(child)) for parent, child in data], key=itemgetter(0))
+    children_by_parent = {k: list(map(itemgetter(1), g)) for k, g in groupby(data, key=itemgetter(0))}
+    path = target
+    code = []
+    while path != root:
+        parent = next((parent for parent, children in data if path in children), None)
+        if parent is None:
+            raise ValueError(f"Parent for node '{path}' not found. Check the hierarchy.")
+        siblings = children_by_parent[parent]
+        position = siblings.index(path) + 1
+        code.insert(0, str(position))
+        path = parent
+    code.insert(0, "1")
+    return "-".join(code)
+
+unique_values = pd.unique(input.values.ravel())
+hierarchical_codes = [get_hierarchical_code(input.values, value) for value in unique_values]
+df = pd.DataFrame({ 'Code': hierarchical_codes, 'IDs': unique_values})
+print(df.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 179](OmidC179.qmd)
+-   [Omid - Challenge 181](OmidC181.qmd)
+-   [Omid - Challenge 182](OmidC182.qmd)

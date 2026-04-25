@@ -1,0 +1,131 @@
+---
+title: "Excel BI - PowerQuery Challenge 202"
+description: "Transpose the problem table into result table."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 202](/challenges/images/exc202pq.jpg)
+
+## Challenge Description
+
+Transpose the problem table into result table.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_202.xlsx"
+input = read_excel(path, range = "A1:C18")
+test  = read_excel(path, range = "E1:F18")
+
+result = input %>% 
+  mutate(L1 = cumsum(!is.na(Name1))) %>%
+  mutate(L2 = cumsum(!is.na(Name2)), .by = L1) %>%
+  mutate(L3 = cumsum(!is.na(Name3)), .by = c(L1, L2)) %>%
+  mutate(across(starts_with("L"), ~ ifelse(. == 0, NA, .))) %>%
+  mutate(across(everything(), ~  as.character(.))) %>%
+  rowwise() %>%
+  mutate(Names = coalesce(Name3, Name2, Name1), 
+         Serial = case_when(
+           !is.na(L3) ~ paste(L1, L2, L3, sep = "."),
+           !is.na(L2) ~ paste(L1,L2, sep = "."),
+           !is.na(L1) ~ L1
+         )) %>%
+  ungroup() %>%
+  select(Serial, Names)
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "PQ_Challenge_202.xlsx"
+input = pd.read_excel(path, usecols="A:C")
+test = pd.read_excel(path, usecols="E:F")
+
+result = input.copy()
+result["L1"] = result["Name1"].notna().cumsum()
+result["L2"] = result.groupby("L1")["Name2"].transform(lambda x: x.notna().cumsum())
+result["L3"] = result.groupby(["L1", "L2"])["Name3"].transform(lambda x: x.notna().cumsum())
+
+result[["L1", "L2", "L3"]] = result[["L1", "L2", "L3"]].astype("Int64").astype(str).replace("0", pd.NA)
+result["Names"] = result["Name3"].combine_first(result["Name2"]).combine_first(result["Name1"])
+result["Serial"] = result[["L1", "L2", "L3"]].apply(lambda x: ".".join(x.dropna()), axis=1)
+result = result[["Serial", "Names"]]
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The transformation rule is readable, but the final layout still requires a careful implementation.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 201](Excel201pq.qmd)

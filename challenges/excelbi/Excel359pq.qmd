@@ -1,0 +1,165 @@
+---
+title: "Excel BI - PowerQuery Challenge 359"
+description: "Data Month Category Count Customers Date,Category,Cust_ID,Amount"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 359](/challenges/images/exc359pq.jpg)
+
+## Challenge Description
+
+Data Month Category Count Customers Date,Category,Cust_ID,Amount
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Power Query/300-399/359/PQ_Challenge_359.xlsx"
+input <- read_excel(path, range = "A1:A52")
+test <- read_excel(path, range = "C1:F13")
+
+df <- input %>%
+  separate_wider_delim(Data, ',', names_sep = "_") %>%
+  janitor::row_to_names(1)
+df <- df %>% mutate(Date = as.Date(Date), Month = floor_date(Date, "month"))
+
+result <- df %>%
+  distinct(Month, Category, Cust_ID) %>%
+  arrange(Cust_ID, Month) %>%
+  group_by(Cust_ID, Category) %>%
+  mutate(
+    ok = Month == lag(Month, 1) %m+% months(1) &
+      lag(Month, 1) == lag(Month, 2) %m+% months(1)
+  ) %>%
+  filter(ok) %>%
+  ungroup() %>%
+  right_join(
+    tidyr::expand_grid(
+      Month = sort(unique(df$Month)),
+      Category = unique(df$Category)
+    ),
+    by = c("Month", "Category")
+  ) %>%
+  group_by(Month, Category) %>%
+  summarise(
+    Count = as.double(n_distinct(Cust_ID[!is.na(Cust_ID)])),
+    Customers = ifelse(
+      all(is.na(Cust_ID)),
+      NA,
+      str_c(sort(unique(Cust_ID[!is.na(Cust_ID)])), collapse = ", ")
+    ),
+    .groups = "drop"
+  ) %>%
+  mutate(Month = format(Month, "%Y-%m"))
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "Power Query/300-399/359/PQ_Challenge_359.xlsx"
+input = pd.read_excel(path, usecols=[0], skiprows=1, nrows=51, header=None, names=['Data'])
+test = pd.read_excel(path, usecols="C:F", nrows=12)
+
+df = input["Data"].str.split(",", expand=True)
+df.columns = ["Date","Category","Cust_ID","Amount"]
+df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+df = df[df["Date"] != "Date"].reset_index(drop=True)
+df["Date"] = pd.to_datetime(df["Date"])
+df["Month"] = df["Date"].dt.to_period("M").dt.to_timestamp()
+base = df[["Month","Category","Cust_ID"]].drop_duplicates().sort_values(["Cust_ID","Month"])
+g = base.groupby(["Cust_ID","Category"])["Month"]
+base["ok"] = (base["Month"] == g.shift(1) + pd.offsets.MonthBegin(1)) & (g.shift(1) == g.shift(2) + pd.offsets.MonthBegin(1))
+good = base[base["ok"]]
+grid = pd.MultiIndex.from_product([sorted(df["Month"].unique()), df["Category"].unique()], names=["Month","Category"]).to_frame(index=False)
+result = grid.merge(good, on=["Month","Category"], how="left") \
+    .groupby(["Month","Category"], as_index=False) \
+    .agg(Count=("Cust_ID","nunique"), Customers=("Cust_ID", lambda x: np.nan if x.isna().all() else ", ".join(sorted(x.dropna().unique()))))
+result["Month"] = result["Month"].dt.strftime("%Y-%m")
+
+
+print(result.equals(test))
+# True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 358](Excel358pq.qmd)
+-   [Excel BI - Excel Challenge 739](Excel739.qmd)

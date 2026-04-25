@@ -1,0 +1,101 @@
+---
+title: "Excel BI - Excel Challenge 827"
+description: "🔰 Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 827](/challenges/images/exc827.jpg)
+
+## Challenge Description
+
+🔰 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo ligula et lectus volutpat placerat. Cras nec odio quam. Morbi vulputate, quam a faucibus suscipit, dui augue accumsan lectus, vitae facilisis lacus nibh at dolor. Aliquam ante nisi, luctus vel turpis at, gravida viverra nibh. In hac habitasse platea dictumst. Nam laoreet molestie turpis, ut hendrerit lacus ornare ac. Vivamus a tellus erat. Nulla facilisi. In dignissim, nibh ac varius auctor, erat quam condimentum libero, eget mattis nibh odio pulvinar justo. Morbi placerat consequat nunc et varius. Sed aliquet a nulla sed malesuada. Mauris sodales non nunc ut bibendum. Cras venenatis risus quis arcu porta, et vehicula arcu lacinia. Curabitur in suscipit tellus, quis pulvinar enim. Etiam suscipit ipsum vitae enim vestibulum rutrum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae Extract the words containing alphabets one by one. Once a word is exhausted, then we need to look into succeeding words only. Ex. if we look for o & m, then o is found in Lorem. Now m will be found in ipsum as Lorem is already exhausted.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/827/827 Lorem Ipsum.xlsx"
+input = read_excel(path, range = "A1:B2")
+test  = read_excel(path, range = "C1:C2") %>% pull()
+
+words = unlist(str_split(input$Text[1] %>% str_remove_all("[[:punct:]]"), " "))
+chars = unlist(str_split(input$Alphabets[1], ""))
+
+out = c()
+
+for (a in chars) {
+  i = which(str_detect(words, a))[1]
+  if (length(i)) {
+    out = c(out, words[i])
+    words = words[-(1:i)]
+  }
+}
+result = str_c(out, collapse = " ")
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Parse the packed text or string structure; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "800-899/827/827 Lorem Ipsum.xlsx"
+input = pd.read_excel(path, usecols="A:B", nrows=2)
+test = str(pd.read_excel(path, usecols="C", nrows=2).values[0][0])
+
+words = re.sub(r"[^\w\s]", "", str(input.loc[0, 'Text'])).split()
+chars = list(str(input.loc[0, 'Alphabets']))
+
+out = []
+
+for a in chars:
+    i = next((idx for idx, w in enumerate(words) if a in w), None)
+    if i is not None:
+        out.append(words[i])
+        words = words[i+1:]
+
+result = " ".join(out)
+print(result == test) #True
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Medium / Hard**
+
+The challenge relies on a non-obvious iterative rule rather than a single straight aggregation.
+
+### Related Challenges
+
+- [Excel Challenge 828](/challenges/excelbi/Excel828.html)
+- [Excel Challenge 829](/challenges/excelbi/Excel829.html)
+- [Excel Challenge 830](/challenges/excelbi/Excel830.html)

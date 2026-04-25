@@ -1,0 +1,170 @@
+---
+title: "Crispo - Excel Challenge 03 2026"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-01-18"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 03 2026](/challenges/images/Crispo032026.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Problem Solution offer 1 offer 2 offer 3 2nd Lowest
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+library(unpivotr)
+
+path <- "2026-01-18/Challenge 99.xlsx"
+input <- read_excel(path, range = "B3:K8", col_names = FALSE)
+test <- read_excel(path, range = "M4:P8")
+
+names(test) = c(
+  "1 lowest offer",
+  "1 lowest Cost",
+  "2 lowest offer",
+  "2 lowest Cost"
+)
+
+input_tidy <- input %>%
+  select(-1) %>%
+  as_cells() %>%
+  behead("up", "offer") %>%
+  fill(offer) %>%
+  behead("up", "val") %>%
+  select(-col) %>%
+  pivot_wider(names_from = val, values_from = chr) %>%
+  arrange(row) %>%
+  mutate(Cost = ifelse(Note %in% c("NA") | Cost == 0, "NA", Cost)) %>%
+  mutate(rank = rank(as.numeric(Cost), ties.method = "min"), .by = row) %>%
+  filter(rank != 3) %>%
+  select(row, offer, Cost, rank) %>%
+  mutate(offer = ifelse(Cost == "NA", "NA", offer)) %>%
+  pivot_wider(names_from = rank, values_from = c(offer, Cost)) %>%
+  select(Cost_1, offer_1, Cost_2, offer_2)
+
+names(input_tidy) = c(
+  "1 lowest offer",
+  "1 lowest Cost",
+  "2 lowest offer",
+  "2 lowest Cost"
+)
+
+all.equal(input_tidy, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data to the grain required by the task
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Challenge 99.xlsx"
+input_data = pd.read_excel(path, usecols="B:K", skiprows=2, nrows=6, header=None)
+test = pd.read_excel(path, usecols="M:P", skiprows=3, nrows=5)
+test.columns = ["1 lowest offer", "1 lowest Cost", "2 lowest offer", "2 lowest Cost"]
+
+offers = input_data.iloc[0, 1:].tolist()
+rows = []
+for ridx in range(1, input_data.shape[0]):
+    row = input_data.iloc[ridx, 1:].tolist()
+    parsed = []
+    for offer, value in zip(offers, row):
+        cost = str(value)
+        if cost == "0" or cost.upper() == "NA":
+            cost = "NA"
+            offer_name = "NA"
+        else:
+            offer_name = offer
+        parsed.append((offer_name, cost))
+    valid = [(o, c) for o, c in parsed if c != "NA"]
+    valid = sorted(valid, key=lambda x: float(x[1]))[:2]
+    while len(valid) < 2:
+        valid.append(("NA", "NA"))
+    rows.append({
+        "1 lowest offer": valid[0][0],
+        "1 lowest Cost": valid[0][1],
+        "2 lowest offer": valid[1][0],
+        "2 lowest Cost": valid[1][1],
+    })
+
+result = pd.DataFrame(rows)
+print(result.equals(test))
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines familiar Excel-style logic with at least one non-trivial reshape, grouping, or parsing step.
+
+-   The answer depends on getting the output layout exactly right.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 02 2026](Crispo 022026.qmd)
+-   [Crispo - Excel Challenge 04 2026](Crispo 042026.qmd)

@@ -1,0 +1,89 @@
+---
+title: "Excel BI - Excel Challenge 675"
+description: "🔰 Given 2 input numbers, create all possible permutations considering numbers as both positive and negative."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 675](/challenges/images/exc675.jpg)
+
+## Challenge Description
+
+🔰 Given 2 input numbers, create all possible permutations considering numbers as both positive and negative.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/675 Permutations with signs.xlsx"
+input = read_excel(path, range = "B2:C3")
+test  = read_excel(path, range = "B6:C13", col_names = c("Var1", "Var2")) %>% arrange(Var1, Var2)
+
+a = input$num1
+b = input$num2 
+
+as = c(a, -a)
+bs = c(b, -b)
+
+df = rbind(expand.grid(as, bs), expand.grid(bs, as)) %>% as.data.frame() %>%
+  arrange(Var1, Var2)
+
+all.equal(df, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import itertools
+
+path = "675 Permutations with signs.xlsx"
+input = pd.read_excel(path, usecols="B:C", nrows=2, skiprows=1)
+test = pd.read_excel(path, usecols="B:C", skiprows=4, nrows=9, names=["Var1", "Var2"]).sort_values(by=["Var1", "Var2"]).reset_index(drop=True)
+
+a, b = input.iloc[0, 0], input.iloc[0, 1]
+combinations = list(itertools.product([a, -a], [b, -b])) + list(itertools.product([b, -b], [a, -a]))
+results = pd.DataFrame(combinations, columns=['Var1', 'Var2']).sort_values(by=['Var1', 'Var2']).reset_index(drop=True)
+
+print(results.equals(test)) # True
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 676](/challenges/excelbi/Excel676.html)
+- [Excel Challenge 677](/challenges/excelbi/Excel677.html)
+- [Excel Challenge 678](/challenges/excelbi/Excel678.html)

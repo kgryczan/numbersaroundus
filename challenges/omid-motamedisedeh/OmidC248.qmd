@@ -1,0 +1,134 @@
+---
+title: "Omid - Challenge 248"
+description: "🔰 Calculate the login time for each user by computing the difference between each pair of consecutive Login and Logout actions."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 248](/challenges/images/OmidC248.jpg)
+
+## Challenge Description
+
+🔰 Calculate the login time for each user by computing the difference between each pair of consecutive Login and Logout actions.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/248/CH-248 Time Difference.xlsx"
+input = read_excel(path, range = "B2:D15")
+test = read_excel(path, range = "G2:H5")
+
+result = input %>%
+  arrange(`User ID`) %>%
+  mutate(Consecutive = lag(`User ID`) == `User ID` & lag(Action) == Action) %>%
+  filter(Consecutive != T | is.na(Consecutive)) %>%
+  select(-Consecutive) %>%
+  mutate(run = cumsum(Action == "Login")) %>%
+  pivot_wider(names_from = Action, values_from = Time) %>%
+  mutate(Duration = as.numeric(difftime(Logout, Login, units = "hours"))) %>%
+  summarise(`Time (Hour)` = floor(sum(Duration, na.rm = TRUE)), .by = `User ID`)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "200-299/248/CH-248 Time Difference.xlsx"
+input = pd.read_excel(path, usecols="B:D", skiprows=1, nrows=13)
+test = pd.read_excel(path, usecols="G:H", skiprows=1, nrows=3).rename(columns=lambda col: col.replace('.1', ''))
+input = input.sort_values(['User ID', 'Time'])
+input = input.loc[(input['User ID'].shift() != input['User ID']) | (input['Action'].shift() != input['Action'])]
+
+input['run'] = (input['Action'] == 'Login').cumsum()
+pivot = input.pivot_table(index=['User ID', 'run'], columns='Action', values='Time', aggfunc='first').reset_index()
+
+pivot['Duration'] = (pd.to_datetime(pivot['Logout']) - pd.to_datetime(pivot['Login'])).dt.total_seconds() / 3600
+result = pivot.groupby('User ID', as_index=False)['Duration'].sum()
+result['Time (Hour)'] = result['Duration'].fillna(0).astype(int)
+result = result[['User ID', 'Time (Hour)']]
+
+# To achieve expected result, rows 13 and 14 need to be switched.
+print(result)
+print(test)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 247](OmidC247.qmd)
+-   [Omid - Challenge 249](OmidC249.qmd)
+-   [Omid - Challenge 250](OmidC250.qmd)

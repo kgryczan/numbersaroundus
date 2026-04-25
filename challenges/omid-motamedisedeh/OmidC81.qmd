@@ -1,0 +1,137 @@
+---
+title: "Omid - Challenge 81"
+description: "🔰 The distance between cities and staff travels are provided in the question distance and travel tables."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 81](/challenges/images/OmidC81.jpg)
+
+## Challenge Description
+
+🔰 The distance between cities and staff travels are provided in the question distance and travel tables.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+
+path = "files/CH-081 Compaint grouping.xlsx"
+input1 = read_xlsx(path, range = "B2:F6")
+input2 = read_xlsx(path, range = "H2:J14")
+test  = read_xlsx(path, range = "K2:K14")
+
+result1 = input1 %>%
+  pivot_longer(cols = -c(`From-To`), names_to = "To", values_to = "Distance")
+
+result2 = input2 %>%
+  separate_rows(Path, sep = ",") %>%
+  mutate(to = lead(Path), .by = c(Date, `Staff ID`)) %>%
+  na.omit()
+
+result = result2 %>%
+  left_join(result1, by = c("Path" = "From-To", "to" = "To")) %>%
+  summarise(Distance = sum(Distance, na.rm = TRUE), .by = c(Date, `Staff ID`))
+
+identical(result$Distance, test$Distance)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-081 Compaint grouping.xlsx"
+
+input1 = pd.read_excel(path, skiprows=1, usecols="B:F", nrows= 4)
+input2 = pd.read_excel(path, skiprows=1, usecols="H:J")
+test = pd.read_excel(path, skiprows=1, usecols="K:K")
+
+result1 = input1.melt(id_vars=["From-To"], var_name="To", value_name="Distance")
+
+result2 = input2.assign(Path=input2["Path"].str.split(",")).explode("Path")
+result2["to"] = result2.groupby(["Date","Staff ID"])["Path"].shift(-1)
+result2 = result2.dropna()
+
+result = result2.merge(result1, left_on=["Path", "to"], right_on=["From-To", "To"])
+result = result.groupby(["Date", "Staff ID"]).agg({"Distance": "sum"}).reset_index()
+
+print(result["Distance"].equals(test["Distance"])) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 80](OmidC80.qmd)
+-   [Omid - Challenge 82](OmidC82.qmd)
+-   [Omid - Challenge 83](OmidC83.qmd)

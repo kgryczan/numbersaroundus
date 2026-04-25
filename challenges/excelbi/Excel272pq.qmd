@@ -1,0 +1,140 @@
+---
+title: "Excel BI - PowerQuery Challenge 272"
+description: "Date ID1 ID2 ID3 ID4 ID5"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 272](/challenges/images/exc272pq.jpg)
+
+## Challenge Description
+
+Date ID1 ID2 ID3 ID4 ID5
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_272.xlsx"
+input = read_excel(path, range = "A1:F5")
+test  = read_excel(path, range = "H1:N8")
+
+result = input %>%
+  pivot_longer(-Date, names_to = "IDS", values_to = "Value") %>%
+  separate_rows(Value, sep = ",") %>%
+  na.omit() %>%
+  mutate(Value = trimws(Value), rn = row_number(), .by = c(Date, IDS)) %>%
+  pivot_wider(names_from = IDS, values_from = Value) %>%
+  arrange(rn, Date) %>%
+  select(-rn) %>%
+  mutate(Seq = row_number(), .before = everything())
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "PQ_Challenge_272.xlsx"
+
+input = pd.read_excel(path, usecols="A:F", nrows=5)
+test = pd.read_excel(path, usecols="H:N", nrows=8).rename(columns=lambda x: x.split(".")[0])
+
+result = (
+    input.melt(id_vars=["Date"], var_name="Attribute", value_name="Value")
+    .dropna(subset=["Value"])
+    .assign(Value=lambda df: df["Value"].str.split(", "))
+    .explode("Value")
+    .assign(RowNumber=lambda df: df.groupby(["Date", "Attribute"]).cumcount() + 1)
+    .pivot(index=["Date", "RowNumber"], columns="Attribute", values="Value")
+    .reset_index()
+    .sort_values(by=["RowNumber", "Date"])
+    .drop(columns=["RowNumber"])
+    .reset_index(drop=True)
+)
+result.columns.name = None
+result.insert(0, "Seq", result.index + 1)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 271](Excel271pq.qmd)
+-   [Excel BI - Excel Challenge 652](Excel652.qmd)

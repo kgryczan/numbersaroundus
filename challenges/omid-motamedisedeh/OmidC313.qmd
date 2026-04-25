@@ -1,0 +1,136 @@
+---
+title: "Omid - Challenge 313"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 313](/challenges/images/OmidC313.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/300-399/313/CH-313 Table Transformation.xlsx"
+input = read_excel(path, range = "B2:J8")
+test  = read_excel(path, range = "L2:O7") %>% mutate(across(everything(), as.character))
+
+shift4 = function(df){
+  valid = !is.na(df) & str_trim(as.character(df)) != ""
+  start = max.col(valid, ties.method = "first")
+  start[!rowSums(valid)] = 1
+  map_dfr(seq_len(nrow(df)), function(i) {
+    v = unlist(df[i, ], use.names = FALSE)
+    vals = v[start[i] + 0:3]; length(vals) = 4
+    tibble(Date = vals[1], Product = vals[2], Customer = vals[3], Quantity = vals[4])
+  })
+}
+
+output = shift4(input) %>%
+  filter(row_number() > 1) %>%
+  mutate(Date = janitor::excel_numeric_to_date(as.numeric(Date)) %>% as.character())
+
+all.equal(output, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from pprint import pprint
+
+path = "300-399/313/CH-313 Table Transformation.xlsx"
+
+input = pd.read_excel(path, usecols="B:J", skiprows=1, nrows=7)
+test  = pd.read_excel(path, usecols="L:O", skiprows=1, nrows=5).astype(str)
+
+output = []
+for i, row in input.iterrows():
+    first_valid_index = row.first_valid_index()
+    last_index = row.last_valid_index()
+    if first_valid_index is not None and last_index is not None:
+        new_row = row.loc[first_valid_index:last_index]
+        new_row.index = [f"Column{j+1}" for j in range(len(new_row))]
+        output.append(new_row)
+
+output = pd.DataFrame(output).reset_index(drop=True)
+output.columns = output.iloc[0]
+output = output[1:].reset_index(drop=True)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 312](OmidC312.qmd)
+-   [Omid - Challenge 314](OmidC314.qmd)
+-   [Omid - Challenge 315](OmidC315.qmd)

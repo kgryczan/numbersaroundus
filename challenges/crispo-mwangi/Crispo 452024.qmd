@@ -1,0 +1,108 @@
+---
+title: "Crispo - Excel Challenge 45 2024"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2024-11-10"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 45 2024](/challenges/images/Crispo452024.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Item_5090_Group_4800_Location Item_5090_Group_4850_Location Item_5120_Group_4850_Location Item_5120_Group_4900_Location Item_5121_Group_5050_Location
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/Excel Challenge Nov 10th.xlsx"
+input = read_excel(path, range = "B3:B16")
+
+result = input %>%
+  mutate(change = Items != lag(Items)) %>%
+  replace_na(list(change = TRUE))
+
+print(result)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "files/Excel Challenge Nov 10th.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=2, nrows=14)
+
+input['change'] = input['Items'].ne(input['Items'].shift()).fillna(True)
+print(input)
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 44 2024](Crispo 442024.qmd)
+-   [Crispo - Excel Challenge 46 2024](Crispo 462024.qmd)

@@ -1,0 +1,115 @@
+---
+title: "Excel BI - Excel Challenge 678"
+description: "🔰 Find first 50 numbers (at least 2 digits) where List Even and Odd numbers in two separate columns."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 678](/challenges/images/exc678.jpg)
+
+## Challenge Description
+
+🔰 Find first 50 numbers (at least 2 digits) where List Even and Odd numbers in two separate columns.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/678 Perfect Square Even if Reversed.xlsx"
+test  = read_excel(path, range = "A2:B40")
+
+is_square = function(n) {
+  root = sqrt(n)
+  root == floor(root)
+}
+
+reverse_digits_vec = function(n) {
+  as.integer(sapply(n, function(x) paste0(rev(strsplit(as.character(x), "")[[1]]), collapse = "")))
+}
+
+n = 1:40000
+squares = n^2
+rev_squares = reverse_digits_vec(squares)
+
+valid = is_square(rev_squares) & (squares %% 2 != rev_squares %% 2)
+result = squares[valid][1:50] %>% 
+    as_tibble() %>%
+    mutate(evenodd = ifelse(value %% 2 == 0, "Even", "Odd")) %>%
+    mutate(rn = row_number(), .by = evenodd) %>%
+    pivot_wider(names_from = evenodd, values_from = value) %>%
+    select(-rn)
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import math
+import pandas as pd
+from pandas import read_excel
+
+path = "678 Perfect Square Even if Reversed.xlsx"
+test = read_excel(path,  usecols="A:B", skiprows=1, nrows=39)
+
+def is_square(n):
+    root = int(math.isqrt(n))
+    return root * root == n
+
+def reverse_digits(n):
+    return int(str(n)[::-1])
+
+squares = [i * i for i in range(1, 40000)]
+valid = [sq for sq in squares 
+         if is_square(reverse_digits(sq)) and (sq % 2 != reverse_digits(sq) % 2)]
+
+result = valid[:50]
+
+max_len = max(len([num for num in result if num % 2 == 0]), len([num for num in result if num % 2 != 0]))
+df = pd.DataFrame({
+    'Even': [num for num in result if num % 2 == 0] + [None] * (max_len - len([num for num in result if num % 2 == 0])),
+    'Odd': [num for num in result if num % 2 != 0] + [None] * (max_len - len([num for num in result if num % 2 != 0]))
+})
+
+print(df.equals(test))
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 679](/challenges/excelbi/Excel679.html)
+- [Excel Challenge 680](/challenges/excelbi/Excel680.html)
+- [Excel Challenge 681](/challenges/excelbi/Excel681.html)

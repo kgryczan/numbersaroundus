@@ -1,0 +1,124 @@
+---
+title: "Excel BI - Excel Challenge 919"
+description: "🔰 Tag each commodity price as yearly, quarterly, and monthly high or low wherever the row matches those extremes."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-23"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 919](/challenges/images/exc919.jpg)
+
+## Challenge Description
+
+🔰 The given data is for a commodity for the entire year. Populate yearly, quarterly, and monthly low/high labels for each row, combining all applicable labels into one output string.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(lubridate)
+
+path <- "Excel/900-999/919/919 Low High.xlsx"
+input <- read_excel(path, range = "A1:B262")
+test <- read_excel(path, range = "C1:C262") %>%
+  replace_na(list(`Answer Expected` = ""))
+
+result <- input %>%
+  mutate(quarter = quarter(Date), month = month(Date)) %>%
+  mutate(
+    yearly = case_when(
+      Price == max(Price) ~ "Yearly High",
+      Price == min(Price) ~ "Yearly Low",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  mutate(
+    quarterly = case_when(
+      Price == max(Price) ~ "Quarterly High",
+      Price == min(Price) ~ "Quarterly Low",
+      TRUE ~ NA_character_
+    ),
+    .by = quarter
+  ) %>%
+  mutate(
+    monthly = case_when(
+      Price == max(Price) ~ "Monthly High",
+      Price == min(Price) ~ "Monthly Low",
+      TRUE ~ NA_character_
+    ),
+    .by = month
+  ) %>%
+  select(-quarter, -month) %>%
+  unite("result", yearly, quarterly, monthly, sep = ", ", remove = TRUE, na.rm = TRUE)
+
+all.equal(result$result, test$`Answer Expected`)
+# one row incorrect in original
+```
+
+### R Analysis
+
+- **Logic**: Tag extremes at three independent time scopes, then merge all non-empty labels into one comma-separated result.
+- **Strengths**: The grouped logic mirrors the business question exactly and allows the same row to belong to several high/low categories at once.
+- **Areas for Improvement**: One workbook comparison row appears to be wrong, so the mismatch should be treated as incorrect comparison data rather than incorrect tagging logic.
+- **Gem**: The output is richer than a single class because one observation can simultaneously be a monthly, quarterly, and yearly extreme.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import numpy as np
+import pandas as pd
+
+path = "Excel/900-999/919/919 Low High.xlsx"
+
+input = pd.read_excel(path, usecols="A:B", nrows=262)
+test = pd.read_excel(path, usecols="C", nrows=262).fillna({"Answer Expected": ""})
+
+input["quarter"] = pd.to_datetime(input["Date"]).dt.quarter
+input["month"] = pd.to_datetime(input["Date"]).dt.month
+input["yearly"] = input["Price"].apply(
+    lambda x: "Yearly High" if x == input["Price"].max() else ("Yearly Low" if x == input["Price"].min() else np.nan)
+)
+input["quarterly"] = input.groupby("quarter")["Price"].transform(
+    lambda x: x.apply(lambda y: "Quarterly High" if y == x.max() else ("Quarterly Low" if y == x.min() else np.nan))
+)
+input["monthly"] = input.groupby("month")["Price"].transform(
+    lambda x: x.apply(lambda y: "Monthly High" if y == x.max() else ("Monthly Low" if y == x.min() else np.nan))
+)
+input["result"] = input[["yearly", "quarterly", "monthly"]].apply(
+    lambda row: ", ".join(row.dropna()), axis=1
+)
+input = input.drop(columns=["quarter", "month", "yearly", "quarterly", "monthly"])
+
+print(input["result"].equals(test["Answer Expected"]))
+# one row incorrect in original
+```
+
+### Python
+
+The Python version computes yearly, quarterly, and monthly tags independently, then concatenates the labels on each row. That keeps the multi-scope nature of the puzzle explicit and aligns with the challenge wording even though one provided comparison row appears to be wrong.
+
+## **Difficulty Level**
+
+**Medium**
+
+The calculations themselves are simple, but the puzzle becomes more interesting because each row can accumulate several labels from different reporting windows.
+
+### Related Challenges
+
+- [Excel Challenge 918](/challenges/excelbi/Excel918.html)
+- [Excel Challenge 931](/challenges/excelbi/Excel931.html)
+- [Excel Challenge 910](/challenges/excelbi/Excel910.html)

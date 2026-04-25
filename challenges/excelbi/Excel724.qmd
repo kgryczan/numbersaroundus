@@ -1,0 +1,100 @@
+---
+title: "Excel BI - Excel Challenge 724"
+description: "🔰 Strings Answer Expected f2G9 G9f2 K3t1Z Z1t3K abCDe eDCba 925057 750529"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 724](/challenges/images/exc724.jpg)
+
+## Challenge Description
+
+🔰 Strings Answer Expected f2G9 G9f2 K3t1Z Z1t3K abCDe eDCba 925057 750529
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/724/724 Reverse alphabets and numbers separately.xlsx"
+input = read_excel(path, range = "A1:A11")
+test = read_excel(path, range = "B1:B11")
+
+reverse_independently ==
+  function(x) {
+    chars = stringr::str_split(x, "", simplify = TRUE)
+    is_letter = stringr::str_detect(chars, "[a-zA-Z]")
+    is_digit = stringr::str_detect(chars, "[0-9]")
+    chars[is_letter] = rev(chars[is_letter])
+    chars[is_digit] = rev(chars[is_digit])
+    stringr::str_c(chars, collapse = "")
+  }
+
+result = input %>%
+  mutate(Reversed = map_chr(Strings, reverse_independently))
+
+all.equal(result$Reversed, test$`Answer Expected`, check.attributes = FALSE)
+# [1] "1 string mismatch"
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "700-799/724/724 Reverse alphabets and numbers separately.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=11)
+test = pd.read_excel(path, usecols="B", nrows=11)
+
+def reverse_independently(s):
+    s = str(s)
+    letters = [c for c in s if c.isalpha()][::-1]
+    digits = [c for c in s if c.isdigit()][::-1]
+    li = iter(letters)
+    di = iter(digits)
+    return ''.join(next(li) if c.isalpha() else next(di) if c.isdigit() else c for c in s)
+
+input['Reversed'] = input.iloc[:,0].map(reverse_independently)
+
+print(input["Reversed"].equals(test['Answer Expected']))
+# One row is different, but the rest are correct
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 725](/challenges/excelbi/Excel725.html)
+- [Excel Challenge 726](/challenges/excelbi/Excel726.html)
+- [Excel Challenge 727](/challenges/excelbi/Excel727.html)

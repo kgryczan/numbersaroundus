@@ -1,0 +1,110 @@
+---
+title: "Omid - Challenge 302"
+description: "🔰 Question ID Value 1 Value 2 Value 3 A B C"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 302](/challenges/images/OmidC302.jpg)
+
+## Challenge Description
+
+🔰 Question ID Value 1 Value 2 Value 3 A B C
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/300-399/302/CH-302 Remove Duplicate Values.xlsx"
+input = read_excel(path, range = "B2:E11")
+test  = read_excel(path, range = "G2:J8")
+
+result = input %>%
+  mutate(all_sorted = paste(sort(c_across(starts_with("Value"))), collapse = ","), .by = ID) %>%
+  distinct(all_sorted, .keep_all = TRUE) %>%
+  select(-all_sorted)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "300-399/302/CH-302 Remove Duplicate Values.xlsx"
+input = pd.read_excel(path, usecols="B:E", skiprows=1, nrows=10)
+test = pd.read_excel(path, usecols="G:J", skiprows=1, nrows=6).rename(columns=lambda col: col.replace('.1', ''))
+
+input['all_sorted'] = input.filter(like="Value").apply(lambda r: ','.join(map(str, sorted(r))), axis=1)
+result = input.drop_duplicates('all_sorted').drop('all_sorted', axis=1).reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 301](OmidC301.qmd)
+-   [Omid - Challenge 303](OmidC303.qmd)
+-   [Omid - Challenge 304](OmidC304.qmd)

@@ -1,0 +1,149 @@
+---
+title: "Excel BI - PowerQuery Challenge 187"
+description: "Continent Year Sales Europe Asia Australia"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 187](/challenges/images/exc187pq.jpg)
+
+## Challenge Description
+
+Continent Year Sales Europe Asia Australia
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("Power Query/PQ_Challenge_187.xlsx", range = "A1:C12")
+test  = read_excel("Power Query/PQ_Challenge_187.xlsx", range = "E1:G30")
+
+all <- expand_grid(Continent = unique(sort(input$Continent)), Year = unique(sort(input$Year)))
+
+result1 <- all %>%
+  left_join(input, by = c("Continent", "Year")) %>%
+  mutate(Sales = replace_na(Sales, 0),
+         Year = as.character(Year))
+
+years <- unique(sort(result1$Year))
+
+empty_row <- tibble(Continent = NA, Year = NA, Sales = NA_real_)
+
+totals <- map_dfr(years, ~ {
+  yearly_data <- result1 %>%
+    filter(Year == .x)
+  total_row <- summarise(yearly_data, Continent = "TOTAL", Year = .x, Sales = sum(Sales))
+  bind_rows(yearly_data, total_row, empty_row)
+})
+
+grand_total <- summarise(result1, Continent = "GRAND TOTAL", Year = "2010-2013", Sales = sum(Sales))
+
+result <- bind_rows(totals, grand_total)
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import numpy as np
+import pandas as pd
+from itertools import product
+
+input = pd.read_excel("PQ_Challenge_187.xlsx",  usecols="A:C",  nrows=11)
+test = pd.read_excel("PQ_Challenge_187.xlsx", usecols="E:G", nrows=30)
+test.columns = test.columns.str.replace('.1', '')
+test["Year"] = test["Year"].astype(str)
+test['Continent'] = np.where(test['Continent'].isna(), 'NA', test['Continent'])
+
+input['Continent'] = np.where(input['Continent'].isna(), 'NA', input['Continent'])
+input['Year'] = input['Year'].astype(str)
+continents = sorted(input['Continent'].unique())
+years = sorted(input['Year'].unique())
+all_combinations = pd.DataFrame(list(product(continents, years)), columns=['Continent', 'Year'])
+result1 = all_combinations.merge(input, on=['Continent', 'Year'], how='left').fillna({'Sales': 0})
+years = result1['Year'].unique()
+empty_row = pd.DataFrame({'Continent': [np.nan], 'Year': [np.nan], 'Sales': [np.nan]})
+totals = pd.concat([
+    pd.concat([result1[result1['Year'] == year], 
+               pd.DataFrame({'Continent': ['TOTAL'], 'Year': [year], 'Sales': [result1[result1['Year'] == year]['Sales'].sum()]}), 
+               empty_row]) 
+    for year in years
+])
+grand_total = pd.DataFrame({'Continent': ['GRAND TOTAL'], 'Year': ['2010-2013'], 'Sales': [result1['Sales'].sum()]})
+result = pd.concat([totals, grand_total], ignore_index=True)
+result = pd.concat([test, result], axis=1)
+print(result)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The transformation rule is readable, but the final layout still requires a careful implementation.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 186](Excel186pq.qmd)

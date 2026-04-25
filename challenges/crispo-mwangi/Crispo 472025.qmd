@@ -1,0 +1,119 @@
+---
+title: "Crispo - Excel Challenge 47 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-11-23"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 47 2025](/challenges/images/Crispo472025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Problem Solution Criteria Value → To Support the Challenges
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path <- "2025-11-23/Challenge 80.xlsx"
+input <- read_excel(path, range = "B3:C13")
+test  <- read_excel(path, range = "E3:F13")
+
+result = input %>%
+  mutate(val2 = ifelse(Criteria == T, Value, NA)) %>%
+  fill(val2, .direction = "up") %>%
+  replace_na(list(val2 = 0)) %>%
+  mutate(val3 = case_when(
+    Criteria == T ~ 0,
+    Criteria == F ~ Value + coalesce(NA, val2))) %>%
+  select(Criteria, Value = val3)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input = pd.read_excel("2025-11-23/Challenge 80.xlsx", usecols="B:C", skiprows=2, nrows=11)
+test = pd.read_excel("2025-11-23/Challenge 80.xlsx", usecols="E:F", skiprows=2, nrows=11).rename(columns=lambda c: c.replace('.1', ''))
+
+input["val2"] = input["Value"].where(input["Criteria"], pd.NA).bfill().astype(float).fillna(0)
+input["val3"] = input.apply(lambda r: 0 if r["Criteria"] else r["Value"] + r["val2"], axis=1)
+result = input[["Criteria", "val3"]].rename(columns={"val3": "Value"})
+result["Value"] = result["Value"].astype(int)
+
+print(result.equals(test)) # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 46 2025](Crispo 462025.qmd)
+-   [Crispo - Excel Challenge 48 2025](Crispo 482025.qmd)

@@ -1,0 +1,127 @@
+---
+title: "Crispo - Excel Challenge 09 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-03-02"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 09 2025](/challenges/images/Crispo092025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ ⭐Extract the Date, Day of the Week and Time
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+library(lubridate)
+library(hms)
+
+path = "files/Ex-Challenge 09 2025.xlsx"
+input = read_excel(path, range = "B3:B7")
+test  = read_excel(path, range = "D3:F7") %>%
+  mutate(Time = as_hms(Time) %>% as.POSIXct())
+
+result = input %>%
+  mutate(Dates = gsub("\\.", "", Dates)) %>%
+  mutate(Dates = parse_date_time(Dates, "b. d, Y, I:M p")) %>%
+  mutate(Date = as.Date(Dates) %>% as.POSIXct(),
+         Day = wday(Dates, label = TRUE, abbr = FALSE, locale = "en") %>% as.character(),
+         Time = as_hms(Dates) %>% as.POSIXct()) %>%
+  select(-Dates)
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "files/Ex-Challenge 09 2025.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=2, nrows=5)
+test = pd.read_excel(path, usecols="D:F", skiprows=2, nrows=5)
+
+input['Dates'] = input['Dates'].apply(lambda x: x.split()[0][:3] + ' ' + ' '.join(x.split()[1:]))
+input['Dates'] = input['Dates'].str.replace('.', '', regex=False)
+input['Dates'] = input['Dates'].str.replace('am', 'AM').str.replace('pm', 'PM')
+
+input['Date'] = pd.to_datetime(input['Dates']).dt.date.astype('datetime64[ns]')
+input['Day'] = pd.to_datetime(input['Dates']).dt.day_name()
+input['Time'] = pd.to_datetime(input['Dates']).dt.time
+
+input = input.drop(columns=['Dates'])
+
+print(input.equals(test)) # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 08 2025](Crispo 082025.qmd)
+-   [Crispo - Excel Challenge 10 2025](Crispo 102025.qmd)

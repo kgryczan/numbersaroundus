@@ -1,0 +1,148 @@
+---
+title: "Omid - Challenge 165"
+description: "🔰 165: Customer Grouping Based on monthly transactions, categorize each customer for each month into one of the following groups:"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 165](/challenges/images/OmidC165.jpg)
+
+## Challenge Description
+
+🔰 165: Customer Grouping Based on monthly transactions, categorize each customer for each month into one of the following groups:
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "files/CH-165 Customer Grouping.xlsx"
+input <- read_excel(path, range = "B2:D11")
+test <- read_excel(path, range = "F2:J6")
+
+grid <- expand.grid(unique(input$Month), unique(input$Customer)) %>%
+  left_join(input, by = c("Var1" = "Month", "Var2" = "Customer")) %>%
+  rename(Month = Var1, Customer = Var2) %>%
+  replace_na(list(Quantity = 0)) %>%
+  arrange(Customer, Month) %>%
+  mutate(FirstDate = min(Month[Quantity > 0]),
+         status = case_when(
+           Month == FirstDate ~ "New",
+           Month < FirstDate & Quantity == 0 ~ "",
+           Month != FirstDate & Quantity == 0 ~ "Inactive",
+           Month != FirstDate & Quantity > 0 & lag(Quantity) == 0 ~ "Returning",
+           Month != FirstDate & Quantity > 0 & lag(Quantity) > 0 ~ "ACTIVE",
+           TRUE ~ ""
+         ), .by = Customer) %>%
+  filter(Month > 1, status != "") %>%
+  select(Month, Customer, status) %>%
+  summarise(Customer = str_c(Customer, collapse = ", "), .by = c(Month, status)) %>%
+  pivot_wider(names_from = status, values_from = Customer) %>%
+  relocate(New, .after = Month)
+
+all.equal(grid, test, check.attributes = FALSE) 
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-165 Customer Grouping.xlsx"
+input = pd.read_excel(path, usecols="B:D", skiprows=1, nrows=10)
+test = pd.read_excel(path, usecols="F:J", skiprows=1, nrows=4).rename(columns=lambda x: x.split('.')[0])
+
+grid = input.set_index(['Month', 'Customer']).unstack(fill_value=0).stack().reset_index()
+
+def get_status(row, first_date):
+    if row['Month'] == first_date:
+        return "New"
+    if row['Quantity'] == 0:
+        return "" if row['Month'] < first_date else "Inactive"
+    return "Returning" if row['Quantity_lag'] == 0 else "ACTIVE"
+
+grid['Quantity_lag'] = grid.groupby('Customer')['Quantity'].shift(1).fillna(0)
+grid['FirstDate'] = grid.groupby('Customer')['Month'].transform(lambda x: x[grid['Quantity'] > 0].min())
+grid['status'] = grid.apply(lambda row: get_status(row, row['FirstDate']), axis=1)
+
+grid = grid[(grid['Month'] > 1) & (grid['status'] != "")]
+grid = grid.groupby(['Month', 'status'])['Customer'].apply(', '.join).unstack().reset_index()
+grid = grid[['Month', 'New', 'ACTIVE', 'Inactive', 'Returning']]
+grid.columns.name = None
+
+print(grid.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 164](OmidC164.qmd)
+-   [Omid - Challenge 166](OmidC166.qmd)
+-   [Omid - Challenge 167](OmidC167.qmd)

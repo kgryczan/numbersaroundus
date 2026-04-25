@@ -1,0 +1,142 @@
+---
+title: "Excel BI - PowerQuery Challenge 149"
+description: "The data is for business trip start and end dates of employees. Split the recors of an employee month-wise and calculate the amount of per diem paid in that month which is equal to number of days * Per Diem."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 149](/challenges/images/exc149pq.jpg)
+
+## Challenge Description
+
+The data is for business trip start and end dates of employees. Split the recors of an employee month-wise and calculate the amount of per diem paid in that month which is equal to number of days * Per Diem.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("Power Query/PQ_Challenge_149.xlsx", range = "A1:D6") %>%
+  janitor::clean_names()
+test  = read_excel("Power Query/PQ_Challenge_149.xlsx", range = "F1:I12") %>%
+  janitor::clean_names() %>% 
+  arrange(employee, start_date)
+
+result = input %>%
+  mutate(days = map2(start_date, end_date, ~ seq(.x, .y, by = "day"))) %>%
+  unnest(days) %>%
+  mutate(month = floor_date(days, "month")) %>%
+  select(-start_date, -end_date) %>%
+  group_by(employee, per_diem, month) %>%
+  summarise(n_days = n(),
+            start_date = min(days),
+            end_date = max(days)) %>%
+  ungroup() %>%
+  mutate(total = n_days * per_diem) %>%
+  select(employee, start_date, end_date, per_diem = total) %>%
+  arrange(employee, start_date)
+
+identical(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input_data = pd.read_excel("PQ_Challenge_149.xlsx", usecols="A:D", nrows=6)
+input_data.columns = [c.strip().lower() for c in input_data.columns]
+test = pd.read_excel("PQ_Challenge_149.xlsx", usecols="F:I", nrows=12)
+test.columns = [c.strip().lower() for c in test.columns]
+test = test.sort_values(["employee", "start_date"]).reset_index(drop=True)
+
+result = input_data.copy()
+result["days"] = result.apply(lambda r: pd.date_range(r["start_date"], r["end_date"], freq="D"), axis=1)
+result = result.explode("days")
+result["month"] = result["days"].values.astype("datetime64[M]")
+result = (
+    result.groupby(["employee", "per_diem", "month"], as_index=False)
+    .agg(n_days=("days", "size"), start_date=("days", "min"), end_date=("days", "max"))
+)
+result["per_diem"] = result["n_days"] * result["per_diem"]
+result = result[["employee", "start_date", "end_date", "per_diem"]].sort_values(["employee", "start_date"]).reset_index(drop=True)
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 148](Excel148pq.qmd)

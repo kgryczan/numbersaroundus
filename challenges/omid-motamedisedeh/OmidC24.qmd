@@ -1,0 +1,169 @@
+---
+title: "Omid - Challenge 24"
+description: "🔰 Highlight Merged cells In Conditional Formatting write a formula to highlight the merged cells."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 24](/challenges/images/OmidC24.jpg)
+
+## Challenge Description
+
+🔰 Highlight Merged cells In Conditional Formatting write a formula to highlight the merged cells.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(openxlsx2)
+
+setwd("~/omids_excel_challenges/files/")
+file <- "CH-024 Hilight merged dcells.xlsx"
+wb = wb_load(file)
+
+df = wb$to_df(fill_merged_cells = F,  dims = "B2:I14", col_names = T) 
+
+process_rows <- function(df, i) {
+  df[i,] %>%
+    t() %>% 
+    as.data.frame() %>% 
+    rownames_to_column("row") %>%
+    select(-row) %>%
+    mutate(row = i, col = row_number()) %>%
+    rename(text = 1) %>%
+    mutate(gr = cumsum(!is.na(text))) %>%
+    filter(n() > 1, .by = gr) %>%
+    unite("pos", row, col, sep = "_") %>%
+    select(pos) %>%
+    unlist()
+}
+
+process_cols <- function(df, i) {
+  df[,i] %>% 
+    as.data.frame() %>% 
+    mutate(col = i, row = row_number()) %>%
+    rename(text = 1) %>%
+    mutate(gr = cumsum(!is.na(text))) %>%
+    filter(n() > 1, .by = gr) %>%
+    unite("pos", row, col, sep = "_") %>%
+    select(pos) %>%
+    unlist()
+}
+
+rows_merged <- map(1:3, ~process_rows(df, .x)) %>% reduce(c) %>% unique()
+cols_merged <- map(1:ncol(df), ~process_cols(df, .x)) %>% reduce(c) %>% unique()
+
+merged_cells_positions <- union(rows_merged, cols_merged) %>%
+  unique()
+
+positions = merged_cells_positions %>% 
+  as.tibble() %>%
+  separate(value, c("row", "col"), sep = "_") %>%
+  mutate(row = as.numeric(row), col = as.numeric(col)) %>%
+  mutate(val = "X")
+
+all_grid = expand.grid(row = 1:12, col = 1:8) %>%
+  left_join(positions, by = c("row", "col")) %>%
+  mutate(val = ifelse(is.na(val), "", val)) %>%
+  pivot_wider(names_from = col, values_from = val) %>%
+  select(-row) 
+
+view(all_grid)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+from openpyxl import load_workbook
+import pandas as pd
+
+path = "CH-024 Hilight merged dcells.xlsx"
+wb = load_workbook(path)
+ws = wb.active
+
+target_rows = range(2, 15)   # B2:I14 source region
+target_cols = range(2, 10)
+merged = set()
+
+for merged_range in ws.merged_cells.ranges:
+    min_col, min_row, max_col, max_row = merged_range.bounds
+    for row in range(max(min_row, 2), min(max_row, 14) + 1):
+        for col in range(max(min_col, 2), min(max_col, 9) + 1):
+            merged.add((row - 1, col - 1))
+
+rows = []
+for r in range(1, 13):
+    row = []
+    for c in range(1, 9):
+        row.append("X" if (r, c) in merged else "")
+    rows.append(row)
+
+result = pd.DataFrame(rows)
+print(result)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 23](OmidC23.qmd)
+-   [Omid - Challenge 25](OmidC25.qmd)
+-   [Omid - Challenge 26](OmidC26.qmd)

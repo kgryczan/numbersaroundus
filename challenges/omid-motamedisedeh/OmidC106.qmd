@@ -1,0 +1,112 @@
+---
+title: "Omid - Challenge 106"
+description: "🔰 Result Question Japan Australia France Netherlands Great Britain USA"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 106](/challenges/images/OmidC106.jpg)
+
+## Challenge Description
+
+🔰 Result Question Japan Australia France Netherlands Great Britain USA
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-106 Custom Rank.xlsx"
+input = read_excel(path, range = "C2:G12")
+test  = read_excel(path, range = "L2:M12")
+
+# approach 1
+result = input[order(-input$Gold, -input$Silver, -input$Bronze),] 
+identical(result$Country, test$Country) 
+# [1] TRUE
+
+# approach 2
+
+result = input %>% arrange(-Gold, -Silver, -Bronze)
+identical(result$Country, test$Country)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd 
+
+path = "CH-106 Custom Rank.xlsx"
+input = pd.read_excel(path, usecols="C:G", skiprows=1)
+test  = pd.read_excel(path, usecols="L:M", skiprows=1)
+test.columns = test.columns.str.replace(".1", "")
+
+result = input.set_index(["Gold", "Silver", "Bronze"])
+result = result.sort_index(ascending=[False, False, False]).reset_index()
+
+print(result["Country"].equals(test["Country"])) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 105](OmidC105.qmd)
+-   [Omid - Challenge 107](OmidC107.qmd)
+-   [Omid - Challenge 108](OmidC108.qmd)

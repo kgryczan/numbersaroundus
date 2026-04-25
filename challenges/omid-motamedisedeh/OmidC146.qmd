@@ -1,0 +1,116 @@
+---
+title: "Omid - Challenge 146"
+description: "🔰 Challenge 146: Column Splitting!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 146](/challenges/images/OmidC146.jpg)
+
+## Challenge Description
+
+🔰 Challenge 146: Column Splitting!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-146 Column Splitting.xlsx"
+input = read_excel(path, range = "B2:B8")
+test  = read_excel(path, range = "D2:F8")
+
+result = input %>%
+  separate(ID, into = c("ID.1", "ID.2", "ID.3"), sep = "\\|", fill = "right") %>%
+  mutate(ID.1 = ifelse(is.na(ID.1), NA, ID.1),
+         ID.2 = ifelse(is.na(ID.2), NA, paste(ID.1, ID.2, sep = "")),
+         ID.3 = ifelse(is.na(ID.3), NA, paste(ID.2, ID.3, sep = "")))
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "CH-146 Column Splitting.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=7)
+test = pd.read_excel(path, usecols="D:F", skiprows=1, nrows=7)
+
+input[['ID.1', 'ID.2', 'ID.3']] = input['ID'].str.split('|', expand=True)
+
+input[['ID.1', 'ID.2', 'ID.3']] = input[['ID.1', 'ID.2', 'ID.3']].apply(lambda col: col.fillna(pd.NA))
+input['ID.2'] = input.apply(lambda row: np.NaN if pd.isna(row['ID.2']) else f"{row['ID.1']}{row['ID.2']}", axis=1)
+input['ID.3'] = input.apply(lambda row: np.NaN if pd.isna(row['ID.3']) else f"{row['ID.2']}{row['ID.3']}", axis=1)
+input = input.drop(columns=['ID'])
+
+print(input.equals(test))   # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 145](OmidC145.qmd)
+-   [Omid - Challenge 147](OmidC147.qmd)
+-   [Omid - Challenge 148](OmidC148.qmd)

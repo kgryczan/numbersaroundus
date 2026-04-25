@@ -1,0 +1,137 @@
+---
+title: "Omid - Challenge 105"
+description: "🔰 In the question table, where some passwords are provided, extract the 6 most commonly used characters across all the passwords and count their repetitions."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 105](/challenges/images/OmidC105.jpg)
+
+## Challenge Description
+
+🔰 In the question table, where some passwords are provided, extract the 6 most commonly used characters across all the passwords and count their repetitions.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-105 Character Repetition.xlsx"
+input = read_excel(path, range = "B2:B12")
+test = read_excel(path, range = "D2:E8")
+
+result = input %>%
+  mutate(Password = Password %>%
+           str_to_lower()) %>%
+  separate_rows(Password, sep = "") %>%
+  select(Character = Password) %>%
+  summarise(Repitation = n() %>% as.numeric(), .by = Character) %>%
+  filter(Character != "") %>%
+  arrange(desc(Repitation), Character) %>%
+  head()
+
+identical(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-105 Character Repetition.xlsx"
+input = pd.read_excel(path, usecols = "B", skiprows = 1, nrows = 10)
+test  = pd.read_excel(path, usecols = "D:E", skiprows = 1, nrows = 6)
+
+
+result = (
+    input
+    .assign(Password=lambda df: df['Password'].str.lower())
+    .assign(Character=lambda df: df['Password'].str.split(''))
+    .explode('Character')
+    .groupby('Character', as_index=False)
+    .size()
+    .rename(columns={'size': 'Repitation'})
+    .query("Character != ''")
+    .sort_values(by=['Repitation', 'Character'], ascending=[False, True])
+    .reset_index(drop=True)
+    .head(6)
+)
+
+print(result.equals(test))  # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 104](OmidC104.qmd)
+-   [Omid - Challenge 106](OmidC106.qmd)
+-   [Omid - Challenge 107](OmidC107.qmd)

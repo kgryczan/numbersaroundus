@@ -1,0 +1,88 @@
+---
+title: "Excel BI - Excel Challenge 787"
+description: "🔰 List the Question No & Question with the correct option and answer."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 787](/challenges/images/exc787.jpg)
+
+## Challenge Description
+
+🔰 List the Question No & Question with the correct option and answer.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("Excel/700-799/787/787 Right Answer Selection.xlsx", range = "A2:C14")
+test  = read_excel("Excel/700-799/787/787 Right Answer Selection.xlsx", range = "E2:H5")
+
+r1 = input %>% filter(str_detect(No, "^[0-9]+$") | Correct == "Y") %>% select(-Correct)
+
+result = bind_cols(
+  filter(r1, str_detect(No, "^[0-9]+$")),
+  filter(r1, !str_detect(No, "^[0-9]+$"))
+) %>% set_names(colnames(test)) %>% mutate(No = as.integer(No))
+
+all.equal(result, test)
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/787/787 Right Answer Selection.xlsx"
+
+input = pd.read_excel(path, usecols="A:C", skiprows=1, nrows=13)
+test = pd.read_excel(path, usecols="E:H", skiprows=1, nrows=3).rename(columns=lambda col: col.replace('.1', ''))
+
+r1 = input[input['No'].astype(str).str.match(r'^\d+$') | (input['Correct'] == 'Y')].drop(columns=['Correct'])
+part1 = r1[r1['No'].astype(str).str.match(r'^\d+$')].reset_index(drop=True)
+part2 = r1[~r1['No'].astype(str).str.match(r'^\d+$')].reset_index(drop=True)
+result = pd.concat([part1, part2], axis=1)
+result.columns = test.columns
+result['No'] = result['No'].astype(int)
+
+print(result.equals(test))
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 788](/challenges/excelbi/Excel788.html)
+- [Excel Challenge 789](/challenges/excelbi/Excel789.html)
+- [Excel Challenge 790](/challenges/excelbi/Excel790.html)

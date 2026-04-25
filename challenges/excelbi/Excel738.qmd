@@ -1,0 +1,118 @@
+---
+title: "Excel BI - Excel Challenge 738"
+description: "🔰 Sequence Answer Expected 4, 2, 3, 1 2,, 3, 4 3, 1, 4 3, 4, 1 4, 1, 2, 3 2, 3, 4, 1 4,, 2, 3 2, 1,, 3"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 738](/challenges/images/exc738.jpg)
+
+## Challenge Description
+
+🔰 Sequence Answer Expected 4, 2, 3, 1 2,, 3, 4 3, 1, 4 3, 4, 1 4, 1, 2, 3 2, 3, 4, 1 4,, 2, 3 2, 1,, 3
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/700-799/738/738 Reorder Columns.xlsx"
+input <- read_excel(path, range = "A1:E10")
+test <- read_excel(path, range = "G1:J10", .name_repair = "unique")
+
+result <- input %>%
+  mutate(
+    Sequence2 = str_split(Sequence, ", ") %>%
+      map(~ as.numeric(trimws(.x)) %>% replace_na(0))
+  ) %>%
+  mutate(
+    Sum = map_dbl(Sequence2, sum),
+    missing = 10 - Sum,
+    Sequence2 = case_when(
+      Sum == 10 ~ Sequence2,
+      map_lgl(Sequence2, ~ any(.x == 0)) ~
+        map2(Sequence2, missing, ~ replace(.x, .x == 0, .y)),
+      TRUE ~ map2(Sequence2, missing, ~ c(.x, .y))
+    )
+  ) %>%
+  select(`1`, `2`, `3`, `4`, Sequence2) %>%
+  mutate(rn = row_number()) %>%
+  unnest(Sequence2) %>%
+  mutate(across(
+    `1`:`4`,
+    ~ ifelse(Sequence2 == as.numeric(cur_column()), .x, NA)
+  )) %>%
+  select(-Sequence2) %>%
+  unite("Sequence", `1`, `2`, `3`, `4`, sep = ", ", na.rm = TRUE) %>%
+  summarise(Sequence = paste(Sequence, collapse = ", "), .by = rn) %>%
+  separate(
+    Sequence,
+    into = c("1", "2", "3", "4"),
+    sep = ", ",
+    fill = "right",
+    convert = TRUE
+  ) %>%
+  select(-rn)
+
+all.equal(test, result, check.attributes = FALSE)
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "700-799/738/738 Reorder Columns.xlsx"
+
+xl = pd.read_excel
+df = xl(path, sheet_name=0, nrows=10, usecols="A:E")
+seq = df["Sequence"].str.split(",\s*", expand=True).replace("", np.nan).astype(float)
+
+cols = df.columns[:-1]
+missing = 10 - seq.sum(axis=1)
+seq_filled = seq.T.fillna(missing).T.astype(int)
+vals = df[cols].to_numpy()
+out = [vals[i, row.astype(int) - 1] for i, row in enumerate(seq_filled.values)]
+
+result = pd.DataFrame(out, columns=cols)
+print(result)
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 739](/challenges/excelbi/Excel739.html)
+- [Excel Challenge 740](/challenges/excelbi/Excel740.html)
+- [Excel Challenge 741](/challenges/excelbi/Excel741.html)

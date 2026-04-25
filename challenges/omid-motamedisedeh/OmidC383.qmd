@@ -1,0 +1,121 @@
+---
+title: "Omid - Challenge 383"
+description: "🔰 Challenge 383: Filter!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 383](/challenges/images/OmidC383.jpg)
+
+## Challenge Description
+
+🔰 Challenge 383: Filter!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/383/CH-383 Filter.xlsx"
+input <- read_excel(path, range = "B3:B10")
+test <- read_excel(path, range = "F3:F5")
+
+is_valid <- function(s) {
+  digits <- str_extract_all(s, "\\d")[[1]] %>% as.integer()
+  digits[1] %% 2 == 0 && digits[length(digits)] %% 2 == 1
+}
+
+result <- input %>%
+  filter(map_lgl(ID, is_valid))
+
+all.equal(result$ID, test$ID)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "300-399/383/CH-383 Filter.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=2, nrows=8)
+test = pd.read_excel(path, usecols="F", skiprows=2, nrows=2)
+
+def is_valid(s):
+    digits = [c for c in str(s) if c.isdigit()]
+    return int(digits[0]) % 2 == 0 and int(digits[-1]) % 2 == 1
+
+result = input[input["ID"].apply(is_valid)].reset_index(drop=True)
+
+print(result["ID"].equals(test["ID.1"]))
+# True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 382](OmidC382.qmd)
+-   [Omid - Challenge 384](OmidC384.qmd)
+-   [Omid - Challenge 385](OmidC385.qmd)

@@ -1,0 +1,157 @@
+---
+title: "Omid - Challenge 30"
+description: "🔰 In risk analysis, activities are categorized into various groups according to their likelihood of occurrence and their impact."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 30](/challenges/images/OmidC30.jpg)
+
+## Challenge Description
+
+🔰 In risk analysis, activities are categorized into various groups according to their likelihood of occurrence and their impact.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-30-Risk Analysis.xlsx", range = "C3:H8")
+test  = read_excel("files/CH-30-Risk Analysis.xlsx", range = "K2:l7")
+
+classify_risk <- function(L, C) {
+  if (L < 7 & C < 7 & (L + C) < 7) {
+    "Very Low"
+  } else if (L < 9 & C < 9 & (L + C) < 9) {
+    "Low"
+  } else if (L < 11 & C < 11 & (L + C) < 11) {
+    "Moderate"
+  } else if (L < 13 & C < 13 & (L + C) < 13) {
+    "High"
+  } else {
+    "Very High"
+  }
+}
+
+
+result = input %>%
+  select(Lh = 1, everything()) %>%
+  pivot_longer(-Lh, names_to = "Cons", values_to = "count") %>%
+  mutate(Cons = as.numeric(Cons)) %>%
+  mutate(`Risk Type` = map2_chr(Lh, Cons, classify_risk)) %>%
+  na.omit() %>%
+  summarise(`Number of Activity` = sum(count), .by = `Risk Type`) 
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+test = pd.read_excel("CH-30-Risk Analysis.xlsx", usecols="K:L", skiprows=1, nrows=5)
+
+input = pd.read_excel("CH-30-Risk Analysis.xlsx", usecols="C:H", skiprows=2)
+input.rename(columns={input.columns[0]: "LH"}, inplace=True)
+input = input.melt(id_vars=["LH"], var_name="Cons", value_name="count").dropna()
+input['count'] = input['count'].astype(int)
+
+def classify_risk(row):
+    L, C = row['LH'], row['Cons']
+    if L < 7 and C < 7 and (L + C) < 7:
+        return "Very Low"
+    elif L < 9 and C < 9 and (L + C) < 9:
+        return "Low"
+    elif L < 11 and C < 11 and (L + C) < 11:
+        return "Moderate"
+    elif L < 13 and C < 13 and (L + C) < 13:
+        return "High"
+    else:
+        return "Very High"
+    
+input['Risk'] = input.apply(classify_risk, axis=1)
+input = input.groupby('Risk').agg({'count': 'sum'}).reset_index()
+input['Risk'] = pd.Categorical(input['Risk'], categories=["Very Low", "Low", "Moderate", "High", "Very High"], ordered=True)
+input.sort_values('Risk', inplace=True)
+input.reset_index(drop=True, inplace=True)
+input.columns = test.columns
+
+print(input == test) # All True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 29](OmidC29.qmd)
+-   [Omid - Challenge 31](OmidC31.qmd)
+-   [Omid - Challenge 32](OmidC32.qmd)

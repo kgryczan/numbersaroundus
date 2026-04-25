@@ -1,0 +1,174 @@
+---
+title: "Omid - Challenge 86"
+description: "🔰 K-nearest neighbors (KNN) is a simple technique for replacing missing values with the average of the nearest values."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 86](/challenges/images/OmidC86.jpg)
+
+## Challenge Description
+
+🔰 K-nearest neighbors (KNN) is a simple technique for replacing missing values with the average of the nearest values.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-86 KNN Missing values.xlsx"
+input = read_excel(path, range = "C2:F12")
+test  = read_excel(path, range = "I2:L12") %>%
+  mutate(Y = ifelse(Y == 44, 43, Y)) # confirmed by Julian Poeltl in comment
+
+fill_missing_values <- function(data) {
+  comp_points <- data %>% filter(complete.cases(.))
+  data_filled <- data
+  
+  for (i in which(!complete.cases(data))) {
+    row_to_complete <- data_filled[i, ]
+    missing_vars <- names(row_to_complete)[which(is.na(row_to_complete))]
+    
+    for (var in missing_vars) {
+      distances <- comp_points %>%
+        mutate(distance = 0)
+      
+      for (coord in names(row_to_complete)[!is.na(row_to_complete)]) {
+        distances <- distances %>%
+          mutate(distance = distance + (get(coord) - row_to_complete[[coord]]) ^
+                   2)
+      }
+      
+      distances <- distances %>%
+        mutate(distance = sqrt(distance))
+      closest_points <- distances %>%
+        arrange(distance) %>%
+        slice(1:2)
+      average_value <- closest_points %>%
+        summarize(mean_val = mean(.data[[var]], na.rm = TRUE)) %>%
+        pull(mean_val)
+      data_filled[i, var] <- average_value
+      row_to_complete <- data_filled[i, ]
+    }
+  }
+  return(data_filled)
+}
+
+result = fill_missing_values(input)
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "CH-86 KNN Missing values.xlsx"
+input = pd.read_excel(path, usecols="C:F", skiprows=1)
+test = pd.read_excel(path, usecols = "I:L", skiprows=1)
+test.columns = test.columns.str.replace(".1", "")
+test.loc[8, 'Y'] = 43
+test = test.astype('Float64')
+
+
+def fill_missing_values(data):
+    def euclidean_distance(row1, row2):
+        return np.sqrt(np.sum((row1 - row2) ** 2))
+
+    data_filled = data.copy()
+    complete_cases = data.dropna()
+
+    for i in range(data.shape[0]):
+        if data.iloc[i].isnull().any():
+            distances = []
+
+            for j in range(complete_cases.shape[0]):
+                distance = euclidean_distance(data.iloc[i].dropna(), complete_cases.iloc[j][data.iloc[i].notna()])
+                distances.append((distance, complete_cases.iloc[j]))
+
+            distances.sort(key=lambda x: x[0])
+            nearest_neighbors = [neighbor for _, neighbor in distances[:2]]
+
+            for col in data.columns:
+                if pd.isnull(data.iloc[i][col]):
+                    values = [neighbor[col] for neighbor in nearest_neighbors]
+                    data_filled.loc[i, col] = np.mean(values)
+
+    return data_filled
+
+result = fill_missing_values(input).astype('Float64')
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 85](OmidC85.qmd)
+-   [Omid - Challenge 87](OmidC87.qmd)
+-   [Omid - Challenge 88](OmidC88.qmd)

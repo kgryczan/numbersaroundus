@@ -1,0 +1,90 @@
+---
+title: "Excel BI - Excel Challenge 682"
+description: "🔰 Align the data on the basis of sorted order numbers and sum the amount at order number level."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 682](/challenges/images/exc682.jpg)
+
+## Challenge Description
+
+🔰 Align the data on the basis of sorted order numbers and sum the amount at order number level.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/682 Aggregation at Order No Level.xlsx"
+input = read_excel(path, range = "A2:C10")
+test  = read_excel(path, range = "E2:G15")
+
+result = input %>%
+  separate_rows(`Order No`, sep = ", ") %>%
+  mutate(`Order No` = as.numeric(`Order No`), 
+         Amount_pc = Amount / n(), .by = Name) %>%
+  summarise(Names = paste(unique(Name), collapse = ", "), 
+            Amount = sum(Amount_pc, na.rm = TRUE), .by = `Order No`) %>%
+  arrange(`Order No`)
+
+# all equal except one field has different sorting of names.
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "682 Aggregation at Order No Level.xlsx"
+
+input = pd.read_excel(path, usecols="A:C", skiprows=1, nrows=9)
+test = pd.read_excel(path, usecols="E:G", skiprows=1, nrows=14).rename(columns=lambda col: col.replace('.1', ''))
+
+input = input.assign(Order_No=input['Order No'].str.split(', ')).explode('Order_No')
+result = (input.assign(Amount_pc=input['Amount'] / input.groupby('Name')['Amount'].transform('size'))
+         .groupby('Order_No', as_index=False)
+         .agg(Names=('Name', lambda x: ', '.join(sorted(set(x)))), Amount=('Amount_pc', 'sum'))
+         .sort_values('Order_No')
+         .astype({'Order_No': 'int64', 'Amount': 'int64'}))
+
+# Almost equal one field has different sorting of names
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 683](/challenges/excelbi/Excel683.html)
+- [Excel Challenge 684](/challenges/excelbi/Excel684.html)
+- [Excel Challenge 685](/challenges/excelbi/Excel685.html)

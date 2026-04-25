@@ -1,0 +1,126 @@
+---
+title: "Omid - Challenge 27"
+description: "🔰 : Extract Numbers!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 27](/challenges/images/OmidC27.jpg)
+
+## Challenge Description
+
+🔰 : Extract Numbers!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-027 Extract Numbers.xlsx", range = "B1:B13")
+test  = read_excel("files/CH-027 Extract Numbers.xlsx", range = "E1:h13", col_names = T)
+colnames(test) = c("V1", "V2", "V3", "V4")
+
+result = input %>%
+  mutate(strings = str_extract_all(`Question Tables`, "\\((\\d+)\\)")) %>%
+  unnest_wider(strings, names_sep = "") %>%
+  mutate(across(-`Question Tables`, ~ str_remove_all(., "\\(|\\)") %>% as.numeric())) %>%
+  select(-`Question Tables`) 
+
+colnames(result) = c("V1", "V2", "V3", "V4")
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input = pd.read_excel("CH-027 Extract Numbers.xlsx", sheet_name="Sheet1", usecols="B", nrows = 13)
+test = pd.read_excel("CH-027 Extract Numbers.xlsx", sheet_name="Sheet1", usecols="E:H", nrows = 13)
+test.columns = ['Number_1', 'Number_2', 'Number_3', 'Number_4']
+
+extracted_numbers = input["Question Tables"].str.extractall(r'\((\d+)\)').groupby(level=0)[0].apply(list)
+extracted_numbers = extracted_numbers.apply(pd.Series)
+extracted_numbers.columns = [f"Number_{i+1}" for i in extracted_numbers.columns]
+
+result = pd.concat([input, extracted_numbers], axis=1)
+result = result.iloc[:, 1:]
+result = result.astype(float)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 26](OmidC26.qmd)
+-   [Omid - Challenge 28](OmidC28.qmd)
+-   [Omid - Challenge 29](OmidC29.qmd)

@@ -1,0 +1,133 @@
+---
+title: "Omid - Challenge 373"
+description: "🔰 Group 1 Group 2 Group 3 Group 4 Group 5 Grouping Starting from the top, group one or two rows at a time so that the sum of each group falls between 600 and 1200."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 373](/challenges/images/OmidC373.jpg)
+
+## Challenge Description
+
+🔰 Group 1 Group 2 Group 3 Group 4 Group 5 Grouping Starting from the top, group one or two rows at a time so that the sum of each group falls between 600 and 1200.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/373/CH-373 Custom Grouping.xlsx"
+input <- read_excel(path, range = "B3:E11")
+test <- read_excel(path, range = "H3:I8")
+
+lower <- 600
+upper <- 1200
+
+result = input %>%
+  mutate(
+    s = `Total Sales`,
+    small = s < lower,
+    start = !lag(small, default = FALSE),
+    grp = cumsum(start)
+  ) %>%
+  summarise(`Total Sales` = sum(s), .by = grp) %>%
+  mutate(IDs = paste("Group", row_number())) %>%
+  select(IDs, `Total Sales`)
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "300-399/373/CH-373 Custom Grouping.xlsx"
+input = pd.read_excel(path, usecols="B:E", skiprows=2, nrows=9)
+test = pd.read_excel(path, usecols="H:I", skiprows=2, nrows=5).rename(columns=lambda col: col.replace(".1", ""))
+
+lower = 600
+upper = 1200
+
+input['s'] = input['Total Sales']
+input['small'] = input['s'] < lower
+input['start'] = ~input['small'].shift(fill_value=False)
+input['grp'] = (~(input['Total Sales'] < lower).shift(fill_value=False)).cumsum()
+result = input.groupby('grp', as_index=False)['Total Sales'].sum()
+result['IDs'] = [f"Group {i}" for i in range(1, len(result) + 1)]
+result = result[['IDs', 'Total Sales']]
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 372](OmidC372.qmd)
+-   [Omid - Challenge 374](OmidC374.qmd)
+-   [Omid - Challenge 375](OmidC375.qmd)

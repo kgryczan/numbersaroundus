@@ -1,0 +1,116 @@
+---
+title: "Omid - Challenge 362"
+description: "🔰 Grouping In the question table, calculate total sales per customer, but group all customers that appear only once into a single category named 'Other'"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 362](/challenges/images/OmidC362.jpg)
+
+## Challenge Description
+
+🔰 Grouping In the question table, calculate total sales per customer, but group all customers that appear only once into a single category named 'Other'
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/362/CH-362 Custom Grouping.xlsx"
+input <- read_excel(path, range = "B3:E10")
+test <- read_excel(path, range = "H3:I6")
+
+result = input %>%
+  mutate(n = n(), .by = `Customer ID`) %>%
+  mutate(IDs = ifelse(n == 1, "Other", `Customer ID`)) %>%
+  summarise(Sales = sum(`Total Sales`), .by = IDs)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "300-399/362/CH-362 Custom Grouping.xlsx"
+input = pd.read_excel(path, usecols="B:E", skiprows=2, nrows=8)
+test = pd.read_excel(path, usecols="H:I", skiprows=2, nrows=3)
+
+input['Customer ID'] = input['Customer ID'].where(input['Customer ID'].duplicated(keep=False), 'Other')
+total_sales = input.groupby('Customer ID', as_index=False)['Total Sales'].sum()
+total_sales.columns = ['IDs', 'Sales']
+
+print(total_sales.equals(test))
+# True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 361](OmidC361.qmd)
+-   [Omid - Challenge 363](OmidC363.qmd)
+-   [Omid - Challenge 364](OmidC364.qmd)

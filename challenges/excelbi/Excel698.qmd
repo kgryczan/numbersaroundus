@@ -1,0 +1,91 @@
+---
+title: "Excel BI - Excel Challenge 698"
+description: "🔰 Answer Expected Alphabets D A B C E Align the data as shown."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 698](/challenges/images/exc698.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Alphabets D A B C E Align the data as shown. Generate header row also.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/698 Alignment of Data.xlsx"
+input = read_excel(path, range = "A2:A24")
+test = read_excel(path, range = "C2:J7")
+
+result = input %>%
+  mutate(
+    rn = row_number(),
+    rn2 = match(Alphabets, LETTERS),
+    .by = Alphabets
+  ) %>%
+  pivot_wider(names_from = rn, values_from = Alphabets) %>%
+  arrange(rn2) %>%
+  select(-rn2)
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "698 Alignment of Data.xlsx"
+input = pd.read_excel(path, usecols="A", skiprows=1, nrows=23)
+test = pd.read_excel(path, usecols="C:J", skiprows=1, nrows=5)
+
+input['rn'] = input.groupby('Alphabets').cumcount() + 1                                 
+input['rn2'] = input['Alphabets'].apply(lambda x: ord(x) - ord('A') + 1)
+result = input.pivot(index='rn2', columns='rn', values='Alphabets').reset_index(drop=True)
+result = result.sort_index().reset_index(drop=True)
+
+result.columns.name = None
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 699](/challenges/excelbi/Excel699.html)
+- [Excel Challenge 700](/challenges/excelbi/Excel700.html)
+- [Excel Challenge 701](/challenges/excelbi/Excel701.html)

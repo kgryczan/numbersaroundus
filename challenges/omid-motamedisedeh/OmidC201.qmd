@@ -1,0 +1,164 @@
+---
+title: "Omid - Challenge 201"
+description: "🔰 Question Result ID M AB C D E"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 201](/challenges/images/OmidC201.jpg)
+
+## Challenge Description
+
+🔰 Question Result ID M AB C D E
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-201Column Splitting.xlsx"
+input = read_excel(path, range = "B2:B7")
+test  = read_excel(path, range = "D2:F7")
+
+is_palindrome = function(x) {{stringi::stri_reverse(x) == x}}
+
+result = input %>%
+  mutate(is_palindrome = map_lgl(ID, is_palindrome)) %>%
+  mutate(vowelloc = str_locate(ID, "[AEIOU]")[,1]) %>%
+  mutate(is_even = nchar(ID) %% 2 == 0) %>%
+  mutate(`Part 1` = case_when(
+    is_palindrome & is_even ~ str_sub(ID, 1, nchar(ID)/2),
+    is_palindrome & !is_even ~ str_sub(ID, 1, nchar(ID)/2),
+    !is_palindrome ~ str_sub(ID, 1, vowelloc-1)
+  ),
+  Middle = case_when(
+    is_palindrome & is_even ~ NA,
+    is_palindrome & !is_even ~ str_sub(ID, nchar(ID)/2+1, nchar(ID)/2+1),
+    !is_palindrome ~ str_sub(ID, vowelloc, vowelloc)
+  ),
+  `Part 2`  = case_when(
+    is_palindrome & is_even ~ str_sub(ID, nchar(ID)/2+1, nchar(ID)),
+    is_palindrome & !is_even ~ str_sub(ID, nchar(ID)/2+2, nchar(ID)),
+    !is_palindrome ~ str_sub(ID, vowelloc+1, nchar(ID))
+  )) %>%
+  select(`Part 1`, Middle, `Part 2`)
+
+all.equal(test, result, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+import numpy as np
+
+path = "CH-201Column Splitting.xlsx"
+
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=6)
+test = pd.read_excel(path, usecols="D:F", skiprows=1, nrows=6)
+
+vowels = set("AEIOU")
+
+def process_id(s):
+    is_palindrome = s == s[::-1]
+    is_even = len(s) % 2 == 0
+    match = re.search(r"[AEIOU]", s)
+    vowelloc = match.start() if match else None
+
+    if is_palindrome:
+        half = len(s) // 2
+        if is_even:
+            part1 = s[:half]
+            middle = np.NaN
+            part2 = s[half:]
+        else:
+            part1 = s[:half]
+            middle = s[half]
+            part2 = s[half+1:]
+    else:
+        if vowelloc is None:
+            part1, middle, part2 = s, None, ""
+        else:
+            part1 = s[:vowelloc]
+            middle = s[vowelloc]
+            part2 = s[vowelloc+1:]
+    return pd.Series({"Part 1": part1, "Middle": middle, "Part 2": part2})
+
+result = input["ID"].apply(process_id)
+result = result.reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 200](OmidC200.qmd)
+-   [Omid - Challenge 202](OmidC202.qmd)
+-   [Omid - Challenge 203](OmidC203.qmd)

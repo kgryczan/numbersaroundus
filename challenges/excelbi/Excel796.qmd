@@ -1,0 +1,101 @@
+---
+title: "Excel BI - Excel Challenge 796"
+description: "🔰 Draw the given pattern."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 796](/challenges/images/exc796.jpg)
+
+## Challenge Description
+
+🔰 Draw the given pattern.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/796/796 Pattern Drawing.xlsx"
+test  = read_excel(path, range = "B2:R18", col_names = FALSE) %>%
+  as.matrix()
+
+bowtie_matrix = function(n) {
+  rows = 2 * n - 1
+  cols = 2 * n - 1
+  mat = matrix(NA, nrow = rows, ncol = cols)
+  
+  for (r in 1:rows) {
+    k = if (r <= n) r else 2 * n - r
+    left_vals = k:1
+    mat[r, 1:k] = left_vals
+    right_vals = 1:k
+    mat[r, (cols - k + 1):cols] = right_vals
+  }
+  mat
+}
+
+result = bowtie_matrix(9)
+all.equal(test, result, check.attributes = FALSE)
+# TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "700-799/796/796 Pattern Drawing.xlsx"
+test = pd.read_excel(path, header=None, usecols="B:R", skiprows=1, nrows=17).values
+
+def bowtie_matrix(n):
+    size = 2 * n - 1
+    mat = np.full((size, size), np.nan) 
+    for r in range(size):
+        k = r + 1 if r < n else size - r  
+        mat[r, :k] = np.arange(k, 0, -1)
+        mat[r, size - k:] = np.arange(1, k + 1)
+    return mat
+
+result = bowtie_matrix(9)
+print(np.array_equal(test, result, equal_nan=True)) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 797](/challenges/excelbi/Excel797.html)
+- [Excel Challenge 798](/challenges/excelbi/Excel798.html)
+- [Excel Challenge 799](/challenges/excelbi/Excel799.html)

@@ -1,0 +1,106 @@
+---
+title: "Excel BI - Excel Challenge 900"
+description: "🔰 Against each month list the salespersons whose sales were higher each time in that month than the quarterly average of all salesmen."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 900](/challenges/images/exc900.jpg)
+
+## Challenge Description
+
+🔰 Against each month list the salespersons whose sales were higher each time in that month than the quarterly average of all salesmen.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/900-999/900/900 Sales Larger than Quarterly Average.xlsx"
+input <- read_excel(path, range = "A2:C52")
+test <- read_excel(path, range = "E2:F8")
+
+result = input %>%
+  mutate(
+    quarter = quarter(Date),
+    Month = month(Date, label = T, abbr = T, locale = "en_US")
+  ) %>%
+  mutate(quarterly_avg = ave(Sales, quarter, FUN = mean)) %>%
+  mutate(valid = ifelse(Sales > quarterly_avg, 1, 0)) %>%
+  summarise(spvalid = sum(valid) == n(), .by = c(Month, Salesperson)) %>%
+  filter(spvalid) %>%
+  summarise(Names = paste(Salesperson, collapse = ", "), .by = Month) %>%
+  complete(Month, fill = list(Names = NA)) %>%
+  head(6) %>%
+  mutate(Month = as.character(Month))
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Apply the business rule conditions explicitly.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "Excel/900-999/900/900 Sales Larger than Quarterly Average.xlsx"
+input = pd.read_excel(path, usecols="A:C", skiprows=1, nrows=50)
+test = pd.read_excel(path, usecols="E:F", skiprows=1, nrows=6)
+
+input['Date'] = pd.to_datetime(input['Date'])
+input['quarter'] = input['Date'].dt.quarter
+input['Month'] = pd.Categorical(input['Date'].dt.month_name().str[:3], 
+    categories=['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], ordered=True)
+input['quarterly_avg'] = input.groupby('quarter')['Sales'].transform('mean')
+input['valid'] = (input['Sales'] > input['quarterly_avg']).astype(int)
+
+summary = input.groupby(['Month', 'Salesperson'], observed=True, as_index=False).agg(
+    spvalid=('valid', lambda x: x.sum() == len(x)))
+filtered = summary[summary['spvalid']]
+names_summary = filtered.groupby('Month', observed=True).agg(
+    Names=('Salesperson', ', '.join)).reindex(
+    ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+).reset_index().head(6)
+
+print(names_summary.equals(test))
+# True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 901](/challenges/excelbi/Excel901.html)
+- [Excel Challenge 902](/challenges/excelbi/Excel902.html)
+- [Excel Challenge 903](/challenges/excelbi/Excel903.html)

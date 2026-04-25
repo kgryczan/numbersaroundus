@@ -1,0 +1,115 @@
+---
+title: "Excel BI - Excel Challenge 861"
+description: "🔰 Group Company ID Price A 23:Walmart; 89:Exxon Exxon B 960:Microsoft, 24:IBM, 88 : Oracle Walmart"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 861](/challenges/images/exc861.jpg)
+
+## Challenge Description
+
+🔰 Group Company ID Price A 23:Walmart; 89:Exxon Exxon B 960:Microsoft, 24:IBM, 88 : Oracle Walmart
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/861/861 Transpose.xlsx"
+input <- read_excel(path, sheet = 2, range = "A2:B6", col_names = TRUE)
+test <- read_excel(path, sheet = 2, range = "D2:G10")
+
+result = input %>%
+  mutate(across(everything(), ~ str_replace_all(., " ", ""))) %>%
+  mutate(
+    Company = str_split(Company, ";|,"),
+    Revenue = str_split(Revenue, ",")
+  ) %>%
+  unnest(c(Company, Revenue)) %>%
+  extract(
+    Company,
+    regex = "^([A-Za-z]+)-(\\d+):\\s*(.+)$",
+    into = c("Code", "ID", "Company")
+  ) %>%
+  mutate(Revenue = as.numeric(Revenue), ID = as.numeric(ID)) %>%
+  arrange(Code, Company)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure.
+- **Strengths**: The solution stays close to the text pattern itself, which makes the extraction logic easy to audit.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+import numpy as np
+
+path = "Excel/800-899/861/861 Transpose.xlsx"
+input = pd.read_excel(path, sheet_name=1, usecols="A:B", skiprows=1, nrows=4)
+test = pd.read_excel(path, sheet_name=1, usecols="D:G", skiprows=1, nrows=8).rename(columns=lambda c: c.replace('.1', ''))
+df = input.map(lambda x: re.sub(r" ", "", x) if isinstance(x, str) else x)
+
+df = (
+    df.assign(
+        Company=df["Company"].str.split(r"[;,]"),
+        Revenue=df["Revenue"].apply(lambda x: x.split(",") if isinstance(x, str) and "," in x else [x])
+    )
+    .explode(["Company", "Revenue"])
+)
+regex = r"^([A-Za-z]+)-(\d+):\s*(.+)$"
+df[["Code", "ID", "Company"]] = (
+    df["Company"]
+    .str.extract(regex)
+)
+result = (
+    df.assign(
+        Revenue=lambda d: pd.to_numeric(d["Revenue"]).astype(np.int64),
+        ID=lambda d: pd.to_numeric(d["ID"]).astype(np.int64)
+    )
+    .sort_values(["Code", "Company"])
+    .reset_index(drop=True)
+    [["Code", "ID", "Company", "Revenue"]]
+)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 862](/challenges/excelbi/Excel862.html)
+- [Excel Challenge 863](/challenges/excelbi/Excel863.html)
+- [Excel Challenge 864](/challenges/excelbi/Excel864.html)

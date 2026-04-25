@@ -1,0 +1,130 @@
+---
+title: "Omid - Challenge 350"
+description: "🔰 Challenge 350: Filter!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 350](/challenges/images/OmidC350.jpg)
+
+## Challenge Description
+
+🔰 Challenge 350: Filter!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(charcuterie)
+
+path <- "300-399/350/CH-350 Filter.xlsx"
+input <- read_excel(path, range = "B3:B10")
+test <- read_excel(path, range = "F3:F6")
+
+check_pattern <- function(text) {
+  chars <- unique(charcuterie::chars(text))
+  patterns <- combn(chars, 2, simplify = TRUE, FUN = function(p) {
+    str_c(p[1], ".*", p[2], ".*", p[1], ".*", p[2])
+  })
+  any(str_detect(text, patterns))
+}
+
+result = input %>%
+  filter(map_lgl(ID, check_pattern))
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+from itertools import combinations
+
+path = "300-399/350/CH-350 Filter.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=2, nrows=8)
+test = pd.read_excel(path, usecols="F", skiprows=2, nrows=3).rename(columns=lambda col: col.replace('.1', ''))
+
+def check_pattern(text):
+    chars = list(dict.fromkeys(str(text)))
+    for p in combinations(chars, 2):
+        pattern = f"{re.escape(p[0])}.*{re.escape(p[1])}.*{re.escape(p[0])}.*{re.escape(p[1])}"
+        if re.search(pattern, str(text)):
+            return True
+    return False
+
+result = input[input['ID'].apply(check_pattern)].reset_index(drop=True)
+
+print(result.equals(test)) 
+# True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 349](OmidC349.qmd)
+-   [Omid - Challenge 351](OmidC351.qmd)
+-   [Omid - Challenge 352](OmidC352.qmd)

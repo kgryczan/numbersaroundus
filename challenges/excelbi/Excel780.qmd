@@ -1,0 +1,95 @@
+---
+title: "Excel BI - Excel Challenge 780"
+description: "🔰 Find the profit (Revenue - Cost) for Orgs for various years."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 780](/challenges/images/exc780.jpg)
+
+## Challenge Description
+
+🔰 Find the profit (Revenue - Cost) for Orgs for various years.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/780/780 Profit.xlsx"
+input = read_excel(path, range = "A2:D10")
+test  = read_excel(path, range = "F2:I6")
+
+result = input %>%
+  fill(Org) %>%
+  mutate(Profit = Revenue - Cost) %>%
+  select(Org, Year, Profit) %>%
+  pivot_wider(
+    names_from = Year,
+    values_from = Profit,
+    values_fn = sum
+  ) %>%
+  select(Org, `2011`, `2012`, `2013`)
+
+all.equal(result, test)
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/780/780 Profit.xlsx"
+input = pd.read_excel(path, usecols="A:D", nrows=9, skiprows=1)
+test = pd.read_excel(path, usecols="F:I", nrows=4, skiprows=1).rename(columns={'Org.1': 'Org'}).astype({2011: float, 2012: float, 2013: float})
+
+result = (
+    input.ffill()
+    .assign(Profit=lambda df: df['Revenue'] - df['Cost'])
+    .pivot_table(index='Org', columns='Year', values='Profit', aggfunc='sum')
+    .reset_index()[['Org', 2011, 2012, 2013]]
+    .astype({2011: float, 2012: float, 2013: float})
+)
+result.columns.name = None
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 781](/challenges/excelbi/Excel781.html)
+- [Excel Challenge 782](/challenges/excelbi/Excel782.html)
+- [Excel Challenge 783](/challenges/excelbi/Excel783.html)

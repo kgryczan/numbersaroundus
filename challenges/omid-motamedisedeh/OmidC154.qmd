@@ -1,0 +1,108 @@
+---
+title: "Omid - Challenge 154"
+description: "🔰 Date Price index"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 154](/challenges/images/OmidC154.jpg)
+
+## Challenge Description
+
+🔰 Date Price index
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-154 Custom Index Column.xlsx"
+input = read_excel(path, range = "B2:C13")
+test  = read_excel(path, range = "E2:G13")
+
+result = input %>%
+  mutate(index = cumsum(c(0, diff(Date)) != 1)) 
+
+all.equal(result$index, test$index)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-154 Custom Index Column.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=11)
+test = pd.read_excel(path, usecols="E:G", skiprows=1, nrows=11)
+
+input['Date'] = pd.to_datetime(input['Date'])
+input['index'] = (input['Date'].diff() != pd.Timedelta(days=1)).cumsum().astype('int64')
+
+print(all(input['index'] == test['index'])) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 153](OmidC153.qmd)
+-   [Omid - Challenge 155](OmidC155.qmd)
+-   [Omid - Challenge 156](OmidC156.qmd)

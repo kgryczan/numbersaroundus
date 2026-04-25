@@ -1,0 +1,126 @@
+---
+title: "Omid - Challenge 212"
+description: "🔰 List 1 List 2 List 3 List 4 Extract all item codes that are repeated just in 1 list."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 212](/challenges/images/OmidC212.jpg)
+
+## Challenge Description
+
+🔰 List 1 List 2 List 3 List 4 Extract all item codes that are repeated just in 1 list.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-212 Remove duplicate.xlsx"
+input = read_excel(path, range = "B2:E16")
+test  = read_excel(path, range = "G2:G11") %>% arrange(`Item Code`)
+
+
+value_counts = input %>%
+  pivot_longer(cols = everything(), names_to = "Column Title", values_to = "Value") %>%
+  summarise(n = n_distinct(`Column Title`), .by  = Value) %>%
+  filter(n == 1) %>%
+  select(-n) %>%
+  arrange(Value)
+
+all.equal(test$`Item Code`, value_counts$Value, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-212 Remove duplicate.xlsx"
+
+input = pd.read_excel(path, usecols="B:E", skiprows=1, nrows=15)
+test = pd.read_excel(path, usecols="G", skiprows=1, nrows=9).sort_values(by="Item Code").reset_index(drop=True)
+
+value_counts = input.melt(var_name="Column Title", value_name="Value") \
+    .groupby("Value")["Column Title"].nunique() \
+    .reset_index(name="Unique Column Titles") \
+    .query("`Unique Column Titles` == 1") \
+    .reset_index(drop=True)[["Value"]] \
+    .rename(columns={"Value": "Item Code"})
+
+print(value_counts.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 211](OmidC211.qmd)
+-   [Omid - Challenge 213](OmidC213.qmd)
+-   [Omid - Challenge 214](OmidC214.qmd)

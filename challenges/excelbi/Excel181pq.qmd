@@ -1,0 +1,140 @@
+---
+title: "Excel BI - PowerQuery Challenge 181"
+description: "5/1/2014 Data1 Data2 Data3 Date Name"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 181](/challenges/images/exc181pq.jpg)
+
+## Challenge Description
+
+5/1/2014 Data1 Data2 Data3 Date Name
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(openxlsx2)
+
+file_path = "Power Query/PQ_Challenge_181.xlsx"
+
+input = wb_read(file_path, col_names = FALSE, rows = 1:11, cols = "A:D")
+test  = wb_read(file_path, col_names = TRUE, rows = 1:20, cols = "F:I")
+
+
+result = input %>%
+  mutate(Date = ifelse(str_detect(A, "\\d"), A, NA)) %>%
+  fill(Date) %>%
+  set_names(c("Name", "Data1", "Data2", "Data3", "Date")) %>%
+  pivot_longer(-c("Name","Date"), names_to = "Data", values_to = "Value") %>%
+  mutate(Date = ifelse(str_detect(Date, ".*\\d{4}$"), mdy(Date), ymd(Date)) %>% as.Date(),
+         Value = as.numeric(Value)) %>%
+  na.omit() %>%
+  select(2,1,3,4)
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+file_path = "PQ_Challenge_181.xlsx"
+
+input = pd.read_excel(file_path, header=None, nrows=11, usecols="A:D")
+test = pd.read_excel(file_path, header=0, nrows=20, usecols="F:I").sort_values(by=["Date", "Name", "Data"]).reset_index(drop=True)
+
+result = input.copy()
+result.columns = ["Name", "Data1", "Data2", "Data3"]
+result["Date"] = result["Name"].apply(lambda x: x if re.search(r"\d", str(x)) else None)
+result["Date"].fillna(method="ffill", inplace=True)
+result = result.melt(id_vars=["Name", "Date"], var_name="Data", value_name="Value")
+result["Date"] = result["Date"].apply(lambda x: pd.to_datetime(x, format="%m/%d/%Y") if re.search(r".*\d{4}$", str(x)) else pd.to_datetime(x))
+result["Value"] = pd.to_numeric(result["Value"], errors="coerce")
+result.dropna(inplace=True)
+result = result.reset_index(drop=True)
+result["Value"] = result["Value"].astype("int64")
+result = result[["Date", "Name", "Data", "Value"]].sort_values(by=["Date", "Name", "Data"]).reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 180](Excel180pq.qmd)
+-   [Excel BI - PowerQuery Challenge 182](Excel182pq.qmd)

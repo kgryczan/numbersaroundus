@@ -1,0 +1,154 @@
+---
+title: "Excel BI - PowerQuery Challenge 259"
+description: "List the fruits and the sum of total amount against a fruit. Also insert a Total row at the bottom after one blank row."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 259](/challenges/images/exc259pq.jpg)
+
+## Challenge Description
+
+List the fruits and the sum of total amount against a fruit. Also insert a Total row at the bottom after one blank row.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_259.xlsx"
+input = read_excel(path, range = "A1:D13")
+test = read_excel(path, range = "G1:H10")
+
+process_rows = function(data, filter_cond) {
+  data %>%
+    filter(row_number() %% 2 == filter_cond) %>%
+    split(1:nrow(.)) %>%
+    bind_cols() %>%
+    t() %>%
+    as.data.frame()
+}
+
+odd_rows = process_rows(input, 1)
+even_rows = process_rows(input, 0)
+
+output = bind_cols(odd_rows, even_rows) %>%
+  set_names(c("Fruits", "Amount")) %>%
+  filter(!is.na(Fruits) & nchar(Fruits) > 1) %>%
+  mutate(Amount = as.numeric(Amount)) %>%
+  group_by(Fruits) %>%
+  summarise(Amount = sum(Amount)) %>%
+  arrange(Fruits)
+
+total = tibble(Fruits = "Total Amount", Amount = sum(output$Amount))
+result = bind_rows(output, tibble(Fruits = NA, Amount = NA), total)
+
+all.equal(result, test, check.attributes = FALSE)
+# TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "PQ_Challenge_259.xlsx"
+input = pd.read_excel(path, usecols="A:D", nrows=13)
+test = pd.read_excel(path,  usecols="G:H", nrows=9)
+
+def process_rows(data, filter_cond):
+    filtered_data = data.iloc[::2] if filter_cond == 1 else data.iloc[1::2]
+    filtered_data = pd.concat([filtered_data.iloc[i] for i in range(len(filtered_data))], axis=0)
+    return filtered_data.reset_index(drop=True).T
+
+odd_rows = process_rows(input, 1)
+even_rows = process_rows(input, 0)
+
+output = pd.concat([odd_rows, even_rows], axis=1)
+output.columns = ["Fruits", "Amount"]
+output = output.dropna().query('Fruits.str.len() > 1')
+output['Amount'] = pd.to_numeric(output['Amount'])
+output = output.groupby('Fruits', as_index=False)['Amount'].sum().sort_values('Fruits')
+
+total = pd.DataFrame([["Total Amount", output['Amount'].sum()]], columns=["Fruits", "Amount"])
+result = pd.concat([output, pd.DataFrame([[np.NaN, np.NaN]], columns=["Fruits", "Amount"]), total], ignore_index=True)
+result['Amount'] = result['Amount'].astype(np.float64)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 258](Excel258pq.qmd)
+-   [Excel BI - Excel Challenge 639](Excel639.qmd)

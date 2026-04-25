@@ -1,0 +1,117 @@
+---
+title: "Omid - Challenge 158"
+description: "🔰 : Filter Last Transaction!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 158](/challenges/images/OmidC158.jpg)
+
+## Challenge Description
+
+🔰 : Filter Last Transaction!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-158 Filter the last transaction in mounth.xlsx"
+input = read_excel(path, range = "B2:D14")
+test  = read_excel(path, range = "F2:H6")
+
+result = input %>% 
+  group_by(`Product ID`, month = month(Date)) %>%
+  filter(Date == max(Date)) %>%
+  ungroup() %>%
+  select(-month)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-158 Filter the last transaction in mounth.xlsx"
+input = pd.read_excel(path, usecols="B:D", skiprows=1, nrows=12)
+test = pd.read_excel(path, usecols="F:H", skiprows=1, nrows=4).rename(columns=lambda x: x.split('.')[0])
+
+input['Date'] = pd.to_datetime(input['Date'])
+input['month'] = input['Date'].dt.month
+
+result = input.loc[input.groupby(['Product ID', 'month'])['Date'].idxmax()].sort_values(by='Date').reset_index(drop=True).drop(columns=['month'])
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 157](OmidC157.qmd)
+-   [Omid - Challenge 159](OmidC159.qmd)
+-   [Omid - Challenge 160](OmidC160.qmd)

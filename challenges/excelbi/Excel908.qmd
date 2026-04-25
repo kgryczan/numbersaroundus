@@ -1,0 +1,90 @@
+---
+title: "Excel BI - Excel Challenge 908"
+description: "🔰 908 States and Capitals.xlsx says: > Extract ID, Capital and State Codes from the given data."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 908](/challenges/images/exc908.jpg)
+
+## Challenge Description
+
+🔰 The prompt in 908 States and Capitals.xlsx says: Extract ID, Capital and State Codes from the given data. The source is a single `Data` column where each row contains: The goal is to split those pieces into separate columns.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/900-999/908/908 States and Capitals.xlsx"
+input <- read_excel(path, range = "A2:A12")
+test <- read_excel(path, range = "B2:D12")
+
+result = input %>%
+  mutate(
+    ID = str_extract(Data, "[0-9]{2}"),
+    Capital = str_extract(Data, "[A-Z][a-z]+(?:[A-Z][a-z]+)*"),
+    `State Code` = str_extract(Data, "[A-Z]{2}")
+  ) %>%
+  select(-Data)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Extract the two-digit ID.; Extract the capital name.; Extract the two-letter state code..
+- **Strengths**: The puzzle works because each field has a different visual signature: - IDs are exactly two digits, - state codes are exactly two uppercase letters, - capital names are title-cased words, sometimes concatenated in CamelCase form.
+- **Areas for Improvement**: The approach assumes the workbook structure and naming conventions stay stable, so any changed input shape would need minor adjustments.
+- **Gem**: - IDs are exactly two digits, - state codes are exactly two uppercase letters, - capital names are title-cased words, sometimes concatenated in CamelCase form.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+from numpy import int64
+import pandas as pd
+
+path = "Excel/900-999/908/908 States and Capitals.xlsx"
+input = pd.read_excel(path, usecols="A", skiprows=1, nrows=11)
+
+test = pd.read_excel(path, usecols="B:D", skiprows=1, nrows=11)
+input["ID"] = input["Data"].str.extract(r"([0-9]{2})").astype(int64)
+input["Capital"] = input["Data"].str.extract(r"([A-Z][a-z]+(?:[A-Z][a-z]+)*)")
+input["State Code"] = input["Data"].str.extract(r"([A-Z]{2})")
+
+result = input.drop(columns=["Data"])
+print(result.equals(test))
+# True
+```
+
+### Python
+
+The Python version follows the same structure: use one regex to get the numeric id.; use another to get the capital name..
+
+## **Difficulty Level**
+
+**Easy**
+
+Once the core pattern is recognized, the implementation is short and direct.
+
+### Related Challenges
+
+- [Excel Challenge 923](/challenges/excelbi/Excel923.html)
+- [Excel Challenge 918](/challenges/excelbi/Excel918.html)
+- [Excel Challenge 906](/challenges/excelbi/Excel906.html)

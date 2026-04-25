@@ -1,0 +1,108 @@
+---
+title: "Excel BI - Excel Challenge 792"
+description: "🔰 3."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 792](/challenges/images/exc792.jpg)
+
+## Challenge Description
+
+🔰 3. In case of no words being available, it will proceed to find word with next sequentially available letter which has not been used in step 2. For example, if w is next letter but this is not available. Then next available letter is x. If x is not available, then next letter is y...After z, next available letter is a, then b and so on. Example, after Window, next available word is Xylophone as word starting with w has already been used up. Another example is Zebra. Last letter is Zebra is a and Apple is already used. Next letter is b and Balloon is already used. Next available is Castle.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/792/792 Sorting as per Last Letter.xlsx"
+input = read_excel(path, range = "A1:A27") %>% pull()
+test  = read_excel(path, range = "B1:B27") %>% pull()
+
+chain_sort = function(words){
+  seed = "Apple"
+  pool = words[words != seed]
+  out = seed
+  while(length(pool)){
+    last = tolower(str_sub(last(out), -1))
+    pool_tbl = tibble(word = pool, first = str_sub(tolower(pool), 1, 1))
+    abc = c(letters[match(last, letters):26], letters[1:(match(last, letters)-1)])
+    next_word = pool_tbl %>%
+      mutate(order = match(first, abc)) %>%
+      filter(!is.na(order)) %>%
+      arrange(order) %>%
+      slice(1) %>%
+      pull(word)
+    out = c(out, next_word)
+    pool = setdiff(pool, next_word)
+  }
+  out
+}
+result = chain_sort(input)
+all(result == test)
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import string
+
+path = "700-799/792/792 Sorting as per Last Letter.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=27).squeeze()
+test = pd.read_excel(path, usecols="B", nrows=27).squeeze()
+
+def chain_sort(words):
+    seed, pool, out = "Apple", [w for w in words if w != "Apple"], ["Apple"]
+    abc = string.ascii_lowercase
+    while pool:
+        last = out[-1][-1].lower()
+        order = abc[abc.index(last):] + abc[:abc.index(last)]
+        firsts = [w[0].lower() for w in pool]
+        idx = next(firsts.index(c) for c in order if c in firsts)
+        out.append(pool.pop(idx))
+    return out
+
+result = chain_sort(input)
+print((result == test).all()) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 793](/challenges/excelbi/Excel793.html)
+- [Excel Challenge 794](/challenges/excelbi/Excel794.html)
+- [Excel Challenge 795](/challenges/excelbi/Excel795.html)

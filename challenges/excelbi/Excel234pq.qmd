@@ -1,0 +1,134 @@
+---
+title: "Excel BI - PowerQuery Challenge 234"
+description: "Employee StartDate1 EndDate1 StartDate2 EndDate2 StartDate3"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 234](/challenges/images/exc234pq.jpg)
+
+## Challenge Description
+
+Employee StartDate1 EndDate1 StartDate2 EndDate2 StartDate3
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_234.xlsx"
+input = read_excel(path, range = "A1:G5")
+test  = read_excel(path, range = "A10:B14")
+
+result = input %>%
+  pivot_longer(-c(1), names_to = c(".value", "number"), names_pattern = "(.*)(\\d)") %>%
+  na.omit() %>%
+  mutate(seq = map2(StartDate, EndDate, ~seq.Date(from = as.Date(.x), to = as.Date(.y), by = "day"))) %>%
+  unnest(cols = seq) %>%
+  mutate(Weekday = wday(seq, week_start = 1)) %>%
+  filter(Weekday %in% c(1:5)) %>%
+  summarise(TotalLeaves = n_distinct(seq), .by = Employee) %>%
+  arrange(Employee)
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "PQ_Challenge_234.xlsx"
+input = pd.read_excel(path, usecols="A:G", nrows=5)
+test = pd.read_excel(path, usecols="A:B", skiprows=9, nrows=5)
+
+input_long = input.melt(id_vars=['Employee'], var_name='variable', value_name='value')
+input_long[['variable', 'number']] = input_long['variable'].str.extract(r'(\D+)(\d+)')
+input_long = input_long.dropna().pivot(index=['Employee', 'number'], columns='variable', values='value').reset_index()
+input_long = input_long.assign(seq=input_long.apply(lambda row: pd.date_range(start=row['StartDate'], end=row['EndDate']), axis=1))\
+    .explode('seq').reset_index(drop=True)
+input_long = input_long[input_long['seq'].dt.weekday < 5]
+
+result = input_long.groupby('Employee').agg(TotalLeaves=('seq', 'nunique')).reset_index()
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 233](Excel233pq.qmd)

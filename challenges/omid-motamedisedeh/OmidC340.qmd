@@ -1,0 +1,160 @@
+---
+title: "Omid - Challenge 340"
+description: "🔰 Challenge 340: Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 340](/challenges/images/OmidC340.jpg)
+
+## Challenge Description
+
+🔰 Challenge 340: Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/340/CH-340 Table Transformation.xlsx"
+input <- read_excel(path, range = "B3:G10")
+test <- read_excel(path, range = "K3:N8")
+
+remove_L <- function(df) {
+  t(apply(df, 1, function(row) {
+    vals <- row[row != "L"]
+    c(vals, rep(NA, length(row) - length(vals)))
+  }))
+}
+remove_U <- function(df) {
+  as.data.frame(lapply(df, function(col) {
+    vals <- col[col != "U"]
+    c(vals, rep(NA, length(col) - length(vals)))
+  }))
+}
+clean_result <- function(df) {
+  df <- df[, colSums(is.na(df)) < nrow(df), drop = FALSE]
+  colnames(df) <- c("Date", "Product", "Customer", "Quantity")
+  df <- df[complete.cases(df), ]
+  return(df)
+}
+
+result = input %>%
+  remove_L() %>%
+  as.data.frame() %>%
+  remove_U() %>%
+  clean_result() %>%
+  mutate(
+    Date = as.numeric(Date) %>%
+      janitor::excel_numeric_to_date(.) %>%
+      as.POSIXct(),
+    Quantity = as.numeric(Quantity)
+  )
+
+all.equal(result, test, check.attributes = FALSE)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "300-399/340/CH-340 Table Transformation.xlsx"
+input = pd.read_excel(path, sheet_name=0, usecols="B:G", skiprows=2, nrows=8)
+test = pd.read_excel(path, sheet_name=0, usecols="K:N", skiprows=2, nrows=5)
+test.columns = [col.replace('.1', '') for col in test.columns]
+
+arr = input.values
+
+def remove_l(arr):
+    result = []
+    for row in arr:
+        filtered = [cell for cell in row if cell != 'L']
+        result.append(filtered + [''] * (arr.shape[1] - len(filtered)))
+    return np.array(result)
+
+def remove_u(arr):
+    result = []
+    for col in arr.T:
+        filtered = [cell for cell in col if cell != 'U']
+        result.append(list(filtered) + [''] * (arr.shape[0] - len(filtered)))
+    return np.array(result).T
+
+arr = remove_l(arr)
+arr = remove_u(arr)
+
+result = pd.DataFrame(arr)
+result = result.replace('', np.nan).dropna(axis=1, how='all').dropna()
+result.columns = ['Date', 'Product', 'Customer', 'Quantity']
+result['Quantity'] = result['Quantity'].astype('int64')
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 339](OmidC339.qmd)
+-   [Omid - Challenge 341](OmidC341.qmd)
+-   [Omid - Challenge 342](OmidC342.qmd)

@@ -1,0 +1,109 @@
+---
+title: "Crispo - Excel Challenge 35 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-08-31"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 35 2025](/challenges/images/Crispo352025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ ⭐Filter Customers Missing all Data
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/2025-08-31/Challenge 53.xlsx"
+input = read_excel(path, range = "B2:E8")
+test  = read_excel(path, range = "G2:G4") %>% pull()
+
+result = input %>%
+  filter(if_all(-Customer, is.na)) %>%
+  pull(Customer)
+
+all.equal(result, test)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "files/2025-08-31/Challenge 53.xlsx"
+input = pd.read_excel(path, usecols="B:E", skiprows=1, nrows=6)
+test = pd.read_excel(path, usecols="G", skiprows=1, nrows=2).squeeze().tolist()
+
+result = input[input.drop('Customer', axis=1).isna().all(axis=1)]['Customer'].tolist()
+
+print(test == result) # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 34 2025](Crispo 342025.qmd)
+-   [Crispo - Excel Challenge 36 2025](Crispo 362025.qmd)

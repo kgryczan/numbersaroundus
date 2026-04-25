@@ -1,0 +1,94 @@
+---
+title: "Excel BI - Excel Challenge 665"
+description: "🔰 Bi & Trimorphic Numbers - List numbers (n<100000) if n^3 and n^2 both end with n."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 665](/challenges/images/exc665.jpg)
+
+## Challenge Description
+
+🔰 Bi & Trimorphic Numbers - List numbers (n<100000) if n^3 and n^2 both end with n.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/665 Bi & Trimorphic Numbers.xlsx"
+test  = read_excel(path, range = "A1:A10")
+
+# Only 1, 5, 6 and 0 squared and cubed give us the same digit at the end. 
+# so we can decrease the search scope.
+
+df = data.frame(n = 1:100000) %>% 
+  filter(n %% 10 %in% c(0, 1, 5, 6)) %>%
+  mutate(n2 = n^2, n3 = n^3) %>%
+  filter(str_ends(as.character(n2), as.character(n)), 
+         str_ends(as.character(n3), as.character(n)))
+
+all.equal(df$n, test$`Expected Answer`)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "665 Bi & Trimorphic Numbers.xlsx"
+test = pd.read_excel(path, usecols="A", nrows=10)
+
+# Only 1, 5, 6 and 0 squared and cubed give us the same digit at the end. 
+# so we can decrease the search scope.
+
+df = pd.DataFrame({'n': range(1, 100001)})
+df = df[df['n'].apply(lambda x: str(x)[-1] in ['0', '1', '5', '6'])]
+df['n2'], df['n3'] = df['n'] ** 2, df['n'] ** 3
+df['nlen'] = df['n'].astype(str).str.len()
+df['n2m2'] = df.apply(lambda row: str(row['n2'])[-row['nlen']:] == str(row['n']), axis=1)
+df['n3m3'] = df.apply(lambda row: str(row['n3'])[-row['nlen']:] == str(row['n']), axis=1)
+df = df[df['n2m2'] & df['n3m3']].reset_index(drop=True)
+df = df[['n']]
+
+print(df['n'].equals(test['Expected Answer']))
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 666](/challenges/excelbi/Excel666.html)
+- [Excel Challenge 667](/challenges/excelbi/Excel667.html)
+- [Excel Challenge 668](/challenges/excelbi/Excel668.html)

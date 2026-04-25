@@ -1,0 +1,155 @@
+---
+title: "Omid - Challenge 8"
+description: "🔰 Calculate Average Inventory Level!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 8](/challenges/images/OmidC8.jpg)
+
+## Challenge Description
+
+🔰 Calculate Average Inventory Level!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-008.xlsx"
+input = read_excel(path, range = "B2:E19")
+test  = read_excel(path, range = "I2:L4")
+
+result = input %>%
+  arrange(Product, Date) %>%
+  mutate(rn = row_number(), .by = Product) %>%
+  complete(Date = seq(min(Date), max(Date), by = "day"),
+           Product = c("A", "B", "C")) %>%
+  mutate(sign = ifelse(Type == "Reduce", -1, 1),
+         Month = month(Date),
+         Quantity = Quantity * sign) %>%
+  replace_na(list(Quantity = 0)) %>%
+  ungroup() %>%
+  arrange(Product, Date) %>%
+  fill(rn, .direction = "down") %>%
+  mutate(cumsum = cumsum(Quantity), .by = Product) %>%
+  summarise(days = n_distinct(Date), .by = c(Product, rn, Month, cumsum)) %>%
+  summarise(weighted_value = sum(cumsum * days)/sum(days), .by = c(Product, Month)) %>%
+  pivot_wider(names_from = Product, values_from = weighted_value)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-008.xlsx"
+input_data = pd.read_excel(path, usecols="B:E", skiprows=1, nrows=18)
+test = pd.read_excel(path, usecols="I:L", skiprows=1, nrows=3)
+
+input_data["Date"] = pd.to_datetime(input_data["Date"])
+input_data = input_data.sort_values(["Product", "Date"]).reset_index(drop=True)
+input_data["rn"] = input_data.groupby("Product").cumcount() + 1
+
+full_index = pd.MultiIndex.from_product(
+    [pd.date_range(input_data["Date"].min(), input_data["Date"].max(), freq="D"), ["A", "B", "C"]],
+    names=["Date", "Product"],
+)
+result = full_index.to_frame(index=False).merge(input_data, on=["Date", "Product"], how="left")
+result["sign"] = result["Type"].map({"Reduce": -1}).fillna(1)
+result["Month"] = result["Date"].dt.month
+result["Quantity"] = result["Quantity"] * result["sign"]
+result["Quantity"] = result["Quantity"].fillna(0)
+result = result.sort_values(["Product", "Date"])
+result["rn"] = result.groupby("Product")["rn"].ffill()
+result["cumsum"] = result.groupby("Product")["Quantity"].cumsum()
+days = (
+    result.groupby(["Product", "rn", "Month", "cumsum"], dropna=False)["Date"]
+    .nunique()
+    .reset_index(name="days")
+)
+result2 = (
+    days.groupby(["Product", "Month"], as_index=False)
+    .apply(lambda g: pd.Series({"weighted_value": (g["cumsum"] * g["days"]).sum() / g["days"].sum()}))
+    .reset_index(drop=True)
+    .pivot(index="Month", columns="Product", values="weighted_value")
+    .reset_index(drop=True)
+)
+
+print(result2.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 7](OmidC7.qmd)
+-   [Omid - Challenge 9](OmidC9.qmd)
+-   [Omid - Challenge 10](OmidC10.qmd)

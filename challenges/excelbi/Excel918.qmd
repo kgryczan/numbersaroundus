@@ -1,0 +1,96 @@
+---
+title: "Excel BI - Excel Challenge 918"
+description: "🔰 918 Extract Data.xlsx says: > Extract REF ID, E Mail Id and Website Addresses from the given data."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 918](/challenges/images/exc918.jpg)
+
+## Challenge Description
+
+🔰 The prompt in 918 Extract Data.xlsx says: Extract REF ID, E Mail Id and Website Addresses from the given data. The workbook provides one large text block containing mixed content. The goal is to extract three parallel lists:
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/900-999/918/918 Extract Data.xlsx"
+input <- read_excel(path, range = "B1:B1", col_names = FALSE)
+test <- read_excel(path, range = "A3:C13")
+
+R <- function(pattern) str_extract_all(input %>% pull(), pattern)[[1]]
+
+result = tibble(
+  `Ref Number` = R("REF-\\d{4}"),
+  `E Mail ID` = R("[\\w.-]+@[\\w.-]+"),
+  `Website Address` = R("(www\\.|https?://)[\\w./-]*[\\w/-]")
+)
+
+all(test == result)
+## [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the source text as one string.; Define one extraction helper that runs a regex and returns all matches.; Use a dedicated regex for reference IDs..
+- **Strengths**: This puzzle works because each entity type has a recognizable signature: - reference numbers begin with `REF-` and four digits, - emails contain a local part, `@`, and a domain, - websites begin with `www.` or `http(s)://`.
+- **Areas for Improvement**: The approach assumes the workbook structure and naming conventions stay stable, so any changed input shape would need minor adjustments.
+- **Gem**: - reference numbers begin with `REF-` and four digits, - emails contain a local part, `@`, and a domain, - websites begin with `www.` or `http(s)://`.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "Excel/900-999/918/918 Extract Data.xlsx"
+input_data = pd.read_excel(path, usecols="B", nrows=1, header=None)
+test = pd.read_excel(path, usecols="A:C", skiprows=2, nrows=11)
+
+text = input_data.iloc[0, 0]
+
+def R(pattern):
+    return re.findall(pattern, text)
+
+result = pd.DataFrame({
+    "Ref Number": R(r"REF-\d{4}"),
+    "E Mail ID": R(r"[\w.-]+@[\w.-]+"),
+    "Website Address": R(r"(?:www\.|https?://)[\w./-]*[\w/-]")
+})
+
+print(test.equals(result))
+# Visually i see no difference.
+```
+
+### Python
+
+The Python version follows the same structure: load the full text source.; run `re.findall()` with one pattern per entity type..
+
+## **Difficulty Level**
+
+**Easy**
+
+Once the core pattern is recognized, the implementation is short and direct.
+
+### Related Challenges
+
+- [Excel Challenge 923](/challenges/excelbi/Excel923.html)
+- [Excel Challenge 922](/challenges/excelbi/Excel922.html)
+- [Excel Challenge 928](/challenges/excelbi/Excel928.html)

@@ -1,0 +1,124 @@
+---
+title: "Omid - Challenge 282"
+description: "🔰 Challenge 282 : Unique Characters in Rows and Columns In the Question table, identify all characters that do not appear anywhere else in their row or column."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 282](/challenges/images/OmidC282.jpg)
+
+## Challenge Description
+
+🔰 Challenge 282 : Unique Characters in Rows and Columns In the Question table, identify all characters that do not appear anywhere else in their row or column.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/282/CH-282 Advanced Filtering.xlsx"
+input = read_excel(path, range = "C2:E9") %>% as.matrix()
+test  = read_excel(path, range = "G2:G12") %>% pull() %>% sort()
+
+output = matrix(0, nrow = nrow(input), ncol = ncol(input))
+for (i in 1:nrow(input)) {
+  for (j in 1:ncol(input)) {
+    if (sum(input[i, ] == input[i, j]) == 1 && sum(input[, j] == input[i, j]) == 1) {
+      output[i, j] = 1
+    }
+  }
+}
+result = input[output == 1] %>% sort() %>% unique()
+
+all(result == test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "200-299/282/CH-282 Advanced Filtering.xlsx"
+input_mat = pd.read_excel(path, engine='openpyxl', usecols="C:E", skiprows=2, nrows=8, header=None).values
+test = sorted(pd.read_excel(path, engine='openpyxl', usecols="G", skiprows=2, nrows=11, header=None).squeeze().tolist())
+
+output = np.zeros_like(input_mat, dtype=int)
+for i in range(input_mat.shape[0]):
+    for j in range(input_mat.shape[1]):
+        if (np.sum(input_mat[i, :] == input_mat[i, j]) == 1 and
+            np.sum(input_mat[:, j] == input_mat[i, j]) == 1):
+            output[i, j] = 1
+
+result = sorted(set(input_mat[output == 1].tolist()))
+
+print(result == test) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 281](OmidC281.qmd)
+-   [Omid - Challenge 283](OmidC283.qmd)
+-   [Omid - Challenge 284](OmidC284.qmd)

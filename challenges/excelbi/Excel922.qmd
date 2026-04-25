@@ -1,0 +1,84 @@
+---
+title: "Excel BI - Excel Challenge 922"
+description: "🔰 Compress consecutive repeated letters to one character while preserving the rest of each word."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-23"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 922](/challenges/images/exc922.jpg)
+
+## Challenge Description
+
+🔰 If any letter appears consecutively in a word, reduce that streak to one copy of the letter. Each word should be treated individually, so the transformation compresses repeated adjacent characters without breaking the surrounding text.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/900-999/922/922 Reduce to Single Letter.xlsx"
+input <- read_excel(path, range = "A1:A11")
+test <- read_excel(path, range = "B1:B11")
+
+result <- input %>%
+  mutate(Data = str_replace_all(Data, "([A-Za-z])\\1+", "\\1"))
+
+all.equal(result$Data, test$`Answer Expected`, check.attributes = FALSE)
+# one test case is wrong
+```
+
+### R Analysis
+
+- **Logic**: Match any letter followed by one or more copies of itself and replace the whole streak with a single letter.
+- **Strengths**: The regex backreference expresses the rule directly and eliminates the need for character-by-character loops.
+- **Areas for Improvement**: One workbook comparison case appears to be incorrect, so the mismatch should be treated as bad comparison data rather than bad logic.
+- **Gem**: The entire transformation is powered by one backreference pattern: capture a letter, then match repeats of that same letter.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "Excel/900-999/922/922 Reduce to Single Letter.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=11)
+test = pd.read_excel(path, usecols="B", nrows=11)
+
+def reduce_to_single_letter(text):
+    return re.sub(r"([A-Za-z])\1+", r"\1", text)
+
+input["Data"] = input["Data"].apply(reduce_to_single_letter)
+print(input["Data"] == test["Answer Expected"])
+# one test case is incorrect
+```
+
+### Python
+
+The Python version is almost the minimal expression of the rule: one `re.sub()` call with a backreference. It is a good example of a very small regex encoding a surprisingly human-sounding text-cleaning instruction.
+
+## **Difficulty Level**
+
+**Easy**
+
+Once the repeated-letter streak is recognized as a regex backreference pattern, the implementation becomes very short.
+
+### Related Challenges
+
+- [Excel Challenge 923](/challenges/excelbi/Excel923.html)
+- [Excel Challenge 928](/challenges/excelbi/Excel928.html)
+- [Excel Challenge 932](/challenges/excelbi/Excel932.html)

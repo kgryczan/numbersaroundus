@@ -1,0 +1,134 @@
+---
+title: "Omid - Challenge 48"
+description: "🔰 : Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 48](/challenges/images/OmidC48.jpg)
+
+## Challenge Description
+
+🔰 : Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-048 Transformation.xlsx", range = "B1:B20")
+test  = read_excel("files/CH-048 Transformation.xlsx", range = "E2:O12") %>%
+  column_to_rownames('...1')
+
+
+r1 = input %>%
+  separate(`Questions - Combination models`, into = c("first", "second"), sep = "\\+")
+
+r2 = data.frame(first = r1$second, second = r1$first)
+
+r3 = rbind(r1, r2) %>%
+  mutate(value = 1) %>%
+  pivot_wider(names_from = second, values_from = value, values_fn = sum) %>%
+  select(first, GA, PSO, DE, FA, HS, RO, SO, CS, TS, MPSO) %>%
+  column_to_rownames('first')
+
+all.equal(test, r3, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input = pd.read_excel("CH-048 Transformation.xlsx", usecols = "B", nrows = 20)
+test = pd.read_excel("CH-048 Transformation.xlsx",  usecols="E:O", nrows=10, skiprows=1)
+test = test.set_index(test.columns[0])
+test = test.fillna(0)
+
+input = input["Questions - Combination models"].str.split("+").tolist()
+input = input + [x[::-1] for x in input]
+input = pd.DataFrame(input, columns=["Model 1", "Model 2"]).assign(Count=1)
+
+result = input.pivot_table(index="Model 1", columns="Model 2", values="Count", aggfunc="sum")
+result = result.reindex(input["Model 1"].unique(), columns=input["Model 1"].unique(), fill_value=0)
+result = result.fillna(0)
+
+# compare result with test
+print(result.values.tolist() == test.values.tolist())
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 47](OmidC47.qmd)
+-   [Omid - Challenge 49](OmidC49.qmd)
+-   [Omid - Challenge 50](OmidC50.qmd)

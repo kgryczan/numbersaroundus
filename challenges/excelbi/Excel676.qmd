@@ -1,0 +1,103 @@
+---
+title: "Excel BI - Excel Challenge 676"
+description: "🔰 Date Payment Quarter Month Payment Q1 Jan Feb Mar Q2"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 676](/challenges/images/exc676.jpg)
+
+## Challenge Description
+
+🔰 Date Payment Quarter Month Payment Q1 Jan Feb Mar Q2
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/676 Credit card payment amount.xlsx"
+input = read_excel(path, range = "A1:B101")
+test  = read_excel(path, range = "E1:G14")
+
+result <- input %>%
+  mutate(Date = as.Date(Date)) %>%
+  mutate(adjusted_date = ifelse(day(Date) >= 26, Date + days(6), Date) %>% as.Date(origin = "1970-01-01")) %>%
+  filter(year(adjusted_date) == 2025) %>%
+  mutate(Quarter = paste0("Q", quarter(adjusted_date)),
+         Month = month(adjusted_date, label = TRUE, abbr = TRUE, locale = "en")) %>%
+  summarise(Payment = sum(Payment, na.rm = TRUE), .by = c("Quarter", "Month")) 
+
+total = result %>%
+  summarise(Payment = sum(Payment, na.rm = TRUE)) %>%
+  mutate(Quarter = "Total", Month = NA) %>%
+  relocate(Quarter, Month, Payment)
+
+result = bind_rows(result, total)
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Apply the business rule conditions explicitly.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from pandas.tseries.offsets import DateOffset
+
+path = "676 Credit card payment amount.xlsx"
+input_df = pd.read_excel(path, usecols="A:B", nrows=101)
+test_df = pd.read_excel(path, usecols="E:G", nrows=14)
+
+input_df['Date'] = pd.to_datetime(input_df['Date'])
+input_df['adjusted_date'] = input_df['Date'] + pd.to_timedelta((input_df['Date'].dt.day >= 26) * 6, unit='D')
+input_df = input_df[input_df['adjusted_date'].dt.year == 2025]
+
+result = (input_df
+          .assign(Quarter="Q" + input_df['adjusted_date'].dt.quarter.astype(str),
+                  Month=input_df['adjusted_date'].dt.strftime('%b'),
+                  MonthOrder=input_df['adjusted_date'].dt.month)
+          .groupby(['Quarter', 'Month', 'MonthOrder'], as_index=False)
+          .agg(Payment=('Payment', 'sum'))
+          .sort_values(by=['Quarter', 'MonthOrder'])
+          .drop(columns=['MonthOrder']))
+
+total = pd.DataFrame([{'Quarter': 'Total', 'Month': None, 'Payment': result['Payment'].sum()}])
+result = pd.concat([result, total], ignore_index=True)
+print(result)
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 677](/challenges/excelbi/Excel677.html)
+- [Excel Challenge 678](/challenges/excelbi/Excel678.html)
+- [Excel Challenge 679](/challenges/excelbi/Excel679.html)

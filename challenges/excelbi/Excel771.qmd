@@ -1,0 +1,104 @@
+---
+title: "Excel BI - Excel Challenge 771"
+description: "🔰 Extract 1 characters, followed by 2 characters, followed by 3 characters and so on."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 771](/challenges/images/exc771.jpg)
+
+## Challenge Description
+
+🔰 Extract 1 characters, followed by 2 characters, followed by 3 characters and so on. If last extracted characters don't meet this condition, then discard them. Vertically align the extracted characters.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/771/771 Split and Align.xlsx"
+input = read_excel(path, range = "A1:A11")
+test  = read_excel(path, range = "B1:B46")
+
+cut_progressive_chunks = function(x) {
+  n = str_length(x)
+  k = floor((sqrt(1 + 8 * n) - 1) / 2)
+  lengths = 1:k
+  starts = cumsum(c(1, head(lengths, -1)))
+  ends = cumsum(lengths)
+  map2_chr(starts, ends, ~ str_sub(x, .x, .y))
+}
+
+result = input %>%
+  rowwise() %>%
+  mutate(chunks = list(cut_progressive_chunks(Strings))) %>%
+  unnest(chunks)
+
+all.equal(result$chunks, test$`Answer Expected`, check.attributes = FALSE)
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+import math
+
+path = "700-799/771/771 Split and Align.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=10)
+test = pd.read_excel(path, usecols="B", nrows=46)
+
+def cut_progressive_chunks(x):
+    if pd.isna(x) or not isinstance(x, str):
+        return []
+    n = len(x)
+    k = int((math.isqrt(1 + 8 * n) - 1) // 2)
+    lengths = np.arange(1, k + 1)
+    starts = np.cumsum(np.concatenate(([1], lengths[:-1])))
+    ends = np.cumsum(lengths)
+    return [x[s-1:e] for s, e in zip(starts, ends)]
+
+input['chunks'] = input.iloc[:, 0].apply(cut_progressive_chunks)
+result = input.explode('chunks', ignore_index=True)
+
+print(result['chunks'].equals(test['Answer Expected'])) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 772](/challenges/excelbi/Excel772.html)
+- [Excel Challenge 773](/challenges/excelbi/Excel773.html)
+- [Excel Challenge 774](/challenges/excelbi/Excel774.html)

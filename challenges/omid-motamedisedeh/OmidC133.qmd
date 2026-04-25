@@ -1,0 +1,139 @@
+---
+title: "Omid - Challenge 133"
+description: "🔰 Group Challenge 133: Custom Grouping!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 133](/challenges/images/OmidC133.jpg)
+
+## Challenge Description
+
+🔰 Group Challenge 133: Custom Grouping!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-133 Custom Grouping.xlsx"
+input = read_excel(path, range = "B2:C40")
+test  = read_excel(path, range = "K2:L8")
+
+
+dates = seq(as.Date("2024-01-01"), as.Date("2024-02-29"), by = "day")
+dates = data.frame(Date = dates)
+
+result = dates %>%
+  left_join(input, by = c("Date" = "Date")) %>%
+  mutate(year = year(Date), 
+         month = month(Date),
+         day = day(Date), 
+         decade_days = ifelse(ceiling(day / 10) == 4, 3, ceiling(day/10))) %>%
+  summarise(`Total Sales` = sum(Sales, na.rm = TRUE),
+            group = paste(min(Date), max(Date), sep = " - "),
+            .by = c("year", "month", "decade_days")) %>%
+  select(Group = group, `Total Sales`)
+
+# results in test are not correct
+#
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-133 Custom Grouping.xlsx"
+input_df = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=39)
+test_df = pd.read_excel(path, usecols="K:L", skiprows=1, nrows=7)
+
+dates = pd.date_range(start="2024-01-01", end="2024-02-29")
+dates_df = pd.DataFrame({'Date': dates})
+
+merged_df = dates_df.merge(input_df, on='Date', how='left')
+
+merged_df['year'] = merged_df['Date'].dt.year
+merged_df['month'] = merged_df['Date'].dt.month
+merged_df['day'] = merged_df['Date'].dt.day
+merged_df['decade_days'] = (merged_df['day'] // 10 + 1).clip(upper=3)
+
+result = merged_df.groupby(['year', 'month', 'decade_days']).agg(
+    Total_Sales=('Sales', 'sum'),
+    group=('Date', lambda x: f"{x.min().date()} - {x.max().date()}")
+).reset_index()
+
+result = result[['group', 'Total_Sales']]
+result.columns = ['Group', 'Total Sales']
+
+print(result)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 132](OmidC132.qmd)
+-   [Omid - Challenge 134](OmidC134.qmd)
+-   [Omid - Challenge 135](OmidC135.qmd)

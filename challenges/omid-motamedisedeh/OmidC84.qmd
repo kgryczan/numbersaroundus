@@ -1,0 +1,136 @@
+---
+title: "Omid - Challenge 84"
+description: "🔰 In the question table, the areas between 0 and Z of the normal distribution are provided."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 84](/challenges/images/OmidC84.jpg)
+
+## Challenge Description
+
+🔰 In the question table, the areas between 0 and Z of the normal distribution are provided.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+  library(readxl)
+  
+  path = "files/CH-84 Normal Distribution.xlsx"
+  input1 = read_excel(path, range = "B2:L13")
+  input2 = read_excel(path, range = "N2:N9")
+  test   = read_excel(path, range = "O2:O9")
+  
+  result1 = input1 %>%
+    pivot_longer(cols = -c(1), names_to = "Z1", values_to = "prob") %>%
+    mutate(Z1 = as.numeric(Z1), 
+           Z_tot = Z1 + Z) %>%
+    select(Z = Z_tot, prob)
+  
+  result2 = tibble(Probability = input2$Probability) %>%
+    rowwise() %>%
+    mutate(Z = result1 %>%
+             mutate(diff = abs(prob - Probability)) %>%
+             filter(diff == min(diff)) %>%
+             pull(Z)) %>%
+    ungroup()
+    
+  all.equal(result2$Z, test$Z)
+  #> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-84 Normal Distribution.xlsx"
+
+input1 = pd.read_excel(path, usecols="B:L", skiprows=1)
+input2 = pd.read_excel(path, usecols="N", skiprows=1, nrows=7)
+test = pd.read_excel(path, usecols="O", skiprows=1, nrows=7)
+test.columns = test.columns.str.replace('.1', '')
+
+result1 = input1.melt(id_vars=["Z"], var_name="Z1", value_name="prob")
+result1["Z_tot"] = result1["Z1"] + result1["Z"]
+result1 = result1[["Z_tot", "prob"]]
+
+result2 = pd.DataFrame({"Probability": input2["Probability"]})
+result2["Z"] = result2["Probability"].apply(lambda x: result1.loc[(result1["prob"] - x).abs().idxmin(), "Z_tot"])
+
+result2["Z"] = result2["Z"].round(2)
+test["Z"] = test["Z"].round(2)
+
+print(result2["Z"].equals(test["Z"]))  # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 83](OmidC83.qmd)
+-   [Omid - Challenge 85](OmidC85.qmd)
+-   [Omid - Challenge 86](OmidC86.qmd)

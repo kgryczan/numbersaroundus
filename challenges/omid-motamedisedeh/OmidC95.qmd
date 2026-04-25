@@ -1,0 +1,116 @@
+---
+title: "Omid - Challenge 95"
+description: "🔰 In the Question table, monthly inventory levels of products are provided."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 95](/challenges/images/OmidC95.jpg)
+
+## Challenge Description
+
+🔰 In the Question table, monthly inventory levels of products are provided.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-095 Last Inventory.xlsx"
+input = read_excel(path, range = "B2:G7")
+test  = read_excel(path, range = "I2:J7")
+
+
+result = input %>%
+  rowwise() %>%
+  mutate(`Last Inventory` = last(na.omit(c_across(-Product)))) %>%
+  ungroup() %>%
+  select(c(1,7))
+
+identical(result, test)         
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-095 Last Inventory.xlsx"
+input = pd.read_excel(path, usecols = "B:G", skiprows = 1)
+test  = pd.read_excel(path, usecols = "i:j", skiprows = 1)
+test.columns = test.columns.str.replace(".1", "")
+
+result = input.copy()
+result['Last Inventory'] = input.iloc[:, 1:]\
+    .apply(lambda x: x[x.last_valid_index()], axis = 1)\
+    .astype("int64")
+result = result[['Product', 'Last Inventory']]
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 94](OmidC94.qmd)
+-   [Omid - Challenge 96](OmidC96.qmd)
+-   [Omid - Challenge 97](OmidC97.qmd)

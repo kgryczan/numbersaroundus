@@ -1,0 +1,121 @@
+---
+title: "Omid - Challenge 29"
+description: "🔰 Question Result A B C Product Quantity Date"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 29](/challenges/images/OmidC29.jpg)
+
+## Challenge Description
+
+🔰 Question Result A B C Product Quantity Date
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-029 Identifying Customers Staple Products.xlsx", range = "B2:E36")
+test  = read_excel("files/CH-029 Identifying Customers Staple Products.xlsx", range = "I2:J6")
+
+result = input %>%
+  summarise(total_quantity = sum(Quantity), .by = c("Customer ID", "Product")) %>%
+  group_by(`Customer ID`) %>%
+  mutate(rank = rank(-total_quantity),
+         lowest_rank = min(rank)) %>%
+  filter(rank == lowest_rank) %>%
+  summarise(`Most Purchased PRODUCT` = paste0(sort(Product), collapse = ","))
+
+identical(result$`Most Purchased PRODUCT`, test$`Most Purchased PRODUCT`)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input = pd.read_excel("CH-029 Identifying Customers Staple Products.xlsx", sheet_name="Sheet1", usecols="B:E", skiprows=1)
+test = pd.read_excel("CH-029 Identifying Customers Staple Products.xlsx", sheet_name="Sheet1", usecols="I:J", skiprows=1, nrows = 4)
+
+result = input.groupby(["Customer ID", "Product"]).agg(total_quantity=("Quantity", "sum")).reset_index()
+result["rank"] = result.groupby("Customer ID")["total_quantity"].rank(ascending=False)
+result["lowest_rank"] = result.groupby("Customer ID")["rank"].transform("min")
+result = result[result["rank"] == result["lowest_rank"]]
+result = result.groupby("Customer ID").agg({"Product": lambda x: ",".join(sorted(x))}).reset_index()
+result = result.rename(columns={"Product": "Most Purchased PRODUCT"})
+
+print(result["Most Purchased PRODUCT"].equals(test["Most Purchased PRODUCT"])) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 28](OmidC28.qmd)
+-   [Omid - Challenge 30](OmidC30.qmd)
+-   [Omid - Challenge 31](OmidC31.qmd)

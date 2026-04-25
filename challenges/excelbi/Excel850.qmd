@@ -1,0 +1,109 @@
+---
+title: "Excel BI - Excel Challenge 850"
+description: "🔰 Reading from top to bottom, list the first missing letter from a to z considering all previous strings encountered when going from top to bottom."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 850](/challenges/images/exc850.jpg)
+
+## Challenge Description
+
+🔰 Reading from top to bottom, list the first missing letter from a to z considering all previous strings encountered when going from top to bottom. Once a missing letter is identified, it should not be identified for any succeeding string.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+path <- "Excel/800-899/850/850 First Missing Letter.xlsx"
+input <- read_excel(path, range = "A1:A11")
+test <- read_excel(path, range = "B1:B11") %>% replace_na(list(`Answer Expected` = ""))
+
+words <- input$Data
+
+state <- reduce(
+  words,
+  .init = list(
+    alphabet = letters,
+    results  = character()
+  ),
+  .f = function(acc, word) {
+    chars_now <- str_split_1(str_to_lower(word), "") %>% unique()
+    alphabet_new <- setdiff(acc$alphabet, chars_now)
+    chosen <- if (length(alphabet_new) == 0) "" else alphabet_new[1]
+    alphabet_new <- setdiff(alphabet_new, chosen)
+    list(
+      alphabet = alphabet_new,
+      results  = c(acc$results, chosen)
+    )
+  }
+)
+result <- tibble(final_missing = state$results)
+
+all.equal(result$final_missing, test$`Answer Expected`)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Parse the packed text or string structure.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import string
+
+path = "Excel/800-899/850/850 First Missing Letter.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=11)
+test = pd.read_excel(path, usecols="B", nrows=11).fillna({"Answer Expected": ""})
+
+words = input["Data"].tolist()
+alphabet = list(string.ascii_lowercase)
+results = []
+
+for word in words:
+    chars_now = set(word.lower())
+    alphabet_new = [ch for ch in alphabet if ch not in chars_now]
+    chosen = "" if not alphabet_new else alphabet_new[0]
+    alphabet = [ch for ch in alphabet_new if ch != chosen]
+    results.append(chosen)
+
+result = pd.DataFrame({"final_missing": results})
+
+print(result["final_missing"].equals(test["Answer Expected"]))
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 851](/challenges/excelbi/Excel851.html)
+- [Excel Challenge 852](/challenges/excelbi/Excel852.html)
+- [Excel Challenge 853](/challenges/excelbi/Excel853.html)

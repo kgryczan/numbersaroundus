@@ -1,0 +1,109 @@
+---
+title: "Excel BI - Excel Challenge 895"
+description: "🔰 For every quarter-year, find which salespersons made the highest total sales."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 895](/challenges/images/exc895.jpg)
+
+## Challenge Description
+
+🔰 For every quarter-year, find which salespersons made the highest total sales.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/895/895 Max Sales.xlsx"
+input <- read_excel(path, range = "A2:F51")
+test <- read_excel(path, range = "H2:J9")
+
+result = input %>%
+  mutate(Amount = Price * Units, Quarter = floor_date(Date, "quarter")) %>%
+  group_by(Quarter, SalesRep) %>%
+  summarise(Total_Sales = sum(Amount)) %>%
+  filter(Total_Sales == max(Total_Sales)) %>%
+  ungroup() %>%
+  summarise(
+    Name = str_c(SalesRep, collapse = ", "),
+    Amount = first(Total_Sales),
+    .by = Quarter
+  ) %>%
+  mutate(Quarter = paste0("Q", quarter(Quarter), "-", year(Quarter)))
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The transformation is organized around the correct grouping level, which keeps the business logic clear.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The key move is solving the problem at the right grain before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel/800-899/895/895 Max Sales.xlsx"
+input = pd.read_excel(path, usecols="A:F", skiprows=1, nrows=50)
+test = pd.read_excel(path, usecols="H:J", skiprows=1, nrows=7)
+
+input['Amount'] = input['Price'] * input['Units']
+input['Quarter'] = pd.to_datetime(input['Date'])
+input['Quarter'] = input['Quarter'].dt.to_period('Q').dt.start_time
+input['Amount'] = input['Amount'].astype('int64')
+
+grouped = input.groupby(['Quarter', 'SalesRep'], as_index=False)['Amount'].sum()
+grouped = grouped.rename(columns={'Amount': 'Total_Sales'})
+
+max_sales = grouped.groupby('Quarter')['Total_Sales'].transform('max')
+filtered = grouped[grouped['Total_Sales'] == max_sales]
+
+result = filtered.groupby('Quarter', as_index=False).agg({
+    'SalesRep': lambda x: ', '.join(x),
+    'Total_Sales': 'first'
+})
+
+result['Quarter'] = result['Quarter'].dt.to_period('Q')
+result['Quarter'] = result['Quarter'].apply(lambda x: f"Q{x.quarter}-{x.year}")
+result = result.rename(columns={'SalesRep': 'Name', 'Total_Sales': 'Amount'})
+
+print(result.equals(test))
+# True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 896](/challenges/excelbi/Excel896.html)
+- [Excel Challenge 897](/challenges/excelbi/Excel897.html)
+- [Excel Challenge 898](/challenges/excelbi/Excel898.html)

@@ -1,0 +1,158 @@
+---
+title: "Crispo - Excel Challenge 09 2026"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-01"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 09 2026](/challenges/images/Crispo092026.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ ⭐Count the Direct & Indirect and Total Reports
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+library(igraph)
+
+path <- "2026-03-01/Challenge 105.xlsx"
+input <- read_excel(path, range = "B3:E19")
+test <- read_excel(path, range = "G3:I7")
+
+edges <- input %>%
+  filter(!is.na(`Manager ID`)) %>%
+  transmute(from = `Manager ID`, to = `Staff ID`)
+
+g <- graph_from_data_frame(edges, directed = TRUE)
+
+managers <- input %>%
+  filter(Position == "Manager")
+
+result <- managers %>%
+  mutate(
+    vertex = as.character(`Staff ID`),
+    all_reports = map(
+      vertex,
+      ~ ego(g, order = Inf, nodes = .x, mode = "out")[[1]] %>% setdiff(.x)
+    ),
+    total_n = map_int(all_reports, length),
+    direct_n = map_int(vertex, ~ degree(g, v = .x, mode = "out")),
+    indirect_n = total_n - direct_n,
+    `Direct & Indirect` = paste0(
+      direct_n,
+      " direct : ",
+      indirect_n,
+      " Indirect"
+    )
+  ) %>%
+  select(Manager = Name, `Direct & Indirect`, `Total Reports` = total_n)
+
+result
+plot(g, vertex.label = V(g)$name, main = "Graph Visualization")
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import networkx as nx
+
+path = "2026-03-01/Challenge 105.xlsx"
+input = pd.read_excel(path, sheet_name="Sheet2", usecols="B:E", skiprows=2, nrows=16)
+test = pd.read_excel(path, sheet_name="Sheet2", usecols="G:I", skiprows=2, nrows=4)
+
+df = pd.DataFrame(input, columns=["Staff ID", "Manager ID", "Name", "Position"])
+G = nx.DiGraph()
+G.add_edges_from(
+    df.dropna(subset=["Manager ID"])[["Manager ID", "Staff ID"]].itertuples(index=False)
+)
+managers = df[df["Position"] == "Manager"]
+results = []
+for _, row in managers.iterrows():
+    manager_id = row["Staff ID"]
+    name = row["Name"]
+    direct = list(G.successors(manager_id))
+    all_reports = nx.descendants(G, manager_id)
+    direct_n = len(direct)
+    total_n = len(all_reports)
+    indirect_n = total_n - direct_n
+    results.append({
+        "Manager": name,
+        "Direct & Indirect": f"{direct_n} direct : {indirect_n} Indirect",
+        "Total Reports": total_n
+    })
+result_df = pd.DataFrame(results)
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 08 2026](Crispo 082026.qmd)
+-   [Crispo - Excel Challenge 10 2026](Crispo 102026.qmd)

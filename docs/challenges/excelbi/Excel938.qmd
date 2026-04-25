@@ -1,0 +1,183 @@
+---
+title: "Excel BI - Excel Challenge 938"
+description: "🔰 Given a signal string and a target depth, extract every letter that sits exactly at that nesting depth."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-23"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 938](/challenges/images/exc938.jpg)
+
+## Challenge Description
+
+🔰 An intelligence network encodes its transmissions by wrapping letters in nested bracket layers. Each opening bracket increases the current nesting depth by 1; each closing bracket decreases it. Given a signal string and a target depth, extract every letter that sits exactly at that nesting depth.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "900-999/938/938 Extract As Per Depth.xlsx"
+input <- read_excel(path, range = "A1:B23")
+test <- read_excel(path, range = "C1:C23")
+
+extract_at_depth <- function(signal, target) {
+  chars <- strsplit(signal, "")[[1]]
+  depth <- 0
+  result <- character(0)
+  for (ch in chars) {
+    if (ch == "(") {
+      depth <- depth + 1
+    } else if (ch == ")") {
+      depth <- depth - 1
+    } else if (depth == target) {
+      result <- c(result, ch)
+    }
+  }
+  if (length(result) == 0) NA_character_ else paste(result, collapse = "")
+}
+
+result <- input |>
+  mutate(
+    `Answer Expected` = map2_chr(Signal, `Target Depth`, extract_at_depth)
+  ) |>
+  select(`Answer Expected`)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Split each signal into individual characters.
+
+    -   Track the current nesting depth while scanning from left to right.
+
+    -   Increase depth on `(` and decrease depth on `)`.
+
+    -   Keep only letters whose current depth matches the target depth.
+
+-   **Strengths**:
+
+    -   **Clear State Tracking**:
+
+        -   The solution makes the depth logic explicit and easy to validate.
+
+    -   **Faithful to the Prompt**:
+
+        -   It follows the bracket-depth rule exactly as described in the challenge.
+
+    -   **Reusable Function**:
+
+        -   The parser logic is isolated cleanly in `extract_at_depth`.
+
+-   **Areas for Improvement**:
+
+    -   **Performance on Very Long Strings**:
+
+        -   Repeated concatenation into `result` could be optimized for larger inputs.
+
+-   **Gem**:
+
+    -   Turning a nested-string puzzle into a simple depth counter is the elegant heart of the solution.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "900-999/938/938 Extract As Per Depth.xlsx"
+input = pd.read_excel(path, usecols="A:B", nrows=22)
+test = pd.read_excel(path, usecols="C", nrows=22)
+
+
+def extract_at_depth(signal: str, target: int) -> str | None:
+    depth, result = 0, []
+    for ch in signal:
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+        elif depth == target:
+            result.append(ch)
+    return "".join(result) or None
+
+
+result = pd.DataFrame({
+    "Answer Expected": input.apply(
+        lambda row: extract_at_depth(str(row["Signal"]), int(row["Target Depth"])),
+        axis=1,
+    )
+})
+
+print(result.equals(test))
+# True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Walk through each character in the signal.
+
+    -   Maintain a running depth counter.
+
+    -   Collect letters only when the current depth equals the requested depth.
+
+    -   Apply the parser row-wise to the whole table.
+
+-   **Strengths**:
+
+    -   **Directness**:
+
+        -   The algorithm is explicit and easy to follow step by step.
+
+    -   **Good Separation**:
+
+        -   The parsing logic is isolated in a single helper function.
+
+    -   **Natural Fit for Strings**:
+
+        -   Python handles the character-by-character iteration very naturally here.
+
+-   **Areas for Improvement**:
+
+    -   **Row-wise Apply Cost**:
+
+        -   For very large datasets, `apply(..., axis=1)` would be slower than a vectorized alternative.
+
+-   **Gem**:
+
+    -   The small `depth` counter turns a nested transmission string into a fully deterministic extractor.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   Requires stateful parsing instead of simple text splitting.
+
+-   Involves interpreting each character relative to nesting depth.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - Excel Challenge 937](Excel937.qmd)
+-   [Excel BI - Excel Challenge 939](Excel939.qmd)

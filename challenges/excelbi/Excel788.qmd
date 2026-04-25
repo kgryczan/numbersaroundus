@@ -1,0 +1,111 @@
+---
+title: "Excel BI - Excel Challenge 788"
+description: "🔰 4.What is the shortcut key to create a new worksheet in Excel?"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 788](/challenges/images/exc788.jpg)
+
+## Challenge Description
+
+🔰 4.What is the shortcut key to create a new worksheet in Excel? What is the shortcut key to create a new worksheet in Excel?
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/788/788 Quiz_Table.xlsx"
+input = read_excel(path, range = "A1:C30")
+test  = read_excel(path, range = "E2:J9")
+
+result = input %>%
+  mutate(num = cumsum(str_detect(No, "^[0-9]+$"))) %>%
+  group_by(num) %>%
+  mutate(`Correct Answer` = ifelse(Correct == "Y", No, NA)) %>%
+  fill(`Correct Answer`, .direction = "downup") %>% 
+  select(-Correct) %>%
+  ungroup() %>%
+  mutate(Q = ifelse(str_detect(No, "^[0-9]+$"), Question, NA)) %>%
+  fill(Q, .direction = "downup") %>%
+  filter(ifelse(str_detect(No, "^[0-9]+$"), F, T)) %>%
+  pivot_wider(id_cols = c(num, `Correct Answer`, Q), 
+              names_from = No, 
+              values_from = Question) %>%
+  unite("Question", num, Q, sep = ".") %>%
+  relocate(`Correct Answer`, .after = everything())
+
+all.equal(result, test)
+#$ [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Reshape the result into the workbook output format.
+- **Strengths**: The transformation is organized around the correct grouping level, which keeps the business logic clear.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The key move is solving the problem at the right grain before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+import re
+
+path = "700-799/788/788 Quiz_Table.xlsx"
+input = pd.read_excel(path, usecols="A:C", nrows=30)
+test = pd.read_excel(path, usecols="E:J", skiprows=1, nrows=7)
+
+def is_number(val):
+    return bool(re.match(r"^[0-9]+$", str(val)))
+
+input['num'] = input['No'].apply(is_number).cumsum()
+input['Correct Answer'] = np.where(input['Correct'] == "Y", input['No'], np.nan)
+input['Correct Answer'] = input.groupby('num')['Correct Answer'].transform(lambda x: x.ffill().bfill())
+input['Q'] = np.where(input['No'].apply(is_number), input['Question'], np.nan)
+input['Q'] = input.groupby('num')['Q'].transform(lambda x: x.ffill().bfill())
+input = input[~input['No'].apply(is_number)].drop(columns=['Correct'])
+result = input.pivot_table(
+    index=['num', 'Correct Answer', 'Q'],
+    columns='No',
+    values='Question',
+    aggfunc='first'
+).reset_index()
+result['Question'] = result['num'].astype(str) + '.' + result['Q'].astype(str)
+result = result[['Question', 'A', 'B', 'C', 'D', 'Correct Answer']]
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 789](/challenges/excelbi/Excel789.html)
+- [Excel Challenge 790](/challenges/excelbi/Excel790.html)
+- [Excel Challenge 791](/challenges/excelbi/Excel791.html)

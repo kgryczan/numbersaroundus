@@ -1,0 +1,121 @@
+---
+title: "Omid - Challenge 100"
+description: "🔰 Question Result Product ID 100A 100B 107A 107B 107C"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 100](/challenges/images/OmidC100.jpg)
+
+## Challenge Description
+
+🔰 Question Result Product ID 100A 100B 107A 107B 107C
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-100 Manage Duplicate Values.xlsx"
+input = read_excel(path, range = "B2:B15")
+test  = read_excel(path, range = "D2:D15")
+
+result = input %>%
+  mutate(row = row_number(), 
+         n = n(), 
+         .by = `Product ID`) %>%
+  mutate(letter = ifelse(n > 1, LETTERS[row], "")) %>%
+  select(`Product ID`, letter) %>%
+  unite("Product ID", `Product ID`, letter, sep = "")
+
+identical(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "CH-100 Manage Duplicate Values.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=1, dtype=str)
+test  = pd.read_excel(path, usecols="D", skiprows=1, dtype=str)
+test.columns = test.columns.str.replace('.1', '')
+
+result = input.copy()
+result['row'] = result.groupby('Product ID').cumcount()
+result['nrows'] = result.groupby('Product ID')['Product ID'].transform('size')
+result['letter'] = np.where(result['nrows'] > 1, result['row'].apply(lambda x: chr(x + 65)), '')
+result['Product ID'] = result['Product ID'] + result['letter']
+result = result[['Product ID']]
+
+print(result.equals(test))  # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 99](OmidC99.qmd)
+-   [Omid - Challenge 101](OmidC101.qmd)
+-   [Omid - Challenge 102](OmidC102.qmd)

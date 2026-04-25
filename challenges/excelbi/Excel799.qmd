@@ -1,0 +1,96 @@
+---
+title: "Excel BI - Excel Challenge 799"
+description: "🔰 Data Answer Expected co*ns*titution cotitution ha*pp*i*n*ess haiess per*ception perception ent*erta*inme*nt* entinme"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 799](/challenges/images/exc799.jpg)
+
+## Challenge Description
+
+🔰 Data Answer Expected co*ns*titution cotitution ha*pp*i*n*ess haiess per*ception perception ent*erta*inme*nt* entinme
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/799/799 Remove Characters between 2 Asterisks.xlsx"
+input = read_excel(path, range = "A1:A10")
+test  = read_excel(path, range = "B1:B10")
+
+strip_star_pairs = function(x) {
+  while (str_detect(x, "\\*[^*]*\\*")) {
+    x = str_replace(x, "\\*([^*]*)\\*", ~str_remove_all(.x, "[A-Za-z]+"))
+  }
+  str_remove_all(x, "\\*")
+}
+
+result = input %>%
+  mutate(answer = map_chr(Data, strip_star_pairs))
+
+all.equal(result$answer, test$`Answer Expected`)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "700-799/799/799 Remove Characters between 2 Asterisks.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=10)
+test = pd.read_excel(path, usecols="B", nrows=10)
+
+def strip_star_pairs(x):
+    while True:
+        m = re.search(r"\*[^*]*\*", x)
+        if not m: break
+        inner = re.sub(r"[A-Za-z]+", "", x[m.start()+1:m.end()-1])
+        x = x[:m.start()] + inner + x[m.end():]
+    return x.replace("*", "")
+
+input['answer'] = input.iloc[:, 0].apply(strip_star_pairs)
+
+print(input['answer'].equals(test['Answer Expected'])) # True
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Medium / Hard**
+
+The challenge relies on a non-obvious iterative rule rather than a single straight aggregation.
+
+### Related Challenges
+
+- [Excel Challenge 800](/challenges/excelbi/Excel800.html)
+- [Excel Challenge 801](/challenges/excelbi/Excel801.html)
+- [Excel Challenge 802](/challenges/excelbi/Excel802.html)

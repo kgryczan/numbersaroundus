@@ -1,0 +1,194 @@
+---
+title: "Excel BI - PowerQuery Challenge 370"
+description: "Assume 'Month 1' begins on the date of the very first referral in the dataset (2024-01-01). Every 30 days counts as a new 'forecasted month.' Breach Calculation: Calculate the Forecasted Treatment Month (e.g., if a patient is in the 3rd slot for Cardiology, they are seen in Month 2, which is 30 days after the start)."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 370](/challenges/images/exc370pq.jpg)
+
+## Challenge Description
+
+Assume "Month 1" begins on the date of the very first referral in the dataset (2024-01-01). Every 30 days counts as a new "forecasted month." Breach Calculation: Calculate the Forecasted Treatment Month (e.g., if a patient is in the 3rd slot for Cardiology, they are seen in Month 2, which is 30 days after the start).
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Power Query/300-399/370/PQ_Challenge_370.xlsx"
+input <- read_excel(path, range = "A1:D21")
+test <- read_excel(path, range = "F1:K21")
+
+start_date <- as.Date("2024-01-01")
+
+result <- input %>%
+  group_by(Department) %>%
+  arrange(`Referral Date`, `Patient ID`) %>%
+  mutate(
+    position = row_number(),
+    `Forecasted Month` = ceiling(position / 2),
+    days_since_start = as.numeric(difftime(
+      `Referral Date`,
+      start_date,
+      units = "days"
+    )),
+    referral_period = floor(days_since_start / 30) + 1,
+    treatment_day = case_when(
+      `Forecasted Month` == 1 ~ days_since_start,
+      referral_period < `Forecasted Month` &
+        referral_period == 1 ~ (`Forecasted Month` - 1) * 30 - 1,
+      referral_period < `Forecasted Month` &
+        referral_period >= 2 ~ (`Forecasted Month` - 1) * 30,
+      referral_period == `Forecasted Month` ~ days_since_start,
+      TRUE ~ (`Forecasted Month` - 1) * 30
+    ),
+    `Wait Days` = treatment_day - days_since_start,
+    `SLA Status` = ifelse(
+      `Wait Days` > `Target Days (SLA)`,
+      "Breach",
+      "Within SLA"
+    )
+  ) %>%
+  ungroup() %>%
+  select(
+    `Patient ID`,
+    Department,
+    `Referral Date`,
+    `Forecasted Month`,
+    `Wait Days`,
+    `SLA Status`
+  ) %>%
+  arrange(Department, `Referral Date`, `Patient ID`)
+
+all.equal(result, test)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from datetime import datetime
+import numpy as np
+
+path = "Power Query/300-399/370/PQ_Challenge_370.xlsx"
+input = pd.read_excel(path, usecols="A:D", skiprows=0, nrows=20)
+test = pd.read_excel(path,  usecols="F:K", skiprows=0, nrows=20).rename(columns=lambda col: col.replace('.1', ''))
+
+start_date = datetime(2024, 1, 1)
+
+result = (
+    input
+    .sort_values(['Department', 'Referral Date', 'Patient ID'])
+    .groupby('Department', group_keys=False)
+    .apply(lambda g: g.assign(
+        position=np.arange(1, len(g) + 1),
+        forecast_month=(np.arange(1, len(g) + 1) + 1) // 2
+    ))
+    .assign(
+        days_since_start=lambda x: (x['Referral Date'] - start_date).dt.days,
+        reporting_period=lambda x: x['days_since_start'] // 30 + 1,
+        target_date_days=lambda x: np.select(
+            [
+                x['forecast_month'] == 1,
+                (x['reporting_period'] < x['forecast_month']) & (x['reporting_period'] == 1),
+                (x['reporting_period'] < x['forecast_month']) & (x['reporting_period'] >= 2),
+                x['reporting_period'] == x['forecast_month']
+            ],
+            [
+                x['days_since_start'],
+                (x['forecast_month'] - 1) * 30 - 1,
+                (x['forecast_month'] - 1) * 30,
+                x['days_since_start']
+            ],
+            (x['forecast_month'] - 1) * 30
+        ),
+        wait_days=lambda x: x['target_date_days'] - x['days_since_start'],
+        sla_status=lambda x: np.where(x['wait_days'] > x['Target Days (SLA)'], 'Breach', 'Within SLA')
+    )
+    .sort_values(['Department', 'Referral Date', 'Patient ID'])
+    [['Patient ID', 'Department', 'Referral Date', 'forecast_month', 'wait_days', 'sla_status']]
+    .rename(columns={
+        'forecast_month': 'Forecasted Month',
+        'wait_days': 'Wait Days',
+        'sla_status': 'SLA Status'
+    })
+    .reset_index(drop=True)
+)
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 369](Excel369pq.qmd)
+-   [Excel BI - Excel Challenge 750](Excel750.qmd)

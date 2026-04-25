@@ -1,0 +1,94 @@
+---
+title: "Excel BI - Excel Challenge 846"
+description: "🔰 Data Answer Expected A9f31kLmN723qP2 A31f723kLmN2qP9 7xZ2mQ8wR1T9bV 2xZ8mQ1wR9T7bV H04kL18pS202vN0cJ6g H18kL202pS0vN6cJ04g 399aD9kP7mQ2nT5xR8 9aD7kP2mQ5nT8xR399"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 846](/challenges/images/exc846.jpg)
+
+## Challenge Description
+
+🔰 Data Answer Expected A9f31kLmN723qP2 A31f723kLmN2qP9 7xZ2mQ8wR1T9bV 2xZ8mQ1wR9T7bV H04kL18pS202vN0cJ6g H18kL202pS0vN6cJ04g 399aD9kP7mQ2nT5xR8 9aD7kP2mQ5nT8xR399
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/846/846 Circular Number Replacements.xlsx"
+input = read_excel(path, range = "A1:A10")
+test  = read_excel(path, range = "B1:B10")
+
+shift_digits = function(s) {
+  m = str_extract_all(s, "\\d+")[[1]]
+  if (!length(m)) return(s)
+  p = str_split(s, "\\d+")[[1]]
+  paste0(rbind(p, c(m[-1], m[1], "")), collapse = "")
+}
+
+result = input %>%
+  mutate(shifted = map_chr(Data, shift_digits))
+
+all.equal(result$shifted, test$`Answer Expected`)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure.
+- **Strengths**: The solution stays close to the text pattern itself, which makes the extraction logic easy to audit.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: A small number of well-targeted text patterns does most of the heavy lifting.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "Excel/800-899/846/846 Circular Number Replacements.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=10)
+test = pd.read_excel(path, usecols="B", nrows=10)
+
+def shift_digits(s):
+    m = re.findall(r"\d+", str(s))
+    if not m:
+        return s
+    p = re.split(r"\d+", str(s))
+    return "".join(a + b for a, b in zip(p, m[1:] + m[:1] + [""]))
+input["shifted"] = input.iloc[:, 0].apply(shift_digits)
+
+print(input["shifted"].equals(test.iloc[:, 0])) # True
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 847](/challenges/excelbi/Excel847.html)
+- [Excel Challenge 848](/challenges/excelbi/Excel848.html)
+- [Excel Challenge 849](/challenges/excelbi/Excel849.html)

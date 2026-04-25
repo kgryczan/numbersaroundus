@@ -1,0 +1,107 @@
+---
+title: "Omid - Challenge 274"
+description: "🔰 Group Challenge 274: Custom Grouping!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 274](/challenges/images/OmidC274.jpg)
+
+## Challenge Description
+
+🔰 Group Challenge 274: Custom Grouping!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/274/CH-274 Custom Grouping.xlsx"
+input = read_excel(path, range = "B2:C18")
+test  = read_excel(path, range = "G2:I18")
+
+result = input %>%
+  mutate(Group = cumsum(c(1, diff(Date) > 2)))
+
+all.equal(result$Group, test$Group) 
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "200-299/274/CH-274 Custom Grouping.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=16)
+test = pd.read_excel(path, usecols="G:I", skiprows=1, nrows=16).rename(columns=lambda col: col.replace('.1', ''))
+
+input['Group'] = input['Date'].diff().dt.days.gt(2).cumsum() + 1
+
+print(input.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 273](OmidC273.qmd)
+-   [Omid - Challenge 275](OmidC275.qmd)
+-   [Omid - Challenge 276](OmidC276.qmd)

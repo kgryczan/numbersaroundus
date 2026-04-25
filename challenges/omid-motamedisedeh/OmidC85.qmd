@@ -1,0 +1,143 @@
+---
+title: "Omid - Challenge 85"
+description: "🔰 4- Calculate the absolute distance of a and b from the number 50."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 85](/challenges/images/OmidC85.jpg)
+
+## Challenge Description
+
+🔰 4- Calculate the absolute distance of a and b from the number 50.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-085 Custome Ranking.xlsx"
+input = read_excel(path, range = "B2:B23") %>%
+  mutate(Values = if_else(Values == 51, 56, Values))
+test  = read_excel(path, range = "F2:G23")
+
+ab50 = input %>% filter(Values > 50) %>% arrange(Values) %>% pull(Values)
+be50 = input %>% filter(Values < 50) %>% arrange(desc(Values)) %>% pull(Values)
+
+
+if (length(ab50) > length(be50)) {
+  be50 = c(be50, rep(NA, length(ab50) - length(be50)))
+} else {
+  ab50 = c(ab50, rep(NA, length(be50) - length(ab50)))
+}
+
+df = data.frame(ab = ab50, be = be50) %>%
+  mutate(nr = row_number()) %>%
+  pivot_longer(cols = c(ab, be), names_to = "type", values_to = "Values") %>%
+  na.omit() %>%
+  mutate(t2 = Values - 50 > 0) %>%
+  arrange(nr, desc(t2)) %>%
+  mutate(Rank = row_number()) %>%
+  select(Values, Rank) %>%
+  arrange(Values)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-085 Custome Ranking.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=1)
+input["Values"] = input["Values"].apply(lambda x: 56 if x == 51 else x)
+test = pd.read_excel(path, usecols="F:G", skiprows=1)
+test.columns = test.columns.str.replace(".1", "") 
+
+ab50 = input[input["Values"] > 50].sort_values("Values")["Values"].tolist()
+be50 = input[input["Values"] < 50].sort_values("Values", ascending=False)["Values"].tolist()
+
+if len(ab50) > len(be50):
+    be50 += [None] * (len(ab50) - len(be50))
+else:
+    ab50 += [None] * (len(be50) - len(ab50))
+
+df = pd.DataFrame({"ab": ab50, "be": be50})
+df["nr"] = df.index + 1
+df = df.melt(id_vars="nr", value_vars=["ab", "be"], var_name="type", value_name="Values")
+df = df.dropna().reset_index(drop=True)
+df["t2"] = df["Values"] - 50 > 0
+df = df.sort_values(["nr", "t2"], ascending=[True, False]).reset_index(drop=True)
+df["Rank"] = df.index + 1
+df = df[["Values", "Rank"]].sort_values("Values")
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 84](OmidC84.qmd)
+-   [Omid - Challenge 86](OmidC86.qmd)
+-   [Omid - Challenge 87](OmidC87.qmd)

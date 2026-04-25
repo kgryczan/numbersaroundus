@@ -1,0 +1,155 @@
+---
+title: "Excel BI - PowerQuery Challenge 364"
+description: "OrderID,OrderDate,Customer,Items Quarter Customer Total Sales Rank 1,2023-11-04,Alice,Banana:4:1.13;Apple:9:0.89;Date:1:0.63"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 364](/challenges/images/exc364pq.jpg)
+
+## Challenge Description
+
+OrderID,OrderDate,Customer,Items Quarter Customer Total Sales Rank 1,2023-11-04,Alice,Banana:4:1.13;Apple:9:0.89;Date:1:0.63
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Power Query/300-399/364/PQ_Challenge_364.xlsx"
+input <- read_excel(path, range = "A1:A51")
+test <- read_excel(path, range = "C1:F13")
+
+result = input %>%
+  separate_wider_delim(
+    cols = `OrderID,OrderDate,Customer,Items`,
+    delim = ",",
+    names = c("OrderID", "OrderDate", "Customer", "Items")
+  ) %>%
+  separate_longer_delim("Items", delim = ";") %>%
+  separate_wider_delim(
+    "Items",
+    delim = ":",
+    names = c("Item", "Quantity", "Price")
+  ) %>%
+  mutate(
+    Quarter = paste0("Q", quarter(OrderDate)),
+    Sales = as.numeric(Quantity) * as.numeric(Price)
+  ) %>%
+  summarise(`Total Sales` = sum(Sales), .by = c(Customer, Quarter)) %>%
+  mutate(Rank = dense_rank(-`Total Sales`), .by = Quarter) %>%
+  filter(Rank <= 3) %>%
+  arrange(Quarter, Rank) %>%
+  select(Quarter, Customer, `Total Sales`, Rank)
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Power Query/300-399/364/PQ_Challenge_364.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=51)
+test = pd.read_excel(path, usecols="C:F", nrows=12).rename(columns={"Total Sales": "Total_Sales"})
+
+input = input["OrderID,OrderDate,Customer,Items"].str.split(",", expand=True)
+input.columns = ["OrderID", "OrderDate", "Customer", "Items"]
+
+items_expanded = input.pop("Items").str.split(";", expand=True).stack().reset_index(level=1, drop=True)
+items_expanded = items_expanded.str.split(":", expand=True)
+items_expanded.columns = ["Item", "Quantity", "Price"]
+
+input = input.join(items_expanded).reset_index(drop=True)
+input["OrderDate"] = pd.to_datetime(input["OrderDate"])
+input["Quantity"] = pd.to_numeric(input["Quantity"])
+input["Price"] = pd.to_numeric(input["Price"])
+input["Quarter"] = "Q" + input["OrderDate"].dt.quarter.astype(str)
+input["Sales"] = input["Quantity"] * input["Price"]
+
+result = (input
+          .groupby(["Customer", "Quarter"], as_index=False)
+          .agg(Total_Sales=("Sales", "sum")))
+result["Rank"] = result.groupby("Quarter")["Total_Sales"].rank(method="dense", ascending=False).astype(int)
+result = (result[result["Rank"] <= 3]
+          .sort_values(["Quarter", "Rank"])
+          .reset_index(drop=True)[["Quarter", "Customer", "Total_Sales", "Rank"]])
+
+print(result.equals(test))
+# Some inequalities related to floating point precision, but the result is correct.
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The transformation rule is readable, but the final layout still requires a careful implementation.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 363](Excel363pq.qmd)
+-   [Excel BI - Excel Challenge 744](Excel744.qmd)

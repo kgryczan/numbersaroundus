@@ -1,0 +1,89 @@
+---
+title: "Excel BI - Excel Challenge 713"
+description: "🔰 Split the data, stack and multiply the values by 1, 2, 3....for each split."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 713](/challenges/images/exc713.jpg)
+
+## Challenge Description
+
+🔰 Split the data, stack and multiply the values by 1, 2, 3....for each split.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/713/713 Split and Extract.xlsx"
+input = read_excel(path, range = "A2:B6")
+test = read_excel(path, range = "D2:E12")
+
+result = input %>%
+  mutate(rn = row_number()) %>%
+  separate_rows(Data, sep = ", ") %>%
+  mutate(Value = Value * row_number(), .by = rn) %>%
+  select(-rn)
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/713/713 Split and Extract.xlsx"
+
+input = pd.read_excel(path, usecols="A:B", skiprows=1, nrows=4)
+test = pd.read_excel(path, usecols="D:E", skiprows=1, nrows=10).rename(columns=lambda x: x.rstrip('.1'))
+
+input = (input.assign(Group=lambda x: x.index + 1, 
+                      Data=lambda x: x['Data'].str.split(', '))
+             .explode('Data')
+             .assign(Position=lambda x: x.groupby('Group').cumcount() + 1,
+                     Value=lambda x: x['Position'] * x['Value']))
+
+result = input[['Data', 'Value']].reset_index(drop=True)
+print(result.equals(test))
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 714](/challenges/excelbi/Excel714.html)
+- [Excel Challenge 715](/challenges/excelbi/Excel715.html)
+- [Excel Challenge 716](/challenges/excelbi/Excel716.html)

@@ -1,0 +1,107 @@
+---
+title: "Excel BI - Excel Challenge 932"
+description: "🔰 Search each number string for the longest palindromic substring, returning every maximum-length match."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-23"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 932](/challenges/images/exc932.jpg)
+
+## Challenge Description
+
+🔰 From the given number, find palindrome numbers possible having the largest number of digits. If multiple answers exist, list all of them. If no palindrome longer than one digit is possible, return `None`.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(stringi)
+
+path <- "900-999/932/932 Largest Palindrome.xlsx"
+input <- read_excel(path, range = "A1:A10")
+test <- read_excel(path, range = "B1:B10")
+
+longest_palindrome <- function(s) {
+  n <- nchar(s)
+  subs <- outer(
+    1:n,
+    1:n,
+    Vectorize(function(i, j) if (i <= j) substr(s, i, j))
+  )
+  subs <- na.omit(as.vector(subs))
+  pals <- subs[subs == stringi::stri_reverse(subs)]
+  pals <- pals[nchar(pals) == max(nchar(pals)) & nchar(pals) > 1]
+  paste(pals, collapse = ", ")
+}
+
+result <- input %>%
+  mutate(
+    palindrome = map_chr(Data, longest_palindrome) %>%
+      if_else(. == "", "None", .)
+  )
+
+all.equal(result$palindrome, test$`Answer Expected`)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Generate every substring, keep only those equal to their reverse, then retain the longest remaining candidates.
+- **Strengths**: The approach is exhaustive and matches the prompt exactly, including multiple max-length answers.
+- **Areas for Improvement**: Full substring generation is brute-force, so it is elegant for challenge-sized inputs rather than large strings.
+- **Gem**: The hard part is not checking palindromes; it is searching the entire substring space and then filtering by maximum length.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import numpy as np
+import pandas as pd
+
+path = "900-999/932/932 Largest Palindrome.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=9, dtype=str)
+test = pd.read_excel(path, usecols="B", nrows=9, dtype=str)
+
+def longest_palindrome(s):
+    n = len(s)
+    subs = [s[i:j] for i in range(n) for j in range(i + 2, n + 1)]
+    pals = [sub for sub in subs if sub == sub[::-1]]
+    if not pals:
+        return np.nan
+    max_len = max(len(p) for p in pals)
+    return ", ".join(p for p in pals if len(p) == max_len)
+
+result = input.assign(palindrome=input["Data"].map(longest_palindrome))
+print(result["palindrome"].equals(test["Answer Expected"]))
+# True
+```
+
+### Python
+
+The Python version keeps the logic explicit: enumerate every substring of length at least two, test whether it reads the same backward, then keep only the longest matches. That directness makes the palindromic search easy to audit.
+
+## **Difficulty Level**
+
+**Medium**
+
+The palindrome test is simple, but the search space and the “return all longest matches” detail make the challenge more subtle than it first appears.
+
+### Related Challenges
+
+- [Excel Challenge 923](/challenges/excelbi/Excel923.html)
+- [Excel Challenge 922](/challenges/excelbi/Excel922.html)
+- [Excel Challenge 928](/challenges/excelbi/Excel928.html)

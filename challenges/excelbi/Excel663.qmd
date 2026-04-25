@@ -1,0 +1,89 @@
+---
+title: "Excel BI - Excel Challenge 663"
+description: "🔰 Level Value Answer Expectecd Pivot the data as shown."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 663](/challenges/images/exc663.jpg)
+
+## Challenge Description
+
+🔰 Level Value Answer Expectecd Pivot the data as shown. Data for level 1 will appear against 1, 2, 3 (level column) and 0, 1, 2, 3, 4 column values are for sublevels 0, 1, 2, 3, 4 (1, 1.1, 1.2 and so on). Try to be dynamic so if levels / sublevels increase or decrease.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/663 Pivot for levels.xlsx"
+input = read_excel(path, range = "A1:B10")
+test  = read_excel(path, range = "D2:I5") %>%
+  mutate(across(everything(), as.numeric)
+
+result = input %>% 
+  mutate(Level = as.character(as.numeric(Level))) %>%
+  separate(Level, into = c("Level", "Sublevel"), sep = "\\.") %>%
+  replace_na(list(Sublevel = "0")) %>%
+  pivot_wider(names_from = Sublevel, values_from = Value) %>%
+  mutate(across(everything(), as.numeric))
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "663 Pivot for levels.xlsx"
+input = pd.read_excel(path, usecols="A:B", nrows=10)
+test = pd.read_excel(path, usecols="D:I", skiprows=1, nrows=3).astype(np.float64)
+
+input[['Level', 'Sublevel']] = input['Level'].astype(str).str.split('.', expand=True).fillna('0').astype(float)
+result = input.pivot(index='Level', columns='Sublevel', values='Value').reset_index()
+result.columns.name = None
+test.columns = result.columns
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 664](/challenges/excelbi/Excel664.html)
+- [Excel Challenge 665](/challenges/excelbi/Excel665.html)
+- [Excel Challenge 666](/challenges/excelbi/Excel666.html)

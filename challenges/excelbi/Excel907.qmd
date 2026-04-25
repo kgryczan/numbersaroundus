@@ -1,0 +1,101 @@
+---
+title: "Excel BI - Excel Challenge 907"
+description: "🔰 907 Olympics Ranking.xlsx says: > List the countries with their gold, silver and bronze medal counts."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 907](/challenges/images/exc907.jpg)
+
+## Challenge Description
+
+🔰 The prompt in 907 Olympics Ranking.xlsx says: List the countries with their gold, silver and bronze medal counts. Rank the countries on the basis of gold first, followed by silver if tied in gold, followed by bronze if tied in both gold and silver. In case of tie, give same rank. The input is medal-level data. The goal is to aggregate counts by country and then rank the countries according to Olympic medal-table rules.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/900-999/907/907 Olympics Ranking.xlsx"
+input <- read_excel(path, range = "A2:E101")
+test <- read_excel(path, range = "G2:K12")
+
+result = input %>%
+  group_by(Country, Medal) %>%
+  summarise(Count = n(), .groups = "drop") %>%
+  pivot_wider(names_from = Medal, values_from = Count, values_fill = 0) %>%
+  arrange(desc(Gold), desc(Silver), desc(Bronze)) %>%
+  mutate(
+    score = Gold * 1e6 + Silver * 1e3 + Bronze,
+    Rank = dense_rank(-score)
+  ) %>%
+  select(Rank, Country, Gold, Silver, Bronze)
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Count medals by country and medal type.; Pivot those counts into `Gold`, `Silver`, and `Bronze` columns.; Sort countries by descending medal priority..
+- **Strengths**: The ranking rule is hierarchical, not additive.
+- **Areas for Improvement**: The approach assumes the workbook structure and naming conventions stay stable, so any changed input shape would need minor adjustments.
+- **Gem**: That means:
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel/900-999/907/907 Olympics Ranking.xlsx"
+input = pd.read_excel(path, usecols="A:E", skiprows=1, nrows=100)
+test = pd.read_excel(path, usecols="G:K", skiprows=1, nrows=10).rename(columns=lambda x: x.replace(".1", ""))
+
+result = (input.groupby(["Country", "Medal"], as_index=False).size()
+    .pivot(index="Country", columns="Medal", values="size").fillna(0).reset_index()
+    .rename_axis(None, axis=1))
+
+for medal in ["Gold", "Silver", "Bronze"]:
+    result[medal] = result.get(medal, 0)
+
+result = (result.assign(
+        score=lambda df: df["Gold"] * 1e6 + df["Silver"] * 1e3 + df["Bronze"],
+        Rank=lambda df: df["score"].rank(method="dense", ascending=False).astype(int))
+    .sort_values(by=["Gold", "Silver", "Bronze"], ascending=[False] * 3)
+    .loc[:, ["Rank", "Country", "Gold", "Silver", "Bronze"]]
+    .reset_index(drop=True)
+    .astype({"Gold": "int64", "Silver": "int64", "Bronze": "int64"}))
+
+print(result.equals(test))  # True
+```
+
+### Python
+
+The Python version follows the same structure: count each country-medal combination.; pivot medal counts into separate columns..
+
+## **Difficulty Level**
+
+**Easy**
+
+Once the core pattern is recognized, the implementation is short and direct.
+
+### Related Challenges
+
+- [Excel Challenge 905](/challenges/excelbi/Excel905.html)
+- [Excel Challenge 915](/challenges/excelbi/Excel915.html)
+- [Excel Challenge 931](/challenges/excelbi/Excel931.html)

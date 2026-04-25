@@ -1,0 +1,162 @@
+---
+title: "Excel BI - PowerQuery Challenge 206"
+description: "Group1 Group2"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 206](/challenges/images/exc206pq.jpg)
+
+## Challenge Description
+
+Group1 Group2
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_206.xlsx"
+input = read_excel(path, range = "A1:D13")
+test  = read_excel(path, range = "F1:K19")
+
+r1 = input %>%
+  mutate(group = cumsum(is.na(Group1)) + 1) %>%
+  filter(!is.na(Group1)) %>%
+  mutate(nr = row_number(), .by = group) %>%
+  unite("Group", Group1:Group2, sep = "-") %>%
+  unite("Value", Value1:Value2, sep = "-") %>%
+  pivot_longer(-c(nr, group), names_to = "Variable", values_to = "Value") %>%
+  select(-Variable)
+
+rearrange_df <- function(df, part) {
+  df %>%
+    filter(group == part) %>%
+    select(-group) %>%
+    mutate(col = nr, row = row_number()) %>%
+    pivot_wider(names_from = col, values_from = Value) %>%
+    as.data.frame()
+}
+
+result = map_df(unique(r1$group), ~ rearrange_df(r1, .x)) %>%
+  select(-c(1,2)) %>%
+  separate_wider_delim(1:ncol(.), delim = "-", names_sep = "-") %>%
+  mutate(across(everything(), ~ if_else(. == "NA", NA_character_, .)))
+
+names(result) = names(test)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "PQ_Challenge_206.xlsx"
+input = pd.read_excel(path, usecols="A:D", nrows = 12)
+test = pd.read_excel(path, usecols="F:K", nrows=18).astype(str).replace("nan", np.NaN)
+
+r1 = input.copy()
+r1["group"] = r1["Group1"].isna().cumsum() + 1
+r1 = r1[~r1["Group1"].isna()]
+r1["nr"] = r1.groupby("group").cumcount() + 1
+r1["Group"] = r1["Group1"].astype(str) + "-" + r1["Group2"].astype(str)
+r1["Value"] = r1["Value1"].astype(str) + "-" + r1["Value2"].astype(str)
+r1 = r1.drop(columns=["Group1", "Group2", "Value1", "Value2"])\
+    .melt(id_vars=["nr", "group"], value_vars=["Group", "Value"], var_name="Variable", value_name="MeltedValue")\
+    .sort_values(by=["group", "nr"]).reset_index(drop=True).drop(columns=["Variable"])
+
+def rearrange_df(df, part):
+    df_part = df[df["group"] == part].drop(columns=["group"]).reset_index(drop=True)
+    df_part["col"] = df_part["nr"]
+    df_part["row"] = df_part.index + 1
+    df_part = df_part.pivot(index="row", columns="col", values="MeltedValue").rename(columns=lambda x: "c" + str(x))
+    df_part = df_part.map(lambda x: x.split("-", maxsplit=1) if isinstance(x, str) else x)
+    return df_part
+
+r2 = pd.concat([rearrange_df(r1, i) for i in r1["group"].unique()], axis=0).reset_index(drop=True)
+r2 = pd.concat([r2[col].apply(pd.Series) for col in r2.columns], axis=1)
+r2.columns = test.columns
+r2 = r2.replace({"nan": np.NaN, "\\.0": ""}, regex=True)
+
+print(r2.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 205](Excel205pq.qmd)

@@ -1,0 +1,120 @@
+---
+title: "Excel BI - Excel Challenge 764"
+description: "🔰 Text Expected Answer 3, 2, + 4, 5, 6, 7, + 4, 5, 6, 7, +, 11, - 12, 15, *, 9, / 3, 4, *, 2, *, 5, - 5, 9, -, 8, +, 4, - 8, 9, 10, 11, 12, - 17, 2, *, 5, -, 8, +"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 764](/challenges/images/exc764.jpg)
+
+## Challenge Description
+
+🔰 Text Expected Answer 3, 2, + 4, 5, 6, 7, + 4, 5, 6, 7, +, 11, - 12, 15, *, 9, / 3, 4, *, 2, *, 5, - 5, 9, -, 8, +, 4, - 8, 9, 10, 11, 12, - 17, 2, *, 5, -, 8, +
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/764/764 Reverse Polish Notation_2.xlsx"
+input = read_excel(path, range = "A1:A10")
+test  = read_excel(path, range = "B1:B10")
+
+eval_rpn = function(tokens) {
+  stack = c()
+  for (t in tokens) {
+    if (t %in% c('+', '-', '*', '/')) {
+      if (length(stack) > 2) {
+        res = stack[1]
+        for (n in stack[-1]) {
+          res = eval(parse(text = paste0(res, t, n)))
+        }
+        stack = res
+      } else {
+        b = tail(stack, 1)
+        a = tail(stack, 2)[1]
+        stack = c(head(stack, -2), eval(parse(text = paste0(a, t, b))))
+      }
+    } else {
+      stack = c(stack, as.numeric(t))
+    }
+  }
+  stack[1]
+}
+
+result = input %>%
+  mutate(Result = map_dbl(Text, ~eval_rpn(strsplit(.x, ", ")[[1]])))
+
+all.equal(result$Result, test$`Expected Answer`) 
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import operator as op
+import pandas as pd
+
+path = "700-799/764/764 Reverse Polish Notation_2.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=10)
+test = pd.read_excel(path, usecols="B", nrows=10)
+
+def eval_rpn(tokens):
+    stack = []
+    for t in tokens:
+        if t in '+-*/':
+            if len(stack) > 2:
+                res = stack[0]
+                for n in stack[1:]:
+                    res = eval(f"{res}{t}{n}")
+                stack = [res]
+            else:
+                b = stack.pop()
+                a = stack.pop()
+                stack.append(eval(f"{a}{t}{b}"))
+        else:
+            stack.append(int(t))
+    return stack[0]
+
+input['Result'] = input['Text'].apply(lambda x: eval_rpn(x.split(", "))).astype(int)
+
+print(input["Result"].equals(test["Expected Answer"])) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 765](/challenges/excelbi/Excel765.html)
+- [Excel Challenge 766](/challenges/excelbi/Excel766.html)
+- [Excel Challenge 767](/challenges/excelbi/Excel767.html)

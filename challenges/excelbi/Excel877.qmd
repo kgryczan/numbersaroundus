@@ -1,0 +1,99 @@
+---
+title: "Excel BI - Excel Challenge 877"
+description: "🔰 + * $ | = MERRY CHRISTMAS!!!"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 877](/challenges/images/exc877.jpg)
+
+## Challenge Description
+
+🔰 + * $ | = MERRY CHRISTMAS!!! Draw an ASCII Christmas tree as per value given in cell A1. This represents the rows having * and $ (given in column AA). Top + and base below will remain same irrespective of value of cell A1.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+tree <- function(h) {
+  step <- 4
+  width <- 2 * h * step + 1
+  mid <- width %/% 2
+
+  m <- matrix(" ", h + 6, width)
+
+  m[1, mid] <- "+"
+
+  for (i in 0:(h - 1)) {
+    for (j in 0:(2 * i)) {
+      m[i + 2, mid - step * i + step * j] <- if (j %% 2 == 0) "*" else "$"
+    }
+  }
+
+  m[(h + 2):(h + 3), mid + c(-2, 0, 2)] <- "|"
+  m[h + 4, mid + (-4:4)] <- "="
+
+  cat(apply(m, 1, paste0, collapse = ""), sep = "\n")
+}
+
+tree(10)
+```
+
+### R Analysis
+
+- **Logic**: Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The approach is compact, but it depends on the workbook following the same input structure as the supplied challenge file.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+def tree(h):
+    step = 4
+    width = 2 * h * step + 1
+    mid = width // 2
+    m = [[' ' for _ in range(width)] for _ in range(h + 6)]
+    m[0][mid] = '+'
+    for i in range(h):
+        for j in range(2 * i + 1):
+            m[i + 1][mid - step * i + step * j] = '*' if j % 2 == 0 else '$'
+    for idx in [-2, 0, 2]:
+        m[h + 1][mid + idx] = '|'
+        m[h + 2][mid + idx] = '|'
+    for idx in range(-4, 5):
+        m[h + 3][mid + idx] = '='
+    for row in m:
+        print(''.join(row))
+
+tree(10)
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 878](/challenges/excelbi/Excel878.html)
+- [Excel Challenge 879](/challenges/excelbi/Excel879.html)
+- [Excel Challenge 880](/challenges/excelbi/Excel880.html)

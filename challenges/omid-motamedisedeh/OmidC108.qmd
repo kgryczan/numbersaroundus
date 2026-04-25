@@ -1,0 +1,125 @@
+---
+title: "Omid - Challenge 108"
+description: "🔰 Calculate the average cooperation time in months for those who are still with the company (do not have value on column leave date) as of 16/08/2024, categorized by their…"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 108](/challenges/images/OmidC108.jpg)
+
+## Challenge Description
+
+🔰 Calculate the average cooperation time in months for those who are still with the company (do not have value on column leave date) as of 16/08/2024, categorized by their…
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-108 AVG Cooperation time.xlsx"
+input = read_excel(path, range = 'B2:E12')
+test  = read_excel(path, range = 'J2:K4')
+
+result = input %>%
+  filter(`Leave date` == "-") %>%
+  mutate(cooperation = interval(ymd(`Employee Date`), ymd("2024/08/16")) / months(1)) %>%
+  summarise(avg_cooperation = mean(cooperation), .by = Level)
+
+result
+# Level      avg_cooperation
+# <chr>                <dbl>
+# 1 Expert              56.5
+# 2 Managerial          56.6
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from datetime import datetime
+
+path = "CH-108 AVG Cooperation time.xlsx"
+input_data = pd.read_excel(path, usecols="B:E", skiprows=1)
+test_data = pd.read_excel(path, usecols="J:K", skiprows=1, nrows=2)
+
+result = input_data[input_data["Leave date"] == "-"].copy()
+
+result["Difference"] = (datetime(2024, 8, 16) - result["Employee Date"]).dt.days / 30.4375
+
+result["mean_difference"] = result.groupby("Level")["Difference"].transform("mean")
+result = result[["Level", "mean_difference"]].drop_duplicates()
+
+print(result)
+#         Level  mean_difference
+# 0      Expert        56.542094
+# 2  Managerial        56.640657
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 107](OmidC107.qmd)
+-   [Omid - Challenge 109](OmidC109.qmd)
+-   [Omid - Challenge 110](OmidC110.qmd)

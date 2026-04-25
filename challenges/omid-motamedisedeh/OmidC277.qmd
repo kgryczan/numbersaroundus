@@ -1,0 +1,188 @@
+---
+title: "Omid - Challenge 277"
+description: "🔰 For each point, calculate the number of neighboring points within a distance of less than 9, using the formula:"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 277](/challenges/images/OmidC277.jpg)
+
+## Challenge Description
+
+🔰 For each point, calculate the number of neighboring points within a distance of less than 9, using the formula:
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/277/CH-277 Noise Removing.xlsx"
+input = read_excel(path, range = "B2:D17")
+
+## first solution - easy way (special library)
+library(cluster)
+
+dist_matrix = dist(input[,c("X", "Y")], method = "euclidean")
+dist_df = as.matrix(dist_matrix)
+neighbor_counts = apply(dist_df, 1, function(x) sum(x < 3) - 1) 
+input$Neighbors = neighbor_counts
+input$Is_Noise = neighbor_counts <= 2
+
+noise_points = input$ID[input$Is_Noise]
+print(noise_points)
+
+# Plotting
+library(ggforce)
+
+input$Noise_Label = ifelse(input$Is_Noise, as.character(input$ID), NA)
+
+circle_df = input %>%
+  filter(Is_Noise) %>%
+  mutate(r = 0.7, 
+         facet_id = as.character(ID)) %>%
+  select(facet_id, X, Y, r)
+
+facet_input = input %>%
+  filter(TRUE) %>%
+  crossing(facet_id = as.character(noise_points))
+
+facet_input = facet_input %>%
+  mutate(is_this_noise = ID == facet_id)
+
+p = ggplot(facet_input, aes(x = X, y = Y)) +
+  geom_point(size = 1) +
+  geom_point(data = subset(facet_input, is_this_noise), color = "red", size = 1) +
+  ggforce::geom_circle(data = circle_df, aes(x0 = X, y0 = Y, r = 3), 
+                       color = "blue", fill = NA, inherit.aes = FALSE) +
+  facet_wrap(~facet_id, nrow = 1) +
+  theme_minimal() +
+  coord_fixed() +
+  labs(title = "Noise Points Highlighted", subtitle = "Each facet highlights one noise point")
+  
+print(p)
+
+## second solution - math (no special library)
+input2 = read_excel(path, range = "B2:D17")
+noise_points_math = input2 %>%
+  mutate(
+    neighbors = map_int(ID, ~ {
+      current_point = input2[input2$ID == .x, ]
+      other_points = input2[input2$ID != .x, ]
+      
+      distances_sq = (current_point$X - other_points$X)^2 + 
+        (current_point$Y - other_points$Y)^2
+      sum(distances_sq <= 9)
+    }),
+    is_noise = neighbors <= 2) %>%
+  filter(is_noise) %>%
+  pull(ID)
+
+print(noise_points_math)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from scipy.spatial.distance import pdist, squareform
+import numpy as np
+
+# Easy way (using scipy library)
+
+df = pd.DataFrame({'ID': range(1,16), 'X': [8,2,7,5,2,8,4,7,10,3,6,3,10,8,5], 'Y': [3,8,6,3,2,12,7,2,3,7,9,6,4,3,2]})
+coords = df[['X', 'Y']].values
+distances = squareform(pdist(coords, metric='euclidean'))
+
+neighbor_counts = np.sum(distances < 3, axis=1) - 1 
+df['Neighbors'] = neighbor_counts
+df['Is_Noise'] = neighbor_counts < 2
+
+noise_points = df[df['Is_Noise']]['ID'].tolist()
+print(','.join(map(str, noise_points)))
+
+# Hard way (Math)
+df2 = pd.DataFrame({'ID': range(1,16), 'X': [8,2,7,5,2,8,4,7,10,3,6,3,10,8,5], 'Y': [3,8,6,3,2,12,7,2,3,7,9,6,4,3,2]})
+neighbors_count = []
+noise_points = []
+
+for i in range(len(df2)):
+    count = 0
+    for j in range(len(df2)):
+        if i != j: 
+            dist_sq = (df2.iloc[i]['X'] - df2.iloc[j]['X'])**2 + (df2.iloc[i]['Y'] - df2.iloc[j]['Y'])**2
+            if dist_sq < 9:
+                count += 1
+    
+    neighbors_count.append(count)
+    if count < 2:
+        noise_points.append(df2.iloc[i]['ID'])
+
+# Results
+
+print(','.join(map(str, noise_points)))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 276](OmidC276.qmd)
+-   [Omid - Challenge 278](OmidC278.qmd)
+-   [Omid - Challenge 279](OmidC279.qmd)

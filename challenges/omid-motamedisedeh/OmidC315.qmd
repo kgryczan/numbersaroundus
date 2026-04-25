@@ -1,0 +1,110 @@
+---
+title: "Omid - Challenge 315"
+description: "🔰 Identify and extract all subsequences of 3 or more consecutive numbers."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 315](/challenges/images/OmidC315.jpg)
+
+## Challenge Description
+
+🔰 Identify and extract all subsequences of 3 or more consecutive numbers.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/300-399/315/CH-315 Consecutive numbers.xlsx"
+input = read_excel(path, range = "B1:B14")
+test  = read_excel(path, range = "E1:E4")
+
+result = as_tibble(embed(input$Question, 3)[,3:1]) %>%
+  filter(V2 - V1 == 1, V3 - V2 == 1) %>%
+  unite("Result", V1:V3, sep = ".")
+
+print(result)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "300-399/315/CH-315 Consecutive numbers.xlsx"
+numbers = pd.read_excel(path, usecols="B", nrows=14).iloc[:, 0].values
+
+result = pd.DataFrame(
+    [(a, b, c) for a, b, c in zip(numbers, numbers[1:], numbers[2:]) if c - a == 2],
+    columns=['V1', 'V2', 'V3']
+)
+result['Result'] = result.apply(lambda r: f"{r.V1}.{r.V2}.{r.V3}", axis=1)
+
+print(result[['Result']])
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 314](OmidC314.qmd)
+-   [Omid - Challenge 316](OmidC316.qmd)
+-   [Omid - Challenge 317](OmidC317.qmd)

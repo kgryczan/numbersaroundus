@@ -1,0 +1,144 @@
+---
+title: "Crispo - Excel Challenge 42 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-10-19"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 42 2025](/challenges/images/Crispo422025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Problem Solution Item Prices WK 1 WK 2
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/2025-10-19/Challenge 71.xlsx"
+input = read_excel(path, range = "B2:C6")
+test  = read_excel(path, range = "E2:M6")
+
+make_weekly_table = function(input, no_weeks = 15, interval = 6) {
+  no_intervals = ceiling(no_weeks / interval)
+  result = tibble(Item = input$Item)
+  for (i in seq_len(no_intervals)) {
+    start = (i - 1) * interval + 1
+    end = min(i * interval, no_weeks)
+    wk_names = paste0("WK ", start:end)
+    result = bind_cols(result, as_tibble(setNames(replicate(length(wk_names), input$Prices, simplify = FALSE), wk_names)))
+    if (end < no_weeks)
+      result[[paste0("TOTAL ", i)]] = rowSums(result[wk_names])
+  }
+  result$`GRAND TOTAL` = rowSums(result[paste0("WK ", 1:no_weeks)])
+  result
+}
+
+all.equal(make_weekly_table(input, no_weeks = 6, interval = 3), test)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import math
+
+path = "files/2025-10-19/Challenge 71.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=5)
+test = pd.read_excel(path, usecols="E:M", skiprows=1, nrows=5).rename(columns=lambda col: col.replace('.1', ''))
+
+def make_weekly_table(input, no_weeks=15, interval=6):
+    no_intervals = math.ceil(no_weeks / interval)
+    result = pd.DataFrame({'Item': input['Item']})
+    prices = input['Prices'].values
+
+    for i in range(1, no_intervals + 1):
+        start = (i - 1) * interval + 1
+        end = min(i * interval, no_weeks)
+        week_cols = {}
+        for wk in range(start, end + 1):
+            week_cols[f'WK {wk}'] = prices
+        week = pd.DataFrame(week_cols)
+        result = pd.concat([result, week], axis=1)
+        if end < no_weeks:
+            result[f'TOTAL {i}'] = result.loc[:, [f'WK {wk}' for wk in range(start, end + 1)]].sum(axis=1)
+
+    result['GRAND TOTAL'] = result.loc[:, [f'WK {wk}' for wk in range(1, no_weeks + 1)]].sum(axis=1)
+    return result
+
+output = make_weekly_table(input, no_weeks=6, interval=3)
+
+print(output.equals(test)) # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 41 2025](Crispo 412025.qmd)
+-   [Crispo - Excel Challenge 43 2025](Crispo 432025.qmd)

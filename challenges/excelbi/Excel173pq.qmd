@@ -1,0 +1,160 @@
+---
+title: "Excel BI - PowerQuery Challenge 173"
+description: "Date Sale Year Quarter Month Total Sale"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 173](/challenges/images/exc173pq.jpg)
+
+## Challenge Description
+
+Date Sale Year Quarter Month Total Sale
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(glue)
+
+input = read_excel("Power Query/PQ_Challenge_173.xlsx", range = "A1:B731")
+test  = read_excel("Power Query/PQ_Challenge_173.xlsx", range = "D1:H27")
+
+result1 = input %>%
+  mutate(quarter = quarter(Date),
+         year = year(Date),
+         month = month(Date, label = TRUE, locale = "en"),
+         month_num = month(Date)) %>%
+  summarise(`Total Sale` = sum(Sale), .by = c("year", "quarter", "month", "month_num")) %>%
+  mutate(years_row = row_number(),
+         sales_perc = `Total Sale` / sum(`Total Sale`),
+         .by = "year") %>%
+  mutate(quarter_row = row_number(), .by = c("year","quarter")) %>%
+  mutate(display_year = ifelse(years_row == 1, year, NA_character_),
+         display_quarter = ifelse(quarter_row == 1, quarter, NA_integer_)) %>%
+  select(year, Year = display_year, Quarter = display_quarter, Month = month, month_num, `Total Sale`, `Sale %` = sales_perc)
+
+totals = result1 %>%
+  summarise(`Total Sale` = sum(`Total Sale`), `Sale %` = sum(`Sale %`), .by = "year") %>%
+  mutate(Year = glue("{year} Total") %>% as.character(),
+         Quarter = NA_integer_,
+         Month = NA_character_,
+         month_num = NA_integer_) %>%
+  select(year, Year, Quarter, Month, `Total Sale`, `Sale %`)
+
+result = bind_rows(result1, totals) %>%
+  arrange(year, month_num) %>%
+  select(-c(year, month_num))
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+#
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+input = pd.read_excel("PQ_Challenge_173.xlsx", sheet_name="Sheet1",  usecols = "A:B", nrows=731)
+test = pd.read_excel("PQ_Challenge_173.xlsx", sheet_name="Sheet1",  usecols="D:H", nrows=26)
+
+input["quarter"] = pd.PeriodIndex(input["Date"], freq="Q").quarter
+input["year"] = input["Date"].dt.year
+input["month"] = input["Date"].dt.strftime("%b")
+input["month_num"] = input["Date"].dt.month
+result1 = input.groupby(["year", "quarter", "month", "month_num"]).agg({"Sale": "sum"}).reset_index()
+result1 = result1.sort_values(["year", "month_num"])
+
+result1["years_row"] = result1.groupby("year").cumcount() + 1
+result1["sales_perc"] = result1["Sale"] / result1.groupby("year")["Sale"].transform("sum")
+result1["quarter_row"] = result1.groupby(["year", "quarter"]).cumcount() + 1
+result1["display_year"] = np.where(result1["years_row"] == 1, result1["year"], np.nan)
+result1["display_quarter"] = np.where(result1["quarter_row"] == 1, result1["quarter"], np.nan)
+result1 = result1[["year", "display_year", "quarter", "display_quarter", "month", "month_num", "Sale", "sales_perc"]]
+result1 = result1.rename(columns={"display_year": "Year", "display_quarter": "Quarter", "month": "Month"})
+
+totals = result1.groupby("year").agg({"Sale": "sum", "sales_perc": "sum"}).reset_index()
+totals["Year"] = totals["year"].astype(str) + " Total"
+totals["Quarter"] = np.nan
+totals["Month"] = np.nan
+totals["month_num"] = np.nan
+totals = totals[["year", "Year", "Quarter", "Month", "Sale", "sales_perc"]]
+
+result = pd.concat([result1, totals]).sort_values(["year", "month_num"]).reset_index(drop=True)
+result = result.drop(columns=["year", "month_num", "quarter"])
+result = result.rename(columns = {"sales_perc": "Sale %", "Sale": "Total Sale"})
+
+print(result.equals(test))  # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The transformation rule is readable, but the final layout still requires a careful implementation.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 172](Excel172pq.qmd)

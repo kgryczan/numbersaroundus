@@ -1,0 +1,140 @@
+---
+title: "Omid - Challenge 78"
+description: "🔰 : Extract Extract all the Dates from the text provided in the question table in different formats."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 78](/challenges/images/OmidC78.jpg)
+
+## Challenge Description
+
+🔰 : Extract Extract all the Dates from the text provided in the question table in different formats.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-078 Extract from Text 2.xlsx"
+
+input = read_xlsx(path, range = "B3", col_names = F) %>%
+  pull()
+test = read_xlsx(path, range = "B6:B11") %>%
+  mutate(`Email Address` = str_sub(`Email Address`, 4))
+
+patterns = c(
+  "\\d{4}-\\d{2}-\\d{2}",
+  "\\d{2}\\/\\d{2}\\/\\d{4}",
+  "\\b\\w+ \\d{1,2}[a-z]*?(?: to \\w+ \\d{1,2}[a-z]*)?, \\d{4}\\b"
+)
+
+result = input %>%
+  str_extract_all(str_c(patterns, collapse = "|")) %>%
+  map(~ .x[.x != ""]) 
+
+result = tibble(`Email Address` = result[[1]])
+
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "CH-078 Extract from Text 2.xlsx"
+
+input = pd.read_excel(path, usecols="B", header=None, skiprows=2, nrows=1).iloc[0, 0]
+
+test = pd.read_excel(path, usecols="B", skiprows=5, nrows=6)
+test["Email Address"] = test["Email Address"].str[3:]
+test = test.sort_values(by="Email Address").reset_index(drop=True)
+
+patterns = [
+    r"\d{4}-\d{2}-\d{2}",
+    r"\d{2}\/\d{2}\/\d{4}",
+    r"\b\w+ \d{1,2}[a-z]*?(?: to \w+ \d{1,2}[a-z]*)?, \d{4}\b"
+]
+
+result = pd.DataFrame()
+for pattern in patterns:
+    result = result.append(pd.DataFrame(re.findall(pattern, input), columns=["Email Address"]))
+result = result.sort_values(by="Email Address").reset_index(drop=True)
+
+print(result.equals(test))  # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 77](OmidC77.qmd)
+-   [Omid - Challenge 79](OmidC79.qmd)
+-   [Omid - Challenge 80](OmidC80.qmd)

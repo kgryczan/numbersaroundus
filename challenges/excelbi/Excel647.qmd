@@ -1,0 +1,111 @@
+---
+title: "Excel BI - Excel Challenge 647"
+description: "🔰 A B C D E F G H I J"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 647](/challenges/images/exc647.jpg)
+
+## Challenge Description
+
+🔰 A B C D E F G H I J
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/647 Alphabets Pattern Generation.xlsx"
+test <- read_excel(path, range = "R2C1:R27C50", col_names = FALSE) %>% 
+    as.matrix() %>% replace(is.na(.), "")
+
+generate_matrix <- function(rows = 26, cols = 50) {
+    mat <- matrix("", nrow = rows, ncol = cols)
+    mat[, 1] <- "A"
+    
+    for (i in 2:cols) {
+        if (i %% 2 == 0) {
+            mat[(i / 2 + 1):rows, i] <- LETTERS[(i / 2 + 1):rows]
+        } else {
+            start_row <- (i + 1) / 2 + 1
+            if (start_row <= rows) {
+                mat[start_row:rows, i] <- LETTERS[start_row - 1]
+            }
+        }
+    }
+    return(mat)
+}
+
+result <- generate_matrix(26, 50)
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import numpy as np
+import string
+import pandas as pd
+
+path = "647 Alphabets Pattern Generation.xlsx"
+test = pd.read_excel(path, header=None, usecols="A:AX", skiprows=1, nrows=26).fillna("")
+
+def generate_matrix(rows=26, cols=50):
+    mat = np.full((rows, cols), "", dtype=object)
+    mat[:, 0] = "A"
+    letters = np.array(list(string.ascii_uppercase))
+    for i in range(1, cols):
+        if (i + 1) % 2 == 0:
+            start_row = (i + 1) // 2
+            if start_row < rows:
+                mat[start_row:, i] = letters[start_row:rows]
+        else:
+            start_row = (i + 2) // 2 + 1
+            if start_row <= rows:
+                mat[start_row-1:, i] = letters[start_row - 2]
+    return mat
+
+result = generate_matrix(26, 50)
+df = pd.DataFrame(result)
+print(df.equals(test)) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 648](/challenges/excelbi/Excel648.html)
+- [Excel Challenge 649](/challenges/excelbi/Excel649.html)
+- [Excel Challenge 650](/challenges/excelbi/Excel650.html)

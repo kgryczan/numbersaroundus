@@ -1,0 +1,139 @@
+---
+title: "Omid - Challenge 198"
+description: "🔰 Create a formula that, for any 'n x n' matrix, calculates z1 to zn, where zi is the sum of all the values in the ith row and the ith column of"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 198](/challenges/images/OmidC198.jpg)
+
+## Challenge Description
+
+🔰 Create a formula that, for any 'n x n' matrix, calculates z1 to zn, where zi is the sum of all the values in the ith row and the ith column of
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-198 Matrix Calculation.xlsx"
+input1 = read_excel(path, range = "C3:D4", col_names = FALSE) %>% as.matrix()
+input2 = read_excel(path, range = "C6:E8", col_names = FALSE) %>% as.matrix()
+input3 = read_excel(path, range = "C10:G14", col_names = FALSE) %>% as.matrix()
+test1  = read_excel(path, range = "J3:K4")
+test2  = read_excel(path, range = "J6:L7")
+test3  = read_excel(path, range = "J10:N11")
+
+process <- function(mat) {
+  map_dfc(seq_len(nrow(mat)), ~{
+    colname <- paste0("Z", .x)
+    tibble(!!colname := sum(mat[.x, ]) + sum(mat[, .x]))
+  })
+}
+
+output1 = process(input1)
+all(output1 == test1) # TRUE
+
+output2 = process(input2)
+all(output2 == test2) # TRUE
+
+output3 = process(input3)
+all(output3 == test3) # TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "CH-198 Matrix Calculation.xlsx"
+
+input1 = pd.read_excel(path,usecols="C:D", skiprows=2, nrows=2, header=None).values
+input2 = pd.read_excel(path,usecols="C:E", skiprows=5, nrows=3, header=None).values
+input3 = pd.read_excel(path,usecols="C:G", skiprows=9, nrows=5, header=None).values
+test1  = pd.read_excel(path,usecols="J:K", skiprows=2, nrows=1)
+test2  = pd.read_excel(path,usecols="J:L", skiprows=5, nrows=1)
+test3  = pd.read_excel(path,usecols="J:N", skiprows=9, nrows=1)
+
+def process(mat):
+    result = {}
+    for i in range(mat.shape[0]):
+        colname = f"Z{i+1}"
+        result[colname] = [np.sum(mat[i, :]) + np.sum(mat[:, i])]
+    return pd.DataFrame(result)
+
+output1 = process(input1)
+print(output1.equals(test1)) # True
+
+output2 = process(input2) 
+print(output2.equals(test2)) # True
+
+output3 = process(input3)
+print(output3.equals(test3)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 197](OmidC197.qmd)
+-   [Omid - Challenge 199](OmidC199.qmd)
+-   [Omid - Challenge 200](OmidC200.qmd)

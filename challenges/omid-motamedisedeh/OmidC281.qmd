@@ -1,0 +1,132 @@
+---
+title: "Omid - Challenge 281"
+description: "🔰 Group Challenge 281: Custom Grouping!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 281](/challenges/images/OmidC281.jpg)
+
+## Challenge Description
+
+🔰 Group Challenge 281: Custom Grouping!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/281/CH-281 Custom Grouping.xlsx"
+input = read_excel(path, range = "B2:C18")
+test  = read_excel(path, range = "G2:H5")
+
+result = input %>%
+  mutate(cplus = (cumsum(Result == "+") - 1) %/% 4 + 1,
+         Date = format(Date, "%d/%b/%Y")) %>%
+  mutate(count = sum(Result == "+"),
+         Group = paste0(first(Date), " - ", ifelse(count < 4, "NA", last(Date))), 
+         `number of dates` = ifelse(count < 4, "-", as.character(n())),
+         .by = cplus) %>%
+  select(Group, `number of dates`) %>%
+  distinct()
+
+all.equal(result, test)
+# > [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "200-299/281/CH-281 Custom Grouping.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=16)
+test = pd.read_excel(path, usecols="G:H", skiprows=1, nrows=3).astype({ 'number of dates': str })
+
+input['Date'] = pd.to_datetime(input['Date']).dt.strftime('%d/%b/%Y')
+input['cplus'] = (input['Result'].eq('+').cumsum() - 1) // 4 + 1
+
+res = []
+for cplus, group in input.groupby('cplus'):
+    plus_rows = group[group['Result'] == '+']
+    count = len(plus_rows)
+    if count < 4:
+        group_label = f"{group['Date'].iloc[0]} - NA"
+        num_dates = "-"
+    else:
+        group_label = f"{group['Date'].iloc[0]} - {group['Date'].iloc[-1]}"
+        num_dates = str(len(group))
+    res.append({'Group': group_label, 'number of dates': num_dates})
+result = pd.DataFrame(res).drop_duplicates()
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 280](OmidC280.qmd)
+-   [Omid - Challenge 282](OmidC282.qmd)
+-   [Omid - Challenge 283](OmidC283.qmd)

@@ -1,0 +1,119 @@
+---
+title: "Omid - Challenge 267"
+description: "🔰 Result Dates 2025/01/20 - 2025/01/26 2025/02/17 - 2025/02/23 2025/03/24 - 2025/03/30 2025/04/21 - 2025/04/27 2025/05/26 - 2025/06/01 2025/06/23 - 2025/06/29"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 267](/challenges/images/OmidC267.jpg)
+
+## Challenge Description
+
+🔰 Result Dates 2025/01/20 - 2025/01/26 2025/02/17 - 2025/02/23 2025/03/24 - 2025/03/30 2025/04/21 - 2025/04/27 2025/05/26 - 2025/06/01 2025/06/23 - 2025/06/29
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/267/CH-267 Date Calculation.xlsx"
+test  = read_excel(path, range = "B2:B14")
+
+format = "%Y/%m/%d"
+eom = ceiling_date(ymd(paste(2025, 1:12, 1, sep = "-")), "month") - 1
+last_sunday = eom - days((wday(eom, week_start = 1) %% 7))
+last_monday = last_sunday - days(6)
+result = data.frame(Dates = paste(format(last_monday, format), format(last_sunday, format), sep = " - "))
+
+result == test 
+# May is crossing month boundary, so the last Sunday is in June
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+from datetime import datetime, timedelta
+import pandas as pd
+
+path = "200-299/267/CH-267 Date Calculation.xlsx"
+test = pd.read_excel(path, usecols="B", skiprows=1, nrows=13)
+
+format = "%Y/%m/%d"
+def calculate_last_sunday_and_monday(year):
+    dates = []
+    for month in range(1, 13):
+        last_day_of_month = datetime(year, month + 1, 1) - timedelta(days=1) if month != 12 else datetime(year, 12, 31)
+        last_sunday = last_day_of_month - timedelta(days=(last_day_of_month.weekday() + 1) % 7)
+        last_monday = last_sunday - timedelta(days=6)
+        dates.append(f"{last_monday.strftime(format)} - {last_sunday.strftime(format)}")
+    
+    return pd.DataFrame({"Dates": dates})
+
+result = calculate_last_sunday_and_monday(2025)
+# May is crossing month boundary, so the last Sunday is in June
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 266](OmidC266.qmd)
+-   [Omid - Challenge 268](OmidC268.qmd)
+-   [Omid - Challenge 269](OmidC269.qmd)

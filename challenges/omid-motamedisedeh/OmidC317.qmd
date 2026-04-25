@@ -1,0 +1,116 @@
+---
+title: "Omid - Challenge 317"
+description: "🔰 Group Custom Grouping!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 317](/challenges/images/OmidC317.jpg)
+
+## Challenge Description
+
+🔰 Group Custom Grouping!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/300-399/317/CH-317 Custom Grouping.xlsx"
+input = read_excel(path, range = "B2:C19")
+test  = read_excel(path, range = "G2:H7")
+
+result = input %>%
+  mutate(Group = floor(log2(1:nrow(.))) + 1) %>%
+  summarise(`Total Sales` = sum(Sales, na.rm = T), .by = Group)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+input_path = "300-399/317/CH-317 Custom Grouping.xlsx"
+input = pd.read_excel(input_path, usecols="B:C", skiprows=1, nrows=18)
+test = pd.read_excel(input_path, usecols="G:H", skiprows=1, nrows=5)
+
+result = input.assign(Group=(np.floor(np.log2(np.arange(1, len(input)+1)))+1).astype(int))\
+    .groupby('Group', as_index=False)['Sales'].sum().rename(columns={'Sales': 'Total Sales'})
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 316](OmidC316.qmd)
+-   [Omid - Challenge 318](OmidC318.qmd)
+-   [Omid - Challenge 319](OmidC319.qmd)

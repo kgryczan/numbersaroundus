@@ -1,0 +1,125 @@
+---
+title: "Crispo - Excel Challenge 31 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-08-03"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 31 2025](/challenges/images/Crispo312025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Problem Solution Item 1 6,0,0,6,7 Item 2 3,3,1,0,0,0,1
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/2025-08-03/Challenge 48.xlsx"
+input = read_excel(path, range = "A2:H5")
+test  = read_excel(path, range = "J1:K4")
+
+result = input %>%
+  unite("combined", -c(1), sep = "") %>%
+  mutate(combined = str_replace_all(combined, "^0+|0+$", "")) %>%
+  mutate(combined = str_replace_all(combined, "(?<=.)(?=.)", ","))
+
+names(result) = c("item", "combined")
+names(test) = c("item", "combined")
+
+all.equal(result, test) 
+# > [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+    -   Uses direct text-pattern extraction instead of manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "files/2025-08-03/Challenge 48.xlsx"
+input = pd.read_excel(path, usecols="A:H", skiprows=1, nrows=4)
+test  = pd.read_excel(path, usecols="J:K", nrows=3)
+
+result = input.iloc[:, [0]].copy()
+result['combined'] = input.iloc[:, 1:8].astype(str).agg(''.join, axis=1)\
+    .str.replace(r'^0+|0+$', '', regex=True)\
+    .apply(lambda x: ','.join(x) if pd.notnull(x) else x)
+result.columns = ['item', 'combined']
+test.columns = ['item', 'combined']
+
+print(result.equals(test)) # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines familiar Excel-style logic with at least one non-trivial reshape, grouping, or parsing step.
+
+-   The answer depends on getting the output layout exactly right.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 30 2025](Crispo 302025.qmd)
+-   [Crispo - Excel Challenge 32 2025](Crispo 322025.qmd)

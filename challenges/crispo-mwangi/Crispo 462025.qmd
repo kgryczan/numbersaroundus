@@ -1,0 +1,151 @@
+---
+title: "Crispo - Excel Challenge 46 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-11-16"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 46 2025](/challenges/images/Crispo462025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Easy Sunday Excel Challenge
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+# path <- "path/to/your/file.xlsx" 
+# input <- read_excel(path, range = "")
+# test  <- read_excel(path, range = "")
+# to be replaced when file willbe provided
+
+df <- tribble(
+  ~Stock,                                        ~Seller,
+  "Spoon Area-2 - Kitchen Item",                 "Aiden",
+  "Forks - Dining Item : Silver Colour",         "Adrian",
+  "Sofa: Recliner Area-5 - Lounge Item",         "Ericka",
+  "King-Bed:Wide - Bedroom Item :Black-Lable",   "Emma"
+)
+test = tribble(
+  ~`Item & Seller`,
+  "Kitchen Item: Aiden",        
+  "Dining Item: Adrian",        
+  "Lounge Item: Ericka",        
+  "Bedroom Item: Emma"  
+)
+
+result <- df %>%
+  mutate(
+    Item = str_extract(Stock, "([[:alnum:]_]+)\\s*Item"
+  )) %>%
+  transmute(`Item & Seller` = glue::glue("{Item}: {Seller}")) %>% 
+  mutate(`Item & Seller` = as.character(`Item & Seller`))
+
+all.equal(result, test, check.attributes = FALSE)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+    -   Uses direct text-pattern extraction instead of manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+df = pd.DataFrame({
+    "Stock": [
+        "Spoon Area-2 - Kitchen Item",
+        "Forks - Dining Item : Silver Colour",
+        "Sofa: Recliner Area-5 - Lounge Item",
+        "King-Bed:Wide - Bedroom Item :Black-Lable"
+    ],
+    "Seller": ["Aiden", "Adrian", "Ericka", "Emma"]
+})
+
+test = pd.DataFrame({
+    "Item & Seller": [
+        "Kitchen Item: Aiden",
+        "Dining Item: Adrian",
+        "Lounge Item: Ericka",
+        "Bedroom Item: Emma"
+    ]
+})
+
+df["Item"] = df["Stock"].str.extract(r"([A-Za-z0-9\-]+) Item")[0] + " Item"
+result = pd.DataFrame({
+    "Item & Seller": df["Item"] + ": " + df["Seller"]
+})
+
+print(result.equals(test)) # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Applies the workbook rule directly and shapes the expected output
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines familiar Excel-style logic with at least one non-trivial reshape, grouping, or parsing step.
+
+-   The answer depends on getting the output layout exactly right.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 45 2025](Crispo 452025.qmd)
+-   [Crispo - Excel Challenge 47 2025](Crispo 472025.qmd)

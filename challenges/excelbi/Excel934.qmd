@@ -1,0 +1,153 @@
+---
+title: "Excel BI - Excel Challenge 934"
+description: "🔰 Find the top 2 employees for each project who worked the most."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-23"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 934](/challenges/images/exc934.jpg)
+
+## Challenge Description
+
+🔰 Find the top 2 employees for each project IDs who worked the most.
+If a project has only one employee assigned, list only that employee.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+
+path <- "900-999/934/934 Top Two.xlsx"
+input <- read_excel(path, range = "A2:D27")
+test <- read_excel(path, range = "F2:G6")
+
+result <- input %>%
+  summarise(Hours = sum(Hours), .by = c(EmployeeID, ProjectID)) %>%
+  slice_max(Hours, n = 2, with_ties = TRUE, by = ProjectID) %>%
+  summarise(`Top 2` = paste(EmployeeID, collapse = ", "), .by = ProjectID)
+
+all.equal(result, test)
+# Difference in Project Alpha
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Sum hours by employee and project.
+
+    -   Within each project, keep the top two total-hour records.
+
+    -   Collapse the selected employee IDs into a comma-separated output.
+
+-   **Strengths**:
+
+    -   **Correct Aggregation Grain**:
+
+        -   The solution ranks total contribution, not individual time-entry rows.
+
+    -   **Tie Preservation**:
+
+        -   `with_ties = TRUE` keeps all employees tied at the top cutoff.
+
+    -   **Compact Ranking Pipeline**:
+
+        -   Aggregation and ranking are expressed clearly in sequence.
+
+-   **Areas for Improvement**:
+
+    -   **Workbook Comparison Issue**:
+
+        -   The supplied comparison data appears inconsistent for `Project Alpha`.
+
+-   **Gem**:
+
+    -   The real insight is that ranking only makes sense after collapsing the event data to employee-project totals.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "900-999/934/934 Top Two.xlsx"
+input = pd.read_excel(path, usecols="A:D", skiprows=1, nrows=25)
+test = pd.read_excel(path, usecols="F:G", skiprows=1, nrows=4)
+
+result = (
+    input.groupby(["EmployeeID", "ProjectID"], as_index=False)["Hours"].sum()
+    .groupby("ProjectID", group_keys=False)
+    .apply(lambda x: x.nlargest(2, "Hours", keep="all"))
+    .groupby("ProjectID")["EmployeeID"]
+    .apply(lambda x: ", ".join(x.astype(str)))
+    .reset_index(name="Top 2")
+)
+
+print(result.equals(test))
+# Difference in Project Alpha
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Aggregate hours by employee and project.
+
+    -   Select the top two contributors within each project.
+
+    -   Join the employee IDs into the requested summary string.
+
+-   **Strengths**:
+
+    -   **Explicit Grouping Flow**:
+
+        -   The steps from aggregation to ranking are easy to inspect.
+
+    -   **Correct Tie Handling**:
+
+        -   `keep="all"` preserves tied maximum contributors.
+
+    -   **Faithful to the Prompt**:
+
+        -   The logic follows the intended “most hours by project” rule.
+
+-   **Areas for Improvement**:
+
+    -   **Comparison Data Mismatch**:
+
+        -   As with the R version, the issue appears to be in the workbook benchmark rather than in the intended ranking logic.
+
+-   **Gem**:
+
+    -   Separating aggregation from ranking makes the business rule very clear.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   Requires grouped aggregation before ranking.
+
+-   Involves tie-aware top-N logic within each project.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - Excel Challenge 933](Excel933.qmd)
+-   [Excel BI - Excel Challenge 935](Excel935.qmd)

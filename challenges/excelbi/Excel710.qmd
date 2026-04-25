@@ -1,0 +1,111 @@
+---
+title: "Excel BI - Excel Challenge 710"
+description: "🔰 Find the combination of how many items can be purchased with a payment amount of 3500."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 710](/challenges/images/exc710.jpg)
+
+## Challenge Description
+
+🔰 Find the combination of how many items can be purchased with a payment amount of 3500. Here, the number of items is 3, but it is assumed that there may be more, so the combination must be found dynamically.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/710/710 Combination.xlsx"
+input = read_excel(path, range = "A1:B4")
+input2 = read_excel(path, range = "D1:D2") %>% pull()
+test = read_excel(path, range = "F1:F4")
+
+result = expand_grid(
+  Bread = 1:(input2 / input$Price[input$Item == "Bread"]),
+  Snak = 1:(input2 / input$Price[input$Item == "Snak"]),
+  Drink = 1:(input2 / input$Price[input$Item == "Drink"])
+) %>%
+  filter(
+    input$Price[input$Item == "Bread"] *
+      Bread +
+      input$Price[input$Item == "Snak"] * Snak +
+      input$Price[input$Item == "Drink"] * Drink ==
+      input2
+  ) %>%
+  mutate(
+    Result = paste0("Bread ", Bread, ", Snak ", Snak, ", Drink ", Drink)
+  ) %>%
+  select(Result)
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from itertools import product
+
+path = "700-799/710/710 Combination.xlsx"
+input_df = pd.read_excel(path, usecols="A:B", nrows=4)
+input2 = pd.read_excel(path, usecols="D", nrows=2).iloc[:, 0].iloc[0]
+test = pd.read_excel(path, usecols="F", nrows=4)
+
+prices = dict(zip(input_df['Item'], input_df['Price']))
+
+combinations = [
+    (bread, snak, drink)
+    for bread, snak, drink in product(
+        range(1, int(input2 / prices['Bread']) + 1),
+        range(1, int(input2 / prices['Snak']) + 1),
+        range(1, int(input2 / prices['Drink']) + 1)
+    )
+    if prices['Bread'] * bread + prices['Snak'] * snak + prices['Drink'] * drink == input2
+]
+
+result = pd.DataFrame({
+    'Result': [f"Bread {bread}, Snak {snak}, Drink {drink}" for bread, snak, drink in combinations]
+})
+
+print(result['Result'].tolist() == test.iloc[:, 0].tolist())
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 711](/challenges/excelbi/Excel711.html)
+- [Excel Challenge 712](/challenges/excelbi/Excel712.html)
+- [Excel Challenge 713](/challenges/excelbi/Excel713.html)

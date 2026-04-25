@@ -1,0 +1,126 @@
+---
+title: "Excel BI - Excel Challenge 702"
+description: "🔰 Extract the years from the given data."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 702](/challenges/images/exc702.jpg)
+
+## Challenge Description
+
+🔰 Extract the years from the given data. The year should be valid in Excel. For example - Excel doesn't support years below 1900, hence 1899 is not a valid year in Excel. If there is a range of years extracted, convert the range to all years in between. For Example 2018-2021=> 2018, 2019, 2020, 2021
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/702 Extract Year.xlsx"
+input = read_excel(path, range = "A1:A9")
+test = read_excel(path, range = "C1:C9")
+
+result = input %>%
+  mutate(years = str_extract_all(Data, "\\d{2,}")) %>%
+  unnest(years) %>%
+  mutate(years = as.numeric(years)) %>%
+
+  mutate(years = ifelse(years < 100, years + 2000, years)) %>%
+  mutate(
+    years = ifelse(years > 1900 & years < 10000, years, NA),
+    has_range = ifelse(str_detect(Data, "\\d{2,}-\\d{2,}"), TRUE, FALSE)
+  ) %>%
+  na.omit() %>%
+  group_by(Data) %>%
+  summarise(
+    years = if (any(has_range)) {
+      seq(min(years, na.rm = TRUE), max(years, na.rm = TRUE)) %>%
+        paste(collapse = ", ")
+    } else {
+      paste(years, collapse = ", ")
+    }
+  )
+res = input %>%
+  left_join(result, by = "Data")
+
+all.equal(res$years, test$`Answer Expected`)
+# TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The solution stays close to the text pattern itself, which makes the extraction logic easy to audit.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The key move is solving the problem at the right grain before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+import numpy as np
+
+path = "702 Extract Year.xlsx"
+
+input = pd.read_excel(path, usecols="A", nrows=9, names=["Data"])
+test = pd.read_excel(path, usecols="C", nrows=9, names=["Answer Expected"])
+
+def extract_years(data):
+    years = re.findall(r"\d{2,}", data)
+    years = [int(year) for year in years]
+    years = [year + 2000 if year < 100 else year for year in years]
+    years = [year if 1900 < year < 10000 else None for year in years]
+    return [year for year in years if year is not None]
+
+def has_range(data):
+    return bool(re.search(r"\d{2,}-\d{2,}", data))
+
+processed = []
+for _, row in input.iterrows():
+    data = row["Data"]
+    years = extract_years(data)
+    if years:
+        if has_range(data):
+            years = list(range(min(years), max(years) + 1))
+        processed.append({"Data": data, "years": ", ".join(map(str, years))})
+    else:
+        processed.append({"Data": data, "years": None})
+
+result = pd.DataFrame(processed)
+
+res = input.merge(result, on="Data", how="left")
+
+print(res['years'].equals(test['Answer Expected']))
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 703](/challenges/excelbi/Excel703.html)
+- [Excel Challenge 704](/challenges/excelbi/Excel704.html)
+- [Excel Challenge 705](/challenges/excelbi/Excel705.html)

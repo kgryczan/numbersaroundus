@@ -1,0 +1,99 @@
+---
+title: "Excel BI - Excel Challenge 714"
+description: "🔰 Answer Expected Farmer Produce Sell Don't Sell Smith Potato Mary Ginger, Potato, Tomato Capsicum - N"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 714](/challenges/images/exc714.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Farmer Produce Sell Don't Sell Smith Potato Mary Ginger, Potato, Tomato Capsicum - N
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/714/714 Sell Alignment.xlsx"
+input = read_excel(path, range = "A2:B12")
+test = read_excel(path, range = "D2:F5")
+
+result = input %>%
+  mutate(
+    Instr = ifelse(str_ends(Produce, "N"), "Don't Sell", "Sell"),
+    Produce = str_extract(Produce, "^[^ ]+")
+  ) %>%
+  pivot_wider(
+    names_from = Instr,
+    values_from = Produce,
+    values_fn = ~ paste(sort(.), collapse = ", ")
+  ) %>%
+  arrange(Farmer)
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Reshape the result into the workbook output format.
+- **Strengths**: The solution stays close to the text pattern itself, which makes the extraction logic easy to audit.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: A small number of well-targeted text patterns does most of the heavy lifting.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/714/714 Sell Alignment.xlsx"
+
+input = pd.read_excel(path, usecols="A:B", skiprows=1, nrows=11)
+test = pd.read_excel(path, usecols="D:F", skiprows=1, nrows=3).rename(columns=lambda c: c.replace('.1', ''))
+
+input['Instr'] = input['Produce'].str.endswith('N').map({True: "Don't Sell", False: "Sell"})
+input['Produce'] = input['Produce'].str.extract(r'^(\w+)')
+
+result = (
+    input.groupby(['Farmer', 'Instr'])['Produce']
+    .apply(lambda x: ', '.join(sorted(x.dropna())))
+    .unstack()
+    .reset_index()[['Farmer', 'Sell', "Don't Sell"]]
+    .sort_values('Farmer')
+    .reset_index(drop=True)
+)
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 715](/challenges/excelbi/Excel715.html)
+- [Excel Challenge 716](/challenges/excelbi/Excel716.html)
+- [Excel Challenge 717](/challenges/excelbi/Excel717.html)

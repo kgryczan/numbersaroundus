@@ -1,0 +1,115 @@
+---
+title: "Excel BI - Excel Challenge 871"
+description: "🔰 Assign 3, 2 & 1 points to Gold, Silver and Bronze respectively."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 871](/challenges/images/exc871.jpg)
+
+## Challenge Description
+
+🔰 Assign 3, 2 & 1 points to Gold, Silver and Bronze respectively. For each decade, List the Rank1, Rank2 and Rank3 countries on the basis of total points accumulated in a decade.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/871/871 Ranking of Hockey Winners Decade-wise.xlsx"
+input <- read_excel(path, range = "A2:D90")
+test <- read_excel(path, range = "F2:I13")
+
+result <- input %>%
+  pivot_longer(-Year, names_to = "Medal", values_to = "Country") %>%
+  mutate(
+    Decade = paste0((Year %/% 10) * 10, "-", (Year %/% 10) * 10 + 9),
+    Medal_value = recode(Medal, Gold = 3, Silver = 2, Bronze = 1)
+  ) %>%
+  summarise(Total = sum(Medal_value), .by = c(Decade, Country)) %>%
+  mutate(rank = dense_rank(-Total), .by = Decade) %>%
+  filter(rank <= 3) %>%
+  arrange(Decade, rank, Country) %>%
+  summarise(
+    Country = paste(Country, collapse = ", "),
+    .by = c(Decade, rank)
+  ) %>%
+  pivot_wider(
+    names_from = rank,
+    values_from = Country,
+    names_prefix = "Rank"
+  ) %>%
+  select(Decade, everything())
+
+all.equal(result, test)
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel/800-899/871/871 Ranking of Hockey Winners Decade-wise.xlsx"
+input_df = pd.read_excel(path, sheet_name=0, usecols="A:D", skiprows=1, nrows=89)
+test_df = pd.read_excel(path, sheet_name=0, usecols="F:I", skiprows=1, nrows=11)
+
+result = (
+    input_df
+    .melt(id_vars="Year", var_name="Medal", value_name="Country")
+    .assign(
+        Decade=lambda df: (df["Year"] // 10 * 10).astype(str) + "-" + (df["Year"] // 10 * 10 + 9).astype(str),
+        Medal_value=lambda df: df["Medal"].map({"Gold": 3, "Silver": 2, "Bronze": 1})
+    )
+    .groupby(["Decade", "Country"], as_index=False)
+    .agg(Total=("Medal_value", "sum"))
+    .assign(rank=lambda df: df.groupby("Decade")["Total"].rank(method="dense", ascending=False).astype(int))
+    .query("rank <= 3")
+    .sort_values(["Decade", "rank", "Country"])
+    .groupby(["Decade", "rank"], as_index=False)
+    .agg(Country=("Country", ", ".join))
+    .pivot(index="Decade", columns="rank", values="Country")
+    .rename(columns={1: "Rank1", 2: "Rank2", 3: "Rank3"})
+    .reset_index()
+    .reindex(columns=["Decade", "Rank1", "Rank2", "Rank3"])
+)
+
+print(result.equals(test_df))
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 872](/challenges/excelbi/Excel872.html)
+- [Excel Challenge 873](/challenges/excelbi/Excel873.html)
+- [Excel Challenge 874](/challenges/excelbi/Excel874.html)

@@ -1,0 +1,120 @@
+---
+title: "Omid - Challenge 225"
+description: "🔰 Create a dynamic date column based on the information provided in the question table."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 225](/challenges/images/OmidC225.jpg)
+
+## Challenge Description
+
+🔰 Create a dynamic date column based on the information provided in the question table.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-225 Date Range.xlsx"
+start = read_excel(path, range = "C3", col_names = F) %>% pull()
+end = read_excel(path, range = "C4", col_names = F) %>% pull()
+step = read_excel(path, range = "C5", col_names = F) %>% pull()
+test = read_excel(path, range = "E2:E12") %>% mutate(Dates = as.Date(Dates))
+
+result = data.frame(Dates = seq.Date(as.Date(start), as.Date(end), by = step))
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from pandas import to_datetime
+
+path = "CH-225 Date Range.xlsx"
+
+start = pd.read_excel(path, usecols="C", skiprows=2, nrows=1, header=None).iloc[0, 0]
+end = pd.read_excel(path, usecols="C", skiprows=3, nrows=1, header=None).iloc[0, 0]
+step = pd.read_excel(path, usecols="C", skiprows=4, nrows=1, header=None).iloc[0, 0]
+
+test = pd.read_excel(path, usecols="E", skiprows=1, nrows=11).assign(Dates=lambda df: pd.to_datetime(df['Dates']))
+
+result = pd.DataFrame({'Dates': pd.date_range(start=start, end=end, freq=f"{step}D")})
+
+<<<<<<< HEAD
+print(result.equals(test)) # True
+
+=======
+print(result.equals(test)) # True if the result matches the test data
+>>>>>>> b27df38c727c140b11ddbfe6289bd12c4d6cac85
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 224](OmidC224.qmd)
+-   [Omid - Challenge 226](OmidC226.qmd)
+-   [Omid - Challenge 227](OmidC227.qmd)

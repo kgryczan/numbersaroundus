@@ -1,0 +1,134 @@
+---
+title: "Omid - Challenge 276"
+description: "🔰 Converted Value Convert the given numbers from one base to another base."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 276](/challenges/images/OmidC276.jpg)
+
+## Challenge Description
+
+🔰 Converted Value Convert the given numbers from one base to another base.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(gmp)
+
+path = "files/200-299/276/CH-276 Value COnversion.xlsx"
+input = read_excel(path, range = "B2:E8")
+test  = read_excel(path, range = "F2:F8")
+
+convert_base = function(x, from, to) {
+  pmap_chr(list(x, from, to), \(x, from, to) {
+    n = strtoi(x, base = from)
+    switch(as.character(to),
+      "2"  = as.character(as.bigz(n), b=2),
+      "8"  = as.character(as.octmode(n)),
+      "10" = as.character(n),
+      "16" = str_to_upper(as.character(as.hexmode(n)))
+    )
+  })
+}
+
+result = input %>%
+  mutate(Answer = convert_base(Number, `From Base`, `To Base`)) 
+
+all.equal(result$Answer, test$`Converted Value`)
+# > [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "200-299/276/CH-276 Value COnversion.xlsx"
+input = pd.read_excel(path, usecols="B:E", nrows=6, skiprows=1)
+test = pd.read_excel(path, usecols="F", nrows=6, skiprows=1).astype({'Converted Value': str})
+
+def convert_base(x, from_base, to_base):
+    n = int(x, from_base)
+    if to_base == 2: return bin(n)[2:]
+    if to_base == 8: return oct(n)[2:]
+    if to_base == 10: return str(n)
+    if to_base == 16: return hex(n)[2:].upper()
+
+input['Result'] = input.apply(
+    lambda row: convert_base(str(row['Number']), int(row['From Base']), int(row['To Base'])),
+    axis=1
+)
+
+print(input['Result'].equals(test['Converted Value']))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 275](OmidC275.qmd)
+-   [Omid - Challenge 277](OmidC277.qmd)
+-   [Omid - Challenge 278](OmidC278.qmd)

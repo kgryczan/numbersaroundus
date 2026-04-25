@@ -1,0 +1,123 @@
+---
+title: "Omid - Challenge 2"
+description: "🔰 Group Group the rows from top which in each group the total cost be lower than 130$."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 2](/challenges/images/OmidC2.jpg)
+
+## Challenge Description
+
+🔰 Group Group the rows from top which in each group the total cost be lower than 130$.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(MESS)
+
+path = "files/CH-002.xlsx"
+input = read_excel(path, range = "B2:C19")
+test  = read_excel(path, range = "H2:J19")
+
+result = input %>%
+  mutate(Group = cumsumbinning(Cost, 120))
+
+all.equal(result$Group, test$Group, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-002.xlsx"
+input_data = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=18)
+test = pd.read_excel(path, usecols="H:J", skiprows=1, nrows=18)
+
+def cumsumbinning(values, limit):
+    groups = []
+    current_group = 1
+    running = 0
+    for value in values:
+        if running + value > limit and running > 0:
+            current_group += 1
+            running = 0
+        running += value
+        groups.append(current_group)
+    return groups
+
+result = input_data.copy()
+result["Group"] = cumsumbinning(result["Cost"], 120)
+
+print(result["Group"].equals(test["Group"]))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 1](OmidC1.qmd)
+-   [Omid - Challenge 3](OmidC3.qmd)
+-   [Omid - Challenge 4](OmidC4.qmd)

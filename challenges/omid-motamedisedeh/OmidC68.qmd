@@ -1,0 +1,123 @@
+---
+title: "Omid - Challenge 68"
+description: "🔰 Create a formula to receive a number n as input and generate a Triangular with a height equal to n using '*' characters."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 68](/challenges/images/OmidC68.jpg)
+
+## Challenge Description
+
+🔰 Create a formula to receive a number n as input and generate a Triangular with a height equal to n using "*" characters.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+
+draw_triangle = function(n) {
+  if (n %% 2 == 0) {
+    return("Not Possible")
+  } else {
+    x = ceiling(n / 2)
+    seq = seq(1, x)
+    
+    mat = matrix("", n, x)
+    for (i in 1:x) {
+      mat[i, 1:seq[i]] = "*"
+    }
+    for (i in 1:(x - 1)) {
+      mat[n - i + 1, ] = mat[i, ]
+    }
+    
+    print(mat)
+  }
+}
+
+
+draw_triangle(7)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import numpy as np
+
+def draw_triangle(n):
+    if n % 2 == 0:
+        print("Not Possible")
+    else:
+        x = (n + 1) // 2
+        seq = list(range(1, x + 1))       
+        mat = np.full((n, x), "", dtype=object)
+        for i in range(x):
+            mat[i, :seq[i]] = "*"
+        for i in range(1, x):
+            mat[n - i, :] = mat[i - 1, :]
+        print(mat)
+
+draw_triangle(7)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 67](OmidC67.qmd)
+-   [Omid - Challenge 69](OmidC69.qmd)
+-   [Omid - Challenge 70](OmidC70.qmd)

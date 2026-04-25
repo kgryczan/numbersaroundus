@@ -1,0 +1,144 @@
+---
+title: "Omid - Challenge 74"
+description: "🔰 Question Result Name Family Phone Website Info Doe"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 74](/challenges/images/OmidC74.jpg)
+
+## Challenge Description
+
+🔰 Question Result Name Family Phone Website Info Doe
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = 'files/CH-074 Determining missing fields.xlsx'
+input = read_excel(path, range = "B2:C15")
+test  = read_excel(path, range = "F2:H6")
+
+result = input %>%
+  mutate(cumsum = cumsum(`Info...1` == "Name")) %>%
+  select(-Info...2) %>% 
+  summarise(n = n(), .by = c(cumsum, `Info...1`)) %>%
+  pivot_wider(names_from = `Info...1`, values_from = n, values_fill = list(n = 0)) %>%
+  pivot_longer(cols = -cumsum, names_to = "Info", values_to = "n") %>%
+  pivot_wider(names_from = n, values_from = Info, values_fn = list) %>%
+  select(`Record No` = 1, `Missing fields` = 4, `Duplicated Fields` = 3) %>%
+  mutate(`Missing fields` = map_chr(`Missing fields`, ~ifelse(is.null(.x), "-", paste(.x, collapse = ", "))),
+         `Duplicated Fields` = map_chr(`Duplicated Fields`, ~ifelse(is.null(.x), "-", paste(.x, collapse = ", "))),
+         `Record No` = as.numeric(`Record No`))
+         
+print(result)
+print(test)
+# One field differs, because there is empty cell where hyphen should be in H3
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+# Read the Excel file
+path = 'CH-074 Determining missing fields.xlsx'
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=14)
+test = pd.read_excel(path, usecols="F:H", skiprows=1, nrows=4)
+
+input['cumsum'] = (input['Info'] == "Name").cumsum()
+result = (input.groupby(['cumsum', 'Info'])
+          .size()
+          .unstack(fill_value=0)
+          .reset_index()
+          .melt(id_vars=['cumsum'], var_name='Info', value_name='n')
+          .groupby(['cumsum', 'n'])['Info']
+          .apply(list)
+          .unstack(fill_value=[])
+          .reset_index())
+result['Missing fields'] = result[0].apply(lambda x: "-" if not x else ", ".join(x))
+result['Duplicate Fields'] = result[2].apply(lambda x: "-" if not x else ", ".join(x))
+result = result[['cumsum', 'Missing fields', 'Duplicate Fields']]
+result.columns = ['Record No', 'Missing fields', 'Duplicate Fields']
+
+print(result)
+print(test)
+
+# One field differs, because there is empty cell where hyphen should be in H3
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 73](OmidC73.qmd)
+-   [Omid - Challenge 75](OmidC75.qmd)
+-   [Omid - Challenge 76](OmidC76.qmd)

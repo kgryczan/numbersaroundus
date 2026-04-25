@@ -1,0 +1,98 @@
+---
+title: "Excel BI - Excel Challenge 765"
+description: "🔰 Answer Expected Supplier Items Bread Coke Milk Rice A Milk: 340, Bread: 550 B"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 765](/challenges/images/exc765.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Supplier Items Bread Coke Milk Rice A Milk: 340, Bread: 550 B
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/765/765 Pivot.xlsx"
+input = read_excel(path, range = "A2:B9")
+test  = read_excel(path, range = "D2:H5")
+
+result = input %>%
+  separate_longer_delim(Items, ", ") %>%
+  separate_wider_delim(Items, ": ", names = c("Item", "Quantity")) %>%
+  mutate(Quantity = as.numeric(Quantity)) %>%
+  pivot_wider(names_from = Item, values_from = Quantity, values_fn = sum) %>%
+  select(Supplier, sort(names(.), decreasing = F)) 
+
+# DFs are not equal
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/765/765 Pivot.xlsx"
+
+input = pd.read_excel(path, usecols="A:B", skiprows=1, nrows=8)
+test = pd.read_excel(path, usecols="D:H", skiprows=1, nrows=3).rename(columns=lambda x: x.rstrip(".1"))
+
+input = (
+    input.assign(Items=input["Items"].str.split(", "))
+    .explode("Items")
+    .assign(
+        Item=lambda df: df["Items"].str.split(": ").str[0],
+        Quantity=lambda df: pd.to_numeric(df["Items"].str.split(": ").str[1])
+    )
+    .drop(columns=["Items"])
+    .pivot_table(index="Supplier", columns="Item", values="Quantity", aggfunc="sum", fill_value=0)
+    .reset_index()
+)
+
+sorted_columns = ["Supplier"] + sorted([col for col in input.columns if col != "Supplier"])
+result = input[sorted_columns]
+result.index.name = None
+
+# DFs are not equal
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 766](/challenges/excelbi/Excel766.html)
+- [Excel Challenge 767](/challenges/excelbi/Excel767.html)
+- [Excel Challenge 768](/challenges/excelbi/Excel768.html)

@@ -1,0 +1,125 @@
+---
+title: "Omid - Challenge 344"
+description: "🔰 🧩 Adding Explanations If you want to include explanations or extra notes: 🌐 Sharing External Content 🗣 Feedback I always appreciate your feedback — feel free to share an…"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 344](/challenges/images/OmidC344.jpg)
+
+## Challenge Description
+
+🔰 🧩 Adding Explanations If you want to include explanations or extra notes: 🌐 Sharing External Content 🗣 Feedback I always appreciate your feedback — feel free to share an…
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/344/CH-344  Matrix Calculation.xlsx"
+input1 <- read_excel(path, range = "B4:F8", col_names = FALSE) %>% as.matrix()
+input2 <- read_excel(path, range = "B14:F18", col_names = FALSE) %>% as.matrix()
+test1 <- read_excel(path, range = "H4", col_names = FALSE) %>% pull()
+test2 <- read_excel(path, range = "H14", col_names = FALSE) %>% pull()
+
+is_symmetric <- function(mat) {
+  all(mat == t(mat))
+}
+max_sym1 <- max(which(map_lgl(1:min(dim(input1)), function(x) {
+  is_symmetric(input1[1:x, 1:x])
+})))
+max_sym2 <- max(which(map_lgl(1:min(dim(input2)), function(x) {
+  is_symmetric(input2[1:x, 1:x])
+})))
+
+all.equal(test1, max_sym1) # True
+all.equal(test2, max_sym2) # True
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import numpy as np
+import pandas as pd
+
+path = "300-399/344/CH-344  Matrix Calculation.xlsx"
+
+input1 = pd.read_excel(path, usecols="B:F", skiprows=3, nrows=5, header=None).values
+input2 = pd.read_excel(path, usecols="B:F", skiprows=13, nrows=5, header=None).values
+test1 = pd.read_excel(path, usecols="H", skiprows=3, nrows=1, header=None).iloc[0,0]
+test2 = pd.read_excel(path, usecols="H", skiprows=13, nrows=1, header=None).iloc[0,0]
+
+def is_symmetric(mat):
+    return np.all(mat == mat.T)
+
+max_sym1 = max([x for x in range(1, min(input1.shape)+1) if is_symmetric(input1[:x, :x])])
+max_sym2 = max([x for x in range(1, min(input2.shape)+1) if is_symmetric(input2[:x, :x])])
+
+print(np.isclose(test1, max_sym1))  # True
+print(np.isclose(test2, max_sym2))  # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 343](OmidC343.qmd)
+-   [Omid - Challenge 345](OmidC345.qmd)
+-   [Omid - Challenge 346](OmidC346.qmd)

@@ -1,0 +1,125 @@
+---
+title: "Excel BI - PowerQuery Challenge 175"
+description: "Name Family Generation No Next Generation Relantionship Joseph"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 175](/challenges/images/exc175pq.jpg)
+
+## Challenge Description
+
+Name Family Generation No Next Generation Relantionship Joseph
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("Power Query/PQ_Challenge_175.xlsx", range = "A1:C16")
+test  = read_excel("Power Query/PQ_Challenge_175.xlsx", range = "E1:H19") %>%
+  mutate(Relantionship = str_remove_all(Relantionship, " ")) # cleaned for purpose of validation
+
+result = input %>%
+  left_join(input, by = c("Family" = "Family")) %>%
+  filter(`Generation No.x` == `Generation No.y` - 1) %>%
+  # there is mispronunciation in the challenge, it should be "Relationship" not "Relantionship"
+  unite("Relantionship", `Generation No.x`, `Generation No.y`, sep = "-") %>% 
+  select(Name = `Name.x`,Family,`Next Generation` = `Name.y`, Relantionship  ) %>%
+  arrange(Family, Relantionship  , Name, `Next Generation`)
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+input = pd.read_excel("PQ_Challenge_175.xlsx",  usecols="A:C", nrows=15)
+test = pd.read_excel("PQ_Challenge_175.xlsx", usecols="E:H", nrows=19)
+test["Relantionship"] = test["Relantionship"].str.replace(" ", "")
+test.columns = ["Name", "Family", "Next Generation", "Relantionship"]
+
+result = pd.merge(input, input, left_on="Family", right_on="Family")
+result = result[result["Generation No_x"] == result["Generation No_y"] - 1]
+result["Relantionship"] = result["Generation No_x"].astype(str) + "-" + result["Generation No_y"].astype(str)
+result = result[["Name_x", "Family", "Name_y", "Relantionship"]].rename(columns={"Name_x": "Name", "Name_y": "Next Generation"})
+result = result.sort_values(by=["Family", "Relantionship", "Name", "Next Generation"]).reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 174](Excel174pq.qmd)

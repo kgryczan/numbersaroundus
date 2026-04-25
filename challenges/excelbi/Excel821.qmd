@@ -1,0 +1,131 @@
+---
+title: "Excel BI - Excel Challenge 821"
+description: "🔰 Pascal's triangle is a triangular array of numbers that starts with 1 at the top, with each subsequent row beginning and ending with 1, and every other number being the sum of the…"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 821](/challenges/images/exc821.jpg)
+
+## Challenge Description
+
+🔰 Pascal's triangle is a triangular array of numbers that starts with 1 at the top, with each subsequent row beginning and ending with 1, and every other number being the sum of the two numbers directly above it. But current challenge is a variation. Here, every other number is either sum or product of the two numbers directly above it. Sum or Product is controlled by column B.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/821/821 Pascal Triangle Variation.xlsx"
+input = read_excel(path, range = "B2:B10", col_names = FALSE) %>% pull(1)
+test  = read_excel(path, range = "E2:U10", col_names = FALSE) %>% as.matrix()
+
+generate_custom_pascal <- function(signs) {
+  n <- length(signs) 
+  triangle <- matrix(NA, n, 2 * n - 1)
+  triangle[1, n] <- 1
+
+  for (i in 2:n) {
+    for (j in (n - (i - 1)):(n + (i - 1))) {
+      left <- ifelse(j - 1 < 1, 0, triangle[i - 1, j - 1])
+      right <- ifelse(j + 1 > (2 * n - 1), 0, triangle[i - 1, j + 1])
+      if (is.na(left) & is.na(right)) {
+        triangle[i, j] <- NA
+      } else {
+        left <- ifelse(is.na(left), 0, left)
+        right <- ifelse(is.na(right), 0, right)
+        if (signs[i] == "+") {
+          triangle[i, j] <- left + right
+        } else if (signs[i] == "*") {
+          left <- ifelse(left == 0, 1, left)
+          right <- ifelse(right == 0, 1, right)
+          triangle[i, j] <- left * right
+        }
+      }
+    }
+  } 
+
+  triangle
+}
+
+result <- generate_custom_pascal(input)
+
+all(result == test, na.rm = TRUE)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Apply the business rule conditions explicitly; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "800-899/821/821 Pascal Triangle Variation.xlsx"
+input_signs = pd.read_excel(path, usecols="B", skiprows=1, nrows=9, header=None).values.flatten()
+test = pd.read_excel(path, usecols="E:U", skiprows=1, nrows=9, header=None).values
+
+def generate_custom_pascal(signs):
+    n = len(signs)
+    triangle = np.full((n, 2 * n - 1), np.nan)
+    triangle[0, n - 1] = 1
+
+    for i in range(1, n):
+        for j in range(n - i - 1, n + i):
+            left = 0 if j - 1 < 0 else triangle[i - 1, j - 1]
+            right = 0 if j + 1 > (2 * n - 2) else triangle[i - 1, j + 1]
+            
+            if np.isnan(left) and np.isnan(right):
+                triangle[i, j] = np.nan
+            else:
+                left = 0 if np.isnan(left) else left
+                right = 0 if np.isnan(right) else right
+                if signs[i] == "+":
+                    triangle[i, j] = left + right
+                elif signs[i] == "*":
+                    left = 1 if left == 0 else left
+                    right = 1 if right == 0 else right
+                    triangle[i, j] = left * right
+    return triangle
+
+
+result = generate_custom_pascal(input_signs)
+print(np.array_equal(result, test, equal_nan=True)) # Truessssssssssssss
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 822](/challenges/excelbi/Excel822.html)
+- [Excel Challenge 823](/challenges/excelbi/Excel823.html)
+- [Excel Challenge 824](/challenges/excelbi/Excel824.html)

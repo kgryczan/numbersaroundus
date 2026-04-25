@@ -1,0 +1,143 @@
+---
+title: "Excel BI - PowerQuery Challenge 235"
+description: "Country Year-Quarter Population Male Female 2022-Q3"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 235](/challenges/images/exc235pq.jpg)
+
+## Challenge Description
+
+Country Year-Quarter Population Male Female 2022-Q3
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/PQ_Challenge_235.xlsx"
+input = read_excel(path, range = "A1:E10")
+test  = read_excel(path, range = "H1:N10")
+
+result = input %>%
+  pivot_longer(cols = -c(Country, `Year-Quarter`), names_to = "Category", values_to = "Value") %>%
+  unite("CV", Category, Value) %>%
+  pivot_wider(names_from = `Year-Quarter`, values_from = CV) %>%
+  unnest(c(starts_with("202"))) %>%
+  separate("2022-Q3", into = c("2022-Q3", "Value1"), sep = "_") %>%
+  separate("2022-Q4", into = c("2022-Q4", "Value2"), sep = "_") %>%
+  separate("2023-Q1", into = c("2023-Q1", "Value3"), sep = "_") 
+
+result = result %>%
+  mutate(across(starts_with("Value"), as.numeric))
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "PQ_Challenge_235.xlsx"
+input = pd.read_excel(path, usecols="A:E", nrows=10)
+test = pd.read_excel(path, usecols="H:N", nrows=10).rename(columns=lambda x: x.split('.')[0]).sort_values(by="Country").reset_index(drop=True)
+
+result = (input.melt(id_vars=["Country", "Year-Quarter"], var_name="Category", value_name="Value")
+          .assign(CV=lambda x: x["Category"] + "_" + x["Value"].astype(str))
+          .pivot(index=["Country", "Category"], columns="Year-Quarter", values="CV")
+          .reset_index()
+          .drop(columns=["Category"])
+          .rename_axis(None, axis=1))
+
+for col in ["2022-Q3", "2022-Q4", "2023-Q1"]:
+    result[[col, f"Value{col[-1]}"]] = result[col].str.split("_", expand=True)
+
+result = result.rename(columns={"Value3": "Value1", "Value4": "Value2", "Value1": "Value3"})
+result = result[["Country", "2022-Q3", "Value1", "2022-Q4", "Value2", "2023-Q1", "Value3"]]
+result = result.sort_values(by=["Country", "2022-Q3"], ascending=[True, False]).reset_index(drop=True)
+
+for col in result.columns:
+    if "Value" in col:
+        result[col] = result[col].astype("int64")
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 234](Excel234pq.qmd)

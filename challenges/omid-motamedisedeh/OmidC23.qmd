@@ -1,0 +1,136 @@
+---
+title: "Omid - Challenge 23"
+description: "🔰 Advanced Weighted Average Calculation Based on these values, calculate the average of weight for monthly productions as below."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 23](/challenges/images/OmidC23.jpg)
+
+## Challenge Description
+
+🔰 Advanced Weighted Average Calculation Based on these values, calculate the average of weight for monthly productions as below.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input1 = read_excel("files/CH-023 Advance Weighted AVG.xlsx", range = "B2:E18")
+input2 = read_excel("files/CH-023 Advance Weighted AVG.xlsx", range = "G2:J5")
+test   = read_excel("files/CH-023 Advance Weighted AVG.xlsx", range = "L2:M5")
+
+prod = input2 %>%
+  pivot_longer(cols = -Month, names_to = "Machine Code", values_to = "value") 
+
+result = input1 %>%
+  group_by(Month, `Machine Code`) %>%
+  summarise(Avg = mean(`Weight (KG/Meter)`)) %>%
+  left_join(prod, by = c("Machine Code", "Month")) %>%
+  ungroup() %>%
+  group_by(Month) %>%
+  summarise(`AVG weight (Kg/Meter)` = sum(Avg * value) / sum(value)) %>%
+  mutate(`AVG weight (Kg/Meter)` = round(`AVG weight (Kg/Meter)`, 2)) %>%
+  ungroup()
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input1 = pd.read_excel("CH-023 Advance Weighted AVG.xlsx", usecols="B:E", skiprows=1, nrows=17)
+input2 = pd.read_excel("CH-023 Advance Weighted AVG.xlsx", usecols="G:J", skiprows=1, nrows=4)
+test = pd.read_excel("CH-023 Advance Weighted AVG.xlsx", usecols="L:M", skiprows=1, nrows=4)
+
+prod = input2.melt(id_vars="Month", var_name="Machine Code", value_name="value")
+result = (
+    input1.groupby(["Month", "Machine Code"], as_index=False)["Weight (KG/Meter)"]
+    .mean()
+    .rename(columns={"Weight (KG/Meter)": "Avg"})
+    .merge(prod, on=["Machine Code", "Month"], how="left")
+    .groupby("Month", as_index=False)
+    .apply(lambda g: pd.Series({"AVG weight (Kg/Meter)": round((g["Avg"] * g["value"]).sum() / g["value"].sum(), 2)}))
+    .reset_index(drop=True)
+)
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 22](OmidC22.qmd)
+-   [Omid - Challenge 24](OmidC24.qmd)
+-   [Omid - Challenge 25](OmidC25.qmd)

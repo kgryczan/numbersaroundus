@@ -1,0 +1,88 @@
+---
+title: "Excel BI - Excel Challenge 860"
+description: "🔰 Text Limit Len The man saw the dog."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 860](/challenges/images/exc860.jpg)
+
+## Challenge Description
+
+🔰 Text Limit Len The man saw the dog. The dog ran far. Did the man go too? Yes, he did. He went to the old hut. The hut was safe, but the door was shut. He gave the dog food. The dog ate fast. Now the dog felt good. The sun set low. It was dark. Now the man must run home. His son was there, and the son had toys. The toys were new. A big box had them all. The man felt happy. Home is best. Rest now, and wake at dawn. The man saw the dog. The dog ran far. Did the man go too? Yes, he did. He went to the old hut. The hut was safe, but the door was shut. He gave the dog food. The dog ate fast. Now the dog felt good. The sun set low. It was dark. Now the man must run home. His son was there, and the son had toys. The toys were new. A big box had them all. The man felt happy. Home is best. Rest now, and wake at dawn.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/860/860 Splitting Into Lines.xlsx"
+input <- read_excel(path, range = "A1:B2")
+test <- read_excel(path, range = "C3:D9", col_names = c("Line", "count"))
+
+output <- str_wrap(input$Text, width = input$`Limit Len`) %>%
+  str_split("\n") %>%
+  unlist() %>%
+  as_tibble() %>%
+  mutate(count = str_length(value) %>% as.numeric()) %>%
+  rename(Line = value)
+
+all_equal(output, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from textwrap import wrap
+
+path = "Excel/800-899/860/860 Splitting Into Lines.xlsx"
+input = pd.read_excel(path, sheet_name=0, usecols="A:B", nrows=2)
+test = pd.read_excel(path, sheet_name=0, usecols="C:D", skiprows=1, nrows=7, names=["Line", "count"])
+
+wrapped_lines = wrap(input.loc[0, "Text"], width=int(input.loc[0, "Limit Len"]))
+output = pd.DataFrame({"Line": wrapped_lines})
+output["count"] = output["Line"].str.len().astype(float)
+
+print((output == test).all().all())
+# True
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 861](/challenges/excelbi/Excel861.html)
+- [Excel Challenge 862](/challenges/excelbi/Excel862.html)
+- [Excel Challenge 863](/challenges/excelbi/Excel863.html)

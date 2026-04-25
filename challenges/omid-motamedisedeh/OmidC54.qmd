@@ -1,0 +1,125 @@
+---
+title: "Omid - Challenge 54"
+description: "🔰 Question Tables Result Date Project A B C Actual Progress"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 54](/challenges/images/OmidC54.jpg)
+
+## Challenge Description
+
+🔰 Question Tables Result Date Project A B C Actual Progress
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(padr)
+
+input = read_excel("files/CH-054 Missing Values.xlsx", range = "B2:D21")
+test  = read_excel("files/CH-054 Missing Values.xlsx", range = "H2:J38")
+
+result = input %>%
+  group_by(Project) %>%
+  mutate(Date = floor_date(Date, "month")) %>%
+  pad() %>%
+  fill(`Actual Progress`, .direction = "down") %>%
+  mutate(Date = Date + months(1) - days(1)) 
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from pandas.tseries.offsets import MonthEnd
+
+input = pd.read_excel("CH-054 Missing Values.xlsx",  usecols="B:D", skiprows=1, nrows = 19)
+test = pd.read_excel("CH-054 Missing Values.xlsx",  usecols="H:J", skiprows=1)
+test.columns = test.columns.str.replace(".1", "")
+
+input["Date"] = pd.to_datetime(input["Date"])
+test["Date"] = pd.to_datetime(test["Date"])
+input['Date'] = input['Date'] - MonthEnd(0) 
+input = input.set_index('Date').groupby('Project').apply(lambda group: group.asfreq('M')).reset_index(level=0, drop=True).reset_index()
+input['Actual Progress'] = input.groupby('Project')['Actual Progress'].fillna(method='ffill')
+input['Date'] = input['Date'] + MonthEnd(0) 
+input['Project'] = input['Project'].fillna(method='ffill')
+input = input.fillna(method='ffill')
+
+print(input.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 53](OmidC53.qmd)
+-   [Omid - Challenge 55](OmidC55.qmd)
+-   [Omid - Challenge 56](OmidC56.qmd)

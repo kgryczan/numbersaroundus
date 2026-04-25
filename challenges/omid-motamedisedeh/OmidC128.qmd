@@ -1,0 +1,109 @@
+---
+title: "Omid - Challenge 128"
+description: "🔰 Result AAA AAB AAC AAD ABA ABB ABC"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 128](/challenges/images/OmidC128.jpg)
+
+## Challenge Description
+
+🔰 Result AAA AAB AAC AAD ABA ABB ABC
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-128 Cartesian Product.xlsx"
+test  = read_excel(path, range = "C1:C65")
+
+lets = c("A","B","C","D")
+
+result = expand.grid(lets,lets, lets) %>%
+  unite("result", Var1:Var3, sep = "") %>%
+  arrange(result)
+
+all.equal(result$result, test$Result)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import itertools
+import pandas as pd
+
+path = "CH-128 Cartesian Product.xlsx"
+test = pd.read_excel(path, usecols = "C")
+lets = ["A","B","C","D"]
+combs = [''.join(p) for p in itertools.product(lets, repeat=3)]
+
+print(all(combs == test["Result"])) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 127](OmidC127.qmd)
+-   [Omid - Challenge 129](OmidC129.qmd)
+-   [Omid - Challenge 130](OmidC130.qmd)

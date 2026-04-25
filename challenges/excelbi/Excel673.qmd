@@ -1,0 +1,97 @@
+---
+title: "Excel BI - Excel Challenge 673"
+description: "🔰 Create the star patterns for given N."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 673](/challenges/images/exc673.jpg)
+
+## Challenge Description
+
+🔰 Create the star patterns for given N.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(matricks)
+
+path = "Excel/673 Star Pattern.xlsx"
+test3  = read_excel(path, range = "C3:E5", col_names = FALSE) %>% as.matrix()
+test4  = read_excel(path, range = "C7:F10", col_names = FALSE) %>% as.matrix()
+test7 = read_excel(path, range = "C12:I18", col_names = FALSE) %>% as.matrix()
+
+make_star = function(side) {
+  M = matrix(NA_character_, side, side)
+  for (i in 1:side){
+    M[i,i] = LETTERS[i]
+    M[i,side+1-i] = LETTERS[i]
+  } 
+  return(M)
+}
+
+all.equal(make_star(3), test3, check.attributes = FALSE) # TRUE
+all.equal(make_star(4), test4, check.attributes = FALSE) # TRUE
+all.equal(make_star(7), test7, check.attributes = FALSE) # TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "673 Star Pattern.xlsx"
+
+test3 = pd.read_excel(path, usecols="C:E", skiprows=2, nrows=3, header=None).fillna('').values
+test4 = pd.read_excel(path, usecols="C:F", skiprows=6, nrows=4, header=None).fillna('').values
+test7 = pd.read_excel(path, usecols="C:I", skiprows=11, nrows=7, header=None).fillna('').values
+
+def make_star(side):
+    M = np.full((side, side), '', dtype=str)
+    M = np.array([[chr(65 + i) if j == i or j == side - 1 - i else '' for j in range(side)] for i in range(side)])
+    return M
+
+print(np.array_equal(make_star(3), test3))  # True
+print(np.array_equal(make_star(4), test4))  # True
+print(np.array_equal(make_star(7), test7))  # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 674](/challenges/excelbi/Excel674.html)
+- [Excel Challenge 675](/challenges/excelbi/Excel675.html)
+- [Excel Challenge 676](/challenges/excelbi/Excel676.html)

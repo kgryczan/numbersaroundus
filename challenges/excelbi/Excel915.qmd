@@ -1,0 +1,113 @@
+---
+title: "Excel BI - Excel Challenge 915"
+description: "🔰 915 Missing Invoice Numbers.xlsx says: > Find the missing invoice numbers for each series."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 915](/challenges/images/exc915.jpg)
+
+## Challenge Description
+
+🔰 The prompt in 915 Missing Invoice Numbers.xlsx says: Find the missing invoice numbers for each series. The invoice IDs are strings like: ```text
+ABC-101
+ABC-102
+ABC-104
+``` The goal is to detect which numbers are missing within each prefix series and return the absent invoice IDs.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/900-999/915/915 Missing Invoice Numbers.xlsx"
+input <- read_excel(path, range = "A1:A24")
+test <- read_excel(path, range = "B1:B13") %>%
+  arrange(`Answer Expected`)
+
+result = input %>%
+  separate(
+    Invoice_ID,
+    into = c("prefix", "number"),
+    sep = "-",
+    remove = FALSE,
+    convert = TRUE
+  ) %>%
+  group_by(prefix) %>%
+  complete(number = full_seq(number, 1)) %>%
+  ungroup() %>%
+  filter(is.na(Invoice_ID)) %>%
+  unite("Invoice_ID", prefix, number, sep = "-")
+
+all.equal(result$Invoice_ID, test$`Answer Expected`)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Split invoice IDs into prefix and numeric part.; Group rows by prefix.; Generate the full expected numeric sequence within each group..
+- **Strengths**: The core idea is sequence completion.
+- **Areas for Improvement**: The approach assumes the workbook structure and naming conventions stay stable, so any changed input shape would need minor adjustments.
+- **Gem**: You do not find missing invoice numbers by pairwise comparison.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel/900-999/915/915 Missing Invoice Numbers.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=24)
+test = pd.read_excel(path, usecols="B", nrows=12).sort_values(by="Answer Expected").reset_index(drop=True)
+
+input[['prefix', 'number']] = input['Invoice_ID'].str.split('-', expand=True)
+input['number'] = input['number'].astype(int)
+
+full = (
+    input.groupby("prefix")["number"]
+    .apply(lambda x: pd.Series(range(x.min(), x.max() + 1)))
+    .reset_index()
+    .rename(columns={"level_1": "idx", 0: "number"})
+    .drop(columns="idx")
+)
+
+result = (
+    full.merge(input, on=["prefix", "number"], how="left")
+    .loc[lambda x: x["Invoice_ID"].isna(), ["prefix", "number"]]
+    .assign(Invoice_ID=lambda x: x["prefix"] + "-" + x["number"].astype(str))
+    [["Invoice_ID"]]
+    .reset_index(drop=True)
+)
+
+print(result["Invoice_ID"].equals(test["Answer Expected"]))
+```
+
+### Python
+
+The Python version follows the same structure: split invoice ids into prefix and numeric part.; convert the numeric part into integers..
+
+## **Difficulty Level**
+
+**Easy**
+
+Once the core pattern is recognized, the implementation is short and direct.
+
+### Related Challenges
+
+- [Excel Challenge 924](/challenges/excelbi/Excel924.html)
+- [Excel Challenge 909](/challenges/excelbi/Excel909.html)
+- [Excel Challenge 907](/challenges/excelbi/Excel907.html)

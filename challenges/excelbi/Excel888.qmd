@@ -1,0 +1,102 @@
+---
+title: "Excel BI - Excel Challenge 888"
+description: "🔰 Populate Jolly or Not Jolly."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 888](/challenges/images/exc888.jpg)
+
+## Challenge Description
+
+🔰 Populate Jolly or Not Jolly.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/888/888 Jolly Sequence.xlsx"
+input <- read_excel(path, range = "A1:A21")
+test <- read_excel(path, range = "B1:B21")
+
+jolly_check <- function(a) {
+  x <- as.integer(str_split(a, ",")[[1]])
+  all(sort(unique(abs(diff(x)))) == seq_along(x)[-1])
+}
+result <- input %>%
+  rowwise() %>%
+  mutate(
+    Jolly = jolly_check(`Input String`),
+    `Answer Expected` = ifelse(Jolly, "Jolly", "Not jolly")
+  )
+all.equal(
+  result$`Answer Expected`,
+  test$`Answer Expected`,
+  check.attributes = FALSE
+)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Apply the business rule conditions explicitly.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "Excel/800-899/888/888 Jolly Sequence.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=21)
+test = pd.read_excel(path, usecols="B", nrows=21)
+
+def jolly_check(a):
+    x = np.array(list(map(int, a.split(','))))
+    diffs = np.abs(np.diff(x))
+    return np.array_equal(np.sort(np.unique(diffs)), np.arange(1, len(x)))
+
+input['Jolly'] = input.iloc[:,0].apply(jolly_check)
+input['Answer Expected'] = np.where(input['Jolly'], "Jolly", "Not jolly")
+
+result = input['Answer Expected'].values
+expected = test.iloc[:,0].values
+
+print(np.array_equal(result, expected))
+# True
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 889](/challenges/excelbi/Excel889.html)
+- [Excel Challenge 890](/challenges/excelbi/Excel890.html)
+- [Excel Challenge 891](/challenges/excelbi/Excel891.html)

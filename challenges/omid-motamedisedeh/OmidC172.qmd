@@ -1,0 +1,118 @@
+---
+title: "Omid - Challenge 172"
+description: "🔰 For each hour, we aim to calculate the difference between its value and the value of the previous hour."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 172](/challenges/images/OmidC172.jpg)
+
+## Challenge Description
+
+🔰 For each hour, we aim to calculate the difference between its value and the value of the previous hour.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-172 Performance  Optimization.xlsx"
+input = read_excel(path, range = "R2C2:R250000C3") 
+test  = read_excel(path, range = "E2:F7")
+
+tictoc::tic()
+result = input %>%
+  arrange(`Date Houre`) %>%
+  slice_max(Value - lag(Value), n = 5) %>%
+  arrange(desc(Value)) 
+tictoc::toc()
+# 0.01 to 0.05 sec elapsed in few attempts.
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import time
+
+path = "CH-172 Performance  Optimization.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=249999)
+test = pd.read_excel(path, usecols="E:F", skiprows=1, nrows=5).rename(columns=lambda x: x.split('.')[0])
+
+start_time = time.time()
+input = input.sort_values(by="Date Houre").assign(Value_diff=lambda x: x['Value'] - x['Value'].shift(1))
+result = input.nlargest(5, "Value_diff").sort_values(by="Value", ascending=False).reset_index(drop=True).drop(columns=["Value_diff"])
+end_time = time.time()
+print(f"Execution time: {end_time - start_time} seconds")
+# Execution time: 0.0416 seconds
+                                                            
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 171](OmidC171.qmd)
+-   [Omid - Challenge 173](OmidC173.qmd)
+-   [Omid - Challenge 174](OmidC174.qmd)

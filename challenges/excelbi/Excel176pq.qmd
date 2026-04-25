@@ -1,0 +1,152 @@
+---
+title: "Excel BI - PowerQuery Challenge 176"
+description: "Group You will need to split column1 and get corresponding running total from Column2 and stack them in rows."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 176](/challenges/images/exc176pq.jpg)
+
+## Challenge Description
+
+Group You will need to split column1 and get corresponding running total from Column2 and stack them in rows.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("Power Query/PQ_Challenge_176.xlsx", range = "A1:C5")
+test  = read_excel("Power Query/PQ_Challenge_176.xlsx", range = "E1:G9")
+
+result = input %>%
+  mutate(Column1 = map(Column1, ~strsplit(.x, ", ")),
+         Column2 = map(Column2, ~strsplit(.x, ", "))) %>%
+  unnest(cols = c(Column1, Column2)) %>%
+  mutate(Column1 = map(Column1, ~tibble(Column1 = .x)),
+         Column2 = map(Column2, ~tibble(Column2 = .x))) %>%
+  mutate(n1 = map_dbl(Column1, ~nrow(.x)),
+         n2 = map_dbl(Column2, ~nrow(.x))) %>%
+  mutate(Column = map2(Column1, Column2, ~{
+    n1 = nrow(.x)
+    n2 = nrow(.y)
+    if (n1 > n2) {
+      .y = bind_rows(.y, tibble(Column2 = rep("0", n1 - n2)))
+    } else if (n1 < n2) {
+      .x = bind_rows(.x, tibble(Column1 = rep(NA, n2 - n1)))
+    }
+    bind_cols(.x, .y)
+  })) %>%
+  select(Group, Column) %>%
+  unnest(cols = c(Column)) %>%
+  drop_na()  %>%
+  mutate(Column2 = cumsum(as.numeric(Column2)), .by = Group)
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input = pd.read_excel("PQ_Challenge_176.xlsx", sheet_name="Sheet1", usecols="A:C", nrows=4)
+test = pd.read_excel("PQ_Challenge_176.xlsx", sheet_name="Sheet1",  usecols="E:G", nrows=9)
+test.columns = input.columns
+
+input["Column1"] = input["Column1"].str.split(", ")
+input["Column2"] = input["Column2"].str.split(", ")
+
+result = []
+for i in range(len(input)):
+    column1 = input["Column1"][i]
+    column2 = input["Column2"][i]
+    if len(column1) > len(column2):
+        column2 += ["0"]*(len(column1)-len(column2))
+    elif len(column2) > len(column1):
+        column1 += [None]*(len(column2)-len(column1))
+    result.append(list(zip(column1, column2)))
+result = pd.DataFrame([item for sublist in result for item in sublist], columns=["Column1", "Column2"])
+result = result.dropna()
+
+groups = input[["Group", "Column1"]].explode("Column1").dropna()
+merged = pd.merge(result, groups, on="Column1", how="left")
+merged = merged[["Group", "Column1", "Column2"]].reset_index(drop=True)
+merged["Column2"] = pd.to_numeric(merged["Column2"])
+merged["Column2"] = merged.groupby("Group")["Column2"].cumsum()
+
+print(merged.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The transformation rule is readable, but the final layout still requires a careful implementation.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 175](Excel175pq.qmd)

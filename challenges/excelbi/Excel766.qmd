@@ -1,0 +1,94 @@
+---
+title: "Excel BI - Excel Challenge 766"
+description: "🔰 Answer Expected Reverse the diagonals in 10x10 grid as shown."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 766](/challenges/images/exc766.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Reverse the diagonals in 10x10 grid as shown.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(matricks)
+
+path = "Excel/700-799/766/766 Swap Diagonals.xlsx"
+input = read_excel(path, range = "A2:J11", col_names = FALSE) %>% as.matrix()
+test  = read_excel(path, range = "L2:U11", col_names = FALSE) %>% as.matrix()
+
+swap_diagonals = function(mat) {
+  n = nrow(mat)
+  mat[cbind(1:n, 1:n)] = rev(mat[cbind(1:n, 1:n)])
+  mat[cbind(1:n, n:1)] = rev(mat[cbind(1:n, n:1)])
+  return(mat)
+}
+
+result = swap_diagonals(input)
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import numpy as np
+import pandas as pd
+
+path = "700-799/766/766 Swap Diagonals.xlsx"
+input = pd.read_excel(path, header=None, usecols="A:J", skiprows=1, nrows=10).values
+test  = pd.read_excel(path, header=None, usecols="L:U", skiprows=1, nrows=10).values
+
+def swap_diagonals(mat):
+    mat = mat.copy()
+    n = mat.shape[0]
+    idx = np.arange(n)
+    mat[idx, idx] = mat[idx, idx][::-1]
+    mat[idx, n-1-idx] = mat[idx, n-1-idx][::-1]
+    return mat
+
+result = swap_diagonals(input)
+print(np.allclose(result, test)) # True
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 767](/challenges/excelbi/Excel767.html)
+- [Excel Challenge 768](/challenges/excelbi/Excel768.html)
+- [Excel Challenge 769](/challenges/excelbi/Excel769.html)

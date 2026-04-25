@@ -1,0 +1,162 @@
+---
+title: "Omid - Challenge 139"
+description: "🔰 Group Challenge 139: Custom Grouping!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 139](/challenges/images/OmidC139.jpg)
+
+## Challenge Description
+
+🔰 Group Challenge 139: Custom Grouping!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-139 Custom Grouping.xlsx"
+input = read_excel(path, range = "B2:C26") %>% janitor::clean_names()
+test  = read_excel(path, range = "G2:H4")
+
+
+result = input %>%
+  mutate(a = cumsum(lag(stock_price, default = 0) > stock_price),
+         d = cumsum(lag(stock_price, default = 0) < stock_price)) %>%
+  mutate(a_n = ifelse(n() > 2, a, NA), .by = a) %>%
+  mutate(d_n = ifelse(n() > 2, d, NA), .by = d) %>%
+  mutate(check = case_when(
+    !is.na(a_n) & is.na(d_n) ~ a_n,
+    !is.na(d_n) & is.na(a_n) ~ d_n,
+    !is.na(a_n) & !is.na(d_n) ~ pmin(a_n, d_n),
+    TRUE ~ NA_real_
+  )) %>%
+  mutate(diff = stock_price - lag(stock_price, default = 0)) %>%
+  mutate(sign = sign(median(diff)), 
+         Group = ifelse(sign == 1, "Upward", "Downward"),
+         .by = check) %>%
+  mutate(perc_diff_dod = diff / lag(stock_price, default = 0)) %>%
+  mutate(first_value = first(stock_price),
+         cumsum_per_check = cumsum(lead(diff,1)),
+         ratio = cumsum_per_check / first_value ,
+         .by = check) %>%
+  mutate_at(vars(perc_diff_dod, ratio), ~replace(., is.infinite(.), 0)) %>%
+  summarise(Increase = pmax(max(perc_diff_dod, na.rm = T), max(ratio, na.rm = T)),
+            Decrease = pmin(min(perc_diff_dod, na.rm = T), min(ratio, na.rm = T))) %>%
+  pivot_longer(cols = everything(),  names_to = "Group", values_to = "Percent")
+            
+all.equal(result, test, check.attributes = F)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-139 Custom Grouping.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=25).rename(columns={'Date': 'date', 'Stock price': 'stock_price'})
+test = pd.read_excel(path, usecols="G:H", skiprows=1, nrows=2)
+test['Group'] = test['Group'].str.strip()
+
+input['a'] = (input['stock_price'].shift() > input['stock_price']).cumsum()
+input['d'] = (input['stock_price'].shift() < input['stock_price']).cumsum()
+input['a_n'] = input.groupby('a')['a'].transform(lambda x: x if len(x) > 2 else pd.NA)
+input['d_n'] = input.groupby('d')['d'].transform(lambda x: x if len(x) > 2 else pd.NA)
+
+input['check'] = input.apply(lambda row: row['a_n'] if pd.notna(row['a_n']) and pd.isna(row['d_n']) else (
+    row['d_n'] if pd.notna(row['d_n']) and pd.isna(row['a_n']) else (
+        min(row['a_n'], row['d_n']) if pd.notna(row['a_n']) and pd.notna(row['d_n']) else pd.NA
+    )
+), axis=1)
+
+input['diff'] = input['stock_price'] - input['stock_price'].shift(1, fill_value=0)
+input['sign'] = input.groupby('check')['diff'].transform(lambda x: 1 if x.gt(0).sum() > x.lt(0).sum() else -1)
+input['Group'] = input['sign'].apply(lambda x: "Upward" if x == 1 else "Downward")
+
+input['percentage_change'] = input['stock_price'].pct_change()
+input['first_value'] = input.groupby('check')['stock_price'].transform('first')
+input['cumsum_per_check'] = input.groupby('check')['diff'].transform(lambda x: x.shift(-1).cumsum())
+input['ratio'] = input['cumsum_per_check'] / input['first_value']
+input['percentage_change'] = input['percentage_change'].fillna(0)
+input['ratio'] = input['ratio'].fillna(0)
+
+summary = input.groupby('Group').agg({'percentage_change': ['min', 'max'], 'ratio': ['min', 'max']})
+result = pd.DataFrame({'Group': ['Increase','Decrease'], 'Percent': [summary.values.max(),summary.values.min()]})
+
+print(result.equals(test))  # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 138](OmidC138.qmd)
+-   [Omid - Challenge 140](OmidC140.qmd)
+-   [Omid - Challenge 141](OmidC141.qmd)

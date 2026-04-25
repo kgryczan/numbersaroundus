@@ -1,0 +1,124 @@
+---
+title: "Excel BI - Excel Challenge 730"
+description: "🔰 List the odd numbers in a Square"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 730](/challenges/images/exc730.jpg)
+
+## Challenge Description
+
+🔰 List the odd numbers in a Square
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(matricks)
+
+path = "Excel/700-799/730/730 Pick the Odd Numbers in a Grid Across Diagonals.xlsx"
+input1 = read_excel(path, range = "A2:B3", col_names = FALSE) %>% as.matrix()
+input2 = read_excel(path, range = "A5:C7", col_names = FALSE) %>% as.matrix()
+input3 = read_excel(path, range = "A9:C11", col_names = FALSE) %>% as.matrix()
+input4 = read_excel(path, range = "A13:D16", col_names = FALSE) %>% as.matrix()
+input5 = read_excel(path, range = "A18:E22", col_names = FALSE) %>% as.matrix()
+test1 = read_excel(path, range = "G2", col_names = FALSE) %>% pull()
+test2 = NA
+test3 = read_excel(path, range = "G9", col_names = FALSE) %>% pull()
+test4 = read_excel(path, range = "G13", col_names = FALSE) %>% pull()
+test5 = read_excel(path, range = "G18", col_names = FALSE) %>% pull()
+
+check_diag = function(mat) {
+  diag = diag(mat) %>% paste(collapse = "") %>% as.numeric()
+  antidiag = antidiag(mat) %>% paste(collapse = "") %>% as.numeric()
+  if (all(diag %% 2 == 1) && all(antidiag %% 2 == 1)) {
+    return(paste(diag, antidiag, sep = ", "))
+  } else if (all(diag %% 2 == 1)) {
+    return(diag)
+  } else if (all(antidiag %% 2 == 1)) {
+    return(antidiag)
+  } else {
+    return(NA)
+  }
+}
+
+all.equal(check_diag(input1), test1, check.attributes = FALSE) # TRUE
+all.equal(check_diag(input2), test2, check.attributes = FALSE) # TRUE
+all.equal(check_diag(input3), test3, check.attributes = FALSE) # TRUE
+all.equal(check_diag(input4), test4, check.attributes = FALSE) # TRUE
+all.equal(check_diag(input5), test5, check.attributes = FALSE) # TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/730/730 Pick the Odd Numbers in a Grid Across Diagonals.xlsx"
+
+input1 = pd.read_excel(path, header=None, usecols="A:B", skiprows=1, nrows=2).to_numpy()
+input2 = pd.read_excel(path, header=None, usecols="A:C", skiprows=4, nrows=3).to_numpy()
+input3 = pd.read_excel(path, header=None, usecols="A:C", skiprows=8, nrows=3).to_numpy()
+input4 = pd.read_excel(path, header=None, usecols="A:D", skiprows=12, nrows=4).to_numpy()
+input5 = pd.read_excel(path, header=None, usecols="A:E", skiprows=17, nrows=5).to_numpy()
+test1 = str(pd.read_excel(path, header=None, usecols="G", skiprows=1, nrows=1).iloc[0,0])
+test2 = ""
+test3 = str(pd.read_excel(path, header=None, usecols="G", skiprows=8, nrows=1).iloc[0,0])
+test4 = pd.read_excel(path, header=None, usecols="G", skiprows=12, nrows=1).iloc[0,0]
+test5 = pd.read_excel(path, header=None, usecols="G", skiprows=17, nrows=1).iloc[0,0]
+
+def print_odd_diagonals(m):
+    n = len(m)
+    d1 = int(''.join(str(m[i][i]) for i in range(n)))
+    d2 = int(''.join(str(m[i][n-1-i]) for i in range(n)))
+    odds = [str(x) for x in {d1, d2} if x % 2]
+    if not odds:
+        return ""
+    return ', '.join(odds)
+
+
+print(print_odd_diagonals(input1) == (test1)) # True
+print(print_odd_diagonals(input2) == (test2)) # True
+print(print_odd_diagonals(input3) == (test3)) # True
+print(print_odd_diagonals(input4) == (test4)) # True
+print(print_odd_diagonals(input5) == (test5)) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 731](/challenges/excelbi/Excel731.html)
+- [Excel Challenge 732](/challenges/excelbi/Excel732.html)
+- [Excel Challenge 733](/challenges/excelbi/Excel733.html)

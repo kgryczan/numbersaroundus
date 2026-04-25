@@ -1,0 +1,129 @@
+---
+title: "Excel BI - Excel Challenge 712"
+description: "🔰 Answer Expected Rotate the given quadrangle by one position clockwise."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 712](/challenges/images/exc712.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Rotate the given quadrangle by one position clockwise.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/712/712 Rotate Quadrangle.xlsx"
+input = read_excel(path, range = "A2:I10", col_names = FALSE) %>% as.matrix()
+test = read_excel(path, range = "L2:T10", col_names = FALSE) %>% as.matrix()
+
+coords = which(!is.na(input), arr.ind = TRUE) %>%
+  as_tibble() %>%
+  mutate(value = input[cbind(row, col)])
+
+shift <- function(r, c) {
+  case_when(
+    r <= 5 & c <= 4 ~ c(r - 1, c + 1),
+    r <= 4 & c >= 5 ~ c(r + 1, c + 1),
+    r >= 5 & c >= 6 ~ c(r + 1, c - 1),
+    r >= 6 & c <= 5 ~ c(r - 1, c - 1),
+    TRUE ~ c(r, c)
+  )
+}
+
+coords = coords %>%
+  mutate(shifted = map2(row, col, ~ shift(.x, .y))) %>%
+  mutate(new_row = map_dbl(shifted, 1), new_col = map_dbl(shifted, 2))
+
+output = matrix(NA, nrow = 9, ncol = 9)
+for (i in 1:nrow(coords)) {
+  r = coords$new_row[i]
+  c = coords$new_col[i]
+  v = coords$value[i]
+  output[r, c] = v
+}
+
+all.equal(output, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Apply the business rule conditions explicitly; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "700-799/712/712 Rotate Quadrangle.xlsx"
+
+input = pd.read_excel(path, sheet_name=0, usecols="A:I", skiprows=1, nrows=9, header=None).to_numpy()
+test = pd.read_excel(path, sheet_name=0, usecols="L:T", skiprows=1, nrows=9, header=None).to_numpy()
+
+coords = np.argwhere(~np.isnan(input))
+values = input[~np.isnan(input)]
+
+def shift(r, c, n_rows=9, n_cols=9):
+    if 0 <= r <= 4 and 0 <= c <= 3:
+        nr, nc = r - 1, c + 1
+    elif 0 <= r <= 3 and 4 <= c <= n_cols - 1:
+        nr, nc = r + 1, c + 1
+    elif 4 <= r <= n_rows - 1 and 5 <= c <= n_cols - 1:
+        nr, nc = r + 1, c - 1
+    elif 5 <= r <= n_rows - 1 and 0 <= c <= 4:
+        nr, nc = r - 1, c - 1
+    else:
+        return r, c
+
+    nr = min(max(nr, 0), n_rows - 1)
+    nc = min(max(nc, 0), n_cols - 1)
+    return nr, nc
+
+new_coords = [shift(r, c) for r, c in coords]
+new_rows, new_cols = zip(*new_coords)
+
+output = np.full((9, 9), np.nan)
+for (r, c, v) in zip(new_rows, new_cols, values):
+    output[r, c] = v
+
+print(np.array_equal(output, test, equal_nan=True))
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 713](/challenges/excelbi/Excel713.html)
+- [Excel Challenge 714](/challenges/excelbi/Excel714.html)
+- [Excel Challenge 715](/challenges/excelbi/Excel715.html)

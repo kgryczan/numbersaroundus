@@ -1,0 +1,184 @@
+---
+title: "Excel BI - PowerQuery Challenge 312"
+description: "Column1 Column2 Column3 Column4 Column5 Column6"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 312](/challenges/images/exc312pq.jpg)
+
+## Challenge Description
+
+Column1 Column2 Column3 Column4 Column5 Column6
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(janitor)
+
+path = "Power Query/300-399/312/PQ_Challenge_312.xlsx"
+input = read_excel(path, range = "A1:M11")
+test  = read_excel(path, range = "A15:H21")
+
+result = input %>%
+  mutate(
+    Category = ifelse(Column1 == "Category", Column2, NA),
+    State = ifelse(Column3 == "State", Column4, NA),
+    Year = ifelse(Column5 == "Year", Column6, NA)) %>%
+  fill(Category, State, Year) %>%
+  filter(Column1 != "Category") %>%
+  row_to_names(row_number = 1) %>%
+  select(Category = `Home Loan`, State = Alabama, Year = `2023`, Customer = Months, everything()) %>%
+  filter(Customer != "Months") %>%
+  pivot_longer(
+    cols = -c(Category, State, Year, Customer),
+    names_to = "Month",
+    values_to = "Amount"
+  ) %>%
+  mutate(Amount = as.numeric(Amount),
+         Year = as.numeric(Year),
+         quarter = recode(Month,
+           Jan = "Q1", Feb = "Q1", Mar = "Q1",
+           Apr = "Q2", May = "Q2", Jun = "Q2",
+           Jul = "Q3", Aug = "Q3", Sep = "Q3",
+           Oct = "Q4", Nov = "Q4", Dec = "Q4")) %>%
+  select(-Month) %>%
+  pivot_wider(names_from = quarter,
+              values_from = Amount,
+              values_fn = sum) 
+
+all.equal(result, test, check.attributes = FALSE)
+# > [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "300-399/312/PQ_Challenge_312.xlsx"
+input = pd.read_excel(path, skiprows=0, nrows=11, usecols="A:M")
+test = pd.read_excel(path, skiprows=14, nrows=7, usecols="A:H").sort_values(['State', 'Customer']).reset_index(drop=True)
+
+cols = {'Category': ('Column1', 'Column2'), 'State': ('Column3', 'Column4'), 'Year': ('Column5', 'Column6')}
+for k, (col, val) in cols.items():
+    input[k] = np.where(input[col] == k, input[val], np.nan)
+input[['Category', 'State', 'Year']] = input[['Category', 'State', 'Year']].ffill()
+
+input = input[input['Column1'] != "Category"].copy()
+
+input.columns = input.iloc[0]
+input = input[1:].reset_index(drop=True)
+input.columns.name = None
+input = input.rename(columns={
+    'Months': 'Customer',
+    'Home Loan': 'Category',
+    'Alabama': 'State',
+    2023: 'Year'
+})
+
+df_long = input.melt(
+    id_vars=['Category', 'State', 'Year', 'Customer'],
+    var_name='Month',
+    value_name='Amount'
+)
+
+df_long['Amount'] = pd.to_numeric(df_long['Amount'], errors='coerce').astype('Int64')
+df_long['Year'] = pd.to_numeric(df_long['Year'], errors='coerce')
+df_long = df_long[df_long['Customer'] != 'Months']
+
+df_long['quarter'] = df_long['Month'].map({
+    m: f"Q{(i//3)+1}" for i, m in enumerate(
+        ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    )
+})
+
+result = df_long.pivot_table(
+    index=['Category', 'State', 'Year', 'Customer'],
+    columns='quarter',
+    values='Amount',
+    aggfunc='sum'
+).reset_index()
+
+result.columns.name = None
+result = result.sort_values(by=['State', 'Customer'], ascending=[True, True]).reset_index(drop=True)
+
+print((test==result).all().all()) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 311](Excel311pq.qmd)
+-   [Excel BI - Excel Challenge 692](Excel692.qmd)

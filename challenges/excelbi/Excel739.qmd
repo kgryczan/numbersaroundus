@@ -1,0 +1,96 @@
+---
+title: "Excel BI - Excel Challenge 739"
+description: "🔰 String Answer Expected Ziva Dohu Yume Marnel Quastilope Wregantriax Sparvendalith Bralinthoriaze"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 739](/challenges/images/exc739.jpg)
+
+## Challenge Description
+
+🔰 String Answer Expected Ziva Dohu Yume Marnel Quastilope Wregantriax Sparvendalith Bralinthoriaze
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/739/739 Count Vowels in All Substrings.xlsx"
+input = read_excel(path, range = "A1:A10")
+test = read_excel(path, range = "B1:B10")
+
+result = input %>%
+  mutate(
+    substrings = map_chr(
+      String,
+      ~ {
+        n <- nchar(.x)
+        substrings <- flatten_chr(
+          map(1:n, function(i) {
+            map_chr(1:(n - i + 1), function(j) substr(.x, j, j + i - 1))
+          })
+        )
+        paste(substrings, collapse = ", ")
+      }
+    )
+  ) %>%
+  separate_longer_delim(substrings, delim = ", ") %>%
+  mutate(vowel_count = str_count(substrings, "[aeiouAEIOU]")) %>%
+  summarise(total_vowel_count = sum(vowel_count), .by = String) %>%
+  select(`Answer Expected` = total_vowel_count)
+
+all.equal(result, test, check.attributes = FALSE)
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/739/739 Count Vowels in All Substrings.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=9)
+
+def count_vowels_substrings(s):
+    return sum((i+1)*(len(s)-i) for i, c in enumerate(s) if c.lower() in 'aeiou')
+
+print([count_vowels_substrings(x) for x in input.iloc[:, 0]])
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 740](/challenges/excelbi/Excel740.html)
+- [Excel Challenge 741](/challenges/excelbi/Excel741.html)
+- [Excel Challenge 742](/challenges/excelbi/Excel742.html)

@@ -1,0 +1,104 @@
+---
+title: "Excel BI - Excel Challenge 839"
+description: "🔰 List the unique alphabets in columns."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 839](/challenges/images/exc839.jpg)
+
+## Challenge Description
+
+🔰 List the unique alphabets in columns. Uniqueness should be considered by taking all left columns to the columns being considered + column itself.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/839/839 List Unique Across Columns.xlsx"
+input = read_excel(path, range = "A2:E9", col_names = FALSE)
+test  = read_excel(path, range = "G2:K5", col_names = FALSE)  
+
+
+accumulate_uniques = function(cols) {
+  res = reduce(seq_along(cols), function(acc, i) {
+    seen = unlist(acc)
+    new = setdiff(unique(na.omit(cols[[i]])), seen)
+    append(acc, list(new))
+  }, .init = list())
+  maxlen = max(lengths(res))
+  res_padded = purrr::map(res, ~c(.x, rep(NA, maxlen - length(.x))))
+  res_padded
+}
+
+result =  accumulate_uniques(input) %>% 
+  as.data.frame() %>% 
+  setNames(., colnames(input))
+
+all.equal(result, test, check.attributes = FALSE)
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "800-899/839/839 List Unique Across Columns.xlsx"
+input = pd.read_excel(path, header=None, usecols="A:E", skiprows=1, nrows=8)
+test = pd.read_excel(path, header=None, usecols="G:K", skiprows=1, nrows=4)
+
+def accumulate_uniques(cols):
+    res, seen = [], set()
+    for col in cols:
+        new = [x for x in pd.Series(col).dropna().unique() if x not in seen]
+        seen.update(new)
+        res.append(new)
+    maxlen = max(map(len, res))
+    return [r + [np.nan] * (maxlen - len(r)) for r in res]
+
+result_cols = accumulate_uniques([input[col] for col in input.columns])
+result = pd.DataFrame(result_cols).transpose()
+result.columns = test.columns
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 840](/challenges/excelbi/Excel840.html)
+- [Excel Challenge 841](/challenges/excelbi/Excel841.html)
+- [Excel Challenge 842](/challenges/excelbi/Excel842.html)

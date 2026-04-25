@@ -1,0 +1,159 @@
+---
+title: "Omid - Challenge 152"
+description: "🔰 Challenge 152: Extract From Text Separate the values inside the curly braces { }, but ignore any nested curly braces (which are highlighted in red and blue)."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 152](/challenges/images/OmidC152.jpg)
+
+## Challenge Description
+
+🔰 Challenge 152: Extract From Text Separate the values inside the curly braces { }, but ignore any nested curly braces (which are highlighted in red and blue).
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-152 Extract from Text.xlsx"
+input = read_excel(path, range = "B2:C7")
+test  = read_excel(path, range = "E2:H7")
+
+split_on_top_level <- function(s) {
+  chars <- strsplit(s, "")[[1]]
+  level <- 0
+  current <- ""
+  result <- c()
+  for (char in chars) {
+    if (char == '{') level <- level + 1
+    if (char == '}') level <- level - 1
+    if (char == ',' && level == 0) {
+      result <- c(result, current)
+      current <- ""
+    } else {
+      current <- paste0(current, char)
+    }
+  }
+  if (nchar(current) > 0) result <- c(result, current)
+  return(result)
+}
+
+result = input %>%
+  mutate(components = map(Value, split_on_top_level)) %>%
+  select(-Value) %>%
+  unnest_wider(components, names_sep = "") %>%
+  rename_with(~paste0("List.", seq_along(.)), starts_with("components"))
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-152 Extract from Text.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=6)
+test = pd.read_excel(path, usecols="E:H", skiprows=1, nrows=6)
+
+def split_on_top_level(s):
+    chars = list(s)
+    level = 0
+    current = ""
+    result = []
+    for char in chars:
+        if char == '{':
+            level += 1
+        if char == '}':
+            level -= 1
+        if char == ',' and level == 0:
+            result.append(current)
+            current = ""
+        else:
+            current += char
+    if current:
+        result.append(current)
+    return result
+
+input['components'] = input['Value'].apply(split_on_top_level)
+components = pd.DataFrame(input['components'].tolist())
+components.columns = [f"List.{i+1}" for i in range(components.shape[1])]
+result = pd.concat([input.drop(columns=['Value', 'components']), components], axis=1)
+test.columns = result.columns
+
+result = result.fillna('')
+test = test.fillna('')
+
+print(result.equals(test))  # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 151](OmidC151.qmd)
+-   [Omid - Challenge 153](OmidC153.qmd)
+-   [Omid - Challenge 154](OmidC154.qmd)

@@ -1,0 +1,136 @@
+---
+title: "Omid - Challenge 241"
+description: "🔰 Moving Average : Moving Average!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 241](/challenges/images/OmidC241.jpg)
+
+## Challenge Description
+
+🔰 Moving Average : Moving Average!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(slider)
+
+path = "files/200-299/241/CH-241 Moving Average.xlsx"
+input = read_excel(path, range = "B2:C20")
+test = read_excel(path, range = "G2:G20") %>%
+  mutate(`Moving Average` = as.numeric(`Moving Average`))
+
+result = input %>%
+  mutate(
+    `Moving Average` = slide_dbl(
+      .x = Sales,
+      .f = function(window_values) {
+        non_zero_values <- window_values[window_values != 0]
+        if (length(non_zero_values) >= 2) {
+          mean(tail(non_zero_values, 2))
+        } else {
+          NA_real_
+        }
+      },
+      .before = Inf,
+      .after = -1,
+      .complete = TRUE
+    )
+  )
+
+all.equal(result$`Moving Average`, test$`Moving Average`, check.attributes = FALSE) # TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "200-299/241/CH-241 Moving Average.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=18)
+test = pd.read_excel(path, usecols="G", skiprows=1, nrows=18)
+test['Moving Average'] = pd.to_numeric(test['Moving Average'], errors='coerce')
+
+def moving_average(sales):
+    result = []
+    for i in range(len(sales)):
+        non_zero = [x for x in sales[:i] if x != 0]
+        if len(non_zero) >= 2:
+            result.append(sum(non_zero[-2:]) / 2)
+        else:
+            result.append(float('nan'))
+    return result
+
+input['Moving Average'] = moving_average(input['Sales'])
+
+print(input['Moving Average'].equals(test['Moving Average']))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 240](OmidC240.qmd)
+-   [Omid - Challenge 242](OmidC242.qmd)
+-   [Omid - Challenge 243](OmidC243.qmd)

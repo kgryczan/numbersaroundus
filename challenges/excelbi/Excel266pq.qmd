@@ -1,0 +1,145 @@
+---
+title: "Excel BI - PowerQuery Challenge 266"
+description: "Summarise the table as shown with a total row after each sales person's data."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 266](/challenges/images/exc266pq.jpg)
+
+## Challenge Description
+
+Summarise the table as shown with a total row after each sales person's data.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_266.xlsx"
+input = read_excel(path, range = "A1:C20")
+test  = read_excel(path, range = "E1:I18")
+
+R1 = input %>%
+  summarise(`Total Orders` = n(),
+            `First Order Date` = min(Date),
+            `Last Order Date` = max(Date),
+            .by = c(`Sales Person`, Item))
+
+R2 = input %>%
+  summarise(`Total Orders` = n(),
+            `First Order Date` = min(Date),
+            `Last Order Date` = max(Date),
+            Item = NA,
+            .by = `Sales Person`) %>%
+  mutate(`Sales Person` = paste0(`Sales Person`, " Total"))
+
+result = bind_rows(R1, R2) %>%
+  arrange(`Sales Person`, Item) %>%
+  select(`Sales Person`, Item, `Total Orders`, `First Order Date`, `Last Order Date`)
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "PQ_Challenge_266.xlsx"
+input = pd.read_excel(path, usecols="A:C", nrows=20)
+test = pd.read_excel(path, usecols="E:I", nrows=17).rename(columns=lambda col: col.split('.')[0])
+
+R1 = input.groupby(['Sales Person', 'Item']).agg(
+    Total_Orders=('Date', 'count'),
+    First_Order_Date=('Date', 'min'),
+    Last_Order_Date=('Date', 'max')
+).reset_index()
+
+R2 = input.groupby('Sales Person').agg(
+    Total_Orders=('Date', 'count'),
+    First_Order_Date=('Date', 'min'),
+    Last_Order_Date=('Date', 'max')
+).reset_index()
+R2['Item'] = np.NaN
+R2['Sales Person'] = R2['Sales Person'] + " Total"
+
+result = pd.concat([R1, R2]).sort_values(by=['Sales Person', 'Item']).reset_index(drop=True)
+result = result[['Sales Person', 'Item', 'Total_Orders', 'First_Order_Date', 'Last_Order_Date']]
+result.columns = result.columns.str.replace('_', ' ')
+
+print(result.equals(test))  # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The transformation rule is readable, but the final layout still requires a careful implementation.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 265](Excel265pq.qmd)
+-   [Excel BI - Excel Challenge 646](Excel646.qmd)

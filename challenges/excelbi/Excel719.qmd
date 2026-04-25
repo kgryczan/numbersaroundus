@@ -1,0 +1,104 @@
+---
+title: "Excel BI - Excel Challenge 719"
+description: "🔰 List those entries where opening parenthesis is matched by a closing parenthesis in right order."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 719](/challenges/images/exc719.jpg)
+
+## Challenge Description
+
+🔰 List those entries where opening parenthesis is matched by a closing parenthesis in right order.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/719/719 Parentheses Matching.xlsx"
+input = read_excel(path, range = "A1:A10")
+test = read_excel(path, range = "B1:B6")
+
+balance = function(s) {
+  stack = character()
+  open = c("(" = ")", "{" = "}", "[" = "]")
+  for (ch in strsplit(s, "")[[1]]) {
+    if (ch %in% names(open)) stack = c(stack, open[ch])
+    else if (ch %in% open && (length(stack) == 0 || tail(stack, 1) != ch)) return(FALSE)
+    else if (ch %in% open) stack = stack[-length(stack)]
+  }
+  length(stack) == 0
+}
+
+result = input %>%
+  mutate(result = map_lgl(Brackets, balance)) %>%
+  filter(result) %>%
+  select(-result)
+
+all.equal(result$Brackets, test$`Answer Expected`)
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/719/719 Parentheses Matching.xlsx"
+input_df = pd.read_excel(path, usecols="A", nrows=10)
+test_df = pd.read_excel(path, usecols="B", nrows=6)
+
+def balance(s):
+    stack = []
+    openers = {'(': ')', '{': '}', '[': ']'}
+    for ch in s:
+        if ch in openers:
+            stack.append(openers[ch])
+        elif ch in openers.values():
+            if not stack or stack[-1] != ch:
+                return False
+            stack.pop()
+    return not stack
+
+result = input_df[input_df['Brackets'].apply(balance)]
+
+print(result)
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 720](/challenges/excelbi/Excel720.html)
+- [Excel Challenge 721](/challenges/excelbi/Excel721.html)
+- [Excel Challenge 722](/challenges/excelbi/Excel722.html)

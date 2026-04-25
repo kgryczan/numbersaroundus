@@ -1,0 +1,87 @@
+---
+title: "Excel BI - Excel Challenge 815"
+description: "🔰 Answer Expected Product Data Data1 Data2 Data3 Data4 Amount A Price"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 815](/challenges/images/exc815.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Product Data Data1 Data2 Data3 Data4 Amount A Price
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/815/815 Unpivot.xlsx"
+input = read_excel(path, range = "A2:F8")
+test  = read_excel(path, range = "H2:I11")
+
+result = input %>%
+  fill(Product) %>%
+  pivot_longer(-c(Product, Data), names_to = "Purchase", values_to = "Value", values_drop_na = T) %>%
+  pivot_wider(names_from = Data, values_from = Value) %>%
+  transmute(Product, Amount = Price * Quantity)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "800-899/815/815 Unpivot.xlsx"
+input = pd.read_excel(path, usecols="A:F", skiprows=1, nrows=7)
+test = pd.read_excel(path, usecols="H:I", skiprows=1, nrows=10).rename(columns=lambda x: x.replace('.1', ''))
+
+input['Product'] = input['Product'].ffill()
+df = input.melt(id_vars=['Product', 'Data']).dropna(subset=['value'])
+df = df.pivot_table(index=['Product', 'variable'], columns='Data', values='value').reset_index()
+result = df.assign(Amount=(df['Price'] * df['Quantity']).astype(int))[['Product', 'Amount']]
+result.columns.name = None
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 816](/challenges/excelbi/Excel816.html)
+- [Excel Challenge 817](/challenges/excelbi/Excel817.html)
+- [Excel Challenge 818](/challenges/excelbi/Excel818.html)

@@ -1,0 +1,124 @@
+---
+title: "Omid - Challenge 203"
+description: "🔰 Group Challenge 203: Custom Grouping!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 203](/challenges/images/OmidC203.jpg)
+
+## Challenge Description
+
+🔰 Group Challenge 203: Custom Grouping!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-203 Custom Grouping.xlsx"
+input = read_excel(path, range = "B2:C63")
+test  = read_excel(path, range = "G2:H5")
+
+result = input %>%
+  complete(Date = seq.Date(min(as.Date(Date)), max(as.Date(Date)), by = "1 day")) %>%
+  replace_na(list(Sales = 0)) %>%
+  mutate(wday = wday(Date, label = TRUE, locale = "en"),
+         Group = month(Date, label = TRUE, abbr = TRUE, locale = "en")) %>%
+  filter(!wday %in% c("Sat", "Sun") & Sales == 0) %>%
+  summarise(`No missing dates` = n(), .by = Group)
+
+all.equal(result$`No missing dates`, test$`No missing dates`, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "CH-203 Custom Grouping.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=61)
+test = pd.read_excel(path, usecols="G:H", skiprows=1, nrows=3)
+
+input['Date'] = pd.to_datetime(input['Date'])
+input = input.set_index('Date').asfreq('D', fill_value=0).reset_index()
+input['wday'] = input['Date'].dt.day_name()
+input['Group'] = input['Date'].dt.strftime('%b')
+
+result_summary = (input.query("wday not in ['Saturday', 'Sunday'] and Sales == 0")
+                  .groupby('Group').size().reset_index(name='No missing dates')
+                  .sort_values('No missing dates').reset_index(drop=True))
+
+print(test['No missing dates'].equals(result_summary['No missing dates'])) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 202](OmidC202.qmd)
+-   [Omid - Challenge 204](OmidC204.qmd)
+-   [Omid - Challenge 205](OmidC205.qmd)

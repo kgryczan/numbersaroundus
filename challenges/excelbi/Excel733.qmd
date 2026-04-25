@@ -1,0 +1,97 @@
+---
+title: "Excel BI - Excel Challenge 733"
+description: "🔰 Words Rotation Answer Expected depart rtdepa adventure 3, 4 venturead celebration lebrationce"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 733](/challenges/images/exc733.jpg)
+
+## Challenge Description
+
+🔰 Words Rotation Answer Expected depart rtdepa adventure 3, 4 venturead celebration lebrationce
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/733/733.xlsx"
+input = read_excel(path, range = "A1:B11")
+test = read_excel(path, range = "C1:C11")
+
+rotate_string = function(x, n) {
+  len = nchar(x)
+  n = (n %% len)
+  if (n == 0) return(x)
+  paste0(substr(x, len - n + 1, len), substr(x, 1, len - n))
+}
+
+result = input %>%
+  mutate(
+    Rotation = map_dbl(str_split(Rotation, ", "), ~ sum(as.numeric(.)))
+  ) %>%
+  mutate(`Answer Expected` = map2_chr(Words, Rotation, ~ rotate_string(.x, .y)))
+
+all.equal(result$`Answer Expected`, test$`Answer Expected`)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/733/733.xlsx"
+input = pd.read_excel(path, usecols="A:B", nrows=11)
+test = pd.read_excel(path, usecols="C", nrows=11)
+
+def rotate_string(s, n):
+    if not s:
+        return s
+    n = n % len(s)
+    return s[-n:] + s[:-n]
+
+input['Rotation'] = input['Rotation'].astype(str).str.split(', ').apply(lambda x: sum(map(int, x)))
+input['Answer Expected'] = input.apply(lambda row: rotate_string(row['Words'], row['Rotation']), axis=1)
+
+print(input['Answer Expected'].equals(test['Answer Expected'])) # True
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 734](/challenges/excelbi/Excel734.html)
+- [Excel Challenge 735](/challenges/excelbi/Excel735.html)
+- [Excel Challenge 736](/challenges/excelbi/Excel736.html)

@@ -1,0 +1,111 @@
+---
+title: "Excel BI - Excel Challenge 879"
+description: "🔰 DERANGED ANAGRAMS - Identify all pairs of words from the list that are Anagrams of each other."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 879](/challenges/images/exc879.jpg)
+
+## Challenge Description
+
+🔰 DERANGED ANAGRAMS - Identify all pairs of words from the list that are Anagrams of each other. From those anagram pairs, filter only those that are Deranged (where no character at index i in Word A matches the character at index i in Word B).
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(charcuterie)
+
+path <- "Excel/800-899/879/879 Deranged Anagrams.xlsx"
+input <- read_excel(path, range = "A2:A52")
+test <- read_excel(path, range = "C2:D10")
+
+comb <- crossing(v1 = input$Data, v2 = input$Data) %>%
+  filter(
+    v1 != v2,
+    nchar(v1) == nchar(v2),
+    map2_lgl(
+      v1,
+      v2,
+      ~ {
+        a <- chars(.x)
+        b <- chars(.y)
+        identical(sort(a), sort(b)) && !any(a == b)
+      }
+    )
+  ) %>%
+  transmute(
+    `Word A` = pmin(v1, v2),
+    `Word B` = pmax(v1, v2)
+  ) %>%
+  distinct()
+
+all.equal(comb, test) # differences in solutions.
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel\\800-899\\879\\879 Deranged Anagrams.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=51, skiprows=1)
+test = pd.read_excel(path, usecols="C:D", nrows=8, skiprows=1)
+
+def ok(a, b):
+    return (
+        a != b and
+        len(a) == len(b) and
+        sorted(a) == sorted(b) and
+        all(x != y for x, y in zip(a, b))
+    )
+input = input.rename(columns={input.columns[0]: "word"})
+comb = (
+    input.assign(key=1)
+         .merge(input.assign(key=1), on="key", suffixes=("_a", "_b"))
+         .query("word_a < word_b")
+         .loc[lambda d: d.apply(lambda r: ok(r.word_a, r.word_b), axis=1), ["word_a", "word_b"]]
+         .rename(columns={"word_a": "Word A", "word_b": "Word B"})
+         .reset_index(drop=True)
+)
+print(comb.equals(test))
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 880](/challenges/excelbi/Excel880.html)
+- [Excel Challenge 881](/challenges/excelbi/Excel881.html)
+- [Excel Challenge 882](/challenges/excelbi/Excel882.html)

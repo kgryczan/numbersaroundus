@@ -1,0 +1,124 @@
+---
+title: "Omid - Challenge 16"
+description: "🔰 Challenge 16: Transform Data Format!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 16](/challenges/images/OmidC16.jpg)
+
+## Challenge Description
+
+🔰 Challenge 16: Transform Data Format!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-016 .xlsx", range = "B2:C15")
+test  = read_excel("files/CH-016 .xlsx", range = "F2:I6")
+                                                                                                                                                                      
+result = input %>% 
+  mutate(name = ifelse(Info...1 == "Name", 1, 0)) %>%
+  mutate(name = cumsum(name)) %>%
+  pivot_wider(names_from = Info...1, values_from = Info...2, 
+              values_fn =  ~ paste(.x, collapse = " and ")) %>%
+  select(-name)
+
+identical(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-016 .xlsx"
+input_data = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=14)
+test = pd.read_excel(path, usecols="F:I", skiprows=1, nrows=5)
+
+input_data["name"] = (input_data.iloc[:, 0] == "Name").cumsum()
+result = (
+    input_data.groupby(["name", input_data.columns[0]], as_index=False)[input_data.columns[1]]
+    .agg(lambda s: " and ".join(s.astype(str)))
+    .pivot(index="name", columns=input_data.columns[0], values=input_data.columns[1])
+    .reset_index(drop=True)
+)
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 15](OmidC15.qmd)
+-   [Omid - Challenge 17](OmidC17.qmd)
+-   [Omid - Challenge 18](OmidC18.qmd)

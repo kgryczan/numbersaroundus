@@ -1,0 +1,140 @@
+---
+title: "Omid - Challenge 322"
+description: "🔰 Question Table Level 01 Zone 2 level 01 zone 4 Level 1 Zone 3 North Level 2 Zone 3 Level 4 Ground Zone 2 Level"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 322](/challenges/images/OmidC322.jpg)
+
+## Challenge Description
+
+🔰 Question Table Level 01 Zone 2 level 01 zone 4 Level 1 Zone 3 North Level 2 Zone 3 Level 4 Ground Zone 2 Level
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "300-399/322/CH-322 Text Cleaning.xlsx"
+input = read_excel(path, range = "B2:B9")
+test  = read_excel(path, range = "D2:E9")
+
+result = input %>%
+  mutate(
+    Level = str_extract(Info, "(?i)level\\s*(\\d+)") %>%
+      str_extract("\\d+") %>%
+      parse_number() %>%
+      as.character() %>%
+      coalesce(str_extract(Info, "(?i)ground")),
+    Zone  = str_extract(Info, "(?i)zone\\s*(\\d+)") %>%
+      str_extract("\\d+") %>%
+      coalesce(str_extract(Info, "(?i)\\b(North|South|East|West)\\b")) %>%
+      replace_na("-")
+  )
+
+all.equal(result %>% select(-Info), test)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "300-399/322/CH-322 Text Cleaning.xlsx"
+
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=8)
+test = pd.read_excel(path, usecols="D:E", skiprows=1, nrows=8)
+
+result = (
+    input
+    .assign(
+        Level=lambda df: df["Info"]
+            .str.extract(r'(?i)level\s*0*(\d+)')[0]  # Remove leading zeros
+            .combine_first(df["Info"].str.extract(r'(?i)(ground)')[0])
+            .apply(lambda x: int(x) if pd.notnull(x) and re.fullmatch(r'\d+', str(x)) else x),
+        Zone=lambda df: df["Info"]
+            .str.extract(r'(?i)zone\s*(\d+)')[0]
+            .apply(lambda x: int(x) if pd.notnull(x) and re.fullmatch(r'\d+', str(x)) else x)
+            .fillna(df["Info"].str.extract(r'(?i)\b(North|South|East|West)\b')[0])
+            .fillna("-")
+    )
+    .drop(columns=["Info"])
+)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 321](OmidC321.qmd)
+-   [Omid - Challenge 323](OmidC323.qmd)
+-   [Omid - Challenge 324](OmidC324.qmd)

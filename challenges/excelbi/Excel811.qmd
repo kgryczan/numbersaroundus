@@ -1,0 +1,99 @@
+---
+title: "Excel BI - Excel Challenge 811"
+description: "🔰 Answer Expected Item Code Item Name Location Quantity Material Cost Installation Cost Date Item Code"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 811](/challenges/images/exc811.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Item Code Item Name Location Quantity Material Cost Installation Cost Date Item Code
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/811/811 Dublicate Text, Dates and Divide Costs.xlsx"
+input = read_excel(path, range = "A2:H6")
+test  = read_excel(path, range = "J2:Q13")
+
+result = input %>%
+  uncount(Quantity, .remove = F) %>%
+  mutate(Item = row_number(),
+         `Item Code` = as.character(Code),
+         Quantity1 = Quantity/Quantity,
+         `Material Cost` = `Material Cost`/Quantity,
+         `Installation Cost` = `Installation Cost`/Quantity) %>%
+  select(-Quantity) %>%
+  rename(Quantity = Quantity1) %>%
+  janitor::adorn_totals("row") %>%
+  select(Item, `Item Code`, `Item Name`, Location, Quantity, `Material cost` = `Material Cost`, `Installation Cost`, Date)
+
+# all equal. Only total row looks differently
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "800-899/811/811 Dublicate Text, Dates and Divide Costs.xlsx"
+input = pd.read_excel(path, usecols="A:H", skiprows=1, nrows=4)
+test = pd.read_excel(path, usecols="J:Q", skiprows=1, nrows=11).rename(columns=lambda x: x.replace('.1', ''))
+
+df = input.loc[input.index.repeat(input['Quantity'])].reset_index(drop=True)
+df['Item'] = range(1, len(df) + 1)
+df['Material Cost'] /= input.loc[input.index.repeat(input['Quantity']), 'Quantity'].values
+df['Installation Cost'] /= input.loc[input.index.repeat(input['Quantity']), 'Quantity'].values
+df['Quantity'] = 1
+result = df[['Item', 'Code', 'Item Name', 'Location', 'Quantity', 'Material Cost', 'Installation Cost', 'Date']]
+result = result.rename(columns={'Code': 'Item Code'})
+totals = result.sum(numeric_only=True)
+result.loc[len(result)] = [np.nan, np.nan, np.nan, 'Total', 
+                           totals['Quantity'].astype('int64'), totals['Material Cost'].astype('int64'), 
+                           totals['Installation Cost'].astype('int64'), pd.NaT]
+
+# little bit different typing
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 812](/challenges/excelbi/Excel812.html)
+- [Excel Challenge 813](/challenges/excelbi/Excel813.html)
+- [Excel Challenge 814](/challenges/excelbi/Excel814.html)

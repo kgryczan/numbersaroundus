@@ -1,0 +1,94 @@
+---
+title: "Excel BI - Excel Challenge 760"
+description: "🔰 Answer Expected Value1 Value2 Value3 Value4 Value5 Value Total Different value headers are having values beneath them."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 760](/challenges/images/exc760.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Value1 Value2 Value3 Value4 Value5 Value Total Different value headers are having values beneath them. Pivot the values.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/760/760 Pivot.xlsx"
+input = read_excel(path, range = "A2:E19", col_names = c("C1", "C2", "C3", "C4", "C5"))
+test  = read_excel(path, range = "G2:H7")
+
+r1 = input %>%
+  mutate(group = cumsum(str_detect(C1, "Value"))) %>%
+  group_by(group) %>%
+  pivot_longer(cols = -group, names_to = "C1", values_to = "C2") %>%
+  mutate(is_value = str_detect(C2, "Value")) %>%
+  ungroup()
+
+result = r1 %>%
+  filter(!is_value) %>%
+  left_join(r1 %>% filter(is_value), by = c("group", "C1")) %>%
+  select(Value = C2.y, num = C2.x) %>%
+  summarise(Total = sum(as.numeric(num), na.rm = TRUE), .by = Value)
+
+all.equal(result, test, check.attributes = FALSE)
+# > TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Reshape the result into the workbook output format.
+- **Strengths**: The transformation is organized around the correct grouping level, which keeps the business logic clear.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The key move is solving the problem at the right grain before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/760/760 Pivot.xlsx"
+
+input = pd.read_excel(path, sheet_name=0, usecols="A:E", nrows=18, names=["C1", "C2", "C3", "C4", "C5"])
+test = pd.read_excel(path, sheet_name=0, usecols="G:H", skiprows=1, nrows=5)
+
+labels = input.iloc[::2].melt(value_name='label')['label']
+values = input.iloc[1::2].melt(value_name='value')['value']
+result = pd.DataFrame(list(zip(labels, values)), columns=['Value', 'Total']) \
+    .groupby('Value', as_index=False)['Total'].sum()
+
+print(result)
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 761](/challenges/excelbi/Excel761.html)
+- [Excel Challenge 762](/challenges/excelbi/Excel762.html)
+- [Excel Challenge 763](/challenges/excelbi/Excel763.html)

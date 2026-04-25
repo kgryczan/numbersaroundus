@@ -1,0 +1,138 @@
+---
+title: "Omid - Challenge 337"
+description: "🔰 Challenge 337: Rows Grouping!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 337](/challenges/images/OmidC337.jpg)
+
+## Challenge Description
+
+🔰 Challenge 337: Rows Grouping!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/337/CH-337 Rows Grouping.xlsx"
+input <- read_excel(path, range = "B2:C11")
+test <- read_excel(path, range = "G2:H7")
+
+result = input %>%
+  separate_wider_delim(
+    cols = Level,
+    delim = " ",
+    names = c("Level1", "Level2"),
+    too_few = "align_start"
+  ) %>%
+  summarise(
+    Level = paste0(first(Level1), " ", paste(Level2, collapse = ",")) %>%
+      str_trim(),
+    .by = `Issue ID`
+  )
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+excel_path = "300-399/337/CH-337 Rows Grouping.xlsx"
+input = pd.read_excel(excel_path, usecols="B:C", skiprows=1, nrows=10)
+test = pd.read_excel(excel_path, usecols="G:H", skiprows=1, nrows=5)
+test.columns = [col.replace('.1', '') for col in test.columns]
+
+input[["Level1", "Level2"]] = input["Level"].str.split(" ", n=1, expand=True)
+grouped = (
+    input
+    .groupby("Issue ID", as_index=False)
+    .agg({
+        "Level1": "first",
+        "Level2": lambda x: ",".join(x.dropna())
+    })
+)
+grouped["Level"] = (grouped["Level1"] + " " + grouped["Level2"]).str.strip()
+result = grouped[["Issue ID", "Level"]]
+
+print(result.equals(test))
+# True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 336](OmidC336.qmd)
+-   [Omid - Challenge 338](OmidC338.qmd)
+-   [Omid - Challenge 339](OmidC339.qmd)

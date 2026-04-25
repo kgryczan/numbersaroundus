@@ -1,0 +1,141 @@
+---
+title: "Omid - Challenge 202"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 202](/challenges/images/OmidC202.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-202 Table Transformation.xlsx"
+input = read_excel(path, range = "B2:B18")
+test  = read_excel(path, range = "D2:F11")
+
+result = input %>%
+  mutate(Date = if_else(str_detect(`Column 1`, "^\\d+$") & as.numeric(`Column 1`) > 40000,
+                        as_date(as.numeric(`Column 1`), origin = "1899-12-30"),
+                        NA_Date_) %>% as.POSIXct()) %>%
+  fill(Date) %>%
+  filter(nchar(`Column 1`) != 5) %>%
+  mutate(col = if_else(str_detect(`Column 1`, "^\\d+$"),"Quantity","Product")) %>%
+  mutate(change = ifelse(lag(col) == "Product" & col == "Quantity", 0, 1), .by = Date) %>%
+  group_by(Date) %>%
+  mutate(row = cumsum(change)) %>%
+  ungroup() %>%
+  select(-change) %>%
+  pivot_wider(names_from = col, values_from = `Column 1`) %>%
+  select(-row) %>%
+  mutate(Quantity = as.numeric(Quantity))
+
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "CH-202 Table Transformation.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=17)
+test = pd.read_excel(path, usecols="D:F", skiprows=1, nrows=9)
+
+input['Date'] = input['Column 1'].where(pd.to_datetime(input['Column 1'], errors='coerce').notna())
+input['Date'] = input['Date'].apply(lambda x: np.nan if pd.to_datetime(x, errors='coerce') and len(str(x)) == 1 else x)
+input['Date'] = input['Date'].ffill()
+input = input[input['Date'] != input['Column 1']]
+input['Type'] = input['Column 1'].apply(lambda x: 'Quantity' if str(x).isdigit() else 'Product')
+input['change'] = np.where((input['Type'].shift() == "Product") & (input['Type'] == "Quantity"), 0, 1)
+input['row'] = input.groupby('Date')['change'].cumsum()
+result = input.pivot(index=['Date', 'row'], columns='Type', values='Column 1').reset_index()
+result['Quantity'] = result['Quantity'].astype('float64')
+result.columns.name = None
+result = result.drop(columns=['row'])
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 201](OmidC201.qmd)
+-   [Omid - Challenge 203](OmidC203.qmd)
+-   [Omid - Challenge 204](OmidC204.qmd)

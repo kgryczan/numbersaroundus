@@ -1,0 +1,115 @@
+---
+title: "Omid - Challenge 205"
+description: "🔰 Result Question ID OFDMSD MPMXM/FS PPM/PM/ MPMXM6FS PPM4PM7"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 205](/challenges/images/OmidC205.jpg)
+
+## Challenge Description
+
+🔰 Result Question ID OFDMSD MPMXM/FS PPM/PM/ MPMXM6FS PPM4PM7
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-205 Missing Char.xlsx"
+input = read_excel(path, range = "B2:B7")
+test  = read_excel(path, range = "D2:D7")
+
+result = input %>%
+  mutate(w_index = row_number()) %>%
+  separate_rows(ID, sep = "") %>%
+  filter(ID != "") %>%
+  mutate(l_index = row_number(), .by = w_index) %>%
+  mutate(ID = ifelse(ID == '/', l_index, ID)) %>%
+  summarise(ID = paste(ID, collapse = ""), .by = w_index) %>%
+  select(-w_index)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-205 Missing Char.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=6)
+test = pd.read_excel(path, usecols="D", skiprows=1, nrows=6)
+
+def replace_slashes_with_indices(word):
+    return ''.join(str(i + 1) if char == '/' else char for i, char in enumerate(word))
+
+input['Modified'] = input.iloc[:, 0].apply(replace_slashes_with_indices)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 204](OmidC204.qmd)
+-   [Omid - Challenge 206](OmidC206.qmd)
+-   [Omid - Challenge 207](OmidC207.qmd)

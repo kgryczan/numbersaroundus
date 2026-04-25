@@ -1,0 +1,143 @@
+---
+title: "Omid - Challenge 38"
+description: "🔰 In the question table, the visiting dates for all 4 agents are provided."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 38](/challenges/images/OmidC38.jpg)
+
+## Challenge Description
+
+🔰 In the question table, the visiting dates for all 4 agents are provided.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-038 Duration Since Last Visit.xlsx", range = "B2:C26")
+test  = read_excel("files/CH-038 Duration Since Last Visit.xlsx", range = "G2:H6")
+
+dates = seq(as.Date("2024-01-01"), as.Date("2024-04-01"), by = "month") %>%
+  as_tibble() %>%
+  mutate(end_of_month = value + months(1) - days(1)) %>%
+  select(end_of_month) 
+
+ends = expand_grid(Date = dates$end_of_month, `Agent ID` = unique(input$`Agent ID`)) %>%
+  mutate(type = "end")
+
+result = input %>%
+  mutate(type = "visit") %>%
+  bind_rows(ends) %>%
+  arrange(`Agent ID`, Date) %>%
+  group_by(`Agent ID`) %>%
+  mutate(last_visit = if_else(type == "visit", as.Date(as.POSIXct(Date)), NA)) %>%
+  fill(last_visit, .direction = "down") %>%
+  mutate(month = month(Date)) %>%
+  filter(type == "end") %>%
+  mutate(datediff = difftime(Date, last_visit, units = "days") %>% as.numeric()) %>%
+  ungroup() %>%
+  summarise(mean = mean(datediff, na.rm = TRUE), .by = "month")
+
+identical(result$mean, test$`AVG Duration from Last Visit`)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from datetime import datetime, timedelta
+
+input = pd.read_excel("CH-038 Duration Since Last Visit.xlsx", usecols="B:C", skiprows=1, nrows= 25)
+test = pd.read_excel("CH-038 Duration Since Last Visit.xlsx", usecols="G:H", skiprows=1, nrows = 4)
+
+dates = pd.date_range(start="2024-01-01", end="2024-05-01", freq="M").to_frame(name="end_of_month")
+
+ends = pd.MultiIndex.from_product([dates["end_of_month"], input["Agent ID"].unique()], names=["Date", "Agent ID"]).to_frame(index=False)
+ends["type"] = "end"
+
+result = pd.concat([input.assign(type="visit"), ends]).sort_values(by=["Agent ID", "Date"])
+result["last_visit"] = result["Date"].where(result["type"] == "visit").groupby(result["Agent ID"]).ffill()
+result["month"] = result["Date"].dt.month.astype("int64")
+result = result[result["type"] == "end"]
+result["datediff"] = (result["Date"] - result["last_visit"]).dt.days
+result = result.groupby("month")["datediff"].mean().reset_index()
+
+result.columns = ["Month", "AVG Duration from Last Visit"]
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 37](OmidC37.qmd)
+-   [Omid - Challenge 39](OmidC39.qmd)
+-   [Omid - Challenge 40](OmidC40.qmd)

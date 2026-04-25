@@ -1,0 +1,109 @@
+---
+title: "Omid - Challenge 116"
+description: "🔰 Result A B C D E F Question"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 116](/challenges/images/OmidC116.jpg)
+
+## Challenge Description
+
+🔰 Result A B C D E F Question
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-116 Remove rows and colums.xlsx"
+input = read_excel(path, range = "B2:H8") %>%
+  column_to_rownames(var = "...1") %>%
+  as.matrix()
+
+test  = read_excel(path, range = "J2:M5") %>%
+  column_to_rownames(var = "...1") %>%
+  as.matrix()
+
+result = input[seq(1, nrow(input), 2), seq(1, ncol(input), 2)]
+
+all.equal(result, test)  
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "CH-116 Remove rows and colums.xlsx"
+input = pd.read_excel(path, usecols="C:H", skiprows = 1, nrows = 7).to_numpy()
+test = pd.read_excel(path, usecols="K:M", skiprows = 1, nrows = 3).to_numpy()
+result = input[::2,::2]
+
+print(np.array_equal(result, test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 115](OmidC115.qmd)
+-   [Omid - Challenge 117](OmidC117.qmd)
+-   [Omid - Challenge 118](OmidC118.qmd)

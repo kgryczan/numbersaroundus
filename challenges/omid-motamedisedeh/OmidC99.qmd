@@ -1,0 +1,186 @@
+---
+title: "Omid - Challenge 99"
+description: "🔰 Question Result Department Marketing IT Production R&D Year"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 99](/challenges/images/OmidC99.jpg)
+
+## Challenge Description
+
+🔰 Question Result Department Marketing IT Production R&D Year
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = 'files/CH-099 Random Selection Part 2.xlsx'
+input = read_excel(path, range = "B2:C20")
+
+sample_dept_and_emp <- function(input,n) {
+  n = 4
+  n_distinct = n_distinct(input$Department)
+  emp_per_dept = input %>% count(Department) 
+  
+  repeat {
+    sampled_departments = sample(unique(input$Department), n, 
+                                 replace = TRUE, 
+                                 prob = rep(1/n_distinct, n_distinct)) %>%
+      tibble(Department = .) %>%
+      mutate(nr = row_number(), .by = Department) %>%
+      slice_max(nr, by = Department)
+    check = sampled_departments %>% 
+      left_join(emp_per_dept, by = c("Department"))
+    if (all(check$n >= check$nr)) {
+      break
+    }
+  }
+  
+  sampled_employees = input %>%
+    left_join(sampled_departments, by = "Department") %>%
+    na.omit() %>%
+    nest_by(Department, nr) %>%
+    mutate(data = list(sample_n(data, nr, replace = F))) %>%
+    unnest(data) %>%
+    ungroup() %>%
+    select(-nr)
+
+  return(sampled_employees)
+}
+
+sample_dept_and_emp(input, 4)
+
+# # A tibble: 4 × 2
+#   Department `Staff ID`
+#   <chr>      <chr>     
+# 1 Marketing  S_03      
+# 2 Production S_18      
+# 3 Production S_16      
+# 4 Production S_05    
+
+# # A tibble: 4 × 2
+#   Department `Staff ID`
+#   <chr>      <chr>     
+# 1 IT         S_04      
+# 2 Marketing  S_02      
+# 3 R&D        S_15      
+# 4 R&D        S_13
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = 'CH-099 Random Selection Part 2.xlsx'
+input = pd.read_excel(path, usecols='B:C', skiprows=1)
+
+def sample_dept_and_emp(input_df, n):
+    n = 4
+    n_distinct = len(input_df['Department'].unique())
+    emp_per_dept = input_df['Department'].value_counts().reset_index()
+
+    while True:
+        samp_depts = np.random.choice(input_df['Department'].unique(), n, replace=True, p=np.repeat(1/n_distinct, n_distinct))
+        samp_depts = pd.DataFrame({'Department': samp_depts})
+        samp_depts['nr'] = samp_depts.groupby('Department').cumcount() + 1
+        check = pd.merge(samp_depts, emp_per_dept, left_on='Department', right_on='Department', how='left')
+
+        if (check['count'] >= check['nr']).all():
+            break
+
+    samp_empl = pd.merge(input_df, samp_depts, on='Department', how='left').dropna()
+    samp_empl = samp_empl.groupby('Department').apply(lambda x: x[x['nr'] == x['nr'].max()]).reset_index(drop=True)
+    samp_empl["nr"] = samp_empl["nr"].astype(int)
+    samp_empl = samp_empl.groupby('Department').apply(lambda x: x.sample(x['nr'].max())).reset_index(drop=True)
+    samp_empl = samp_empl.drop(columns='nr')
+
+    return samp_empl
+
+samp_empl = sample_dept_and_emp(input, 4)
+print(samp_empl)
+
+#    Department Staff ID
+# 0  Production     S_16
+# 1  Production     S_05
+# 2  Production     S_17
+# 3  Production     S_18
+
+#    Department Staff ID
+# 0          IT     S_09
+# 1   Marketing     S_03
+# 2   Marketing     S_02
+# 3  Production     S_05
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 98](OmidC98.qmd)
+-   [Omid - Challenge 100](OmidC100.qmd)
+-   [Omid - Challenge 101](OmidC101.qmd)

@@ -1,0 +1,114 @@
+---
+title: "Excel BI - Excel Challenge 754"
+description: "🔰 Answer Expected Data1 Data2 Employee Dept Salary Age A HR B"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 754](/challenges/images/exc754.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Data1 Data2 Employee Dept Salary Age A HR B
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/754/754 Table Transformation.xlsx"
+input = read_excel(path, range = "A2:B18")
+test  = read_excel(path, range = "D2:G6")
+
+result = input %>%
+  mutate(across(everything(), ~str_remove_all(.x, ",") %>% str_trim()),
+         row_id = row_number(),
+         grp    = (row_id - 1) %/% 4 + 1,
+         pos    = (row_id - 1) %% 4 + 1) %>%
+  group_by(grp) %>%
+  summarise(
+    key   = c(Data1[pos == 1], Data2[pos == 1], Data2[pos == 3]),
+    value = c(Data1[pos == 2], Data2[pos == 2], Data1[pos == 4]),
+    .groups = "drop"
+  ) %>%
+  pivot_wider(names_from = key, values_from = value) %>%
+  replace_na(list(Salary = "", Age = "")) %>%
+  mutate(across(c(Salary, Age), as.numeric)) %>%
+  select(Employee, Dept, Salary, Age)
+
+all.equal(result, test)
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Reshape the result into the workbook output format.
+- **Strengths**: The transformation is organized around the correct grouping level, which keeps the business logic clear.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The key move is solving the problem at the right grain before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import re
+import pandas as pd
+
+path = "700-799/754/754 Table Transformation.xlsx"
+
+input = pd.read_excel(path, skiprows=1, nrows=17, usecols="A:B")
+test = pd.read_excel(path, skiprows=1, nrows=4, usecols="D:G")
+
+input[["Data1","Data2"]] = (
+    input[["Data1","Data2"]]
+    .replace(",", "", regex=True)
+    .apply(lambda s: s.astype(str).str.strip())
+)
+input["grp"], input["pos"] = input.index//4+1, input.index%4+1
+
+rows=[]
+for _, g in input.groupby("grp"):
+    if len(g)<4: continue
+    g=g.set_index("pos")
+    rows.append({
+        g.at[1,"Data1"]: g.at[2,"Data1"],
+        g.at[1,"Data2"]: g.at[2,"Data2"],
+        g.at[3,"Data2"]: g.at[4,"Data1"]
+    })
+
+result = pd.DataFrame(rows).fillna({"Salary":"","Age":""})
+result[["Salary","Age"]] = result[["Salary","Age"]].apply(lambda c: pd.to_numeric(c, errors="coerce"))
+result = result.reindex(columns=["Employee","Dept","Salary","Age"], fill_value=None)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 755](/challenges/excelbi/Excel755.html)
+- [Excel Challenge 756](/challenges/excelbi/Excel756.html)
+- [Excel Challenge 757](/challenges/excelbi/Excel757.html)

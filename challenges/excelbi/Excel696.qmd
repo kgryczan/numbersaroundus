@@ -1,0 +1,87 @@
+---
+title: "Excel BI - Excel Challenge 696"
+description: "🔰 Answer Expected Student Pass Subject Result Thomas N Maths Emily Fail"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 696](/challenges/images/exc696.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Student Pass Subject Result Thomas N Maths Emily Fail
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/696 Pass or Fail.xlsx"
+input = read_excel(path, range = "A2:C18")
+test = read_excel(path, range = "E3:F7", col_names = c("Student", "Result"))
+
+result = input %>%
+  pivot_wider(names_from = Subject, values_from = Pass, values_fill = "Y") %>%
+  mutate(Result = if_else((Maths == "Y" | Science == "Y") & English == "Y" & Philosophy == "Y", 
+                          "Pass", "Fail")) %>%
+  select(Student, Result) %>%
+  arrange(Student)
+
+all.equal(result, test)
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "696 Pass or Fail.xlsx"
+input = pd.read_excel(path, usecols="A:C", skiprows=1, nrows=17)
+test = pd.read_excel(path, usecols="E:F", skiprows=1, nrows=5, names=["Student", "Result"]).sort_values("Student").reset_index(drop=True)
+
+result = pd.pivot_table(input, index="Student", columns="Subject", values="Pass", fill_value="Y", aggfunc='first')
+result = result.reset_index()
+result = result.assign(Result=lambda df: ["Pass" if ((row["Maths"] == "Y" or row["Science"] == "Y") and row["English"] == "Y" and row["Philosophy"] == "Y") else "Fail" for _, row in df.iterrows()])
+result = result[["Student", "Result"]].sort_values("Student").reset_index(drop=True)
+result.index.name = None
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 697](/challenges/excelbi/Excel697.html)
+- [Excel Challenge 698](/challenges/excelbi/Excel698.html)
+- [Excel Challenge 699](/challenges/excelbi/Excel699.html)

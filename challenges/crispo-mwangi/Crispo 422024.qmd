@@ -1,0 +1,120 @@
+---
+title: "Crispo - Excel Challenge 42 2024"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2024-10-20"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 42 2024](/challenges/images/Crispo422024.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Problem Solution Date Units Easy Sunday Excel Challenge 3 consecutive increments
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/Excel Challenge October 20th.xlsx"
+input = read_excel(path, range = "B2:C16")
+test  = read_excel(path, range = "E2:F5")
+
+result = input %>%
+  mutate(diff1 = Units - lag(Units, 1),
+         diff2 = lag(Units, 1) - lag(Units, 2),
+         diff3 = lag(Units, 2) - lag(Units, 3),
+         all_positive = diff1 > 0 & diff2 > 0 & diff3 > 0) %>%
+  filter(all_positive) %>%
+  select(Date, Units)
+
+all.equal(result, test)  
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "files/Excel Challenge October 20th.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=14)
+test = pd.read_excel(path, usecols="E:F", skiprows=1, nrows=3).rename(columns=lambda x: x.replace(".1", ""))
+
+input['diff1'] = (input['Units'].shift(1)-input['Units'])<0
+input['diff2'] = (input['Units'].shift(2)-input['Units'].shift(1))<0
+input['diff3'] = (input['Units'].shift(3)-input['Units'].shift(2))<0 
+
+input = input[input[['diff1', 'diff2', 'diff3']].all(axis=1)].reset_index(drop=True)[['Date', 'Units']]
+
+print(input.equals(test)) # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 41 2024](Crispo 412024.qmd)
+-   [Crispo - Excel Challenge 43 2024](Crispo 432024.qmd)

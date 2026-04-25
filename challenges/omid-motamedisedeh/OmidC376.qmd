@@ -1,0 +1,144 @@
+---
+title: "Omid - Challenge 376"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 376](/challenges/images/OmidC376.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/376/CH-376 Table Transformation.xlsx"
+input <- read_excel(path, range = "B4:C11", col_names = F) %>% as.matrix()
+test <- read_excel(path, range = "E3:G9")
+
+arr = as.vector(t(input))
+arr = arr[!is.na(arr)] %>%
+  as.data.frame() %>%
+  set_names("value") %>%
+  mutate(id = row_number())
+
+result = arr %>%
+  mutate(
+    type = case_when(
+      str_length(value) > 3 ~ "Date",
+      str_detect(value, "^[A-Za-z]+$") ~ "Name",
+      TRUE ~ "Number"
+    )
+  ) %>%
+  pivot_wider(names_from = type, values_from = value) %>%
+  fill(Date, Name, .direction = "down") %>%
+  filter(!if_any(everything(), is.na))
+
+print(result)
+# Different dates
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+
+path = "300-399/376/CH-376 Table Transformation.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=3, nrows=9, header=None)
+test = pd.read_excel(path, usecols="E:G", skiprows=2, nrows=6)
+
+v = pd.Series(input.to_numpy().ravel()).dropna()
+v = v[v != ""]
+
+df = pd.DataFrame({"val": v})
+
+df["Date"] = df["val"].where(
+    df["val"].apply(lambda x: isinstance(x, str) and bool(__import__('re').match(r"\d{1,2}/\d{1,2}/\d{4}", x)))
+    | df["val"].apply(lambda x: isinstance(x, pd.Timestamp) or hasattr(x, 'date'))
+)
+df["Product"] = df["val"].where(df["val"].str.match(r"^[A-Z]$"))
+df["Sale"] = pd.to_numeric(df["val"], errors="coerce")
+
+df["Date"] = pd.to_datetime(df["Date"], dayfirst=True).ffill()
+df["Product"] = df["Product"].ffill()
+
+result = df[df["Sale"].notna()][["Date", "Product", "Sale"]]
+print(result)
+# Different dates in some rows
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 375](OmidC375.qmd)
+-   [Omid - Challenge 377](OmidC377.qmd)
+-   [Omid - Challenge 378](OmidC378.qmd)

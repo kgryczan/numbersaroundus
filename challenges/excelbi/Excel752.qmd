@@ -1,0 +1,85 @@
+---
+title: "Excel BI - Excel Challenge 752"
+description: "🔰 Sort the numbers on the basis of maximum digit, followed by 2nd maximum digit, followed by 3rd maximum digit and so on."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 752](/challenges/images/exc752.jpg)
+
+## Challenge Description
+
+🔰 Sort the numbers on the basis of maximum digit, followed by 2nd maximum digit, followed by 3rd maximum digit and so on. In case of tie, FIFO order will be maintained (ex. 698 and 986). 851 and 258 => First maximum is 8 in both and second maximum is 5 in both. 3rd maximum is 1 in first and 2 in second. Hence, 258 will come first.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/752/752 Sort on Maximum Digits.xlsx"
+input = read_excel(path, range = "A1:A11")
+test  = read_excel(path, range = "B1:B11")
+
+result = input %>%
+       mutate(Sorted = str_split(Numbers, "") %>%
+                map_chr(~ paste0(sort(.x, decreasing = TRUE), collapse = ""))) %>%
+       arrange(desc(Sorted)) %>%
+  select(-Sorted)
+
+all.equal(result$Numbers, test$`Answer Expected`, check.attributes = FALSE)
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/752/752 Sort on Maximum Digits.xlsx"
+
+input = pd.read_excel(path, usecols="A", nrows=11)
+test = pd.read_excel(path, usecols="B", nrows=11)
+
+input['Sorted'] = input['Numbers'].astype(str).apply(lambda x: ''.join(sorted(x, reverse=True)))
+result = input.sort_values(by='Sorted', ascending=False)['Numbers'].reset_index(drop=True)
+
+print(result.equals(test['Answer Expected'])) # True
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 753](/challenges/excelbi/Excel753.html)
+- [Excel Challenge 754](/challenges/excelbi/Excel754.html)
+- [Excel Challenge 755](/challenges/excelbi/Excel755.html)

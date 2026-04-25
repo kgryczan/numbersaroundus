@@ -1,0 +1,102 @@
+---
+title: "Excel BI - Excel Challenge 726"
+description: "🔰 Find"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 726](/challenges/images/exc726.jpg)
+
+## Challenge Description
+
+🔰 Find
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(stringi)
+
+path = "Excel/700-799/726/726 Palindromes Odd and Even Times.xlsx"
+test = read_excel(path, range = "A1:A1001", sheet = "Sheet2")
+
+get_valid_palindromes <- function(limit = 1000, max_n = 10000000) {
+  10:max_n %>%
+    as.character() %>%
+    keep(~ .x == stri_reverse(.x)) %>%
+    keep(
+      ~ {
+        d <- as.integer(str_split(.x, "")[[1]])
+        all(table(d[d %% 2 == 0]) %% 2 == 0) &&
+          all(table(d[d %% 2 == 1]) %% 2 == 1)
+      }
+    ) %>%
+    head(limit) %>%
+    as.integer()
+}
+
+result = get_valid_palindromes(1000, 10000000)
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Parse the packed text or string structure.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import numpy as np
+
+def get_valid_palindromes(limit=1000, max_n=10_000_000):
+    res = []
+    for n in range(10, max_n + 1):
+        s = str(n)
+        if s != s[::-1]:
+            continue
+        d = np.array(list(map(int, s)))
+        ev = np.bincount(d[d % 2 == 0], minlength=10)
+        od = np.bincount(d[d % 2 == 1], minlength=10)
+        if np.all(ev % 2 == 0) and np.all((od == 0) | (od % 2 == 1)):
+            res.append(n)
+            if len(res) == limit:
+                break
+    return res
+
+# Example usage:
+result = get_valid_palindromes(1000, 10_000_000)11111
+print(result)e
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 727](/challenges/excelbi/Excel727.html)
+- [Excel Challenge 728](/challenges/excelbi/Excel728.html)
+- [Excel Challenge 729](/challenges/excelbi/Excel729.html)

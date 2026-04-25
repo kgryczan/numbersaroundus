@@ -1,0 +1,147 @@
+---
+title: "Omid - Challenge 122"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 122](/challenges/images/OmidC122.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-122 Table Transformation.xlsx"
+input = read_excel(path, range = "C2:E27")
+test  = read_excel(path, range = "G2:J17") %>%
+  mutate(Date = format(Date, "%d/%m/%Y"))
+
+block_size = 5
+
+result = input %>%
+  mutate(row_id = row_number(),
+         block_id = (row_id - 1) %/% block_size + 1) %>%
+  summarise(
+    date = Date[2],
+    region = Date[1],
+    fruits = list(Description[3:block_size]),
+    values = list(Qty[3:block_size]),
+    .by = block_id
+  ) %>%
+  unnest(c(fruits, values)) %>%
+  arrange(date, block_id, desc(values)) %>%
+  select(-block_id)
+
+names(result) = names(test)
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-122 Table Transformation.xlsx"
+input = pd.read_excel(path, usecols="C:E", skiprows=1, nrows=26)
+test = pd.read_excel(path, usecols="G:J", skiprows=1, nrows=15).rename(columns=lambda x: x.replace('.1', ''))
+
+block_size = 5
+
+input['row_id'] = input.index + 1
+input['block_id'] = (input['row_id'] - 1) // block_size + 1
+
+result = input.groupby('block_id').apply(
+    lambda x: pd.DataFrame({
+        'date': [x['Date'].iloc[1]] * (block_size - 2),
+        'region': [x['Date'].iloc[0]] * (block_size - 2),
+        'fruits': x['Description'].iloc[2:block_size].tolist(),
+        'values': x['Qty'].iloc[2:block_size].tolist()
+    })
+).reset_index(level=1, drop=True)
+
+result = result.sort_values(by=['date', 'block_id', 'values'], ascending=[True, True, False]).reset_index(drop=True)
+result = result.assign(date=pd.to_datetime(result['date']), values=result['values'].astype("int64"))
+
+result.columns = test.columns
+
+print(result.equals(test))
+# True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 121](OmidC121.qmd)
+-   [Omid - Challenge 123](OmidC123.qmd)
+-   [Omid - Challenge 124](OmidC124.qmd)

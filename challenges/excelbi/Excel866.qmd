@@ -1,0 +1,96 @@
+---
+title: "Excel BI - Excel Challenge 866"
+description: "🔰 Data Answer Expected boy b-o-y moonlight m-oo-nl-i-ght bcdxyz crimsonpeak cr-i-ms-o-np-ea-k queueing"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 866](/challenges/images/exc866.jpg)
+
+## Challenge Description
+
+🔰 Data Answer Expected boy b-o-y moonlight m-oo-nl-i-ght bcdxyz crimsonpeak cr-i-ms-o-np-ea-k queueing
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/866/866 Insert a Dash.xlsx"
+input <- read_excel(path, range = "A1:A11")
+test <- read_excel(path, range = "B1:B11")
+
+add_splitter_on_lettertype_change <- function(x, splitter = "|") {
+  stringr::str_replace_all(
+    x,
+    "(?<=[aeiouAEIOU])(?=[^aeiouAEIOU\\W\\d_])|(?<=[^aeiouAEIOU\\W\\d_])(?=[aeiouAEIOU])",
+    splitter
+  )
+}
+
+result <- input %>%
+  mutate(`Answer Expected` = add_splitter_on_lettertype_change(Data, "-")) %>%
+  select(-Data)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+excel_path = "Excel/800-899/866/866 Insert a Dash.xlsx"
+input = pd.read_excel(excel_path, usecols="A", nrows=11)
+test = pd.read_excel(excel_path, usecols="B", nrows=11)
+
+def add_splitter_on_lettertype_change(x, splitter="-"):
+    pattern = r'(?<=[aeiouAEIOU])(?=[^aeiouAEIOU\W\d_])|(?<=[^aeiouAEIOU\W\d_])(?=[aeiouAEIOU])'
+    return re.sub(pattern, splitter, x)
+
+result = input.copy()
+result['Answer Expected'] = result['Data'].apply(add_splitter_on_lettertype_change)
+result = result.drop(columns=['Data'])
+
+print(result.equals(test)) #True
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 867](/challenges/excelbi/Excel867.html)
+- [Excel Challenge 868](/challenges/excelbi/Excel868.html)
+- [Excel Challenge 869](/challenges/excelbi/Excel869.html)

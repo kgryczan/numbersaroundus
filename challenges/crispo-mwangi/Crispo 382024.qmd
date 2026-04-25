@@ -1,0 +1,130 @@
+---
+title: "Crispo - Excel Challenge 38 2024"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2024-09-22"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 38 2024](/challenges/images/Crispo382024.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ SUMMARY Accounting, Budgeting, Accounts Payable, Accounts Receivable, Treasury Sales Operations, Account Management, Business Development ⭐Summarise the budget per Department
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/Excel Challenge September 22nd.xlsx"
+input1 = read_excel(path, range = "B3:C11") %>% janitor::clean_names()
+input2 = read_excel(path, range = "E3:F12") %>% janitor::clean_names()
+test  = read_excel(path, range = "H3:I12")
+
+lookup = input2 %>%
+  separate_rows(sub_dept, sep = ", ") %>%
+  left_join(input1, by = "sub_dept") %>%
+  replace_na(list(x000 = 0)) %>%
+  summarise(total = sum(x000), .by = department)
+
+all.equal(test$total, lookup$Total, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "files/Excel Challenge September 22nd.xlsx"
+
+input1 = pd.read_excel(path, usecols="B:C", skiprows=2, nrows=8, names=["sub_dept", "money"])
+input2 = pd.read_excel(path, usecols="E:F", skiprows=2, nrows=9, names=["department", "sub_dept"])
+test = pd.read_excel(path, usecols="H:I", skiprows=2, nrows=9, names=["department", "total"])\
+    .sort_values(by=['total', "department"], ascending=False)\
+    .reset_index(drop=True)
+
+lookup = (input2.assign(sub_dept=input2['sub_dept'].str.split(', '))
+          .explode('sub_dept')
+          .merge(input1, on='sub_dept', how='left')
+          .groupby('department', as_index=False)['money'].sum()
+          .sort_values(by=['money', 'department'], ascending=False)
+          .reset_index(drop=True))
+lookup['money'] = lookup['money'].astype('int64')
+lookup.columns = test.columns
+
+print(lookup.equals(test)) # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 37 2024](Crispo 372024.qmd)
+-   [Crispo - Excel Challenge 39 2024](Crispo 392024.qmd)

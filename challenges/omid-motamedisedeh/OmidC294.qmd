@@ -1,0 +1,162 @@
+---
+title: "Omid - Challenge 294"
+description: "🔰 Group Challenge 294: Custom Grouping!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 294](/challenges/images/OmidC294.jpg)
+
+## Challenge Description
+
+🔰 Group Challenge 294: Custom Grouping!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/294/CH-294 Custom Grouping.xlsx"
+input = read_excel(path, range = "B2:C18")
+test  = read_excel(path, range = "G2:H5")
+
+g <- c <- 1
+for(i in 1:nrow(input)) {
+  input$Group[i] <- g
+  c <- ifelse(input$Result[i] == "+", c + 1, 1)
+  if(c > 4) { g <- g + 1; c <- 1 }
+}
+
+result = input %>%
+  group_by(Group) %>%
+  summarise(
+    Start_Date = format(as.Date(first(Date)), "%d/%b/%Y"),
+    End_Date = format(as.Date(last(Date)), "%d/%b/%Y"),
+    `number of dates` = n(),
+    .groups = 'drop'
+  ) %>%
+  mutate(
+    End_Date = ifelse(`number of dates` < 4, NA, End_Date),
+    `number of dates` = ifelse(`number of dates` < 4, "-", `number of dates`)) %>%
+  select(-Group) %>%
+  unite("Group", Start_Date, End_Date, sep = " - ", remove = TRUE)
+
+all.equal(result, test)
+# TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "200-299/294/CH-294 Custom Grouping.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=16)
+test = pd.read_excel(path, usecols="G:H", skiprows=1, nrows=3)
+
+g = c = 1
+groups = []
+for result in input['Result']:
+    groups.append(g)
+    c = c + 1 if result == '+' else 1
+    if c > 4: g, c = g + 1, 1
+
+input['Group'] = groups
+input['Date'] = pd.to_datetime(input['Date'], format='%d/%b/%Y').dt.strftime('%d/%b/%Y')
+
+result = input.groupby('Group').agg(
+    Start_Date=('Date', 'first'),
+    End_Date=('Date', 'last'),
+    number_of_dates=('Date', 'count')
+).reset_index(drop=True)
+
+result.loc[result['number_of_dates'] < 4, 'End_Date'] = "NA"
+result.loc[result['number_of_dates'] < 4, 'number_of_dates'] = "-"
+result['Group'] = result['Start_Date'] + ' - ' + result['End_Date']
+result = result[['Group', 'number_of_dates']]
+
+print(result)
+print(test)
+
+#                        Group number_of_dates
+# 0  01/Jan/2024 - 10/Jan/2024              10
+# 1  12/Jan/2024 - 16/Jan/2024               4
+# 2           17/Jan/2024 - NA               -
+#                        Group number of dates
+# 0  01/Jan/2024 - 10/Jan/2024              10
+# 1  12/Jan/2024 - 16/Jan/2024               4
+# 2           17/Jan/2024 - NA               -
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 293](OmidC293.qmd)
+-   [Omid - Challenge 295](OmidC295.qmd)
+-   [Omid - Challenge 296](OmidC296.qmd)

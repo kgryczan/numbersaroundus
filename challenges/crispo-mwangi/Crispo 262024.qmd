@@ -1,0 +1,131 @@
+---
+title: "Crispo - Excel Challenge 26 2024"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2024-06-30"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 26 2024](/challenges/images/Crispo262024.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ ⭐Calculate the number of complete Months per Year per Project
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/Excel Challenge  30th June.xlsx"
+
+input = read_xlsx(path, range = "B3:D7")
+test  = read_xlsx(path, range = "E3:I7")
+
+result = input %>%
+  mutate(seq = map2(`Start Date`, `End Date`, seq, by = "month")) %>%
+  unnest_longer(seq) %>%
+  mutate(year = year(seq),
+         val = 1) %>%
+  select(Project, year, val) %>%
+  pivot_wider(names_from = year, values_from = val, values_fn = sum) %>%
+  select(-Project)
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reshapes the data to the grain required by the task
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "files/Excel Challenge  30th June.xlsx"
+
+input = pd.read_excel(path, usecols="B:D", skiprows=2, nrows=4)
+test = pd.read_excel(path, usecols="E:I", skiprows=2, nrows=4).fillna(0).astype(int)
+
+result = input.copy()
+result['seq'] = result.apply(lambda x: pd.date_range(start=x["Start Date "], end=x["End Date"], freq='M'), axis=1)
+result = result.explode('seq')
+result['year'] = result['seq'].dt.year
+result['val'] = 1
+result = result[['Project', 'year', 'val']].\
+    pivot_table(index='Project', columns='year', values='val', aggfunc='sum').\
+    fillna(0).astype(int)
+result = result.reset_index().drop(columns='Project')
+
+print(result.equals(test)) # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data to the grain required by the task
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines familiar Excel-style logic with at least one non-trivial reshape, grouping, or parsing step.
+
+-   The answer depends on getting the output layout exactly right.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 25 2024](Crispo 252024.qmd)
+-   [Crispo - Excel Challenge 27 2024](Crispo 272024.qmd)

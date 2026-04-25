@@ -1,0 +1,135 @@
+---
+title: "Crispo - Excel Challenge 06 2026"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-02-08"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 06 2026](/challenges/images/Crispo062026.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ ⭐Count Complete and OK Invoices
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path <- "2026-02-08/Challenge 102.xlsx"
+input <- read_excel(path, range = "B2:C13")
+test <- read_excel(path, range = "E3:E3", col_names = FALSE) |> pull()
+
+result <- input %>%
+  filter(
+    str_detect(
+      Status,
+      regex("(^|[^a-z])complete(d)?([^a-z]|$)", ignore_case = TRUE)
+    ),
+    str_detect(Status, regex("(^|[^a-z])ok([^a-z]|$)", ignore_case = TRUE)),
+    !str_detect(
+      Status,
+      regex("not.?ok|risk|hold|incomplete", ignore_case = TRUE)
+    )
+  ) %>%
+  count()
+
+all(result == test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Uses direct text-pattern extraction instead of manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "2026-02-08/Challenge 102.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=11)
+test = pd.read_excel(path, usecols="E", skiprows=2, nrows=1, header=None).iloc[0, 0]
+
+def clean_string(s):
+    return re.sub(r'[^a-z]+', ' ', s.lower())
+
+res = input[input.Status.apply(lambda s:
+    "complete" in clean_string(s)
+    and "ok" in clean_string(s)
+    and not re.search(r'not ok|risk|hold|incomplete', clean_string(s))
+)]
+
+print(len(res) == test)
+# True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Uses direct text-pattern extraction instead of manual cleanup
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines familiar Excel-style logic with at least one non-trivial reshape, grouping, or parsing step.
+
+-   The answer depends on getting the output layout exactly right.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 05 2026](Crispo 052026.qmd)
+-   [Crispo - Excel Challenge 07 2026](Crispo 072026.qmd)

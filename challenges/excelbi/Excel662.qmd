@@ -1,0 +1,94 @@
+---
+title: "Excel BI - Excel Challenge 662"
+description: "🔰 / \ Make the given pyramid for number of rows given in A2."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 662](/challenges/images/exc662.jpg)
+
+## Challenge Description
+
+🔰 / \ Make the given pyramid for number of rows given in A2. Example for 6 is shown.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/662 Create a Pyramid.xlsx"
+test6  = read_excel(path, range = "C2:N7", col_names = F) %>% as.matrix() %>% replace(., is.na(.), " ")
+
+draw_pyramid <- function(stores) {
+  M <- matrix(" ", nrow = stores, ncol = stores * 2)
+  for (i in 1:stores) {
+    M[i, ] <- strsplit(paste(c(rep(" ", stores - i), "/", rep("/\\", i - 1), "\\", rep(" ", stores - i)), collapse = ""), "")[[1]]
+  }
+  return(M)
+}
+
+a = draw_pyramid(6)
+
+all(a == test6)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "662 Create a Pyramid.xlsx"
+test6 = pd.read_excel(path,  usecols="C:N", skiprows=1, nrows=6, header=None).fillna(" ").values
+
+def draw_pyramid(stores):
+    M = np.full((stores, stores * 2), " ", dtype=str)
+    for i in range(1, stores + 1):
+        row = [" "] * (stores - i) + ["/"] + ["/\\"] * (i - 1) + ["\\"] + [" "] * (stores - i)
+        M[i - 1, :] = list("".join(row))
+    return M
+
+a = draw_pyramid(6)
+
+print(np.array_equal(a, test6))
+# True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 663](/challenges/excelbi/Excel663.html)
+- [Excel Challenge 664](/challenges/excelbi/Excel664.html)
+- [Excel Challenge 665](/challenges/excelbi/Excel665.html)

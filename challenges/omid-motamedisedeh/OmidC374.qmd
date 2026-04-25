@@ -1,0 +1,141 @@
+---
+title: "Omid - Challenge 374"
+description: "🔰 In the id column in the question table, extract all the parts between two repetitive characters."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 374](/challenges/images/OmidC374.jpg)
+
+## Challenge Description
+
+🔰 In the id column in the question table, extract all the parts between two repetitive characters.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/374/CH-374 Text Cleaning.xlsx"
+input <- read_excel(path, range = "B3:B8")
+test <- read_excel(path, range = "E3:E8") %>%
+  replace_na(list(ID = ""))
+
+bounded_substrings <- function(s) {
+  chars <- strsplit(s, "")[[1]]
+  n <- length(chars)
+
+  expand.grid(i = 1:(n - 1), j = 2:n) |>
+    filter(i < j, chars[i] == chars[j]) |>
+    mutate(
+      val = purrr::map2_chr(
+        i,
+        j,
+        ~ paste(chars[(.x + 1):(.y - 1)], collapse = "")
+      )
+    ) |>
+    pull(val)
+}
+
+result = input %>%
+  mutate(
+    substrings = map(ID, bounded_substrings) %>% map_chr(paste, collapse = ", ")
+  )
+
+all.equal(result$substrings, test$ID)
+## [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from itertools import product
+
+path = "300-399/374/CH-374 Text Cleaning.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=2, nrows=6)
+test = pd.read_excel(path, usecols="E", skiprows=2, nrows=6).rename(columns=lambda x: x.replace('.1', ''))
+test['ID'] = test['ID'].fillna("")
+
+def bounded_substrings(s):
+    chars = list(s)
+    n = len(chars)
+    
+    substrings = []
+    for i, j in product(range(n - 1), range(1, n)):
+        if i < j and chars[i] == chars[j]:
+            substrings.append(''.join(chars[i + 1:j]))
+    
+    return substrings
+
+input['substrings'] = input['ID'].apply(lambda x: ', '.join(bounded_substrings(x)))
+print(input['substrings'].equals(test['ID']))
+# > True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 373](OmidC373.qmd)
+-   [Omid - Challenge 375](OmidC375.qmd)
+-   [Omid - Challenge 376](OmidC376.qmd)

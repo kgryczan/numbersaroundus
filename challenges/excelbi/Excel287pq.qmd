@@ -1,0 +1,165 @@
+---
+title: "Excel BI - PowerQuery Challenge 287"
+description: "Medal Table Country Country Code Total Points Rank England"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 287](/challenges/images/exc287pq.jpg)
+
+## Challenge Description
+
+Medal Table Country Country Code Total Points Rank England
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/200-299/287/PQ_Challenge_287.xlsx"
+input = read_excel(path, range = "A1:A21")
+test = read_excel(path, range = "C1:F5")
+
+result = input %>%
+  mutate(
+    Category = case_when(
+      str_detect(`Medal Table`, "^[A-Za-z]+$") & str_length(`Medal Table`) > 2 ~
+        "Country",
+      str_detect(`Medal Table`, "^[A-Z]+$") & str_length(`Medal Table`) == 2 ~
+        "Country Code",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  mutate(
+    Category = case_when(
+      lag(Category, n = 1) == "Country Code" ~ "Gold",
+      lag(Category, n = 2) == "Country Code" ~ "Silver",
+      lag(Category, n = 3) == "Country Code" ~ "Bronze",
+      TRUE ~ Category
+    )
+  ) %>%
+  mutate(group = cumsum(Category == "Country")) %>%
+  pivot_wider(names_from = Category, values_from = `Medal Table`) %>%
+  select(-group) %>%
+  mutate(across(
+    c(Gold, Silver, Bronze),
+    ~ as.numeric(str_remove_all(.x, "\\D"))
+  )) %>%
+  mutate(`Total Points` = Gold * 3 + Silver * 2 + Bronze * 1) %>%
+  select(Country, `Country Code`, `Total Points`) %>%
+  mutate(Rank = dense_rank(desc(`Total Points`))) %>%
+  arrange(Rank, Country)
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "200-299/287/PQ_Challenge_287.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=21)
+test = pd.read_excel(path, usecols="C:F", nrows=4)
+
+input.columns = ['Medal Table']
+
+cats = ['Country', 'Country Code', 'Gold', 'Silver', 'Bronze']
+input['Category'] = [cats[i % 5] if pd.notna(v) else None for i, v in enumerate(input['Medal Table'])]
+
+input['group'] = (input['Category'] == "Country").cumsum()
+pivoted = input.pivot(index='group', columns='Category', values='Medal Table').reset_index(drop=True)
+
+for medal, pts in zip(['Gold', 'Silver', 'Bronze'], [3, 2, 1]):
+    if medal in pivoted:
+        pivoted[medal] = pivoted[medal].astype(str).str.extract(r'(\d+)').fillna(0).astype(int)
+
+pivoted['Total Points'] = sum(pivoted.get(m, 0) * pts for m, pts in zip(['Gold', 'Silver', 'Bronze'], [3, 2, 1]))
+result = pivoted[['Country', 'Country Code', 'Total Points']].copy()
+result['Rank'] = result['Total Points'].rank(method='dense', ascending=False).astype(int)
+result = result.sort_values(['Rank', 'Country']).reset_index(drop=True)
+result.columns.name = None
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 286](Excel286pq.qmd)
+-   [Excel BI - Excel Challenge 667](Excel667.qmd)

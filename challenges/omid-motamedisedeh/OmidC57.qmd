@@ -1,0 +1,127 @@
+---
+title: "Omid - Challenge 57"
+description: "🔰 In the question table, several fuzzy numbers are presented, and we want to calculate the results of adding and subtracting these numbers."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 57](/challenges/images/OmidC57.jpg)
+
+## Challenge Description
+
+🔰 In the question table, several fuzzy numbers are presented, and we want to calculate the results of adding and subtracting these numbers.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-057 Fuzzy Numbers Calculation.xlsx", range = "B2:C15")
+test  = read_excel("files/CH-057 Fuzzy Numbers Calculation.xlsx", range = "G2:H15")
+
+result = input %>%
+  separate(A, into = c("A1", "A2", "A3"), sep = ",", convert = TRUE) %>%
+  separate(B, into = c("B1", "B2", "B3"), sep = ",", convert = TRUE) %>%
+  mutate(
+    A = pmap(list(A1, A2, A3), c),
+    B = pmap(list(B1, B2, B3), c),
+    `A+B` = map2_chr(A, B, ~ paste(.x + .y, collapse = ",")),
+    `A-B` = map2_chr(A, map(B, rev), ~ paste(.x - .y, collapse = ","))
+  ) %>%
+  select(`A+B`, `A-B`)
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input = pd.read_excel("CH-057 Fuzzy Numbers Calculation.xlsx", sheet_name="Sheet1", usecols="B:C", skiprows=1, nrows = 13)
+test = pd.read_excel("CH-057 Fuzzy Numbers Calculation.xlsx", sheet_name="Sheet1", usecols="G:H", skiprows=1, nrows = 13)
+
+input[['A1', 'A2', 'A3']] = input['A'].str.split(',', expand=True).astype(int)
+input[['B1', 'B2', 'B3']] = input['B'].str.split(',', expand=True).astype(int)
+
+input['A'] = input[['A1', 'A2', 'A3']].values.tolist()
+input['B'] = input[['B1', 'B2', 'B3']].values.tolist()
+
+input['A+B'] = input.apply(lambda row: [str(x + y) for x, y in zip(row['A'], row['B'])], axis=1)
+input['A-B'] = input.apply(lambda row: [str(x - y) for x, y in zip(row['A'], row['B'][::-1])], axis=1)
+
+result = input[['A+B', 'A-B']]
+
+result['A+B'] = result['A+B'].apply(lambda x: ','.join(x))
+result['A-B'] = result['A-B'].apply(lambda x: ','.join(x))
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 56](OmidC56.qmd)
+-   [Omid - Challenge 58](OmidC58.qmd)
+-   [Omid - Challenge 59](OmidC59.qmd)

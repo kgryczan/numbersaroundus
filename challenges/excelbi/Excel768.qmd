@@ -1,0 +1,85 @@
+---
+title: "Excel BI - Excel Challenge 768"
+description: "🔰 Find the Running Total of Column A and display positive values in first column and negative values in second column."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 768](/challenges/images/exc768.jpg)
+
+## Challenge Description
+
+🔰 Find the Running Total of Column A and display positive values in first column and negative values in second column.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/768/768 Cumulative Total Positive and Negative.xlsx"
+input = read_excel(path, range = "A2:A19")
+test  = read_excel(path, range = "B2:C19")
+
+result = input %>%
+  mutate(cs = cumsum(Numbers)) %>%
+  transmute(
+    Positive = if_else(cs > 0, cs, NA_real_),
+    Negative = if_else(cs < 0, cs, NA_real_)
+  )
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/768/768 Cumulative Total Positive and Negative.xlsx"
+input = pd.read_excel(path, usecols="A", skiprows=1, nrows=18)
+test = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=18)
+
+input[['Positive', 'Negative']] = input['Numbers'].cumsum().apply(lambda x: pd.Series([x if x > 0 else None, x if x < 0 else None]))
+input = input.drop(columns=['Numbers'])
+
+print(input.equals(test)) # True
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 769](/challenges/excelbi/Excel769.html)
+- [Excel Challenge 770](/challenges/excelbi/Excel770.html)
+- [Excel Challenge 771](/challenges/excelbi/Excel771.html)

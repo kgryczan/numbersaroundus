@@ -1,0 +1,85 @@
+---
+title: "Excel BI - Excel Challenge 653"
+description: "🔰 List the last Sundays of the all 12 months of year given in cell A2."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 653](/challenges/images/exc653.jpg)
+
+## Challenge Description
+
+🔰 List the last Sundays of the all 12 months of year given in cell A2.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(glue)
+
+year = 2025
+path = "Excel/653 Last Sundays of All Months.xlsx"
+test25  = read_excel(path, range = "C1:C13")
+
+result = seq(as.Date(paste0(year, "-01-01")), as.Date(paste0(year, "-12-31")), by = "days") %>%
+  keep(~ wday(.x, week_start = 1) == 7) %>%
+  tibble(date = .) %>%
+  mutate(month = month(date)) %>%
+  summarise(last_sunday = max(date, na.rm = T) %>% as.POSIXct(), .by = month)
+
+all.equal(test25$`Answer Expected`, result$last_sunday, check.attributes = F)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "653 Last Sundays of All Months.xlsx"
+test = pd.read_excel(path, usecols="C", nrows = 12)
+
+def get_last_sundays(year):
+    return pd.date_range(f"{year}-01-01", f"{year}-12-31", freq="W-SUN").to_series() \
+        .groupby(lambda x: x.month).max().reset_index(drop=True).to_frame(name="Answer Expected")
+
+print(get_last_sundays(2025).equals(test)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 654](/challenges/excelbi/Excel654.html)
+- [Excel Challenge 655](/challenges/excelbi/Excel655.html)
+- [Excel Challenge 656](/challenges/excelbi/Excel656.html)

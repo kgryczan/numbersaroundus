@@ -1,0 +1,93 @@
+---
+title: "Excel BI - Excel Challenge 890"
+description: "🔰 Find the lowest"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 890](/challenges/images/exc890.jpg)
+
+## Challenge Description
+
+🔰 Find the lowest
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/890/890 Lowest Value.xlsx"
+input <- read_excel(path, range = "B3:D20")
+test <- read_excel(path, range = "G3:I7")
+
+groups <- unique(input$Area)
+results <- map_dfr(groups, function(group) {
+  group_data <- input %>% filter(Area == group)
+  lowest_row <- group_data %>% filter(Value == min(Value)) %>% slice(1)
+  input <<- input %>% filter(Company != lowest_row$Company)
+  lowest_row
+})
+
+all.equal(results, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel/800-899/890/890 Lowest Value.xlsx"
+input = pd.read_excel(path, usecols="B:D", skiprows=2, nrows=18)
+test = pd.read_excel(path, usecols="G:I", skiprows=2, nrows=4).rename(columns=lambda x: x.replace(".1", ""))
+
+groups = input['Area'].unique()
+results = pd.DataFrame()
+
+for group in groups:
+    group_data = input[input['Area'] == group]
+    lowest_row = group_data[group_data['Value'] == group_data['Value'].min()].iloc[0]
+    results = pd.concat([results, lowest_row.to_frame().T], ignore_index=True)
+    input = input[input['Company'] != lowest_row['Company']]
+
+print(all(results ==test))
+# Output: True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 891](/challenges/excelbi/Excel891.html)
+- [Excel Challenge 892](/challenges/excelbi/Excel892.html)
+- [Excel Challenge 893](/challenges/excelbi/Excel893.html)

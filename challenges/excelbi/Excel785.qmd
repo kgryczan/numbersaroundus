@@ -1,0 +1,105 @@
+---
+title: "Excel BI - Excel Challenge 785"
+description: "🔰 Answer Expected Data Org Revenue Cost Profit Org: Google, Revenue:500, Cost: 400 Google Org: Microsoft, Revenue: 450, Profit: 50 Microsoft"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 785](/challenges/images/exc785.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Data Org Revenue Cost Profit Org: Google, Revenue:500, Cost: 400 Google Org: Microsoft, Revenue: 450, Profit: 50 Microsoft
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/785/785 Pivot.xlsx"
+input = read_excel(path, range = "A2:A6")
+test  = read_excel(path, range = "C2:F6")
+
+result = input %>%
+  separate_longer_delim(Data, ", ") %>%
+  separate_wider_delim(Data, ":", names = c("Variable", "Value")) %>%
+  mutate(Value = trimws(Value), 
+         group = cumsum(Variable == "Org")) %>%
+  pivot_wider(names_from = Variable, values_from = Value) %>%
+  mutate(across(-c(group, Org), as.numeric)) %>%
+  mutate(
+    Revenue = coalesce(Revenue, Cost + Profit),
+    Cost    = coalesce(Cost, Revenue - Profit),
+    Profit  = coalesce(Profit, Revenue - Cost)
+  ) %>%
+  select(-group)
+
+all.equal(result, test, check.attributes = FALSE)
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/785/785 Pivot.xlsx"
+input = pd.read_excel(path, usecols="A", skiprows=1, nrows=5)
+test = pd.read_excel(path, usecols="C:F", skiprows=1, nrows=5).assign(**{col: lambda df, c=col: pd.to_numeric(df[c], errors="coerce").astype('Int64') for col in ["Revenue", "Cost", "Profit"]})
+
+input_long = input["Data"].str.split(", ", expand=True).stack().str.split(":", n=1, expand=True)
+input_long[1] = input_long[1].str.strip()
+input_long = input_long.reset_index(level=1, drop=True)
+input_long.columns = ["Variable", "Value"]
+input_long["group"] = (input_long["Variable"] == "Org").cumsum()
+
+result = input_long.pivot(index="group", columns="Variable", values="Value").reset_index(drop=True)
+for col in ["Revenue", "Cost", "Profit"]:
+    result[col] = pd.to_numeric(result[col], errors="coerce").astype('Int64')
+
+result["Revenue"].fillna(result["Cost"] + result["Profit"], inplace=True)
+result["Cost"].fillna(result["Revenue"] - result["Profit"], inplace=True)
+result["Profit"].fillna(result["Revenue"] - result["Cost"], inplace=True)
+result = result[["Org", "Revenue", "Cost", "Profit"]]
+result.columns.name = None
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 786](/challenges/excelbi/Excel786.html)
+- [Excel Challenge 787](/challenges/excelbi/Excel787.html)
+- [Excel Challenge 788](/challenges/excelbi/Excel788.html)

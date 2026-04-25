@@ -1,0 +1,149 @@
+---
+title: "Excel BI - PowerQuery Challenge 210"
+description: "Name Date Type From Date To Date Sandra"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 210](/challenges/images/exc210pq.jpg)
+
+## Challenge Description
+
+Name Date Type From Date To Date Sandra
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_210.xlsx"
+input = read_xlsx(path, range = "A1:C17")
+test  = read_xlsx(path, range = "E1:H10")
+
+r1 = input %>%
+  select(Name, Date) %>%
+  group_by(Name) %>%
+  summarise(Date = list(seq(min(Date), max(Date), by = "day"))) %>%
+  unnest(Date) %>%
+  left_join(input, by = c("Name", "Date")) %>%
+  mutate(wday = wday(Date, week_start = 1),
+         Type = case_when(
+           wday == 6 ~ lag(Type, 1),
+           wday == 7 ~ lag(Type, 2),
+           TRUE ~ Type
+         )) %>%
+  mutate(cons = consecutive_id(Type), .by = "Name") %>%
+  filter(!is.na(Type), 
+         wday %in% 1:5) %>%
+  summarise(`From Date` = min(Date), 
+            `To Date` = max(Date), 
+            .by = c(Name, Type, cons)) %>%
+  select(Name, `From Date`, `To Date`, Type) %>%
+  arrange(desc(Name))
+
+identical(r1, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "PQ_Challenge_210.xlsx"
+input = pd.read_excel(path, usecols="A:C", skiprows=0, nrows=17)
+test = pd.read_excel(path, usecols="E:H", skiprows=0, nrows=9)
+test.columns = test.columns.str.replace(".1", "")
+
+r1 = input[["Name", "Date"]].copy()
+r1["Date"] = pd.to_datetime(r1["Date"])
+r1 = r1.set_index("Date").resample("D").ffill().reset_index()
+
+r2 = r1.merge(input, on = ["Name", "Date"], how = "left")
+r2["Weekday_num"] = r2["Date"].dt.weekday
+r2["Type"] = r2["Type"].where(r2["Weekday_num"] != 5, r2["Type"].shift(1))
+r2["Type"] = r2["Type"].where(r2["Weekday_num"] != 6, r2["Type"].shift(2))
+
+r2["Group"] = r2["Type"].ne(r2["Type"].shift()).cumsum()
+r2 = r2.dropna(subset = ["Type"])
+r2 = r2[~r2["Weekday_num"].isin([5, 6])]
+r2 = r2.groupby(["Name", "Type", "Group"]).agg({"Date": ["min", "max"]}).reset_index()
+r2.columns = r2.columns.droplevel()
+r2.columns = ["Name", "Type", "Group", "From Date", "To Date"]
+r2 = r2.sort_values(["Name", "To Date"], ascending = [False, True]).reset_index(drop = True)
+r2 = r2[["Name", "From Date", "To Date", "Type"]]
+
+print(r2.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 209](Excel209pq.qmd)

@@ -1,0 +1,148 @@
+---
+title: "Excel BI - PowerQuery Challenge 354"
+description: "Sum Trade Sum Trade: Total Trade: Sum of Sum Trade for a date group Rank: Descending (1 is the highest rank) on the basis of Total Trade for a date group. For same Total Trade, later date will have higher rank."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 354](/challenges/images/exc354pq.jpg)
+
+## Challenge Description
+
+Sum Trade Sum Trade: Total Trade: Sum of Sum Trade for a date group Rank: Descending (1 is the highest rank) on the basis of Total Trade for a date group. For same Total Trade, later date will have higher rank.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Power Query/300-399/354/PQ_Challenge_354.xlsx"
+input <- read_excel(path, range = "A1:C51")
+test <- read_excel(path, range = "E1:J51")
+
+result = input %>%
+  mutate(`Sum Trade` = n(), .by = c(Date, Profession, Type)) %>%
+  mutate(`Total Trade` = sum(`Sum Trade`), .by = Date) %>%
+  nest_by(`Total Trade`, Date) %>%
+  arrange(desc(`Total Trade`), desc(Date)) %>%
+  ungroup() %>%
+  mutate(Rank = row_number(), .after = everything()) %>%
+  unnest(cols = c(data)) %>%
+  select(Date, Profession, Type, `Sum Trade`, `Total Trade`, Rank)
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Power Query/300-399/354/PQ_Challenge_354.xlsx"
+input_data = pd.read_excel(path, usecols="A:C", nrows=51)
+test = pd.read_excel(path, usecols="E:J", nrows=51).rename(columns=lambda col: col.replace(".1", ""))
+
+result = (
+    input_data
+    .assign(Date=lambda x: pd.to_datetime(x["Date"], dayfirst=True))
+    .assign(
+        **{
+            "Sum Trade": lambda x:
+                x.groupby(["Date", "Profession", "Type"])["Date"]
+                 .transform("count")
+        }
+    )
+    .assign(
+        **{
+            "Total Trade": lambda x:
+                x.groupby("Date")["Sum Trade"]
+                 .transform("sum")
+        }
+    )
+    .sort_values(["Total Trade", "Date"], ascending=[False, False])
+    .assign(
+        Rank=lambda x:
+            x.groupby(["Total Trade", "Date"], sort=False)
+             .ngroup()
+             .add(1)
+    )
+    .reset_index(drop=True)
+    [["Date", "Profession", "Type", "Sum Trade", "Total Trade", "Rank"]]
+)
+
+print(result.equals(test))  # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The transformation rule is readable, but the final layout still requires a careful implementation.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 353](Excel353pq.qmd)
+-   [Excel BI - Excel Challenge 734](Excel734.qmd)

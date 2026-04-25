@@ -1,0 +1,115 @@
+---
+title: "Crispo - Excel Challenge 46 2024"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2024-11-17"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 46 2024](/challenges/images/Crispo462024.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Problem Date Units Made Defects Running Totals Easy Sunday Excel Challenge
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/Excel Challenge October 17th.xlsx"
+input = read_excel(path, range = "B2:D16")
+test  = read_excel(path, range = "E2:E16")
+
+result = input %>%
+  mutate(group = consecutive_id(Defects)) %>%
+  mutate(`Running Totals` = ifelse(Defects != 1, cumsum(`Units Made`), 0), .by = group)
+         
+all.equal(result$`Running Totals`, test$`Running Totals`)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "files/Excel Challenge October 17th.xlsx"
+input = pd.read_excel(path, usecols="B:D", skiprows=1, nrows=15)
+test = pd.read_excel(path, usecols="E", skiprows=1, nrows=15)
+
+input['group'] = (input['Defects'] != input['Defects'].shift()).cumsum()
+input['Running Totals'] = input.groupby('group')['Units Made'].cumsum().where(input['Defects'] != 1, 0)
+
+print(input['Running Totals'].eq(test['Running Totals']).all()) # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 45 2024](Crispo 452024.qmd)
+-   [Crispo - Excel Challenge 47 2024](Crispo 472024.qmd)

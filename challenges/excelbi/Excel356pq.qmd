@@ -1,0 +1,204 @@
+---
+title: "Excel BI - PowerQuery Challenge 356"
+description: "A group is defined as same Region, Type Specific Peer Avg - The average price of all properties in that specific Peer Group seen so far (including current row)."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 356](/challenges/images/exc356pq.jpg)
+
+## Challenge Description
+
+A group is defined as same Region, Type Specific Peer Avg - The average price of all properties in that specific Peer Group seen so far (including current row).
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Power Query/300-399/356/PQ_Challenge_356.xlsx"
+input <- read_excel(path, range = "A1:F51")
+test <- read_excel(path, range = "I1:L51")
+
+result = input %>%
+  mutate(peer_avg = cummean(Price), .by = c(Region, Type, Beds)) %>%
+  mutate(reg_avg = cummean(Price), .by = Region) %>%
+  mutate(reg_hist_avg = lag(cummean(Price), default = 0), .by = Region) %>%
+  mutate(
+    prem_disc = ((Price - reg_hist_avg) * 100 / reg_hist_avg) %>% round(2),
+    .by = Region
+  ) %>%
+  mutate(prem_disc = ifelse(is.infinite(prem_disc), 0, prem_disc)) %>%
+  group_by(Type) %>%
+  mutate(
+    q25 = map_dbl(
+      seq_along(Price),
+      ~ if (.x == 1) {
+        NA_real_
+      } else {
+        quantile(Price[1:(.x - 1)], .25, names = FALSE)
+      }
+    ),
+    q75 = map_dbl(
+      seq_along(Price),
+      ~ if (.x == 1) {
+        NA_real_
+      } else {
+        quantile(Price[1:(.x - 1)], .75, names = FALSE)
+      }
+    )
+  ) %>%
+  ungroup() %>%
+  mutate(
+    Tier = case_when(
+      Price < q25 ~ "Entry",
+      Price > q75 ~ "Luxury",
+      TRUE ~ "Mid-Market"
+    )
+  ) %>%
+  select(
+    ID,
+    `Specific Peer Avg` = peer_avg,
+    `Premium / Discount %` = prem_disc,
+    `Tier Status` = Tier
+  )
+
+all.equal(result, test)
+# Not all cases correct.
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "Power Query/300-399/356/PQ_Challenge_356.xlsx"
+input = pd.read_excel(path, usecols="A:F", nrows=50)
+test = pd.read_excel(path, usecols="I:L", nrows=50)
+
+df = input.copy()
+df["peer_avg"] = (
+    df.groupby(["Region", "Type", "Beds"])["Price"]
+      .expanding()
+      .mean()
+      .reset_index(level=[0,1,2], drop=True)
+)
+df["reg_avg"] = (
+    df.groupby("Region")["Price"]
+      .expanding()
+      .mean()
+      .reset_index(level=0, drop=True)
+)
+df["reg_hist_avg"] = (
+    df.groupby("Region")["reg_avg"].shift().fillna(0)
+)
+df["prem_disc"] = np.where(
+    df["reg_hist_avg"] == 0,
+    0,
+    ((df["Price"] - df["reg_hist_avg"]) * 100 / df["reg_hist_avg"]).round(2)
+)
+def expanding_q(s, q):
+    return pd.Series(
+        [np.nan if i == 0 else s.iloc[:i].quantile(q)
+         for i in range(len(s))],
+        index=s.index
+    )
+df["q25"] = (
+    df.groupby("Type")["Price"]
+      .apply(lambda s: expanding_q(s, .25))
+      .reset_index(level=0, drop=True)
+)
+df["q75"] = (
+    df.groupby("Type")["Price"]
+      .apply(lambda s: expanding_q(s, .75))
+      .reset_index(level=0, drop=True)
+)
+df["Tier"] = np.select(
+    [df["Price"] < df["q25"], df["Price"] > df["q75"]],
+    ["Entry", "Luxury"],
+    default="Mid-Market"
+)
+result = df[["ID", "peer_avg", "prem_disc", "Tier"]].rename(columns={
+    "peer_avg": "Specific Peer Avg",
+    "prem_disc": "Premium / Discount %",
+    "Tier": "Tier Status"
+})
+
+# Not all cases correct.
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 355](Excel355pq.qmd)
+-   [Excel BI - Excel Challenge 736](Excel736.qmd)

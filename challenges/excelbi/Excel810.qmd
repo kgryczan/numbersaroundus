@@ -1,0 +1,94 @@
+---
+title: "Excel BI - Excel Challenge 810"
+description: "🔰 Answer Expected A B Y D E U A-90 Q-29 B-77"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 810](/challenges/images/exc810.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected A B Y D E U A-90 Q-29 B-77
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/810/810 Align Data.xlsx"
+
+input = read_excel(path, range = "A2:F9", col_names = FALSE) %>% as.matrix()
+test  = read_excel(path, range = "H2:I10", col_names = c("Left", "Right"))
+
+x = input %>% t() %>% as.vector() %>% discard(is.na)
+pairs = map2_chr(
+    keep(x, ~ str_detect(.x, "^[A-Za-z]+$")),
+    keep(x, ~ str_detect(.x, "^[0-9]+$")),
+    ~ str_c(.x, .y, sep = "-")
+)
+n = length(pairs)
+h = ceiling(n/2)
+bent = tibble(Left = pairs[1:h], Right = c(rev(pairs)[1:(h-1)], NA))
+all_equal(bent, test)
+# TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import math
+import numpy as np
+
+path = "800-899/810/810 Align Data.xlsx"
+
+input = pd.read_excel(path, usecols="A:F", skiprows=1, nrows=8, header=None).values
+test = pd.read_excel(path, usecols="H:I", nrows=9, names=["Left", "Right"])
+flat = [x for x in input.flatten() if pd.notna(x)]
+zipped = [f"{l}-{n}" for n, l in zip(filter(lambda x: isinstance(x, (int, float)), flat),
+                                     filter(lambda x: isinstance(x, str) and x.isalpha(), flat))]
+h = (len(zipped) + 1) // 2
+result = list(zip(zipped[:h], zipped[::-1][:h-1] + [np.nan]))
+
+df = pd.DataFrame(result, columns=["Left", "Right"])
+print(df.equals(test)) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 811](/challenges/excelbi/Excel811.html)
+- [Excel Challenge 812](/challenges/excelbi/Excel812.html)
+- [Excel Challenge 813](/challenges/excelbi/Excel813.html)

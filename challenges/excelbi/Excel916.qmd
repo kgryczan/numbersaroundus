@@ -1,0 +1,102 @@
+---
+title: "Excel BI - Excel Challenge 916"
+description: "🔰 916 Burrows - Wheeler Data Transform.xlsx says: > Burrows - Wheeler Data Transform: > 1."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 916](/challenges/images/exc916.jpg)
+
+## Challenge Description
+
+🔰 The prompt in 916 Burrows - Wheeler Data Transform.xlsx says: Burrows - Wheeler Data Transform:
+> 1. List all rotations of a text.
+> 2. Now sort the rotations lexicographically.
+> 3. Pick up the last characters of these rotations and join.
+>
+> Example: `badge` => rotations are `badge`, `adgeb`, `dgeba`, `gebad`, `ebadg` => After sorting `adgeb`, `badge`, `dgeba`, `ebadg`, `gebad` => Last characters and join = `beagd` The goal is to apply exactly that transformation to each word.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/900-999/916/916 Burrows - Wheeler Data Transform.xlsx"
+input <- read_excel(path, range = "A1:A10")
+test <- read_excel(path, range = "B1:B10")
+
+bwt <- function(x) {
+  n <- str_length(x)
+
+  rotations <- map_chr(0:(n - 1), \(k) {
+    str_c(str_sub(x, k + 1, n), str_sub(x, 1, k))
+  })
+
+  rotations %>%
+    sort() %>%
+    str_sub(-1) %>%
+    str_c(collapse = "")
+}
+
+result = input %>%
+  mutate(`Answer Expected` = map_chr(Words, bwt))
+
+all.equal(result$`Answer Expected`, test$`Answer Expected`)
+## [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Generate every cyclic rotation of the word.; Sort the rotations alphabetically.; Take the last character from each sorted rotation..
+- **Strengths**: The transform looks simple, but the key idea is that sorting all rotations groups similar string contexts together.
+- **Areas for Improvement**: The approach assumes the workbook structure and naming conventions stay stable, so any changed input shape would need minor adjustments.
+- **Gem**: For a word like:
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel/900-999/916/916 Burrows - Wheeler Data Transform.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=10)
+test = pd.read_excel(path, usecols="B", nrows=10)
+
+def bwt(s):
+    rots = sorted(s[i:] + s[:i] for i in range(len(s)))
+    return ''.join(r[-1] for r in rots)
+
+input['BWT'] = input['Words'].apply(bwt)
+
+print(input['BWT'].equals(test['Answer Expected']))
+```
+
+### Python
+
+The Python version follows the same structure: build all rotations with string slicing.; sort the rotations lexicographically..
+
+## **Difficulty Level**
+
+**Easy**
+
+Once the core pattern is recognized, the implementation is short and direct.
+
+### Related Challenges
+
+- [Excel Challenge 920](/challenges/excelbi/Excel920.html)
+- [Excel Challenge 932](/challenges/excelbi/Excel932.html)
+- [Excel Challenge 937](/challenges/excelbi/Excel937.html)

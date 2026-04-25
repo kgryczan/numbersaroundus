@@ -1,0 +1,155 @@
+---
+title: "Excel BI - PowerQuery Challenge 211"
+description: "Group A Group B Group C Group Append the groups one below the other and sort on Income descending, Name ascending within each group. The ordering of Groups will be on the basis of their total income. Hence, Group B will come first following by Group C and A as their total incomes are respectively 4130, 3450 and 3100."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 211](/challenges/images/exc211pq.jpg)
+
+## Challenge Description
+
+Group A Group B Group C Group Append the groups one below the other and sort on Income descending, Name ascending within each group. The ordering of Groups will be on the basis of their total income. Hence, Group B will come first following by Group C and A as their total incomes are respectively 4130, 3450 and 3100.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(unpivotr)
+library(janitor)
+
+path = "Power Query/PQ_Challenge_211.xlsx"
+input = read_xlsx(path, range = "A1:F10", col_names = FALSE)
+test  = read_xlsx(path, range = "H1:J20")
+
+result = input %>%
+  as_cells() %>%
+  behead("up-left", "Group") %>%
+  select(Group, chr, col, row) %>%
+  mutate(col = col %% 2 + 1) %>%
+  pivot_wider(names_from = col, values_from = chr) %>%
+  select(Group = 1, Row = 2, Name = 3, Income = 4) %>%
+  filter(!is.na(Name), Row != 2) %>%
+  mutate(Income = as.numeric(Income), 
+         total_per_group = sum(Income), 
+         Group = str_sub(Group, -1, -1), 
+         .by = Group) %>%
+  arrange(desc(total_per_group), desc(Income), Name) %>%
+  select(Group, Name, Income)
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "PQ_Challenge_211.xlsx"
+input = pd.read_excel(path,usecols="A:F", nrows=10, header=None)
+test = pd.read_excel(path, usecols="H:J", nrows=20)
+
+input.iloc[0] = input.iloc[0].ffill()
+input.columns = input.iloc[0] + " " + input.iloc[1]
+input = input.drop([0, 1]).reset_index(drop=True)
+
+def process_columns(df, col_type, value_name):
+    return (
+        df.filter(like=col_type)
+        .assign(row_number=lambda x: x.index + 1)
+        .melt(id_vars="row_number", var_name="column_name", value_name=value_name)
+        .assign(column=lambda x: x["column_name"].str.extract(r"\s([A-Z]{1})\s"))
+        .drop(columns=["row_number", "column_name"])
+    )
+
+names = process_columns(input, "Name", "name")
+incomes = process_columns(input, "Income", "income").drop(columns=["column"])
+
+result = pd.concat([names, incomes], axis=1)\
+    .dropna()\
+    .assign(total_income = lambda x: x.groupby("column")["income"].transform("sum"))\
+    .sort_values(by=["total_income", "income", "name"], ascending=[False, False, True])\
+    .reset_index(drop=True)\
+    .rename(columns={"name": "Name", "income": "Income", "column": "Group"})
+result = result[["Group","Name", "Income"]]
+result["Income"] = result["Income"].astype("int64")
+    
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 210](Excel210pq.qmd)

@@ -1,0 +1,155 @@
+---
+title: "Excel BI - PowerQuery Challenge 305"
+description: "Transpose the problem table into result table. Insert a total row. Profit = Sale - Cost"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 305](/challenges/images/exc305pq.jpg)
+
+## Challenge Description
+
+Transpose the problem table into result table. Insert a total row. Profit = Sale - Cost
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(janitor)
+
+path = "Power Query/300-399/305/PQ_Challenge_305.xlsx"
+input = read_excel(path, range = "A1:D14")
+test  = read_excel(path, range = "G1:J14")
+
+result = input %>%
+  mutate(Org = ifelse(!is.na(`Org No.`), `Org Name`, NA_character_)) %>%
+  rename(Region = `Org Name`, `Org Name` = Org) %>%
+  fill(`Org No.`, `Org Name`) %>%
+  filter(Region != `Org Name`) %>%
+  mutate(Profit = Sale - Cost) %>%
+  select(`Org No` = `Org No.`, `Org Name`, Region, Profit) %>%
+  group_by(`Org No`, `Org Name`) %>%
+  nest() %>%
+  mutate(data = map(data, ~ adorn_totals(.x, "row"))) %>%
+  unnest(data) %>%
+  mutate(`Org No` = ifelse(Region == "Total", "TOTAL", `Org No`)) %>%
+  mutate(`Org Name` = ifelse(`Org No` == "TOTAL", NA_character_, `Org Name`),
+         Region = ifelse(`Org No` == "TOTAL", NA_character_, Region)) 
+
+all.equal(result, test, check.attributes = FALSE)
+# > [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "300-399/305/PQ_Challenge_305.xlsx"
+input = pd.read_excel(path, usecols="A:D", nrows=14)
+test = pd.read_excel(path, usecols="G:J", nrows=14).rename(columns=lambda x: x.replace('.1', ''))
+
+input = (
+    input.assign(Org=lambda df: np.where(df['Org No.'].notna(), df['Org Name'], np.nan))
+    .rename(columns={'Org Name': 'Region', 'Org': 'Org Name'})
+    .pipe(lambda df: df.assign(**df[['Org No.', 'Org Name']].ffill()))
+    .loc[lambda df: df['Region'] != df['Org Name']]
+    .assign(Profit=lambda df: (df['Sale'] - df['Cost']).astype(int))
+    .filter(['Org No.', 'Org Name', 'Region', 'Profit'])
+    .rename(columns={'Org No.': 'Org No'})
+)
+
+dfs = {}
+for org_name, group in input.groupby('Org No'):
+    group = group.copy()
+    total_row = group[['Profit']].sum().rename('Total')
+    total_row['Org No'] = 'TOTAL'
+    total_row['Org Name'] = np.nan
+    total_row['Region'] = np.nan
+    group = pd.concat([group, total_row.to_frame().T], ignore_index=True)
+    dfs[org_name] = group
+
+result = pd.concat(dfs.values(), ignore_index=True)
+
+print(result.fillna('NaN').equals(test.fillna('NaN'))) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 304](Excel304pq.qmd)
+-   [Excel BI - Excel Challenge 685](Excel685.qmd)

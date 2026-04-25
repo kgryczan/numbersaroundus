@@ -1,0 +1,133 @@
+---
+title: "Excel BI - PowerQuery Challenge 255"
+description: "Transpose the data given in problem table to result table."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 255](/challenges/images/exc255pq.jpg)
+
+## Challenge Description
+
+Transpose the data given in problem table to result table.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_255.xlsx"
+input = read_excel(path, range = "A1:C14")
+test  = read_excel(path, range = "E1:J4")
+
+result = input %>%
+  pivot_wider(names_from = "Task", values_from = "Date Time") %>%
+  mutate(across(`2`:`6`, 
+                ~if_else(!is.na(.), 
+                         round(as.numeric(difftime(., `1`, units = "hours")),2), 
+                         NA_real_), 
+                .names = "{.col}-1")) %>%
+  select(-c(`1`:`6`)) %>%
+  rename(Task = Ticket)
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "PQ_Challenge_255.xlsx"
+input = pd.read_excel(path, usecols="A:C", nrows=14)
+test = pd.read_excel(path, usecols="E:J", nrows=3)
+
+input = input.pivot(index='Ticket', columns='Task', values='Date Time')
+
+for col in range(2, 7):
+    input[f'{col}-1'] = input.apply(
+        lambda row: round((row[col] - row[1]).total_seconds() / 3600, 2) if pd.notna(row[col]) else None, axis=1
+    )
+
+input.drop(columns=range(1, 7), inplace=True)
+input.reset_index(inplace=True)
+input.rename(columns={'Ticket': 'Task.1'}, inplace=True)
+
+print(input.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 254](Excel254pq.qmd)
+-   [Excel BI - Excel Challenge 635](Excel635.qmd)

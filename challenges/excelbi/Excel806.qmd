@@ -1,0 +1,97 @@
+---
+title: "Excel BI - Excel Challenge 806"
+description: "🔰 Extract Aadhar and PAN numbers from given strings."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 806](/challenges/images/exc806.jpg)
+
+## Challenge Description
+
+🔰 Extract Aadhar and PAN numbers from given strings. In case of multi answer, extract the first occurrence.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/806/806 Extract Aadhar and PAN.xlsx"
+input = read_excel(path, range = "A2:B11")
+test  = read_excel(path, range = "C2:D11")
+
+result = input %>%
+  mutate(Aadhar = str_extract(Strings, "\\d{12}") %>% as.numeric(),
+         PAN = str_extract(Strings, "[A-Z]{5}\\d{4}[A-Z]")) %>%
+  select(-c(Strings, Names))
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure.
+- **Strengths**: The solution stays close to the text pattern itself, which makes the extraction logic easy to audit.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: A small number of well-targeted text patterns does most of the heavy lifting.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+pd.set_option('display.float_format', '{:.0f}'.format)  # To display floats without scientific notation 
+
+path = "800-899/806/806 Extract Aadhar and PAN.xlsx"
+input = pd.read_excel(path, usecols="A:B", skiprows=1, nrows=10)
+test = pd.read_excel(path, usecols="C:D", skiprows=1, nrows=10)
+
+result = input.copy()
+result['Aadhar'] = result['Strings'].astype(str).str.extract(r"(\d{12})", expand=False).astype('float64')
+result['PAN'] = result['Strings'].astype(str).str.extract(r"([A-Z]{5}\d{4}[A-Z])")[0]
+result = result.drop(columns=['Strings', 'Names'])
+
+print(pd.concat([result, test], axis=1).to_string(index=False))
+
+#       Aadhar        PAN          Aadhar        PAN
+# 652381472095 ABCDE1234F    652381472095 ABCDE1234F
+#          NaN PQWRT9087K             NaN PQWRT9087K
+# 721468590342        NaN    721468590342        NaN
+# 503192071184 KJHGF7821L    503192071184 KJHGF7821L
+# 614573829570        NaN    614573829570        NaN
+# 487210986345        NaN    487210986345        NaN
+# 395076421813 GHJKL7812R    395076421813 GHJKL7812R
+#          NaN ASDFG2301W             NaN ASDFG2301W
+# 826419534708 QWERT9876P    826419534708 QWERT9876P
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 807](/challenges/excelbi/Excel807.html)
+- [Excel Challenge 808](/challenges/excelbi/Excel808.html)
+- [Excel Challenge 809](/challenges/excelbi/Excel809.html)

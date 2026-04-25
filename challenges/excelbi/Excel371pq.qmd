@@ -1,0 +1,145 @@
+---
+title: "Excel BI - PowerQuery Challenge 371"
+description: "Timestamp Event Type Value Status Occurrence Status Average Reading"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 371](/challenges/images/exc371pq.jpg)
+
+## Challenge Description
+
+Timestamp Event Type Value Status Occurrence Status Average Reading
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/371/PQ_Challenge_371.xlsx"
+input <- read_excel(path, range = "A1:C21")
+test <- read_excel(path, range = "E1:I7")
+
+result = input %>%
+  mutate(
+    Occurence = cumsum(`Event Type` == "Status") %>% as.numeric(),
+    Status = ifelse(`Event Type` == "Status", Value, NA)
+  ) %>%
+  fill(Occurence, Status) %>%
+  filter(`Event Type` != "Status") %>%
+  summarise(
+    `Average Reading` = mean(as.numeric(Value), na.rm = TRUE),
+    `Max Reading` = max(as.numeric(Value), na.rm = TRUE),
+    `Min Reading` = min(as.numeric(Value), na.rm = TRUE),
+    .by = c(Occurence, Status)
+  )
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "300-399/371/PQ_Challenge_371.xlsx"
+input = pd.read_excel(path, usecols="A:C", nrows=21)
+test = pd.read_excel(path, usecols="E:I", nrows=6)
+
+result = (
+    input
+    .assign(
+        Status_Occurrence=(input["Event Type"] == "Status").cumsum(),
+        Status=input["Value"].where(input["Event Type"] == "Status")
+    )
+    .assign(Status=lambda df: df["Status"].ffill())
+    .loc[lambda df: df["Event Type"] != "Status"]
+    .groupby(["Status_Occurrence", "Status"], sort=False)
+    .agg(
+        **{
+            "Average Reading": ("Value", lambda x: pd.to_numeric(x).mean()),
+            "Max Reading":     ("Value", lambda x: pd.to_numeric(x).max()),
+            "Min Reading":     ("Value", lambda x: pd.to_numeric(x).min()),
+        }
+    )
+    .reset_index()
+    .rename(columns={"Status_Occurrence": "Status Occurrence"})
+)
+
+result.equals(test)
+# True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The transformation rule is readable, but the final layout still requires a careful implementation.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 370](Excel370pq.qmd)
+-   [Excel BI - Excel Challenge 751](Excel751.qmd)

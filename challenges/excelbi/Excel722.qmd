@@ -1,0 +1,80 @@
+---
+title: "Excel BI - Excel Challenge 722"
+description: "🔰 Remove the row which contains minimum amount in a group."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 722](/challenges/images/exc722.jpg)
+
+## Challenge Description
+
+🔰 Remove the row which contains minimum amount in a group.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/722 Remove the Minimum Row.xlsx"
+input = read_excel(path, range = "A2:B12")
+test = read_excel(path, range = "D2:E8")
+
+result = input %>%
+  filter(Amount != min(Amount), .by = Product)
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/722/722 Remove the Minimum Row.xlsx"
+input = pd.read_excel(path, usecols="A:B", skiprows=1, nrows=11)
+test = pd.read_excel(path, usecols="D:E", skiprows=1, nrows=6).rename(columns=lambda col: col.replace('.1', ''))
+
+filtered = input.drop(input.groupby('Product')['Amount'].idxmin()).reset_index(drop=True)
+
+print(filtered.equals(test)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 723](/challenges/excelbi/Excel723.html)
+- [Excel Challenge 724](/challenges/excelbi/Excel724.html)
+- [Excel Challenge 725](/challenges/excelbi/Excel725.html)

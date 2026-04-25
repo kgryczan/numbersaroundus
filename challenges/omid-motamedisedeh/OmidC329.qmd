@@ -1,0 +1,135 @@
+---
+title: "Omid - Challenge 329"
+description: "🔰 Calculate the end date equal to the sum of Start date time and Duration"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 329](/challenges/images/OmidC329.jpg)
+
+## Challenge Description
+
+🔰 Calculate the end date equal to the sum of Start date time and Duration
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(lubridate)
+
+path <- "300-399/329/CH-329 Date Calculation.xlsx"
+input <- read_excel(path, range = "B2:C8")
+test  <- read_excel(path, range = "D2:D8") %>%
+  mutate(`End Time` = dmy_hms(`End Time`))
+
+result <- input %>%
+  mutate(
+    `Start Date` = dmy_hms(`Start Date`)
+  ) %>%
+  separate(`Duration [d.h:m:s]`, into = c("dh", "m", "s"), sep = ":", extra = "merge") %>%
+  separate(dh, into = c("d", "h"), sep = "\\.", convert = TRUE) %>%
+  mutate(across(c(d, h, m, s), as.numeric)) %>%
+  mutate(
+    calculated_end_date = `Start Date` +
+      days(d) + hours(h) + minutes(m) + seconds(s)
+  )
+
+result$calculated_end_date == test$`End Time`
+# [1] FALSE  TRUE  TRUE  TRUE  TRUE  TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "300-399/329/CH-329 Date Calculation.xlsx"
+input = pd.read_excel(path, usecols="B:C", nrows=6, skiprows=1)
+test = pd.read_excel(path, usecols="D", nrows=6, skiprows=1)
+test["End Time"] = pd.to_datetime(test["End Time"], dayfirst=True)
+
+input["Start Date"] = pd.to_datetime(input["Start Date"], dayfirst=True)
+
+dhms = input["Duration [d.h:m:s]"].str.split(":", expand=True)
+dh = dhms[0].str.split(".", expand=True)
+d = dh[0].astype(int)
+h = dh[1].astype(int)
+m = dhms[1].astype(int)
+s = dhms[2].astype(int)
+input[["d", "h", "m", "s"]] = pd.DataFrame({"d": d, "h": h, "m": m, "s": s})
+
+input["calculated_end_date"] = (
+    input["Start Date"]
+    + pd.to_timedelta(input["d"], unit="D")
+    + pd.to_timedelta(input["h"], unit="h") 
+    + pd.to_timedelta(input["m"], unit="m")
+    + pd.to_timedelta(input["s"], unit="s")
+)
+
+print(input["calculated_end_date"] == test["End Time"])
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 328](OmidC328.qmd)
+-   [Omid - Challenge 330](OmidC330.qmd)
+-   [Omid - Challenge 331](OmidC331.qmd)

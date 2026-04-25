@@ -1,0 +1,90 @@
+---
+title: "Excel BI - Excel Challenge 826"
+description: "🔰 Cities1 Cities2 Cities3 Cities4 Cities5 Zurich Munich Helsinki Rome Berlin"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 826](/challenges/images/exc826.jpg)
+
+## Challenge Description
+
+🔰 Cities1 Cities2 Cities3 Cities4 Cities5 Zurich Munich Helsinki Rome Berlin
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/826/826 Align Cities.xlsx"
+input = read_excel(path, range = "A1:E19")
+test  = read_excel(path, range = "G1:K19")
+
+inp_set = input %>% summarise(across(everything(), ~sum(!is.na(.)))) %>% unlist()
+cities = sort(unique(unlist(input)))
+starts = cumsum(c(1, head(inp_set, -1)))
+cols = map2(starts, inp_set, ~c(cities[.x:(.x + .y - 1)], rep(NA, 18 - .y)))
+result = bind_cols(set_names(cols, names(input)))
+
+identical(result, test) # TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "800-899/826/826 Align Cities.xlsx"
+input = pd.read_excel(path, usecols="A:E", nrows=19)
+test = pd.read_excel(path, usecols="G:K", nrows=19).rename(columns=lambda c: c.replace('.1', ''))
+
+inp_set = input.notna().sum().values
+cities = sorted([c for c in pd.unique(input.values.ravel('K')) if pd.notna(c)])
+starts = np.cumsum([0] + list(inp_set[:-1]))
+cols = [
+    list(cities[start:start + count]) + [np.nan] * (18 - count)
+    for start, count in zip(starts, inp_set)
+]
+result = pd.DataFrame({col: vals for col, vals in zip(input.columns, cols)})
+
+print(result.equals(test))  # Trues
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 827](/challenges/excelbi/Excel827.html)
+- [Excel Challenge 828](/challenges/excelbi/Excel828.html)
+- [Excel Challenge 829](/challenges/excelbi/Excel829.html)

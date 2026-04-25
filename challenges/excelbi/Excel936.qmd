@@ -1,0 +1,164 @@
+---
+title: "Excel BI - Excel Challenge 936"
+description: "🔰 Extract surname, first name, and ID from mixed free-text strings."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-23"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 936](/challenges/images/exc936.jpg)
+
+## Challenge Description
+
+🔰 Extract Surname, First Name and ID.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "900-999/936/936 Extract Name ID.xlsx"
+input <- read_excel(path, range = "A2:A11")
+test <- read_excel(path, range = "C2:E19")
+
+pattern <- "([A-Z]+)\\s+([A-Z]+)\\s+\\((\\d+)\\)"
+
+result <- input |>
+  drop_na() |>
+  mutate(matches = str_extract_all(Data, pattern)) |>
+  unnest(matches) |>
+  mutate(
+    Surname = str_match(matches, pattern)[, 2],
+    `First Name` = str_match(matches, pattern)[, 3],
+    ID = as.integer(str_match(matches, pattern)[, 4])
+  ) |>
+  select(Surname, `First Name`, ID)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Define one regex pattern that matches `SURNAME FIRSTNAME (ID)`.
+
+    -   Extract all matches from each text row.
+
+    -   Expand those matches into separate rows.
+
+    -   Parse each match into surname, first name, and ID.
+
+-   **Strengths**:
+
+    -   **Pattern-Driven**:
+
+        -   The solution ignores delimiters and focuses only on valid person records.
+
+    -   **Handles Multiple Entities per Row**:
+
+        -   `str_extract_all()` plus `unnest()` makes multi-record rows easy to process.
+
+    -   **Compact Workflow**:
+
+        -   The full extraction lives in one tidy pipeline.
+
+-   **Areas for Improvement**:
+
+    -   **Pattern Assumptions**:
+
+        -   The regex assumes names are uppercase and single-token on both sides.
+
+-   **Gem**:
+
+    -   Extracting entities directly by pattern is much cleaner than trying to split on inconsistent separators.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "900-999/936/936 Extract Name ID.xlsx"
+input_df = pd.read_excel(path, usecols="A", skiprows=1, nrows=10, header=0)
+test = pd.read_excel(path, usecols="C:E", skiprows=1, nrows=18, header=0)
+
+pattern = r'([A-Z]+)\s+([A-Z]+)\s+\((\d+)\)'
+
+records = []
+for val in input_df["Data"].dropna():
+    for m in re.finditer(pattern, val):
+        records.append({"Surname": m.group(1), "First Name": m.group(2), "ID": int(m.group(3))})
+
+result = pd.DataFrame(records).reset_index(drop=True)
+
+print(result.equals(test))
+# True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Define a regex with three capture groups.
+
+    -   Scan each text row for all person-pattern matches.
+
+    -   Extract surname, first name, and ID from each match.
+
+    -   Build the final table from the extracted records.
+
+-   **Strengths**:
+
+    -   **Explicit Match Handling**:
+
+        -   `re.finditer()` makes each extracted record easy to inspect.
+
+    -   **Robust Against Delimiter Noise**:
+
+        -   Slashes, dashes, and stars do not matter because the pattern targets the records themselves.
+
+    -   **Clean Output Construction**:
+
+        -   The result dataframe is assembled directly from parsed entities.
+
+-   **Areas for Improvement**:
+
+    -   **Hard-Coded Name Format**:
+
+        -   The regex would need extension for more complex names.
+
+-   **Gem**:
+
+    -   Going after the entity pattern instead of the separators is the smart simplification.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   Requires regex extraction with multiple entities per row.
+
+-   Involves turning semi-structured text into a normalized table.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - Excel Challenge 935](Excel935.qmd)
+-   [Excel BI - Excel Challenge 937](Excel937.qmd)

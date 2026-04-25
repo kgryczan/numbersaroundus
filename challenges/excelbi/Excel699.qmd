@@ -1,0 +1,101 @@
+---
+title: "Excel BI - Excel Challenge 699"
+description: "🔰 Only one alphabet can be removed from Words list and it should become a palindrome."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 699](/challenges/images/exc699.jpg)
+
+## Challenge Description
+
+🔰 Only one alphabet can be removed from Words list and it should become a palindrome. List the palindrome word so generated. If no answer is possible, answer will be blank.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(stringi)
+
+path = "Excel/699 Palindrome after one character removal.xlsx"
+input = read_excel(path, range = "A1:A10")
+test = read_excel(path, range = "B1:B10") %>%
+  replace_na(list(`Answer Expected` = ""))
+
+remove_each_char <- function(word) {
+  map_chr(
+    seq_len(nchar(word)),
+    \(i) paste0(substr(word, 1, i - 1), substr(word, i + 1, nchar(word)))
+  )
+}
+is_palindrome = function(word) {
+  word == stri_reverse(word)
+}
+
+result = input %>%
+  mutate(words = map(Words, remove_each_char)) %>%
+  unnest_longer(words) %>%
+  mutate(is_palindrome = map_lgl(words, is_palindrome)) %>%
+  filter(is_palindrome) %>%
+  select(-is_palindrome)
+
+result2 = input %>%
+  left_join(result, by = c("Words" = "Words")) %>%
+  replace_na(list(words = ""))
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "699 Palindrome after one character removal.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=10, names=["Words"])
+test = pd.read_excel(path, usecols="B", nrows=10, names=["Answer Expected"]).fillna("")
+
+def is_palindrome(word):
+    return word == word[::-1]
+
+result = input["Words"].apply(
+    lambda word: next((word[:i] + word[i+1:] for i in range(len(word)) if is_palindrome(word[:i] + word[i+1:])), "")
+)
+print(result)
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 700](/challenges/excelbi/Excel700.html)
+- [Excel Challenge 701](/challenges/excelbi/Excel701.html)
+- [Excel Challenge 702](/challenges/excelbi/Excel702.html)

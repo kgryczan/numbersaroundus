@@ -1,0 +1,104 @@
+---
+title: "Omid - Challenge 131"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 131](/challenges/images/OmidC131.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-131 Table Transformation.xlsx"
+input = read_excel(path, range = "C2:I7")
+test  = read_excel(path, range = "K2:N12")
+
+result = bind_rows(input[,1:4], input[,c(1,5:7)]) 
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-131 Table Transformation.xlsx"
+input = pd.read_excel(path, usecols="C:I", skiprows=1, nrows=5).rename(columns=lambda x: x.replace('.1', ''))
+test = pd.read_excel(path, usecols="K:N", skiprows=1, nrows=11).rename(columns=lambda x: x.replace('.1', '').replace('.2', ''))
+
+result = pd.concat([input.iloc[:, :4], input.iloc[:, [0, 4, 5, 6]]], axis=0).reset_index(drop=True)
+
+print(result.equals(test))  # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 130](OmidC130.qmd)
+-   [Omid - Challenge 132](OmidC132.qmd)
+-   [Omid - Challenge 133](OmidC133.qmd)

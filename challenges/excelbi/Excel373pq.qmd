@@ -1,0 +1,160 @@
+---
+title: "Excel BI - PowerQuery Challenge 373"
+description: "Step User Action Value FinalText CharactersTyped"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 373](/challenges/images/exc373pq.jpg)
+
+## Challenge Description
+
+Step User Action Value FinalText CharactersTyped
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(dplyr)
+library(readxl)
+library(purrr)
+library(stringr)
+
+path <- "300-399/373/PQ_Challenge_373.xlsx"
+input <- read_excel(path, range = "A1:D25")
+test <- read_excel(path, range = "F1:J3")
+
+
+process_user <- function(df) {
+  stack <- character()
+  walk2(df$Action, df$Value, \(a, v) {
+    if (a == "Type") {
+      stack <<- c(stack, v)
+    }
+    if (a == "Undo" && length(stack) > 0) stack <<- stack[-length(stack)]
+  })
+  tibble(
+    FinalText = str_c(stack, collapse = ""),
+    CharactersTyped = sum(df$Action == "Type"),
+    UndoCount = sum(df$Action == "Undo"),
+    FinalLength = length(stack)
+  )
+}
+
+result <- input %>%
+  arrange(Step) %>%
+  group_by(User) %>%
+  group_modify(~ process_user(.x)) %>%
+  ungroup()
+
+all.equal(result, test)
+# CHaractersTyped column has different values that given.
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "300-399/373/PQ_Challenge_373.xlsx"
+input = pd.read_excel(path, usecols="A:D", nrows=24)
+test = pd.read_excel(path, usecols="F:J", nrows=2)
+
+def process_user(df):
+    stack = []
+    for _, row in df.iterrows():
+        if row["Action"] == "Type":
+            stack.append(row["Value"])
+        elif row["Action"] == "Undo" and len(stack) > 0:
+            stack.pop()
+    return pd.Series({
+        "FinalText": "".join(stack),
+        "CharactersTyped": (df["Action"] == "Type").sum(),
+        "UndoCount": (df["Action"] == "Undo").sum(),
+        "FinalLength": len(stack),
+    })
+
+result = (
+    input
+    .sort_values("Step")
+    .groupby("User", sort=True)
+    .apply(process_user, include_groups=False)
+    .reset_index()
+)
+
+print(result.equals(test))
+# CharactersTyped column has different values than given
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 372](Excel372pq.qmd)
+-   [Excel BI - Excel Challenge 753](Excel753.qmd)

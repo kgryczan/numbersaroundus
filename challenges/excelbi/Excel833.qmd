@@ -1,0 +1,92 @@
+---
+title: "Excel BI - Excel Challenge 833"
+description: "🔰 Summarize the table as shown where Amount is sum of non date values from Data Column."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 833](/challenges/images/exc833.jpg)
+
+## Challenge Description
+
+🔰 Summarize the table as shown where Amount is sum of non date values from Data Column.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/833/833 Summarize.xlsx"
+input = read_excel(path, range = "A2:C14")
+test  = read_excel(path, range = "E2:H5")
+
+result = input %>%
+  mutate(Date = ifelse(!is.na(Task), Data, NA)) %>%
+  fill(Date, Task) %>%
+  filter(Data != Date) %>%
+  summarise(Amount = sum(Data, na.rm = TRUE), .by = c(Store, Date, Task)) %>%
+  mutate(Date = janitor::excel_numeric_to_date(Date) %>% as.POSIXct())
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Apply the business rule conditions explicitly.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "800-899/833/833 Summarize.xlsx"
+input = pd.read_excel(path, usecols="A:C", skiprows=1, nrows=13)
+test = pd.read_excel(path, usecols="E:H", skiprows=1, nrows=3).rename(columns=lambda col: col.replace('.1', ''))
+
+input['Date'] = input.apply(lambda row: row['Data'] if pd.notna(row['Task']) else pd.NA, axis=1)
+input['Date'] = input['Date'].fillna(method='ffill')
+input['Task'] = input['Task'].fillna(method='ffill')
+filtered = input[input['Data'] != input['Date']]
+
+result = (
+    filtered
+    .groupby(['Store', 'Date', 'Task'], as_index=False)
+    .agg(Amount=('Data', lambda x: x.sum(skipna=True)))
+)
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 834](/challenges/excelbi/Excel834.html)
+- [Excel Challenge 835](/challenges/excelbi/Excel835.html)
+- [Excel Challenge 836](/challenges/excelbi/Excel836.html)

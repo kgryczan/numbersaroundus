@@ -1,0 +1,128 @@
+---
+title: "Omid - Challenge 297"
+description: "🔰 Group Challenge 297: Custom Grouping!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 297](/challenges/images/OmidC297.jpg)
+
+## Challenge Description
+
+🔰 Group Challenge 297: Custom Grouping!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/297/CH-297 Custom Grouping.xlsx"
+input = read_excel(path, range = "B2:C19")
+test  = read_excel(path, range = "G2:H8")
+
+give_triangular = function(x) {
+  k = ceiling((sqrt(8 * x + 1) - 1) / 2)
+  k * (k + 1) / 2
+}
+t = give_triangular(nrow(input))
+seq = rep(1:t, times = 1:t)[1:nrow(input)] 
+
+result = input %>%
+  mutate(Group = seq) %>%
+  summarise(`Total Sales` = sum(Sales), .by = Group)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "200-299/297/CH-297 Custom Grouping.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=17)
+test = pd.read_excel(path, usecols="G:H", skiprows=1, nrows=6)
+
+def give_triangular(x):
+    k = np.ceil((np.sqrt(8 * x + 1) - 1) / 2)
+    return k * (k + 1) / 2
+
+t = int(give_triangular(len(input)))
+seq = np.repeat(np.arange(1, t + 1), np.arange(1, t + 1))[:len(input)]
+
+input['Group'] = seq
+result = input.groupby('Group', as_index=False)['Sales'].sum().rename(columns={'Sales': 'Total Sales'})
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 296](OmidC296.qmd)
+-   [Omid - Challenge 298](OmidC298.qmd)
+-   [Omid - Challenge 299](OmidC299.qmd)

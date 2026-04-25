@@ -1,0 +1,142 @@
+---
+title: "Omid - Challenge 140"
+description: "🔰 For each customer, extract the ten consecutive days with the highest purchases."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 140](/challenges/images/OmidC140.jpg)
+
+## Challenge Description
+
+🔰 For each customer, extract the ten consecutive days with the highest purchases.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(slider)
+
+path = "files/CH-140 Golden Period.xlsx"
+input = read_excel(path, range = "B2:D26")
+test  = read_excel(path, range = "F2:H5")
+
+result = input %>%
+  summarise(Qty = sum(Qty), .by = c(Date, Customer)) %>%
+  group_by(Customer) %>%
+  complete(Date = seq.Date(min(as.Date(Date)), as.Date("2024/11/01"), by = "1 day")) %>%
+  left_join(input)  %>%
+  replace_na(list(Qty = 0)) %>%
+  group_by(Customer) %>%
+  mutate(rolling_sum = slide_dbl(Qty, sum, .before = 9, .complete = TRUE)) %>%
+  filter(rolling_sum == max(rolling_sum, na.rm = T)) %>%
+  filter(Date == max(Date, na.rm = T)) %>% 
+  mutate(min_date = Date - days(9)) %>%
+  select(Customer, min_date, Date, `Total Qty` = rolling_sum) %>%
+  mutate(min_date = format(min_date, "%y-%m-%d"), Date = format(Date, "%y-%m-%d")) %>%
+  unite("Period", min_date, Date, sep = " to ")
+
+all.equal(result, test, check.attributes = F)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from pandas.tseries.offsets import Day
+
+path = "CH-140 Golden Period.xlsx"
+input = pd.read_excel(path, usecols="B:D", skiprows=1, nrows=25)
+test = pd.read_excel(path, usecols="F:H", skiprows=1, nrows=3).rename(columns=lambda x: x.split('.')[0])
+
+result = input.groupby(['Date', 'Customer'], as_index=False)['Qty'].sum()
+result = (result.set_index('Date')
+          .groupby('Customer')
+          .apply(lambda x: x.reindex(pd.date_range(x.index.min(), "2024-11-01", freq='D')))
+          .reset_index(level=0, drop=True)
+          .reset_index())
+result['Qty'] = result['Qty'].fillna(0)
+result['Customer'] = result['Customer'].ffill()
+result['rolling_sum'] = result.groupby('Customer')['Qty'].rolling(window=10, min_periods=10).sum().reset_index(level=0, drop=True)
+result = result[result.groupby('Customer')['rolling_sum'].transform('max') == result['rolling_sum']]
+result = result.groupby('Customer').tail(1)
+result['min_date'] = (result['index'] - Day(9)).dt.strftime('%y-%m-%d')
+result['Date'] = result['index'].dt.strftime('%y-%m-%d')
+result['Period'] = result['min_date'] + ' to ' + result['Date']
+result = result[['Customer', 'Period', 'rolling_sum']].rename(columns={'rolling_sum': 'Total Qty'}).reset_index(drop=True)
+result['Total Qty'] = result['Total Qty'].astype('int64')
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 139](OmidC139.qmd)
+-   [Omid - Challenge 141](OmidC141.qmd)
+-   [Omid - Challenge 142](OmidC142.qmd)

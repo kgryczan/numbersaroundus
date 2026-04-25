@@ -1,0 +1,129 @@
+---
+title: "Omid - Challenge 258"
+description: "🔰 Question Result Text {Family:Ezali, age:35} {name:John, age:30, city:Sydney} {name:Omid, website:OmidBI.com} name age"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 258](/challenges/images/OmidC258.jpg)
+
+## Challenge Description
+
+🔰 Question Result Text {Family:Ezali, age:35} {name:John, age:30, city:Sydney} {name:Omid, website:OmidBI.com} name age
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(jsonlite)
+
+path = "files/200-299/258/CH-258 Column Splitting.xlsx"
+input = read_excel(path, range = "B2:B6")
+test  = read_excel(path, range = "D2:H6")
+
+result = input %>%
+  mutate(across(everything(),
+         ~ str_replace_all(.x, "([a-zA-Z0-9\\.]+)", '"\\1"'))) %>%
+  mutate(text_parsed = map(Text, ~ fromJSON(.) %>% as_tibble())) %>%
+  unnest(text_parsed) %>% 
+  select(-Text) 
+
+all.equal(result, test) 
+# > [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import json
+
+path = "200-299/258/CH-258 Column Splitting.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=5)
+test = pd.read_excel(path, usecols="D:H", skiprows=1, nrows=5)
+
+result = (
+    pd.DataFrame(
+        input['Text']
+        .str.replace(r"([a-zA-Z0-9\.]+)", r'"\1"', regex=True)
+        .map(json.loads)
+        .tolist()
+    )
+    .assign(age=lambda x: x['age'].astype(float))
+)
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 257](OmidC257.qmd)
+-   [Omid - Challenge 259](OmidC259.qmd)
+-   [Omid - Challenge 260](OmidC260.qmd)

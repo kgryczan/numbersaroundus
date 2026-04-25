@@ -1,0 +1,164 @@
+---
+title: "Excel BI - Excel Challenge 935"
+description: "🔰 Work out the shortest unique prefixes for a list of codes."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-23"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 935](/challenges/images/exc935.jpg)
+
+## Challenge Description
+
+🔰 Work out the Shortest Unique Prefixes (SUPs).
+SUP means: take as few characters as possible from the left until the prefix is unique in the entire list.
+If there is no shorter unique answer, take the full string.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "900-999/935/935 Prefixes.xlsx"
+input <- read_excel(path, range = "A2:A26")
+test <- read_excel(path, range = "B2:B26")
+
+codes <- input$Code
+shortest_unique_prefix <- function(code, all_codes) {
+  for (len in seq_len(nchar(code))) {
+    prefix <- substr(code, 1, len)
+    if (sum(startsWith(all_codes, prefix)) == 1) return(prefix)
+  }
+  code
+}
+result <- tibble(SUP = map_chr(codes, ~ shortest_unique_prefix(.x, codes)))
+
+all.equal(result, test)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Process one code at a time.
+
+    -   Build prefixes from shortest to longest.
+
+    -   Check how many codes start with the current prefix.
+
+    -   Return the first prefix that appears only once.
+
+-   **Strengths**:
+
+    -   **Direct and Readable**:
+
+        -   The code mirrors the challenge wording exactly.
+
+    -   **Correct Fallback**:
+
+        -   Returning the full string handles the edge case cleanly.
+
+    -   **Simple Uniqueness Test**:
+
+        -   `startsWith()` makes the prefix check easy to understand.
+
+-   **Areas for Improvement**:
+
+    -   **Performance on Huge Lists**:
+
+        -   Rechecking the whole code set for every prefix would scale poorly on very large inputs.
+
+-   **Gem**:
+
+    -   The first prefix with a global match count of one is a beautiful minimal uniqueness rule.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "900-999/935/935 Prefixes.xlsx"
+input_df = pd.read_excel(path, usecols="A", skiprows=1, nrows=24)
+test = pd.read_excel(path, usecols="B", skiprows=1, nrows=24)
+
+codes = input_df["Code"].tolist()
+
+
+def shortest_unique_prefix(code, all_codes):
+    for length in range(1, len(code) + 1):
+        prefix = code[:length]
+        if sum(1 for c in all_codes if c.startswith(prefix)) == 1:
+            return prefix
+    return code
+
+
+result = pd.DataFrame({"SUP": [shortest_unique_prefix(c, codes) for c in codes]})
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   For each code, test prefixes from left to right.
+
+    -   Count how many codes share the prefix.
+
+    -   Stop at the first prefix that is globally unique.
+
+    -   Fall back to the complete code if no shorter unique prefix exists.
+
+-   **Strengths**:
+
+    -   **Very Transparent**:
+
+        -   The loop structure makes the greedy prefix search obvious.
+
+    -   **Correct Tie Handling**:
+
+        -   Prefix collisions are handled naturally by the match count.
+
+    -   **Matches Business Intuition**:
+
+        -   The implementation reads like the plain-English rule.
+
+-   **Areas for Improvement**:
+
+    -   **Scalability**:
+
+        -   A trie-based structure would be faster for very large code lists.
+
+-   **Gem**:
+
+    -   Using the shortest globally unique prefix makes the solution both minimal and deterministic.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   Requires iterative prefix search and collision checking.
+
+-   Involves handling edge cases where full strings are required.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - Excel Challenge 934](Excel934.qmd)
+-   [Excel BI - Excel Challenge 936](Excel936.qmd)

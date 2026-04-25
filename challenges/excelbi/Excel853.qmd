@@ -1,0 +1,82 @@
+---
+title: "Excel BI - Excel Challenge 853"
+description: "🔰 For the given numbers, find the number of steps needed to reach 1."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 853](/challenges/images/exc853.jpg)
+
+## Challenge Description
+
+🔰 For the given numbers, find the number of steps needed to reach 1. (Colum C - Collatz Decomposition has been given to back the answer)
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/853/853 Collatz Sequence.xlsx"
+input <- read_excel(path, range = "A2:A9")
+test  <- read_excel(path, range = "B2:B9")
+
+csteps <- function(n) { s <- 0; while(n > 1) { n <- if(n %% 2) 3*n + 1 else n/2; s <- s + 1 }; s }
+result <- input %>% mutate(Steps = map_dbl(`Start Number`, csteps))
+
+all.equal(result$Steps, test$Steps)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel/800-899/853/853 Collatz Sequence.xlsx"
+input = pd.read_excel(path, usecols="A", skiprows=1, nrows=8)
+test = pd.read_excel(path, usecols="B", skiprows=1, nrows=8)
+
+collatz_steps = lambda n: 0 if n == 1 else 1 + collatz_steps(3 * n + 1 if n % 2 else n // 2)
+input["Steps"] = input.iloc[:, 0].apply(collatz_steps)
+
+print(input["Steps"].equals(test["Steps"]))
+# True
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 854](/challenges/excelbi/Excel854.html)
+- [Excel Challenge 855](/challenges/excelbi/Excel855.html)
+- [Excel Challenge 856](/challenges/excelbi/Excel856.html)

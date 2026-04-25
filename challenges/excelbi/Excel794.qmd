@@ -1,0 +1,105 @@
+---
+title: "Excel BI - Excel Challenge 794"
+description: "🔰 Convert a given numerical value with a metric prefix to another specified metric prefix (or its base unit)."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 794](/challenges/images/exc794.jpg)
+
+## Challenge Description
+
+🔰 Convert a given numerical value with a metric prefix to another specified metric prefix (or its base unit). 1. A string representing the value to be converted. This string will contain a number followed by a metric prefix symbol (e.g., '3k', '750k', '25c'). If no prefix is provided, the value is assumed to be in the base unit. 2. A character representing the target metric prefix symbol (e.g., 'm', 'c'). If no target prefix is provided, the value should be converted to its base unit (a factor of 1). The formula should output a single value representing the converted number.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/794/794 Conversion.xlsx"
+input1 = read_excel(path, range = "A1:D22")
+input2 = read_excel(path, range = "F1:G27")
+test  = read_excel(path, range = "H1:H27", col_types = "numeric") 
+
+r1 = input2 %>%
+  mutate(
+    value = as.numeric(str_extract(Value, "^[0-9]+\\.*[0-9]*")),
+    unit = str_extract(Value, "[a-zA-Z]{0,2}$")
+  ) %>%
+  left_join(input1 %>% select(Symbol, pow_from = `Power of 10`), by = c("unit" = "Symbol")) %>%
+  left_join(input1 %>% select(Symbol, pow_to = `Power of 10`), by = c("To" = "Symbol")) %>%
+  mutate(
+    pow_from = replace_na(pow_from, 0),
+    pow_to = replace_na(pow_to, 0),
+    result = value * 10^(pow_to - pow_from)
+  )
+
+all.equal(r1$result, test$`Expected Answer`, tolerance = 0.01, check.attributes = FALSE)
+
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure.
+- **Strengths**: The solution stays close to the text pattern itself, which makes the extraction logic easy to audit.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: A small number of well-targeted text patterns does most of the heavy lifting.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "700-799/794/794 Conversion.xlsx"
+input1 = pd.read_excel(path, usecols="A:D", nrows=21)
+input2 = pd.read_excel(path, usecols="F:G", nrows=27)
+test   = pd.read_excel(path, usecols="H", nrows=27).astype(float)
+
+input1["Symbol"] = input1["Symbol"].fillna("").astype(str)
+input2["value_num"] = input2["Value"].str.extract(r"^([\d.]+)").astype(float)
+input2["unit"] = input2["Value"].str.extract(r"([A-Za-zμ]{1,2})$").fillna("")
+pow_map = dict(zip(input1["Symbol"], input1["Power of 10"]))
+input2["pow_from"] = input2["unit"].map(pow_map)
+input2["pow_to"] = input2["To"].map(pow_map)
+r1 = input2
+r1["pow_from"] = r1["pow_from"].fillna(0).astype(int)
+r1["pow_to"]   = r1["pow_to"].fillna(0).astype(int)
+r1["result"] = r1["value_num"] * (10.0 ** r1["pow_from"]) / (10.0 ** r1["pow_to"])
+
+output = pd.concat([r1["result"].reset_index(drop=True), test["Expected Answer"].reset_index(drop=True)], axis=1)
+output.columns = ["Calculated Result", "Expected Answer"]
+print(output)
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 795](/challenges/excelbi/Excel795.html)
+- [Excel Challenge 796](/challenges/excelbi/Excel796.html)
+- [Excel Challenge 797](/challenges/excelbi/Excel797.html)

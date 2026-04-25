@@ -1,0 +1,129 @@
+---
+title: "Crispo - Excel Challenge 44 2024"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2024-11-03"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 44 2024](/challenges/images/Crispo442024.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Projected HeadCount Accountant ⭐Create a Recruitment plan from the Projected Headcount ⭐1st hire = 1st month of headcount
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/Excel Challenge Nov 3rd.xlsx"
+input = read_excel(path, range = "B3:I8")
+test  = read_excel(path, range = "K3:M15")
+
+result = input %>%
+  pivot_longer(cols = -c(1), names_to = "Month", values_to = "HC") %>%
+  replace_na(list(HC = 0)) %>%
+  mutate(Month = my(Month)) %>%
+  mutate(Hire = HC - lag(HC, default = 0), .by = Position) %>%
+  filter(Hire > 0) %>%
+  select(-HC)
+
+all.equal(result, test, check.attributes = FALSE) 
+# False, one value is different. Mistake in construction of challenge.
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data to the grain required by the task
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from pandas.tseries.offsets import MonthEnd
+
+path = "files/Excel Challenge Nov 3rd.xlsx"
+input = pd.read_excel(path, usecols="B:I", skiprows=2, nrows=6)
+test = pd.read_excel(path, usecols="K:M", skiprows=2, nrows=12).rename(columns=lambda x: x.replace('.1', ''))
+
+input = input.melt(id_vars=input.columns[0], var_name="Month", value_name="HC")
+input["HC"] = input["HC"].fillna(0)
+input["Month"] = pd.to_datetime(input["Month"], format='%b-%y') + MonthEnd(0)
+input["Hire"] = input.groupby("Position")["HC"].diff().fillna(input["HC"]).astype(int)
+result = input[input["Hire"] > 0].drop(columns=["HC"]).sort_values(by=["Position", "Month"]).reset_index(drop=True)
+
+print(result.equals(test))  # False, one value mistaken in challenge.
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data to the grain required by the task
+
+    -   Aggregates or ranks values at the correct grouping level
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines familiar Excel-style logic with at least one non-trivial reshape, grouping, or parsing step.
+
+-   The answer depends on getting the output layout exactly right.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 43 2024](Crispo 432024.qmd)
+-   [Crispo - Excel Challenge 45 2024](Crispo 452024.qmd)

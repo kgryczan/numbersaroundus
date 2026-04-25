@@ -1,0 +1,86 @@
+---
+title: "Excel BI - Excel Challenge 849"
+description: "🔰 Work out the running total first in group of 1, then 2, then 3 and so on."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 849](/challenges/images/exc849.jpg)
+
+## Challenge Description
+
+🔰 Work out the running total first in group of 1, then 2, then 3 and so on.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/849/849 Running Total.xlsx"
+input <- read_excel(path, range = "A1:A20")
+test  <- read_excel(path, range = "B1:B20")
+
+result = input %>%
+  mutate(seq = map_int(row_number(), ~ min(which(cumsum(1:.) >= .)))) %>%
+  mutate(cumsum = cumsum(Data), .by = seq) %>%
+  select(`Answer Expected` = cumsum)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "Excel/800-899/849/849 Running Total.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=20)
+test = pd.read_excel(path, usecols="B", nrows=20)
+
+seq = np.ceil((-1 + np.sqrt(1 + 8 * (np.arange(1, len(input) + 1)))) / 2).astype(int)
+df = pd.DataFrame({"Data": input['Data'], "seq": seq})
+df["Answer Expected"] = df.groupby("seq")["Data"].cumsum()
+df = df.drop(columns=["seq", "Data"])
+
+print(df.equals(test)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 850](/challenges/excelbi/Excel850.html)
+- [Excel Challenge 851](/challenges/excelbi/Excel851.html)
+- [Excel Challenge 852](/challenges/excelbi/Excel852.html)

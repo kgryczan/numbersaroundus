@@ -1,0 +1,133 @@
+---
+title: "Excel BI - Excel Challenge 904"
+description: "🔰 904 Grades.xlsx says: > Grade a student on the basis following - > 1."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 904](/challenges/images/exc904.jpg)
+
+## Challenge Description
+
+🔰 The prompt in 904 Grades.xlsx says: Grade a student on the basis following -
+> 1. Top 3 Scoring subjects' average - >=90 is A, >=80 is B, >=70 is C, >=60 is D, <60 is F.
+> 2. If a person scores <60 in 2 or more subjects, the grade will be F (so, it will override point 1) The input provides a student ID and a packed subject-mark string. The goal is to: 1. unpack subject marks,
+2. compute the top-three-subject average,
+3. apply the grade bands,
+4. override with `F` when two or more subjects are below 60.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/900-999/904/904 Grades.xlsx"
+input <- read_excel(path, range = "A1:B21")
+test <- read_excel(path, range = "C1:C21")
+
+grade_student <- function(x) {
+  if (sum(x < 60) >= 2) {
+    "F"
+  } else {
+    cut(
+      mean(sort(x, decreasing = TRUE)[1:3]),
+      c(-Inf, 60, 70, 80, 90, Inf),
+      labels = c("F", "D", "C", "B", "A"),
+      right = FALSE
+    )
+  }
+}
+
+result = input %>%
+  separate_longer_delim(`Subject Marks`, delim = "; ") %>%
+  separate_wider_delim(
+    `Subject Marks`,
+    delim = ":",
+    names = c("Subject", "Marks")
+  ) %>%
+  mutate(Marks = as.numeric(Marks)) %>%
+  group_by(Student_ID) %>%
+  mutate(Grade = grade_student(Marks)) %>%
+  summarise(Grade = first(Grade))
+
+all.equal(result$Grade, test$Final_Grade)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Split the packed subject-mark string into separate subject rows.; Convert marks to numeric.; Group marks by student..
+- **Strengths**: The interesting part is the override logic.
+- **Areas for Improvement**: The approach assumes the workbook structure and naming conventions stay stable, so any changed input shape would need minor adjustments.
+- **Gem**: The final grade is not always determined by the top-three average.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "Excel/900-999/904/904 Grades.xlsx"
+input = pd.read_excel(path, usecols="A:B", nrows=21)
+test = pd.read_excel(path, usecols="C", nrows=21)
+
+def grade_student(marks):
+    if np.sum(np.array(marks) < 60) >= 2:
+        return "F"
+    avg_top3 = np.mean(sorted(marks, reverse=True)[:3])
+    return pd.cut(
+        [avg_top3],
+        bins=[-np.inf, 60, 70, 80, 90, np.inf],
+        labels=["F", "D", "C", "B", "A"],
+        right=False
+    )[0]
+
+long = (
+    input[['Student_ID', 'Subject Marks']]
+    .assign(subject_mark=lambda d: d['Subject Marks'].str.split(';\\s*'))
+    .explode('subject_mark')
+    .dropna(subset=['subject_mark'])
+)
+
+long[['Subject', 'Marks']] = long['subject_mark'].str.split(':', n=1, expand=True)
+long['Marks'] = long['Marks'].astype(float)
+
+input = (
+    long.groupby('Student_ID')
+    .apply(lambda g: pd.Series({'Grade': grade_student(g['Marks'].values)}))
+    .reset_index()
+)
+
+print(input['Grade'].equals(test['Final_Grade']))  # True
+```
+
+### Python
+
+The Python version follows the same structure: split the packed mark string into subject-mark pairs.; explode the pairs into a long table..
+
+## **Difficulty Level**
+
+**Medium / Hard**
+
+The solution requires more than one straight transformation and depends on a non-obvious rule or iterative process.
+
+### Related Challenges
+
+- [Excel Challenge 927](/challenges/excelbi/Excel927.html)
+- [Excel Challenge 931](/challenges/excelbi/Excel931.html)
+- [Excel Challenge 905](/challenges/excelbi/Excel905.html)

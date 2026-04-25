@@ -1,0 +1,99 @@
+---
+title: "Excel BI - Excel Challenge 708"
+description: "🔰 Answer Expected Names Q1 Q2 Q3 Q4 Custom Smith Johnson Williams"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 708](/challenges/images/exc708.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Names Q1 Q2 Q3 Q4 Custom Smith Johnson Williams
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/708 Repeat Names and Quarters.xlsx"
+input = read_excel(path, range = "A2:E6")
+test = read_excel(path, range = "G2:H18")
+
+result = input %>%
+  pivot_longer(cols = -Names, names_to = "Custom", values_to = "Value") %>%
+  uncount(Value)
+
+all.equal(result, test)
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "708 Repeat Names and Quarters.xlsx"
+
+input = pd.read_excel(path, sheet_name=0, usecols="A:E", skiprows=1, nrows=4)
+test = pd.read_excel(path, sheet_name=0, usecols="G:H", skiprows=1, nrows=16).rename(columns=lambda x: x.replace(".1", ""))
+
+input["Names"] = pd.Categorical(input["Names"], categories=input["Names"].unique(), ordered=True)
+
+result = (
+    input.melt(
+        id_vars=["Names"], 
+        var_name="Custom", 
+        value_name="Value"
+    )
+    .loc[
+        lambda df: df.index.repeat(
+            df["Value"].fillna(0).astype(int)
+        )
+    ]
+    .drop(columns=["Value"])
+    .sort_values(["Names", "Custom"])
+    .reset_index(drop=True)
+)
+
+result["Names"] = result["Names"].astype(str)
+
+print(result.equals(test))
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 709](/challenges/excelbi/Excel709.html)
+- [Excel Challenge 710](/challenges/excelbi/Excel710.html)
+- [Excel Challenge 711](/challenges/excelbi/Excel711.html)

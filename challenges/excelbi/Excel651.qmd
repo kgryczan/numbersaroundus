@@ -1,0 +1,118 @@
+---
+title: "Excel BI - Excel Challenge 651"
+description: "🔰 Create the vortex grid of numbers (n x n) for a value given in column A."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 651](/challenges/images/exc651.jpg)
+
+## Challenge Description
+
+🔰 Create the vortex grid of numbers (n x n) for a value given in column A. Samples are given for 2, 4 and 7.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/651 Vortex Sequence.xlsx"
+test2 = read_excel(path, range = "B2:C3", col_names = F) %>% as.matrix()
+test4 = read_excel(path, range = "B6:E9", col_names = F) %>% as.matrix()
+test7 = read_excel(path, range = "B12:H18", col_names = F) %>% as.matrix()
+
+spiral_matrix <- function(n) {
+  m <- matrix(0, n, n)
+  directions <- list(c(-1, 0), c(0, 1), c(1, 0), c(0, -1))
+  dir_idx <- 1
+  pos <- c(n, 1)
+  
+  for (i in 1:(n * n)) {
+    m[pos[1], pos[2]] <- i
+    next_pos <- pos + directions[[dir_idx]]
+    
+    if (!(all(next_pos >= 1 & next_pos <= n) && m[next_pos[1], next_pos[2]] == 0)) {
+      dir_idx <- (dir_idx %% 4) + 1
+      next_pos <- pos + directions[[dir_idx]]
+    }
+    pos <- next_pos
+  }
+  m
+}
+
+all.equal(spiral_matrix(2), test2, check.attributes = F) # TRUE
+all.equal(spiral_matrix(4), test4, check.attributes = F) # TRUE
+all.equal(spiral_matrix(7), test7, check.attributes = F) # TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "651 Vortex Sequence.xlsx"
+test2 = pd.read_excel(path,  usecols="B:C", skiprows=1,  nrows = 2, header=None).to_numpy()
+test4 = pd.read_excel(path,  usecols="B:E", skiprows = 5, nrows = 4, header=None).to_numpy()
+test7 = pd.read_excel(path,  usecols="B:H", skiprows = 11, nrows = 7, header=None).to_numpy()
+
+def spiral_matrix(n):
+    matrix = np.zeros((n, n), dtype=int)
+    directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
+    dir_idx = 0
+    pos = [n-1, 0] 
+    
+    for i in range(1, n * n + 1):
+        matrix[pos[0], pos[1]] = i
+        next_pos = [pos[0] + directions[dir_idx][0], pos[1] + directions[dir_idx][1]]
+        
+        if (not (0 <= next_pos[0] < n and 0 <= next_pos[1] < n) or 
+            matrix[next_pos[0], next_pos[1]] != 0):
+            dir_idx = (dir_idx + 1) % 4
+            next_pos = [pos[0] + directions[dir_idx][0], pos[1] + directions[dir_idx][1]]
+        pos = next_pos
+    
+    return matrix
+
+print(np.array_equal(test2, spiral_matrix(2))) # True
+print(np.array_equal(test4, spiral_matrix(4))) # True
+print(np.array_equal(test7, spiral_matrix(7))) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 652](/challenges/excelbi/Excel652.html)
+- [Excel Challenge 653](/challenges/excelbi/Excel653.html)
+- [Excel Challenge 654](/challenges/excelbi/Excel654.html)

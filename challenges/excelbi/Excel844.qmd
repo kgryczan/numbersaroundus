@@ -1,0 +1,91 @@
+---
+title: "Excel BI - Excel Challenge 844"
+description: "🔰 Answer Expected Currency Rate AUD CAD CHF EUR GBP INR JPY"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 844](/challenges/images/exc844.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Currency Rate AUD CAD CHF EUR GBP INR JPY
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/844/844 Currency Conversion.xlsx"
+input = read_excel(path, range = "A2:B10")
+test  = read_excel(path, range = "D2:M11")
+
+input = input %>% add_row(Currency = "USD", Rate = 1)
+
+result = tidyr::crossing(from = input$Currency, to = input$Currency) %>%
+  left_join(input, by = c("from" = "Currency")) %>%
+  left_join(input, by = c("to" = "Currency"), suffix = c(".from", ".to")) %>%
+  mutate(rate = round(if_else(from == to, 1, Rate.to / Rate.from), 3)) %>%
+  select(from, to, rate) %>%
+  pivot_wider(names_from = to, values_from = rate, names_sort = TRUE) %>%
+  rename(...1 = from)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel/800-899/844/844 Currency Conversion.xlsx"
+input = pd.read_excel(path, usecols="A:B", skiprows=1, nrows=8)
+test = pd.read_excel(path, usecols="D:M", skiprows=1, nrows=10)
+test = test.set_index(test.columns[0]).reset_index(drop=True)
+
+input = pd.concat([input, pd.DataFrame([{"Currency": "USD", "Rate": 1}])], ignore_index=True)
+rates = input.set_index("Currency")["Rate"]
+m = pd.DataFrame(rates.values / rates.values[:, None], index=rates.index, columns=rates.index).round(3).reset_index(drop=True)
+m.columns.name = None
+
+print(m.equals(test)) # True
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 845](/challenges/excelbi/Excel845.html)
+- [Excel Challenge 846](/challenges/excelbi/Excel846.html)
+- [Excel Challenge 847](/challenges/excelbi/Excel847.html)

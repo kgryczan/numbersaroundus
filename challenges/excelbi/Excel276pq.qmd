@@ -1,0 +1,172 @@
+---
+title: "Excel BI - PowerQuery Challenge 276"
+description: "Unpivot the table. Work out total value = Qty * Price Insert a total row which is sum total of Total Value of order + Shipping of order (Note - Shipping will not be summed up for individual line items as Shipping is for entire order as a whole)"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 276](/challenges/images/exc276pq.jpg)
+
+## Challenge Description
+
+Unpivot the table. Work out total value = Qty * Price Insert a total row which is sum total of Total Value of order + Shipping of order (Note - Shipping will not be summed up for individual line items as Shipping is for entire order as a whole)
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_276.xlsx"
+input = read_excel(path, range = "A1:I4")
+test  = read_excel(path, range = "A9:F18")
+
+result = input %>%
+  pivot_longer(cols = -c(1:3), names_to = c(".value", "index"), names_pattern = "([a-zA-Z]+)(\\d+)") %>%
+  na.omit() %>%
+  rename(Item = Item1) %>%
+  mutate(`Total Value` = Qty * Price,
+         across(c(`Order ID`, Qty, Price), as.character))
+
+totals = result %>%a
+  summarise(Shipping = first(Shipping),
+            `Total Value` = sum(`Total Value`) + Shipping,
+            .by = c(Item)) %>%
+
+  mutate(`Order ID` = "TOTAL",
+         index = NA, 
+         Shipping  = NA,
+         Qty = NA,
+         Price = NA)
+
+r2= result %>%
+  bind_rows(totals) %>%
+  arrange(Item) %>%
+  mutate(Item = ifelse(`Order ID` == "TOTAL", NA, Item))
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "PQ_Challenge_276.xlsx"
+input = pd.read_excel(path, usecols="A:I", nrows=4)
+test = pd.read_excel(path, usecols="A:F", skiprows=8, nrows=10)
+
+input_long = pd.wide_to_long(
+    input.reset_index(),
+    stubnames=["Item", "Qty", "Price"],
+    i=["index", "Order ID", "Shipping"],
+    j="name",
+    sep="",
+    suffix="\d+"
+).reset_index()
+input_long["Item"] = input_long["Item"].ffill()
+input_long = input_long.dropna().reset_index(drop=True)
+
+input_long = input_long.drop(columns=["name"]).rename(columns={"Item1": "Item"})
+
+input_long["TotalValue"] = input_long["Qty"] * input_long["Price"]
+input_long[["Order ID", "Qty", "Price"]] = input_long[["Order ID", "Qty", "Price"]].astype(str)
+
+totals = (
+    input_long.groupby("Item", as_index=False)
+    .agg(
+        Shipping=("Shipping", "first"),
+        TotalValue=("TotalValue", "sum")
+    )
+)
+totals["TotalValue"] += totals["Shipping"]
+totals = totals.assign(
+    Order_ID="TOTAL",
+    index=None,
+    Shipping=None,
+    Qty=None,
+    Price=None
+).rename(columns={"Order_ID": "Order ID"})
+
+result = (
+    pd.concat([input_long, totals], ignore_index=True)
+    .sort_values(by="Item")
+    .assign(Item=lambda df: df["Item"].where(df["Order ID"] != "TOTAL", pd.NA))
+    .drop(columns=["index"])
+    .reset_index(drop=True)
+)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 275](Excel275pq.qmd)
+-   [Excel BI - Excel Challenge 656](Excel656.qmd)

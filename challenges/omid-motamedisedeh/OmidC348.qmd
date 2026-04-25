@@ -1,0 +1,118 @@
+---
+title: "Omid - Challenge 348"
+description: "🔰 Challenge 348: Filter!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 348](/challenges/images/OmidC348.jpg)
+
+## Challenge Description
+
+🔰 Challenge 348: Filter!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(charcuterie)
+
+path <- "300-399/348/CH-348 Filter.xlsx"
+input <- read_excel(path, range = "B3:B10")
+test <- read_excel(path, range = "F3:F6")
+
+result = input %>%
+  mutate(chars = map(ID, chars)) %>%
+  mutate(char_counts = map(chars, ~ table(.))) %>%
+  filter(map_lgl(char_counts, ~ any(. >= 3))) %>%
+  select(ID)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from collections import Counter
+
+path = "300-399/348/CH-348 Filter.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=2, nrows=8)
+test = pd.read_excel(path, usecols="F", skiprows=2, nrows=3).rename(columns=lambda col: col.replace('.1', ''))
+
+def has_char_at_least_3(s):
+    counts = Counter(str(s))
+    return any(v >= 3 for v in counts.values())
+
+result = input[input['ID'].apply(has_char_at_least_3)].reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 347](OmidC347.qmd)
+-   [Omid - Challenge 349](OmidC349.qmd)
+-   [Omid - Challenge 350](OmidC350.qmd)

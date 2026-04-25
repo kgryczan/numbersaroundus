@@ -1,0 +1,164 @@
+---
+title: "Excel BI - PowerQuery Challenge 357"
+description: "Pivot the table as shown. Sort Region & Year and also Categories column."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 357](/challenges/images/exc357pq.jpg)
+
+## Challenge Description
+
+Pivot the table as shown. Sort Region & Year and also Categories column.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Power Query/300-399/357/PQ_Challenge_357.xlsx"
+input <- read_excel(path, range = "A1:D51")
+test <- read_excel(path, range = "F1:L11")
+
+result = input %>%
+  mutate(Categories = str_split(Categories, ";")) %>%
+  rowwise() %>%
+  mutate(no_cat = length(Categories)) %>%
+  ungroup() %>%
+  mutate(cat_amount = Amount / no_cat) %>%
+  mutate(
+    Region = ifelse(is.na(Region), "Unknown", Region),
+    Year = year(OrderDate)
+  ) %>%
+  unnest(Categories) %>%
+  pivot_wider(
+    id_cols = c(Region, Year),
+    names_from = Categories,
+    names_sort = T,
+    values_from = cat_amount,
+    values_fn = sum,
+    values_fill = 0
+  ) %>%
+  arrange(Region, Year) %>%
+  mutate(across(-c(Region, Year), ~ round(.x, 2)))
+
+all.equal(result, test)
+# almost identical, differences on rounding.
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Power Query/300-399/357/PQ_Challenge_357.xlsx"
+input = pd.read_excel(path, usecols="A:D", nrows = 50)
+test  = pd.read_excel(path, usecols="F:L", nrows = 10).rename(columns=lambda col: col.replace('.1', ''))
+
+result = (
+    input
+      .assign(
+          Categories=lambda d: d["Categories"].fillna("").astype(str).str.split(";"),
+          no_cat=lambda d: d["Categories"].str.len(),
+          Region=lambda d: d["Region"].fillna("Unknown"),
+          Year=lambda d: pd.to_datetime(d["OrderDate"]).dt.year
+      )
+      .assign(cat_amount=lambda d: d["Amount"] / d["no_cat"])
+      .explode("Categories")
+      .groupby(["Region", "Year", "Categories"], as_index=False)
+      .agg(cat_amount=("cat_amount", "sum"))
+      .pivot(
+          index=["Region", "Year"],
+          columns="Categories",
+          values="cat_amount"
+      )
+      .fillna(0)
+      .reset_index()
+      .sort_values(["Region", "Year"])
+)
+
+num_cols = result.columns.difference(["Region", "Year"])
+result[num_cols] = result[num_cols].round(2)
+
+print(result.equals(test))
+# Discrepancies based on rounding.
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 356](Excel356pq.qmd)
+-   [Excel BI - Excel Challenge 737](Excel737.qmd)

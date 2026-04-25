@@ -1,0 +1,143 @@
+---
+title: "Omid - Challenge 164"
+description: "🔰 Challenge 164: Extract From Text In Power Query, a list is defined by { } and can contain sublists, such as {1, 2, {3, 4}}."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 164](/challenges/images/OmidC164.jpg)
+
+## Challenge Description
+
+🔰 Challenge 164: Extract From Text In Power Query, a list is defined by { } and can contain sublists, such as {1, 2, {3, 4}}.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-164 Extract from Text.xlsx"
+input = read_excel(path, range = "B2:C7")
+test  = read_excel(path, range = "E2:F7")
+
+maxDepth = function(S) {
+  get_chars = function(str) {
+    tibble(pos = 1:nchar(str), char = strsplit(str, "")[[1]])
+  }
+  
+  check = if_else(str_detect(S, "^[{]+[0-9,]+[}]+$"), -1, 0)
+  df = get_chars(S)
+  
+  df = df %>%
+    mutate(count = ifelse(char == "{", 1, ifelse(char == "}", -1, 0)),
+           cum_sum = cumsum(count))
+  
+  max_depth = max(df$cum_sum) + check
+  
+  return(max_depth)
+}
+
+result = input %>%
+  mutate(Depth = map_dbl(Value, maxDepth))
+
+all.equal(result$Depth, test$Depth)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "CH-164 Extract from Text.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=6)
+test = pd.read_excel(path, usecols="E:F", skiprows=1, nrows=6)
+
+def max_depth(S):
+    get_chars = lambda string: pd.DataFrame({'pos': range(1, len(string) + 1), 'char': list(string)})
+    
+    check = -1 if re.match(r'^[{]+[0-9,]+[}]+$', S) else 0
+    df = get_chars(S)
+    
+    df['cum_sum'] = df['char'].apply(lambda x: 1 if x == '{' else (-1 if x == '}' else 0)).cumsum()
+
+    max_depth = df['cum_sum'].max() + check
+    
+    return max_depth
+
+input['depth'] = input['Value'].apply(max_depth)
+
+print(input['depth'].equals(test['Depth'])) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 163](OmidC163.qmd)
+-   [Omid - Challenge 165](OmidC165.qmd)
+-   [Omid - Challenge 166](OmidC166.qmd)

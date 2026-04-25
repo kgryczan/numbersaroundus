@@ -1,0 +1,167 @@
+---
+title: "Omid - Challenge 363"
+description: "🔰 In Table 1, extract all sub-vectors with the sum equal to 16."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 363](/challenges/images/OmidC363.jpg)
+
+## Challenge Description
+
+🔰 In Table 1, extract all sub-vectors with the sum equal to 16.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/363/CH-363 Matrix Calculation.xlsx"
+input <- read_excel(path, range = "C4:G7", col_names = FALSE) %>% as.matrix()
+test1 <- read_excel(path, range = "J4:L4", col_names = FALSE) %>% as.matrix()
+test2 <- read_excel(path, range = "O4:S4", col_names = FALSE) %>% as.matrix()
+test3 <- read_excel(path, range = "W4:W7", col_names = FALSE) %>% as.matrix()
+
+par = 16
+
+find_subvectors_sum_to_par <- function(mat, target_sum) {
+  results <- list()
+
+  for (i in 1:nrow(mat)) {
+    for (j in 1:ncol(mat)) {
+      for (k in j:ncol(mat)) {
+        subvector <- mat[i, j:k]
+        if (sum(subvector) == target_sum) {
+          results <- append(results, list(matrix(subvector, nrow = 1)))
+        }
+      }
+    }
+  }
+
+  for (j in 1:ncol(mat)) {
+    for (i in 1:nrow(mat)) {
+      for (k in i:nrow(mat)) {
+        subvector <- mat[i:k, j]
+        if (sum(subvector) == target_sum) {
+          results <- append(results, list(matrix(subvector, ncol = 1)))
+        }
+      }
+    }
+  }
+
+  return(results)
+}
+
+result <- find_subvectors_sum_to_par(input, par)
+
+all(result[[1]] == test1)
+all(result[[2]] == test2)
+all(result[[3]] == test3)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+aaimport pandas as pd
+import numpy as np
+
+path = "300-399/363/CH-363 Matrix Calculation.xlsx"
+
+input_data = pd.read_excel(path,header=None)
+input_matrix = input_data.iloc[3:7, 2:7].to_numpy()
+test1 = input_data.iloc[3, 9:12].to_numpy()
+test2 = input_data.iloc[3, 14:19].to_numpy()
+test3 = input_data.iloc[3:7, 22].to_numpy()
+
+par = 16
+
+def find_subvectors_sum_to_par(mat, target_sum):
+    results = []
+    for i in range(mat.shape[0]):
+        for j in range(mat.shape[1]):
+            for k in range(j, mat.shape[1]):
+                subvector = mat[i, j:k+1]
+                if np.sum(subvector) == target_sum:
+                    results.append(subvector.flatten().tolist())
+    for j in range(mat.shape[1]):
+        for i in range(mat.shape[0]):
+            for k in range(i, mat.shape[0]):
+                subvector = mat[i:k+1, j]
+                if np.sum(subvector) == target_sum:
+                    results.append(subvector.flatten().tolist())
+
+    return results
+
+result = find_subvectors_sum_to_par(input_matrix, par)
+
+print(np.all(result[0] == test1)) # True
+print(np.all(result[1] == test2)) # True
+print(np.all(result[2] == test3)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 362](OmidC362.qmd)
+-   [Omid - Challenge 364](OmidC364.qmd)
+-   [Omid - Challenge 365](OmidC365.qmd)

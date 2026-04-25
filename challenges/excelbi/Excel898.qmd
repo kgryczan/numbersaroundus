@@ -1,0 +1,109 @@
+---
+title: "Excel BI - Excel Challenge 898"
+description: "🔰 Answer Expected LogID Type Value Zone Part Quantity Warehouse A Bolt-X Nut-M6"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 898](/challenges/images/exc898.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected LogID Type Value Zone Part Quantity Warehouse A Bolt-X Nut-M6
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/898/898 Pivot.xlsx"
+input <- read_excel(path, range = "A2:C23")
+test <- read_excel(path, range = "E2:H12")
+
+result = input %>%
+  group_by(LogID) %>%
+  mutate(Zone = ifelse(Type == 'Zone', Value, NA)) %>%
+  fill(Zone, .direction = "updown") %>%
+  ungroup() %>%
+  group_by(LogID, Zone) %>%
+  mutate(Part = ifelse(Type == 'Part', Value, NA)) %>%
+  fill(Part) %>%
+  ungroup() %>%
+  group_by(LogID, Zone, Part) %>%
+  mutate(Quantity = ifelse(Type == 'Qty', Value, NA) %>% as.numeric()) %>%
+  select(-Type, -Value) %>%
+  fill(Quantity, .direction = "updown") %>%
+  filter(!is.na(Part)) %>%
+  ungroup() %>%
+  distinct() %>%
+  mutate(Quantity = replace_na(Quantity, 1))
+
+all_equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Reshape the result into the workbook output format.
+- **Strengths**: The transformation is organized around the correct grouping level, which keeps the business logic clear.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The key move is solving the problem at the right grain before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "Excel/800-899/898/898 Pivot.xlsx"
+input = pd.read_excel(path, usecols="A:C", skiprows=1, nrows=21)
+test = pd.read_excel(path, usecols="E:H", skiprows=1, nrows=10).rename(columns=lambda col: col.replace('.1', ''))
+
+input['Zone'] = np.where(input['Type'] == 'Zone', input['Value'], np.nan)
+input['Zone'] = input.groupby('LogID')['Zone'].transform(lambda x: x.ffill().bfill())
+input['Part'] = np.where(input['Type'] == 'Part', input['Value'], np.nan)
+input['Part'] = input.groupby(['LogID', 'Zone'])['Part'].transform(lambda x: x.ffill())
+input['Quantity'] = np.where(input['Type'] == 'Qty', pd.to_numeric(input['Value'], errors='coerce'), np.nan)
+input['Quantity'] = input.groupby(['LogID', 'Zone', 'Part'])['Quantity'].transform(lambda x: x.ffill().bfill())
+input['Quantity'] = input['Quantity'].fillna(1).astype('int64')
+result = input.drop(['Type', 'Value'], axis=1)
+result = result[result['Part'].notna()]
+result = result.drop_duplicates()
+result['Quantity'] = result['Quantity'].fillna(1)
+test = test.reset_index(drop=True)
+result = result.reset_index(drop=True)
+
+print(result.equals(test))
+# Output: True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 899](/challenges/excelbi/Excel899.html)
+- [Excel Challenge 900](/challenges/excelbi/Excel900.html)
+- [Excel Challenge 901](/challenges/excelbi/Excel901.html)

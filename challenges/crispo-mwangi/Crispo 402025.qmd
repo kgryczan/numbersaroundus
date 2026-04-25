@@ -1,0 +1,121 @@
+---
+title: "Crispo - Excel Challenge 40 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-10-05"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 40 2025](/challenges/images/Crispo402025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Problem Solution Cost Codes Consecutive Easy Sunday Excel Challenge 15-70
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/2025-10-05/Challenge 65.xlsx"
+input = read_excel(path, range = "B2:B14")
+test  = read_excel(path, range = "D2:D14")
+
+result = input %>%
+  mutate(cid = consecutive_id(`Cost Codes`)) %>%
+  mutate(gr_n = n(), .by = cid) %>%
+  mutate(Consecutive = ifelse(gr_n > 1, T, F)) %>%
+  select(Consecutive)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "files/2025-10-05/Challenge 65.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=13)
+test = pd.read_excel(path, usecols="D", skiprows=1, nrows=13)
+
+input['cid'] = (input['Cost Codes'] != input['Cost Codes'].shift()).cumsum()
+result = input.assign(
+    Consecutive = input.groupby('cid')['Cost Codes'].transform('size') > 1
+)[['Consecutive']]
+
+print(result.equals(test)) # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 39 2025](Crispo 392025.qmd)
+-   [Crispo - Excel Challenge 41 2025](Crispo 412025.qmd)

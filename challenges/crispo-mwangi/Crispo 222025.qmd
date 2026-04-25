@@ -1,0 +1,159 @@
+---
+title: "Crispo - Excel Challenge 22 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-06-01"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 22 2025](/challenges/images/Crispo222025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Problem Solution Start Date Work Days Travel Days Schedule
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+library(lubridate)
+
+path = "files/2025-06-01/Challenge 30.xlsx"
+start_date = as.Date("2025-05-01")
+work_days = 8
+travel_days = 8
+test = read_excel(path, range = "F3:G23") %>%
+  mutate(Schedule = as.Date(Schedule))
+
+df = data.frame(
+  dates = seq.Date(
+    from = start_date,
+    by = "day",
+    length.out = (work_days + travel_days) * 2
+  )
+)
+df1 = df %>%
+  mutate(weekend = ifelse(wday(dates) %in% c(7, 1), TRUE, FALSE)) %>%
+  mutate(weekend = ifelse(weekend, "Rest", "Work")) %>%
+  mutate(work_count = row_number(), .by = weekend) %>%
+  mutate(
+    work_index = ifelse(
+      weekend == "Work" & work_count == work_days + 1,
+      row_number(),
+      NA
+    )
+  ) %>%
+  fill(work_index, .direction = "downup") %>%
+  mutate(weekend = ifelse(row_number() >= work_index, "Travel", weekend)) %>%
+  mutate(travel_count = row_number(), .by = weekend) %>%
+  filter(travel_count <= travel_days) %>%
+  select(Schedule = dates, Activity = weekend)
+
+all.equal(df1, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from datetime import datetime, timedelta
+
+path = "files/2025-06-01/Challenge 30.xlsx"
+start_date = pd.to_datetime("2025-05-01")
+work_days = 8
+travel_days = 8
+
+test = pd.read_excel(path, usecols="F:G", skiprows=2, nrows=21)
+test['Schedule'] = pd.to_datetime(test['Schedule'])
+
+dates = pd.date_range(start_date, periods=(work_days + travel_days) * 2)
+df = pd.DataFrame({'dates': dates})
+df['weekend'] = df['dates'].dt.weekday.isin([5, 6])
+df['weekend'] = df['weekend'].map({True: 'Rest', False: 'Work'})
+df['work_count'] = df.groupby('weekend').cumcount() + 1
+
+df['work_index'] = None
+mask = (df['weekend'] == 'Work') & (df['work_count'] == work_days + 1)
+if mask.any():
+    idx = df.index[mask][0]
+    df.loc[idx:, 'work_index'] = idx
+df['work_index'] = df['work_index'].ffill().bfill()
+
+df.loc[df.index >= df['work_index'], 'weekend'] = 'Travel'
+df['travel_count'] = df.groupby('weekend').cumcount() + 1
+df1 = df[df['travel_count'] <= travel_days][['dates', 'weekend']]
+df1.columns = ['Schedule', 'Activity']
+
+print(df1.equals(test))
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 21 2025](Crispo 212025.qmd)
+-   [Crispo - Excel Challenge 23 2025](Crispo 232025.qmd)

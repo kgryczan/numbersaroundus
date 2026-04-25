@@ -1,0 +1,91 @@
+---
+title: "Excel BI - Excel Challenge 825"
+description: "🔰 Answer Expected ID Planet River Subject Entity Type Jupiter Volga, Nile Planet-1"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 825](/challenges/images/exc825.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected ID Planet River Subject Entity Type Jupiter Volga, Nile Planet-1
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/825/825 Unpivot.xlsx"
+input = read_excel(path, range = "A2:D5")
+test  = read_excel(path, range = "F2:H15")
+
+result = input %>%
+  pivot_longer(-ID, names_to = "Type", values_to = "Entity") %>%
+  separate_longer_delim(Entity, delim = ", ") %>%
+  arrange(ID, Type, Entity) %>%
+  na.omit() %>%
+  mutate(Type = paste0(Type,"-", row_number()), .by = Type) %>%
+  select(ID, Entity, Type) %>%
+  ungroup()
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "800-899/825/825 Unpivot.xlsx"
+input = pd.read_excel(path, sheet_name=0, usecols="A:D", skiprows=1, nrows=3)
+test = pd.read_excel(path, sheet_name=0, usecols="F:H", skiprows=1, nrows=14).rename(columns=lambda x: x.replace('.1', ''))
+
+result = input.melt(id_vars='ID', var_name='Type', value_name='Entity')
+result = result.dropna()
+result = result.assign(Entity=result['Entity'].str.split(', ')).explode('Entity')
+result = result.sort_values(['ID', 'Type', 'Entity'])
+result['Type'] += '-' + (result.groupby('Type').cumcount() + 1).astype(str)
+result = result[['ID', 'Entity', 'Type']].reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 826](/challenges/excelbi/Excel826.html)
+- [Excel Challenge 827](/challenges/excelbi/Excel827.html)
+- [Excel Challenge 828](/challenges/excelbi/Excel828.html)

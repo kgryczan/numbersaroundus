@@ -1,0 +1,111 @@
+---
+title: "Omid - Challenge 83"
+description: "🔰 Result Question Info A B C Date Product"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 83](/challenges/images/OmidC83.jpg)
+
+## Challenge Description
+
+🔰 Result Question Info A B C Date Product
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-083 Custom splitter 3.xlsx"
+input = read_excel(path, range = "B2:B3")
+test = read_excel(path, range = "D5:F27")
+
+result = input %>%
+  separate_rows(Info, sep = ";") %>%
+  separate(Info, into = c("Date","Product","Quantity"), sep = ", ") %>%
+  mutate(Quantity = as.numeric(Quantity))
+
+identical(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-083 Custom splitter 3.xlsx"
+input = pd.read_excel(path, usecols="B", nrows = 1, skiprows = 1)
+test = pd.read_excel(path, usecols="D:F", skiprows = 4)
+
+result = input['Info'].str.split(';', expand=True).stack().str.split(", ", expand=True)\
+    .rename(columns={0: 'Date', 1: 'Product', 2: "Quantity"}).reset_index(drop=True)
+result['Quantity'] = result['Quantity'].astype('int64')
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 82](OmidC82.qmd)
+-   [Omid - Challenge 84](OmidC84.qmd)
+-   [Omid - Challenge 85](OmidC85.qmd)

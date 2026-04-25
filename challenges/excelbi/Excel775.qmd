@@ -1,0 +1,95 @@
+---
+title: "Excel BI - Excel Challenge 775"
+description: "🔰 Answer Expected Value1 Value2 Org Product Version Microsoft Office Xbox Onedrive"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 775](/challenges/images/exc775.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Value1 Value2 Org Product Version Microsoft Office Xbox Onedrive
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/775/775 Pivot.xlsx"
+input = read_excel(path, range = "A2:B15")
+test  = read_excel(path, range = "D2:F8")
+
+result = input %>%
+  mutate(group = cumsum(Value1 == "Org")) %>%
+  group_by(group) %>%
+  mutate(row = row_number()) %>%
+  pivot_wider(names_from = Value1, values_from = Value2) %>%
+  fill(Org, Product, .direction = "down") %>%
+  fill(Product, Version, .direction = "up") %>%
+  ungroup() %>%
+  select(-group, -row) %>%
+  distinct()
+
+all.equal(result, test, check.attributes = FALSE)
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Reshape the result into the workbook output format.
+- **Strengths**: The transformation is organized around the correct grouping level, which keeps the business logic clear.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The key move is solving the problem at the right grain before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/775/775 Pivot.xlsx"
+input = pd.read_excel(path, usecols="A:B", skiprows=1, nrows=13)
+test  = pd.read_excel(path, usecols="D:F", skiprows=1, nrows=6)
+
+input['group'] = (input['Value1'] == "Org").cumsum()
+input['row'] = input.groupby('group').cumcount() + 1
+result = input.pivot(index=['group','row'], columns='Value1', values='Value2').reset_index()
+result['Org'] = result['Org'].ffill()
+result['Product'] = result.groupby('Org')['Product'].ffill()
+result[['Version','Product']] = result.groupby('Org')[['Version','Product']].bfill()
+result = result.drop(columns=['group', 'row'])
+result = result.drop_duplicates().reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 776](/challenges/excelbi/Excel776.html)
+- [Excel Challenge 777](/challenges/excelbi/Excel777.html)
+- [Excel Challenge 778](/challenges/excelbi/Excel778.html)

@@ -1,0 +1,235 @@
+---
+title: "Excel BI - PowerQuery Challenge 345"
+description: "Summarize and show the result table from problem table."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 345](/challenges/images/exc345pq.jpg)
+
+## Challenge Description
+
+Summarize and show the result table from problem table.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(janitor)
+library(purrr)
+
+path <- "Power Query/300-399/345/PQ_Challenge_345.xlsx"
+input <- read_excel(path, range = "A1:G31")
+test <- read_excel(path, range = "J1:O7")
+
+result <- input %>%
+  mutate(
+    Region = ifelse(
+      str_detect(Column1, "Region"),
+      str_remove(Column1, "Region: "),
+      NA
+    )
+  ) %>%
+  fill(Region) %>%
+  filter(!str_detect(Column1, "Region")) %>%
+  mutate(ngroup = cumsum(Column1 == "Category"))
+
+env_by_region <- result %>%
+  group_by(Region, ngroup) %>%
+  group_split() %>%
+  map(janitor::row_to_names, row_number = 1) %>%
+  map(
+    ~ {
+      df <- .x[, -ncol(.x)]
+      colnames(df)[ncol(df)] <- "Region"
+      df %>%
+        pivot_longer(
+          -c(Category, Region),
+          names_to = "Month",
+          values_to = "Value"
+        ) %>%
+        separate(Month, into = c("Month", "Type"), sep = "-") %>%
+        pivot_wider(names_from = Type, values_from = Value) %>%
+        mutate(
+          Quarter = case_when(
+            Month %in% c("Jan", "Feb", "Mar") ~ "Q1",
+            Month %in% c("Apr", "May", "Jun") ~ "Q2",
+            Month %in% c("Jul", "Aug", "Sep") ~ "Q3",
+            Month %in% c("Oct", "Nov", "Dec") ~ "Q4"
+          ),
+          Sales = as.double(Sales),
+          Returns = as.double(Returns)
+        )
+    }
+  ) %>%
+  bind_rows() %>%
+  group_by(Region, Quarter) %>%
+  mutate(
+    top_sales = max(Sales, na.rm = TRUE) == Sales,
+    top_returns = max(Returns, na.rm = TRUE) == Returns,
+    Total_Sales = sum(Sales, na.rm = TRUE),
+    Total_Returns = sum(Returns, na.rm = TRUE)
+  ) %>%
+  filter(pmax(top_sales, top_returns) == T) %>%
+  select(-Month) %>%
+  summarise(
+    Total_Sales = first(Total_Sales),
+    Total_Returns = first(Total_Returns),
+    Max_Sold_Item = paste(sort(unique(Category[top_sales])), collapse = ", "),
+    Max_Returned_Item = paste(
+      sort(unique(Category[top_returns])),
+      collapse = ", "
+    ),
+    .groups = 'drop'
+  ) %>%
+  arrange(desc(Region), Quarter)
+
+all.equal(env_by_region, test)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "Power Query/300-399/345/PQ_Challenge_345.xlsx"
+input = pd.read_excel(path, usecols="A:G", nrows=31)
+test = pd.read_excel(path, usecols="J:O", nrows=7)
+
+input['Region'] = np.where(
+    input['Column1'].str.contains("Region"),
+    input['Column1'].str.replace("Region: ", "", regex=False),
+    np.nan
+)
+input['Region'] = input['Region'].ffill()
+result = input[~input['Column1'].str.contains("Region")].copy()
+result['ngroup'] = (result['Column1'] == "Category").cumsum()
+
+env_by_region = []
+for (region, ngroup), group in result.groupby(['Region', 'ngroup']):
+    group = group.reset_index(drop=True)
+    header = group.iloc[0]
+    df = group.iloc[1:].copy()
+    df.columns = header
+    df = df.iloc[:, :-1]
+    df['Region'] = region
+    df_long = df.melt(id_vars=['Category', 'Region'], var_name='Month', value_name='Value')
+    df_long[['Month', 'Type']] = df_long['Month'].str.split('-', expand=True)
+    df_wide = df_long.pivot_table(index=['Category', 'Region', 'Month'], columns='Type', values='Value', aggfunc='first').reset_index()
+    
+    # Month abbreviation to quarter mapping
+    month_to_quarter = {
+        'Jan': 'Q1', 'Feb': 'Q1', 'Mar': 'Q1',
+        'Apr': 'Q2', 'May': 'Q2', 'Jun': 'Q2',
+        'Jul': 'Q3', 'Aug': 'Q3', 'Sep': 'Q3',
+        'Oct': 'Q4', 'Nov': 'Q4', 'Dec': 'Q4'
+    }
+    df_wide['Quarter'] = df_wide['Month'].map(month_to_quarter)
+    df_wide['Sales'] = pd.to_numeric(df_wide.get('Sales', np.nan), errors='coerce')
+    df_wide['Returns'] = pd.to_numeric(df_wide.get('Returns', np.nan), errors='coerce')
+    env_by_region.append(df_wide)
+
+env_by_region = pd.concat(env_by_region, ignore_index=True)
+
+def summarise_group(df):
+    top_sales = df['Sales'] == df['Sales'].max()
+    top_returns = df['Returns'] == df['Returns'].max()
+    total_sales = df['Sales'].sum(skipna=True)
+    total_returns = df['Returns'].sum(skipna=True)
+    max_sold_item = ', '.join(sorted(df.loc[top_sales, 'Category'].unique()))
+    max_returned_item = ', '.join(sorted(df.loc[top_returns, 'Category'].unique()))
+    return pd.Series({
+        'Total_Sales': total_sales,
+        'Total_Returns': total_returns,
+        'Max_Sold_Item': max_sold_item,
+        'Max_Returned_Item': max_returned_item
+    })
+
+summary = (
+    env_by_region
+    .groupby(['Region', 'Quarter'], as_index=False)
+    .apply(summarise_group)
+    .sort_values(['Region', 'Quarter'], ascending=[False, True])
+    .reset_index(drop=True)
+)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 344](Excel344pq.qmd)
+-   [Excel BI - Excel Challenge 725](Excel725.qmd)

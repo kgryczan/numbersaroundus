@@ -1,0 +1,105 @@
+---
+title: "Excel BI - Excel Challenge 905"
+description: "🔰 905 Maxed Priced Houses.xlsx says: > Find the House IDs where price is maximum for each Zone - Type combo."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 905](/challenges/images/exc905.jpg)
+
+## Challenge Description
+
+🔰 The prompt in 905 Maxed Priced Houses.xlsx says: Find the House IDs where price is maximum for each Zone - Type combo. The dataset includes: The goal is to find all house IDs tied for the maximum listed price within each zone-type pair, then present the results in a reshaped summary format.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/900-999/905/905 Maxed Priced Houses.xlsx"
+input <- read_excel(path, range = "A2:D52")
+test <- read_excel(path, range = "F2:I6")
+
+result = input %>%
+  filter(`Listed Price` == max(`Listed Price`), .by = c(Zone, Type)) %>%
+  summarise(
+    Houses = paste0(`House ID`, collapse = ", "),
+    .by = c(Zone, Type, `Listed Price`)
+  ) %>%
+  select(-`Listed Price`) %>%
+  pivot_wider(names_from = Type, values_from = Houses) %>%
+  rename(`Zone-Type` = Zone) %>%
+  arrange(`Zone-Type`)
+
+print(result == test)
+# one inconsistency due to different ordering of house IDs in a cell
+```
+
+### R Analysis
+
+- **Logic**: Group the data by `Zone` and `Type`.; Keep only the houses with the maximum listed price in each group.; Concatenate tied house IDs together..
+- **Strengths**: The important thing is that this is a grouped maximum problem with ties.
+- **Areas for Improvement**: The only reported mismatch is the ordering of house IDs inside one cell, so the logic itself is correct and the difference is presentation only.
+- **Gem**: If two houses in the same zone-type segment share the highest listed price, both must survive.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel/900-999/905/905 Maxed Priced Houses.xlsx"
+input_data = pd.read_excel(path, usecols="A:D", skiprows=1, nrows=50)
+test_data = pd.read_excel(path, usecols="F:I", skiprows=1, nrows=4)
+
+max_priced_houses = (
+    input_data.groupby(['Zone', 'Type'], group_keys=False)
+    .apply(lambda group: group[group['Listed Price'] == group['Listed Price'].max()])
+)
+summarized = (
+    max_priced_houses
+    .groupby(['Zone', 'Type', 'Listed Price'], as_index=False)
+    .agg(Houses=('House ID', lambda x: ", ".join(map(str, x))))
+)
+result = (
+    summarized.drop(columns=['Listed Price'])
+    .pivot(index='Zone', columns='Type', values='Houses')
+    .reset_index()
+    .rename(columns={'Zone': 'Zone-Type'})
+    .sort_values(by='Zone-Type')
+    .reset_index(drop=True)
+)
+result.columns.name = None  
+print(result.equals(test_data))
+# one inconsistency due to different ordering of house IDs in a cell
+```
+
+### Python
+
+The only reported mismatch is the ordering of house IDs inside one cell, so the logic itself is correct and the difference is presentation only.
+
+## **Difficulty Level**
+
+**Easy**
+
+Once the core pattern is recognized, the implementation is short and direct.
+
+### Related Challenges
+
+- [Excel Challenge 907](/challenges/excelbi/Excel907.html)
+- [Excel Challenge 929](/challenges/excelbi/Excel929.html)
+- [Excel Challenge 924](/challenges/excelbi/Excel924.html)

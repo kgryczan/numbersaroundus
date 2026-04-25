@@ -1,0 +1,139 @@
+---
+title: "Omid - Challenge 28"
+description: "🔰 Groups iD In the question table, the ID of rows from the main table (not shown in this example) that are nearly identical are provided in the same cell."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 28](/challenges/images/OmidC28.jpg)
+
+## Challenge Description
+
+🔰 Groups iD In the question table, the ID of rows from the main table (not shown in this example) that are nearly identical are provided in the same cell.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(igraph)
+
+input = read_excel("files/CH-028 Cluster values.xlsx", range = "B1:B16")
+test  = read_excel("files/CH-028 Cluster values.xlsx", range = "E2:F6") %>%
+  mutate(Values = map(Values, ~strsplit(., ",") %>% unlist() %>% as.numeric() %>% 
+                        sort() %>% paste(collapse = ","))) %>%
+  select(Values) %>%
+  pull()
+
+edges <- input$`Question Tables` %>%
+  strsplit(",") %>%
+  map(~combn(.x, 2, simplify = TRUE) %>% t()) %>% 
+  do.call(rbind, .) %>% 
+  as.data.frame(stringsAsFactors = FALSE)
+
+graph <- graph_from_data_frame(edges, directed = FALSE)
+components <- components(graph)$membership
+
+result <- unique(components) %>%
+  map(~{
+    ids <- names(components[components == .x])
+    paste(sort(as.numeric(ids)), collapse = ",")
+  })
+
+identical(result, test)
+# [1] TRUE
+
+plot(graph)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+import networkx as nx
+import itertools
+import matplotlib.pyplot as plt
+
+input_df = pd.read_excel("files/CH-028 Cluster values.xlsx", usecols="B", skiprows=0, nrows=15)
+test_df = pd.read_excel("files/CH-028 Cluster values.xlsx", usecols="E:F", skiprows=1, nrows=4)
+test_df['Values'] = test_df['Values'].apply(lambda x: ','.join(map(str, sorted(map(int, x.split(','))))))
+test = test_df['Values'].explode().tolist()
+
+edges = input_df['Question Tables'].apply(lambda x: list(map(str.strip, x.split(',')))).explode().dropna()
+combinations = edges.groupby(level=0).apply(lambda x: list(itertools.combinations(x, 2))).explode().tolist()
+G = nx.Graph()
+G.add_edges_from(combinations)
+subgraphs = [sorted(map(str, sorted(map(int, x))), key=int) for x in nx.connected_components(G)]
+subgraphs = [','.join(x) for x in subgraphs]
+
+print(all(x in test for x in subgraphs)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 27](OmidC27.qmd)
+-   [Omid - Challenge 29](OmidC29.qmd)
+-   [Omid - Challenge 30](OmidC30.qmd)

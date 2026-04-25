@@ -1,0 +1,142 @@
+---
+title: "Excel BI - PowerQuery Challenge 324"
+description: "Prepare the pivot as shown where numbers are total visit counts."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 324](/challenges/images/exc324pq.jpg)
+
+## Challenge Description
+
+Prepare the pivot as shown where numbers are total visit counts.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/300-399/324/PQ_Challenge_324.xlsx"
+input = read_excel(path, range = "A1:B22")
+test  = read_excel(path, range = "D1:G9") %>%
+  mutate(across(everything(), ~replace_na(.x, 0)))
+
+result = input %>%
+  mutate(Store = ifelse(Data1 == "Store", Data2, NA_character_)) %>%
+  fill(Store) %>%
+  mutate(`Visit Date` = ifelse(Data1 == "Visit Date", Data2, NA_character_)) %>%
+  fill(`Visit Date`, .direction = "up") %>%
+  filter(Data2 != Store, Data2 != `Visit Date`) %>%
+  select(-c(Data1, `Visit Date`)) %>%
+  separate_longer_delim(Data2, ", ") %>%
+  rename(Name = Data2) %>%
+  count(Name, Store) %>%
+  pivot_wider(names_from = Store, values_from = n, values_fill = 0) %>%
+  janitor::adorn_totals(c("row", "col"))
+
+all.equal(result, test, check.attributes = FALSE)
+# TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "300-399/324/PQ_Challenge_324.xlsx"
+
+input = pd.read_excel(path, usecols="A:B", nrows=22)
+test = pd.read_excel(path, usecols="D:G", nrows=8).fillna(0)
+test['South Avenue'] = test['South Avenue'].astype(int)
+
+input['Store'] = input.loc[input['Data1'] == 'Store', 'Data2']
+input['Store'] = input['Store'].ffill()
+input['Visit Date'] = input.loc[input['Data1'] == 'Visit Date', 'Data2']
+input['Visit Date'] = input['Visit Date'][::-1].ffill()[::-1]
+mask = (input['Data2'] != input['Store']) & (input['Data2'] != input['Visit Date'])
+df = input.loc[mask, ['Data2', 'Store']]
+df = df.assign(Name=df['Data2'].str.split(', ')).explode('Name').drop(columns='Data2')
+result = df.groupby(['Name', 'Store']).size().unstack(fill_value=0)
+result.loc['Total'] = result.sum()
+result['Total'] = result.sum(axis=1)
+result = result.reset_index()
+result.columns.name = None
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 323](Excel323pq.qmd)
+-   [Excel BI - Excel Challenge 704](Excel704.qmd)

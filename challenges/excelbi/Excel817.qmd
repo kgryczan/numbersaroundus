@@ -1,0 +1,105 @@
+---
+title: "Excel BI - Excel Challenge 817"
+description: "🔰 Data Answer Expected + - / * If there is a mathematical operator between 2 cells, then replace those 2 cells with the result of mathematical operator applied on those 2 cells."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 817](/challenges/images/exc817.jpg)
+
+## Challenge Description
+
+🔰 Data Answer Expected + - / * If there is a mathematical operator between 2 cells, then replace those 2 cells with the result of mathematical operator applied on those 2 cells.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/817/817 Maths Operations.xlsx"
+input = read_excel(path, range = "A1:A20")
+test  = read_excel(path, range = "C1:C10")
+
+  result = input %>%
+    mutate(expre = case_when(
+      Data %in% c("+", "-", "*", "/") ~ paste(lag(Data), Data, lead(Data)),
+      str_detect(coalesce(Data, ""), "^[0-9]+$") & 
+        (lag(Data) %in% c("+", "-", "*", "/") | 
+        lead(Data) %in% c("+", "-", "*", "/")) ~ NA_character_,
+      str_detect(coalesce(Data, ""), "^[0-9]+$") ~ Data,
+      TRUE ~ NA_character_
+      )) %>%
+  select(expre) %>%
+  filter(!is.na(expre)) %>%
+  mutate(result = map_dbl(expre, ~ eval(parse(text = .x))))
+
+all.equal(result$result, test$`Answer Expected`)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Apply the business rule conditions explicitly.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "800-899/817/817 Maths Operations.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=20)
+test = pd.read_excel(path, usecols="C", nrows=9)
+
+input['expre'] = np.where(
+    input['Data'].isin(['+', '-', '*', '/']),
+    input['Data'].shift(1).astype(str) + ' ' + input['Data'].astype(str) + ' ' + input['Data'].shift(-1).astype(str),
+    np.where(
+        input['Data'].astype(str).str.match('^[0-9]+$') &
+        (input['Data'].shift(1).isin(['+', '-', '*', '/']) | input['Data'].shift(-1).isin(['+', '-', '*', '/'])),
+        np.nan,
+        np.where(
+            input['Data'].astype(str).str.match('^[0-9]+$'),
+            input['Data'],
+            np.nan
+        )
+    )
+) 
+input = input.dropna(subset=['expre']).drop(columns=['Data']).reset_index(drop=True)
+input['result'] = input['expre'].astype(str).apply(lambda x: eval(x)).astype(int)
+print(input['result'].equals(test['Answer Expected'])) # True
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 818](/challenges/excelbi/Excel818.html)
+- [Excel Challenge 819](/challenges/excelbi/Excel819.html)
+- [Excel Challenge 820](/challenges/excelbi/Excel820.html)

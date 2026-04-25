@@ -1,0 +1,136 @@
+---
+title: "Omid - Challenge 51"
+description: "🔰 Question Result A B C Product Quantity Date"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 51](/challenges/images/OmidC51.jpg)
+
+## Challenge Description
+
+🔰 Question Result A B C Product Quantity Date
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-051 Purchasing together.xlsx", range = "B2:F26")
+test= read_excel("files/CH-051 Purchasing together.xlsx", range = "J2:K7")
+
+result = input %>%
+  select(`Invoice ID`, Product, Quantity) %>%
+  pivot_wider(names_from = Product, values_from = Quantity, values_fill = list(Quantity = 0)) %>%
+  mutate(`A,B` = ifelse(A>0 & B>0, T, F),
+         `A,C` = ifelse(A>0 & C>0, T, F),
+         `C,D` = ifelse(C>0 & D>0, T, F),
+         `A,B,C` = ifelse(A>0 & B>0 & C>0, T, F),
+         `A,B,C,D` = ifelse(A>0 & B>0 & C>0 & D>0, T, F)) %>%
+  select(`Invoice ID`, `A,B`, `A,C`, `C,D`, `A,B,C`, `A,B,C,D`) %>%
+  pivot_longer(cols = -`Invoice ID`, names_to = "Products", values_to = "Purchased") %>%
+  filter(Purchased == T) %>% 
+  summarise(Count = n() %>% as.numeric(), .by = Products)
+
+identical(result, test)  
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input = pd.read_excel("CH-051 Purchasing together.xlsx", sheet_name="Sheet1", usecols="B:F", skiprows=1)
+test = pd.read_excel("CH-051 Purchasing together.xlsx", sheet_name="Sheet1", usecols="J:K", skiprows=1, nrows = 5)
+test = test.sort_values(by = "Products").reset_index(drop = True)
+
+result = input[['Invoice ID', 'Product', 'Quantity']].pivot_table(index='Invoice ID', columns='Product', values='Quantity', fill_value=0)
+result['A,B'] = (result['A'] > 0) & (result['B'] > 0)
+result['A,C'] = (result['A'] > 0) & (result['C'] > 0)
+result['C,D'] = (result['C'] > 0) & (result['D'] > 0)
+result['A,B,C'] = (result['A'] > 0) & (result['B'] > 0) & (result['C'] > 0)
+result['A,B,C,D'] = (result['A'] > 0) & (result['B'] > 0) & (result['C'] > 0) & (result['D'] > 0)
+result = result[['A,B', 'A,C', 'C,D', 'A,B,C', 'A,B,C,D']].reset_index() 
+result.columns.name = None
+result = result.melt(id_vars='Invoice ID', var_name='Products', value_name='Purchased Together')
+result = result[result['Purchased Together'] == True]
+result = result.groupby('Products').size().reset_index(name='Count')
+
+print(test.equals(result)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 50](OmidC50.qmd)
+-   [Omid - Challenge 52](OmidC52.qmd)
+-   [Omid - Challenge 53](OmidC53.qmd)

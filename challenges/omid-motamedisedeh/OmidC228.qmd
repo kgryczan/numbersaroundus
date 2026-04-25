@@ -1,0 +1,135 @@
+---
+title: "Omid - Challenge 228"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 228](/challenges/images/OmidC228.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/228/CH-228 Table Transformation.xlsx"
+input = read_excel(path, range = "B2:H5")
+test = read_excel(path, range = "F8:H26")
+
+result = input %>%
+  pivot_longer(cols = -Product, names_to = "Date", values_to = "Price") %>%
+  replace_na(list(Price = 0)) %>%
+  mutate(Date = str_extract(Date, "\\d{1,2}/\\d{2}/\\d{4}") %>% dmy()) %>%
+  mutate(Price = cumsum(Price), .by = Product) %>%
+  select(Date, Product, Price)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+from datetime import datetime
+
+path = "200-299/228/Ch-228 Table Transformation.xlsx"
+
+input = pd.read_excel(path, skiprows=1, usecols="B:H", nrows = 3)
+test = pd.read_excel(path, skiprows=7, usecols="F:H", nrows=18)
+test.columns = ["Date", "Product", "Price"]
+test["Date"] = test["Date"].apply(
+    lambda x: datetime.strptime(re.search(r"\d{1,2}/\d{2}/\d{4}", str(x)).group(), "%d/%m/%Y")
+    if re.search(r"\d{1,2}/\d{2}/\d{4}", str(x)) else x
+)
+
+input_long = input.melt(id_vars=["Product"], var_name="Date", value_name="Price")
+input_long["Date"] = input_long["Date"].apply(
+    lambda x: datetime.strptime(re.search(r"\d{1,2}/\d{2}/\d{4}", str(x)).group(), "%d/%m/%Y")
+    if re.search(r"\d{1,2}/\d{2}/\d{4}", str(x)) else x
+)
+input_long = input_long.sort_values(by=["Product", "Date"]).fillna(0).reset_index(drop=True)
+input_long["Price"] = input_long.groupby("Product")["Price"].cumsum().astype("int64")
+input_long = input_long[["Date", "Product", "Price"]]
+
+print(input_long['Price'].equals(test['Price'])) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 227](OmidC227.qmd)
+-   [Omid - Challenge 229](OmidC229.qmd)
+-   [Omid - Challenge 230](OmidC230.qmd)

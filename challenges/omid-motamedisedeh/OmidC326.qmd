@@ -1,0 +1,130 @@
+---
+title: "Omid - Challenge 326"
+description: "🔰 Group Challenge 326: Custom Grouping!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 326](/challenges/images/OmidC326.jpg)
+
+## Challenge Description
+
+🔰 Group Challenge 326: Custom Grouping!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(glue)
+
+path = "300-399/326/CH-326 Custom Grouping.xlsx"
+input = read_excel(path, range = "B2:E11")
+test  = read_excel(path, range = "I2:J5")
+
+result = input %>%
+  mutate(
+    min_char = pmin(From, To),
+    max_char = pmax(From, To)) %>%
+  mutate(Group = glue("{min_char}{max_char} or {max_char}{min_char}")) %>%
+  summarise(`Total Sales` = sum(Sales), .by = Group)
+
+all.equal(result$`Total Sales`, test$`Total Sales`)
+# Values in provided solution not correct. 
+# group names are different, because of my choice
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "300-399/326/CH-326 Custom Grouping.xlsx"
+input = pd.read_excel(path, usecols="B:E", nrows=9, skiprows=1)
+test = pd.read_excel(path, usecols="I:J", nrows=3, skiprows=1)
+
+input["min_char"] = input[["From", "To"]].min(axis=1)
+input["max_char"] = input[["From", "To"]].max(axis=1)
+input["Group"] = (
+    input["min_char"] + input["max_char"] + " or " +
+    input["max_char"] + input["min_char"]
+)
+result = (
+    input
+    .groupby("Group", as_index=False)
+    .agg({"Sales": "sum"})
+    .rename(columns={"Sales": "Total Sales"})
+)
+
+print(result["Total Sales"].equals(test["Total Sales"]))
+# values provided were not correct.
+# names provided are done using pattern that was not done in provided values
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 325](OmidC325.qmd)
+-   [Omid - Challenge 327](OmidC327.qmd)
+-   [Omid - Challenge 328](OmidC328.qmd)

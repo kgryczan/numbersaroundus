@@ -1,0 +1,198 @@
+---
+title: "Omid - Challenge 290"
+description: "🔰 The Question table contains a flight schedule for a single day from multiple locations."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 290](/challenges/images/OmidC290.jpg)
+
+## Challenge Description
+
+🔰 The Question table contains a flight schedule for a single day from multiple locations.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(hms)
+
+path = "files/200-299/290/CH-290 Flight Planning.xlsx"
+input1 = read_excel(path, range = "B2:F11")
+input2 = read_excel(path, range = "H2:I6")
+test  = read_excel(path, range = "K2:M5")
+
+input2 = input2 %>% 
+  mutate(`Time Zone` = parse_number(`Time Zone`))
+
+input = input1 %>%
+  left_join(input2, by = c("From" = "City"), suffix = c("_a","_orig")) %>%
+  left_join(input2, by = c("To" = "City"), suffix = c("_orig","_dest")) %>%
+  mutate(dep_time_utc = `Departure Time` - hours(`Time Zone_orig`),
+         Duration = as_hms(Duration) %>% as.duration(),
+         arr_time_utc = dep_time_utc + Duration,
+         arr_time_local = arr_time_utc + hours(`Time Zone_dest`)) %>%
+  select(ID, From, To, dep_time_utc, arr_time_utc, arr_time_local)
+         
+routes = function(city = "A", time = min(input$dep_time_utc) - hours(1), path = c(), target = "B") {
+  if(city == target) return(list(path))
+  if(city %in% names(path) || length(path) > 3) return(NULL)
+  
+  input %>% 
+    filter(From == city, dep_time_utc >= time) %>%
+    {do.call(c, pmap(list(.$ID, .$To, .$arr_time_utc), 
+           ~routes(..2, ..3, c(path, setNames(..1, city)), target)))}
+}
+
+r = routes() %>% compact()
+
+result = bind_rows(r) %>%
+  mutate(rn = row_number()) %>%
+  pivot_longer(-rn, names_to = "From", values_to = "ID") %>%
+  left_join(input, by = c("From", "ID")) %>%
+  na.omit(ID) %>%
+  summarise(
+    ID = paste(ID, collapse = ", ") %>% str_remove_all(", NA"),
+    start = first(dep_time_utc),
+    end = last(arr_time_utc),
+    end_local = last(arr_time_local),
+    .by = rn
+  ) %>%
+  mutate(Duration = as_hms(end - start),
+         `Arrival Time` = format(end_local, "%H:%M")) %>%
+  select(ID, Duration, `Arrival Time`)
+
+print(result)
+# A tibble: 3 × 3
+# ID      Duration `Arrival Time`
+# <chr>   <time>   <chr>         
+# 1, 6    05:20    18:35         
+# 3, 9    04:40    20:40         
+# 7       04:45    23:45
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from datetime import datetime, timedelta
+
+path = "200-299/290/CH-290 Flight Planning.xlsx"
+input1 = pd.read_excel(path, usecols="B:F", nrows=10, skiprows=1)
+input1['ID'] = input1['ID'].astype(int)
+input2 = pd.read_excel(path, usecols="H:I", nrows=4, skiprows=1)
+input2['Time Zone'] = input2['Time Zone'].str.extract('([0-9]+)').astype(float)
+
+df = (input1.merge(input2, left_on='From', right_on='City')
+            .merge(input2, left_on='To', right_on='City', suffixes=('_orig', '_dest')))
+df['dep_time_utc'] = pd.to_datetime(df['Departure Time'].astype(str), format='%H:%M:%S')
+df['dep_time_utc'] = df['dep_time_utc'] - pd.to_timedelta(df['Time Zone_orig'], 'h')
+df['arr_time_utc'] = df['dep_time_utc'] + pd.to_timedelta(df['Duration'].astype(str))
+df['arr_time_local'] = df['arr_time_utc'] + pd.to_timedelta(df['Time Zone_dest'], 'h')
+df = df[['ID', 'From', 'To', 'dep_time_utc', 'arr_time_utc', 'arr_time_local']]
+
+def find_routes(city='A', time=df.dep_time_utc.min()-timedelta(hours=1), path={}, target='B'):
+    if city == target: return [path]
+    if city in path or len(path) > 3: return []
+    return [r for _, row in df[df.From.eq(city) & df.dep_time_utc.ge(time)].iterrows() 
+            for r in find_routes(row.To, row.arr_time_utc, path | {row.From: row.ID}, target)]
+
+df2 = pd.DataFrame(find_routes())
+
+df2 = df2.reset_index(drop=True).melt(ignore_index=False, var_name='City', value_name='ID').dropna(subset=['ID'])
+df2['ID'] = df2['ID'].astype(int)
+df2 = df2.reset_index().rename(columns={'index': 'Route'})
+result = df2.merge(df, on = ['ID'])
+
+g = result.groupby('Route')
+dep = g['dep_time_utc'].first()
+arr = g['arr_time_utc'].last()
+summary = g.agg(ID=('ID', lambda x: ', '.join(x.astype(str))))
+summary['Duration'] = (arr - dep).apply(lambda x: f"{int(x.total_seconds()//3600)}:{int((x.total_seconds()%3600)//60):02d}")
+summary['Arrival_Time'] = g['arr_time_local'].last().dt.strftime('%H:%M')
+
+summary.index.name = None  # unname index column
+
+print(summary)
+#      ID Duration Arrival_Time
+# 0  1, 6     5:20        18:35
+# 1  3, 9     4:40        20:40
+# 2     7     4:45        23:45
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 289](OmidC289.qmd)
+-   [Omid - Challenge 291](OmidC291.qmd)
+-   [Omid - Challenge 292](OmidC292.qmd)

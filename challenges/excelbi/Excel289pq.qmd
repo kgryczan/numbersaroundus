@@ -1,0 +1,186 @@
+---
+title: "Excel BI - PowerQuery Challenge 289"
+description: "Transpose the table as shown"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 289](/challenges/images/exc289pq.jpg)
+
+## Challenge Description
+
+Transpose the table as shown
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(unpivotr)
+
+path = "Power Query/200-299/289/PQ_Challenge_289.xlsx"
+input = read_excel(path, range = "A1:L11", col_names = FALSE)
+test = read_excel(path, range = "A16:H34")
+
+inp = input %>%
+  as_cells() %>%
+  behead(direction = "up-left", name = "date") %>%
+  behead(direction = "up", name = "Shift") %>%
+  behead(direction = "left", name = "Country") %>%
+  behead(direction = "left-up", name = "State") %>%
+  select(value = chr, date, Shift, Country, State) %>%
+  mutate(
+    value = as.numeric(value),
+    date = ifelse(str_detect(date, "Column"), NA, date)
+  ) %>%
+  fill(date) %>%
+  pivot_wider(names_from = date, values_from = value) %>%
+  select(Country, State, Shift, everything()) %>%
+  fill(Country) %>%
+  mutate(
+    Country = ifelse(row_number() == 1, Country, NA),
+    State = ifelse(row_number() == 1, State, NA),
+    .by = c("Country", "State")
+  )
+
+all.equal(test, inp)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "200-299/289/PQ_Challenge_289.xlsx"
+input = pd.read_excel(path, header=None, nrows=11, usecols="A:L")
+test = pd.read_excel(path, skiprows=15, nrows=19, usecols="A:H").replace({np.nan: ""})
+
+dates, shifts = input.iloc[0, 2:], input.iloc[1, 2:]
+countries, states = input.iloc[2:, 0], input.iloc[2:, 1]
+
+tidy = [
+    {
+        'Country': countries.iloc[i],
+        'State': states.iloc[i],
+        'Shift': shifts.iloc[j],
+        'date': dates.iloc[j],
+        'value': pd.to_numeric(input.iat[i+2, j+2], errors='coerce')
+    }
+    for i in range(9)
+    for j in range(10)
+]
+df = pd.DataFrame(tidy)
+df['date'] = df['date'].where(
+    ~df['date'].astype(str).str.contains('Column'), np.nan
+).ffill()
+df['Country'] = df['Country'].ffill()
+
+country_order = countries.dropna().unique().tolist()
+state_order = states.dropna().unique().tolist()
+
+df = df.sort_values(
+    ['Country', 'State', 'Shift', 'date'],
+    key=lambda x: x.map(
+        lambda v: country_order.index(v) if x.name == 'Country' and v in country_order else
+                  state_order.index(v) if x.name == 'State' and v in state_order else
+                  pd.to_datetime(v, errors='coerce') if x.name == 'date' else v
+    )
+).reset_index(drop=True)
+
+df = df.pivot_table(
+    index=['Country','State','Shift'],
+    columns='date',
+    values='value',
+    sort=False
+).reset_index()
+df = df[
+    ['Country','State','Shift'] +
+    [c for c in df.columns if c not in ['Country','State','Shift']]
+]
+
+mask = ~df.duplicated(['Country','State'])
+df.loc[~mask, ['Country','State']] = ""
+for col in df.columns[3:]:
+    df[col] = df[col].astype('int64')
+df.columns.name = None
+
+print(df.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 288](Excel288pq.qmd)
+-   [Excel BI - Excel Challenge 669](Excel669.qmd)

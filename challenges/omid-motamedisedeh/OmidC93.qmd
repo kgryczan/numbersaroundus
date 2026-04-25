@@ -1,0 +1,117 @@
+---
+title: "Omid - Challenge 93"
+description: "🔰 Question Result Department Marketing IT Production R&D Year"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 93](/challenges/images/OmidC93.jpg)
+
+## Challenge Description
+
+🔰 Question Result Department Marketing IT Production R&D Year
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-093 Random Selection.xlsx"
+input = read_excel(path, range = "B2:C20")
+test  = read_excel(path, range = "E2:F7")
+
+result = input %>%
+  slice_sample(n = 1, by = Department)
+
+# A tibble: 5 × 2
+# Department `Staff ID`
+# <chr>      <chr>     
+# 1 HR         S_01      
+# 2 Marketing  S_03      
+# 3 IT         S_10      
+# 4 Production S_16      
+# 5 R&D        S_15
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-093 Random Selection.xlsx"
+input = pd.read_excel(path, usecols= "B:C", skiprows=1)
+
+result = input.groupby("Department").apply(lambda x: x.sample(1)).reset_index(drop=True)
+
+#    Department Staff ID
+# 0          HR     S_01
+# 1          IT     S_12
+# 2   Marketing     S_03
+# 3  Production     S_16
+# 4         R&D     S_14
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 92](OmidC92.qmd)
+-   [Omid - Challenge 94](OmidC94.qmd)
+-   [Omid - Challenge 95](OmidC95.qmd)

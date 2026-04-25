@@ -1,0 +1,136 @@
+---
+title: "Excel BI - PowerQuery Challenge 353"
+description: "Calculate the Total 2025 Kickoff Bonus - Region-wise and Grand Total. Add Sales 'Accelerator': If the employee is in the Sales department, add $300 to the result after the tax is calculated."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 353](/challenges/images/exc353pq.jpg)
+
+## Challenge Description
+
+Calculate the Total 2025 Kickoff Bonus - Region-wise and Grand Total. Add Sales "Accelerator": If the employee is in the Sales department, add $300 to the result after the tax is calculated.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Power Query/300-399/353/PQ_Challenge_353.xlsx"
+input1 <- read_excel(path, range = "A1:E51")
+input2 <- read_excel(path, range = "G1:H5")
+test <- read_excel(path, range = "G9:H14")
+
+result <- input1 %>%
+  left_join(input2, by = "Region") %>%
+  mutate(
+    capped = pmin(`2024 Gross` * .05, `Max Bonus Cap`),
+    prosperity_tax = case_when(
+      capped < 2000 ~ 0,
+      capped <= 3500 ~ (capped - 2000) * 0.10,
+      TRUE ~ 150 + (capped - 3500) * .2
+    ),
+    total = capped - prosperity_tax + if_else(Dept == "Sales", 300, 0)
+  ) %>%
+  summarise(Bonus = sum(total, na.rm = TRUE), .by = Region) %>%
+  arrange(Region) %>%
+  janitor::adorn_totals("row", name = "Total")
+
+all.equal(result, test, check.attributes = F)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+
+path = "Power Query/300-399/353/PQ_Challenge_353.xlsx"
+input1 = pd.read_excel(path, usecols="A:E", nrows=51)
+input2 = pd.read_excel(path, usecols="G:H", nrows=4).rename(columns=lambda c: c.replace(".1", ""))
+test = pd.read_excel(path, usecols="G:H", skiprows=8, nrows=5).rename(columns=lambda c: c.replace(".1", ""))
+
+df = input1.merge(input2, on="Region")
+df["capped"] = np.minimum(df["2024 Gross"] * 0.05, df["Max Bonus Cap"])
+df["prosperity_tax"] = np.select(
+    [df.capped < 2000, df.capped.between(2000, 3500), df.capped > 3500],
+    [0, (df.capped - 2000) * 0.1, 150 + (df.capped - 3500) * 0.2]
+)
+df["total"] = df.capped - df.prosperity_tax + np.where(df.Dept == "Sales", 300, 0)
+result = df.groupby("Region", as_index=False)["total"].sum().rename(columns={"total": "Bonus"}).sort_values("Region")
+result = pd.concat([result, pd.DataFrame({"Region": ["Total"], "Bonus": [result.Bonus.sum()]})], ignore_index=True)
+result["Bonus"] = result["Bonus"].astype(int)
+print(result.equals(test))   # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The transformation rule is readable, but the final layout still requires a careful implementation.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 352](Excel352pq.qmd)
+-   [Excel BI - Excel Challenge 733](Excel733.qmd)

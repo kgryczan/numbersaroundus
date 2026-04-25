@@ -1,0 +1,86 @@
+---
+title: "Excel BI - Excel Challenge 688"
+description: "🔰 Sum all the"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 688](/challenges/images/exc688.jpg)
+
+## Challenge Description
+
+🔰 Sum all the
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/688 Sum of All Except First and Last Numbers.xlsx"
+input = read_excel(path, range = "A1:A10")
+test  = read_excel(path, range = "B1:B2") %>%
+  pull()
+
+result = input %>%
+  mutate(numbers = str_extract_all(Strings, "\\d+"),
+         numbers = map(numbers, ~ as.numeric(.x)),
+         sum = map_dbl(numbers, ~ sum(.x[-c(1, length(.x))]))) %>%
+  summarise(sum = sum(sum)) %>%
+  pull()
+
+test == result #> True
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The solution stays close to the text pattern itself, which makes the extraction logic easy to audit.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: A small number of well-targeted text patterns does most of the heavy lifting.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "688 Sum of All Except First and Last Numbers.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=10)
+test = pd.read_excel(path, usecols="B", nrows=1).squeeze().tolist()
+
+input['cell_sum'] = input['Strings'].apply(lambda x: sum(int(num) for num in re.findall(r'\d+', str(x))[1:-1]))
+result = input['cell_sum'].sum()
+
+print(result == test) # True
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 689](/challenges/excelbi/Excel689.html)
+- [Excel Challenge 690](/challenges/excelbi/Excel690.html)
+- [Excel Challenge 691](/challenges/excelbi/Excel691.html)

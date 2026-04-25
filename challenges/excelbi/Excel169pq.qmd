@@ -1,0 +1,121 @@
+---
+title: "Excel BI - PowerQuery Challenge 169"
+description: "Extract the words which start with English alphabets followed by numbers. After numbers, it may contain alphabets/numbers or both. The words should contain alphabets only in upper case."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 169](/challenges/images/exc169pq.jpg)
+
+## Challenge Description
+
+Extract the words which start with English alphabets followed by numbers. After numbers, it may contain alphabets/numbers or both. The words should contain alphabets only in upper case.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("Power Query/PQ_Challenge_169.xlsx", range = "A1:A8")
+test = read_excel("Power Query/PQ_Challenge_169.xlsx", range = "C1:D8")
+
+pattern = ("\\b[A-Z](?=[A-Z0-9]*[0-9])[A-Z0-9]*\\b")
+
+result = input %>%
+  mutate(Codes = map_chr(String, ~str_extract_all(., pattern) %>% unlist() %>% 
+                              str_c(collapse = ", "))) %>%
+  mutate(Codes = if_else(Codes == "", NA_character_, Codes)) 
+
+all.equal(test$Codes, result$Codes)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+input_data = pd.read_excel("PQ_Challenge_169.xlsx", sheet_name="Sheet1", usecols="A")
+test_data = pd.read_excel("PQ_Challenge_169.xlsx", sheet_name="Sheet1", usecols="C:D")
+test_data["Codes"] = test_data["Codes"].fillna("").astype(str)
+
+pattern = r"\b[A-Z](?=[A-Z0-9]*[0-9])[A-Z0-9]*\b"
+
+result = input_data.copy()
+result["Codes"] = result["String"].apply(lambda x: ", ".join(re.findall(pattern, str(x))) if pd.notnull(x) else "")
+
+print(test_data["Codes"].equals(result["Codes"]))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 168](Excel168pq.qmd)

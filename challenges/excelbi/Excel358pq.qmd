@@ -1,0 +1,243 @@
+---
+title: "Excel BI - PowerQuery Challenge 358"
+description: "OrderID Customer DiscountCode Items Price Total Amount"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 358](/challenges/images/exc358pq.jpg)
+
+## Challenge Description
+
+OrderID Customer DiscountCode Items Price Total Amount
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(rlang)
+
+path <- "Power Query/300-399/358/PQ_Challenge_358.xlsx"
+input <- read_excel(path, range = "A1:E21")
+test <- read_excel(path, range = "G1:H10")
+
+prices = input %>%
+  select(Price) %>%
+  separate_longer_delim(Price, delim = ";") %>%
+  separate_wider_delim(Price, delim = "=", names = c("Code", "Price")) %>%
+  distinct() %>%
+  arrange(Code)
+
+orders = input %>%
+  select(OrderID, Customer, Items) %>%
+  separate_longer_delim(Items, delim = ";") %>%
+  mutate(
+    Outside = if_else(
+      str_detect(Items, "\\[.*\\]"),
+      str_remove(Items, "\\[.*\\]"),
+      NA_character_
+    ),
+    Inside = if_else(
+      str_detect(Items, "\\[.*\\]"),
+      str_extract(Items, "\\[.*\\]"),
+      Items
+    )
+  ) %>%
+  mutate(Inside = str_remove_all(Inside, "[\\[\\]]")) %>%
+  separate_longer_delim(Inside, delim = "+") %>%
+  separate_wider_delim(Inside, delim = "*", names = c("Code", "Quantity"))
+
+result = input %>%
+  select(OrderID, Customer, DiscountCode) %>%
+  left_join(orders, by = c("OrderID", "Customer")) %>%
+  left_join(prices, by = c("Code")) %>%
+  mutate(Amount = as.numeric(Quantity) * as.numeric(Price)) %>%
+  select(-c(Price, Quantity, Code)) %>%
+  mutate(
+    discount = case_when(
+      DiscountCode == "DISC5" ~ 0.05,
+      DiscountCode == "DISC10" ~ 0.1,
+      TRUE ~ 0
+    ),
+    all_discount = case_when(
+      Outside == "BNDL" ~ 1 - discount - 0.1,
+      Outside == "RET" ~ -1,
+      Outside == "NONE" ~ 1 - discount,
+      Outside == "FREE" ~ 0,
+      TRUE ~ 1 - discount
+    )
+  ) %>%
+  mutate(Total = Amount * all_discount) %>%
+  group_by(Customer) %>%
+  summarise(Total = sum(Total, na.rm = TRUE))
+
+all.equal(result, test, check.attributes = FALSE)
+# One difference
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "Power Query/300-399/358/PQ_Challenge_358.xlsx"
+input = pd.read_excel(path, usecols="A:E", nrows=21)
+test = pd.read_excel(path, usecols="G:H", nrows=9).rename(columns=lambda x: x.replace('.1', ''))
+
+prices = (
+    input[["Price"]]
+    .assign(Price=lambda d: d["Price"].str.split(";"))
+    .explode("Price")
+    .assign(tmp=lambda d: d["Price"].str.split("=", n=1))
+    .assign(
+        Code=lambda d: d["tmp"].str[0],
+        Price=lambda d: d["tmp"].str[1].astype(float)
+    )
+    .drop(columns="tmp")
+    .drop_duplicates()
+    .sort_values("Code")
+)
+
+orders = (
+    input[["OrderID", "Customer", "Items"]]
+    .assign(Items=lambda d: d["Items"].str.split(";"))
+    .explode("Items")
+    .assign(
+        Outside=lambda d: np.where(
+            d["Items"].str.contains(r"\[.*\]"),
+            d["Items"].str.replace(r"\[.*\]", "", regex=True),
+            np.nan
+        ),
+        Inside=lambda d: np.where(
+            d["Items"].str.contains(r"\[.*\]"),
+            d["Items"].str.extract(r"(\[.*\])")[0],
+            d["Items"]
+        )
+    )
+    .assign(Inside=lambda d: d["Inside"].str.replace(r"[\[\]]", "", regex=True))
+    .assign(Inside=lambda d: d["Inside"].str.split(r"\+"))
+    .explode("Inside")
+    .assign(tmp=lambda d: d["Inside"].str.split("*", n=1))
+    .assign(
+        Code=lambda d: d["tmp"].str[0],
+        Quantity=lambda d: d["tmp"].str[1].astype(float)
+    )
+    .drop(columns=["tmp", "Items", "Inside"])
+)
+result = (
+input[["OrderID", "Customer", "DiscountCode"]]
+.merge(orders, on=["OrderID", "Customer"], how="left")
+.merge(prices, on="Code", how="left")
+.assign(Amount=lambda d: d["Quantity"] * d["Price"])
+.assign(
+discount=lambda d: np.select(
+[d["DiscountCode"].eq("DISC5"), d["DiscountCode"].eq("DISC10")],
+[0.05, 0.10],
+default=0.0
+),
+all_discount=lambda d: np.select(
+[
+d["Outside"].eq("BNDL"),
+d["Outside"].eq("RET"),
+d["Outside"].eq("NONE"),
+d["Outside"].eq("FREE"),
+],
+[
+1 - d["discount"] - 0.1,
+-1,
+1 - d["discount"],
+0,
+],
+default=1 - d["discount"]
+)
+)
+.assign(Total=lambda d: d["Amount"] * d["all_discount"])
+.groupby("Customer", as_index=False)["Total"]
+.sum()
+.rename(columns={"Total": "Total Amount"})
+)
+
+
+print(result.equals(test))
+# one dicrepancy found
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 357](Excel357pq.qmd)
+-   [Excel BI - Excel Challenge 738](Excel738.qmd)

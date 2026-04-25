@@ -1,0 +1,116 @@
+---
+title: "Crispo - Excel Challenge 38 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-09-21"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 38 2025](/challenges/images/Crispo382025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ ⭐Filter Out Empty Columns
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/2025-09-21/Challenge 61.xlsx"
+input = read_excel(path, range = "B2:F8")
+test  = read_excel(path, range = "H2:J8")
+
+# short but little bit difficult
+result = input %>%
+  select(-where(~all(is.na(.)))
+         
+# short and easy
+result2 = input %>%
+  janitor::remove_empty("cols")
+
+all.equal(test, result, check.attributes = FALSE) # True
+all.equal(test, result2, check.attributes = FALSE) # True
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "files/2025-09-21/Challenge 61.xlsx"
+input = pd.read_excel(path, usecols="B:F", skiprows=1, nrows=6)
+test = pd.read_excel(path, usecols="H:J", skiprows=1, nrows=6).rename(columns=lambda x: x.replace('.1', ''))
+
+result = input.dropna(axis=1, how='all')
+print(test.equals(result))   # True
+
+result2 = input.loc[:, input.notna().any()]
+print(test.equals(result2))  # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 37 2025](Crispo 372025.qmd)
+-   [Crispo - Excel Challenge 39 2025](Crispo 392025.qmd)

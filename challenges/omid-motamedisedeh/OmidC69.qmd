@@ -1,0 +1,130 @@
+---
+title: "Omid - Challenge 69"
+description: "🔰 In Table 1, sales transactions are provided, and the state of each customer is presented in Table 2."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 69](/challenges/images/OmidC69.jpg)
+
+## Challenge Description
+
+🔰 In Table 1, sales transactions are provided, and the state of each customer is presented in Table 2.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(fuzzyjoin)
+
+path = "files/CH-069 Sales by State.xlsx"
+
+input1 = read_xlsx(path, range = "B2:D41")
+input2 = read_xlsx(path, range = "F2:H13")
+test   = read_xlsx(path, range = "J2:K7")
+
+input2 = input2 %>%
+  arrange(`Customer ID`) %>%
+  mutate(end_date = lead(Date, 1), .by = `Customer ID`) %>%
+  replace_na(list(end_date = today()))
+
+res = fuzzy_inner_join(input1, input2, 
+                       by = c("Customer ID" = "Customer ID", "Date" = "Date", "Date" = "end_date"), 
+                       match_fun = list(`==`, `>`, `<=`)) %>%
+  summarise(Sales = sum(Quantity), .by = States)
+
+print(res)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "CH-069 Sales by State.xlsx"
+
+input1 = pd.read_excel(path, usecols="B:D", skiprows=1)
+input2 = pd.read_excel(path, usecols="F:H", skiprows=1, nrows = 11)
+input2.columns = input2.columns.str.replace(".1", "")
+test = pd.read_excel(path, usecols="J:K", skiprows=1, nrows = 5)
+test.columns = test.columns.str.replace(".1", "")
+
+input2 = input2.sort_values(by="Customer ID").reset_index(drop=True)
+input2["end_date"] = input2.groupby("Customer ID")["Date"].shift(-1)
+input2["end_date"].fillna(pd.Timestamp.today().date(), inplace=True)
+input2["end_date"] = pd.to_datetime(input2["end_date"])
+
+res = input1.merge(input2, how="left", on="Customer ID")
+res = res[(res["Date_x"] <= res["end_date"]) & (res["Date_x"] >= res["Date_y"])]
+res = res.groupby("States").agg({"Quantity": "sum"}).rename(columns={"Quantity": "Sales"}).reset_index()
+
+print(res)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 68](OmidC68.qmd)
+-   [Omid - Challenge 70](OmidC70.qmd)
+-   [Omid - Challenge 71](OmidC71.qmd)

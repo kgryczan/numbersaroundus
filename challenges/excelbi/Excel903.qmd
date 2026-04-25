@@ -1,0 +1,110 @@
+---
+title: "Excel BI - Excel Challenge 903"
+description: "🔰 List those rows all numbers appear between the minimum and maximum numbers."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 903](/challenges/images/exc903.jpg)
+
+## Challenge Description
+
+🔰 List those rows all numbers appear between the minimum and maximum numbers.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/900-999/903/903 All Numbers in the Range.xlsx"
+input <- read_excel(path, range = "A1:A11")
+test <- read_excel(path, range = "B1:B6")
+
+funA = function(string) {
+  x = str_split(string, pattern = ", ")[[1]]
+  x = unlist(map(x, function(element) {
+    if (str_detect(element, "-")) {
+      range = as.numeric(str_split(element, "-")[[1]])
+      return(seq(range[1], range[2], by = 1))
+    } else {
+      return(as.numeric(element))
+    }
+  }))
+  max_x <- max(x)
+  min_x <- min(x)
+  full_seq = seq(min_x, max_x, 1)
+  return(all(full_seq %in% x))
+}
+
+output <- input %>%
+  rowwise() %>%
+  mutate(Result = funA(Data)) %>%
+  filter(Result)
+
+all.equal(output$Data, test$`Answer Expected`)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+import re
+
+path = "Excel/900-999/903/903 All Numbers in the Range.xlsx"
+input_data = pd.read_excel(path, usecols="A", nrows=11)
+test_data = pd.read_excel(path, usecols="B", nrows=5)
+
+def funA(string):
+    x = re.split(r', ', string)
+    x = np.concatenate([np.arange(int(r.split('-')[0]), int(r.split('-')[1]) + 1) if '-' in r else [int(r)] for r in x])
+    max_x = max(x)
+    min_x = min(x)
+    full_seq = np.arange(min_x, max_x + 1)
+    return np.all(np.isin(full_seq, x))
+
+input_data['Result'] = input_data['Data'].apply(funA)
+output = input_data[input_data['Result']]
+
+print(output['Data'].tolist() == test_data['Answer Expected'].tolist())
+# True
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 904](/challenges/excelbi/Excel904.html)
+- [Excel Challenge 905](/challenges/excelbi/Excel905.html)
+- [Excel Challenge 906](/challenges/excelbi/Excel906.html)

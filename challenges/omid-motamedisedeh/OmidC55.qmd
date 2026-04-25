@@ -1,0 +1,131 @@
+---
+title: "Omid - Challenge 55"
+description: "🔰 In this challenge, we want to calculate the net quantity of items sent per product each year by neglecting the returns products."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 55](/challenges/images/OmidC55.jpg)
+
+## Challenge Description
+
+🔰 In this challenge, we want to calculate the net quantity of items sent per product each year by neglecting the returns products.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-055 Warehouse Management.xlsx", range = "B2:E19")
+test  = read_excel("files/CH-055 Warehouse Management.xlsx", range = "H2:K5")
+
+result = input %>%
+  mutate(Year = year(Date)) %>%
+  summarise(Year = min(Year),
+            Quantity = sum(Quantity),
+            .by = c("Order No", "Product")) %>%
+  select(-`Order No`) %>%
+  pivot_wider(names_from  = Year, values_from = Quantity, values_fn = sum) %>%
+  mutate(across(everything(), ~ifelse(. == 0, NA, .))) %>%
+  arrange(Product)
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+input = pd.read_excel("CH-055 Warehouse Management.xlsx", usecols="B:E", skiprows=1)
+test = pd.read_excel("CH-055 Warehouse Management.xlsx", usecols="H:K", skiprows=1, nrows= 3)
+
+result = input.copy()
+result["Year"] = result["Date"].dt.year
+result = result.groupby(["Order No", "Product"]).agg({"Yea                                                                                              2r": "min","Quantity": "sum"}).reset_index()
+result.drop(columns=["Order No"], inplace=True)
+result = result.pivot_table(index="Product", columns="Year", values="Quantity", aggfunc="sum", fill_value=0).reset_index()
+
+test.columns = result.columns
+result.iloc[:, 1:] = result.iloc[:, 1:].astype(float)
+result.iloc[:, 1:] = result.iloc[:, 1:].replace(0, np.NaN)
+
+print(result.equals(test))  # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 54](OmidC54.qmd)
+-   [Omid - Challenge 56](OmidC56.qmd)
+-   [Omid - Challenge 57](OmidC57.qmd)

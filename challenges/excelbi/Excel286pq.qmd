@@ -1,0 +1,149 @@
+---
+title: "Excel BI - PowerQuery Challenge 286"
+description: "Split the amount on the basis of number of animals and / or food. If there are more than one food, then same number of entries would appear in Amount column also."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 286](/challenges/images/exc286pq.jpg)
+
+## Challenge Description
+
+Split the amount on the basis of number of animals and / or food. If there are more than one food, then same number of entries would appear in Amount column also.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/200-299/286/PQ_Challenge_286.xlsx"
+input = read_excel(path, range = "A1:C6")
+test = read_excel(path, range = "F1:H13")
+
+result = input %>%
+  mutate(rn = row_number()) %>%
+  separate_rows(1:3, sep = ", ") %>%
+  group_by(rn, Food) %>%
+  mutate(
+    Amount = ifelse(
+      n_distinct(Animals) > n_distinct(Food) & n_distinct(Amount) == 1,
+      as.numeric(Amount) / n_distinct(Animals),
+      as.numeric(Amount)
+    )
+  ) %>%
+  ungroup() %>%
+  select(Animal = Animals, Food, Amount)
+
+all.equal(result, test, check.attributes = FALSE)
+# TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "200-299/286/PQ_Challenge_286.xlsx"
+input = pd.read_excel(path, usecols="A:C", nrows=5)
+test = pd.read_excel(path, usecols="F:H", nrows=13).rename(columns=lambda x: x.replace('.1', ''))
+
+input['rn'] = input.index
+cols = ['Animals', 'Food', 'Amount']
+input[cols] = input[cols].applymap(lambda x: re.split(r',\s*', x) if isinstance(x, str) and ',' in x else [x])
+input['max_len'] = input[cols].applymap(len).max(axis=1)
+input['Food_set_len'] = input['Food'].apply(lambda x: len(set(x)))
+input['Animals_set_len'] = input['Animals'].apply(lambda x: len(set(x)))
+input['Amount'] = input['Amount'].apply(lambda x: [float(i) for i in x])
+
+def expand_row(row):
+    for col in cols:
+        row[col] = (row[col] * row['max_len'])[:row['max_len']]
+    return row
+
+input = input.apply(expand_row, axis=1)
+input = input.explode(cols, ignore_index=True)
+input['Amount'] = input.apply(
+    lambda row: int(row['Amount'] / row['Animals_set_len']) if row['Food_set_len'] < row['Animals_set_len'] else int(row['Amount']),
+    axis=1
+).astype('int64')
+input = input[['Animals', 'Food', 'Amount']]
+input = input.rename(columns={'Animals': 'Animal'})
+
+print(input.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 285](Excel285pq.qmd)
+-   [Excel BI - Excel Challenge 666](Excel666.qmd)

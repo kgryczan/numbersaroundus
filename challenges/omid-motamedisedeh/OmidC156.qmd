@@ -1,0 +1,126 @@
+---
+title: "Omid - Challenge 156"
+description: "🔰 Question Result ID ID.1 ID.2 ID.3 RSN MX"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 156](/challenges/images/OmidC156.jpg)
+
+## Challenge Description
+
+🔰 Question Result ID ID.1 ID.2 ID.3 RSN MX
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-156 Column Splitting.xlsx"
+input = read_excel(path, range = "B2:B8")
+test  = read_excel(path, range = "D2:F8")
+
+result = input %>%
+  mutate(ID.1 = ifelse(nchar(ID) %% 2 == 0, 
+                       substr(ID, 1, nchar(ID)/2), 
+                       substr(ID, 1, nchar(ID)/2)),
+         ID.2 = ifelse(nchar(ID) %% 2 == 0, 
+                       substr(ID, nchar(ID)/2 + 1, nchar(ID)), 
+                       substr(ID, nchar(ID)/2 + 1, nchar(ID)/2 + 1)),
+         ID.3 = ifelse(nchar(ID) %% 2 == 0, 
+                       NA, 
+                       substr(ID, nchar(ID)/2 + 2, nchar(ID)))) %>%
+    select(-ID)
+
+all.equal(result, test, check.attributes = FALSE)
+# only one discrepancy from original solution
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-156 Column Splitting.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=7)
+test = pd.read_excel(path, usecols="D:F", skiprows=1, nrows=7).fillna('')
+
+def split_id(id):
+    n = len(id)
+    mid = n // 2
+    if n % 2 == 0:
+        id1, id2, id3 = id[:mid], id[mid:], None
+    else:
+        id1, id2, id3 = id[:mid], id[mid:mid + 1], id[mid + 1:]
+    return pd.Series([id1, id2, id3])
+
+result = input['ID'].apply(split_id).fillna('')
+result.columns = ['ID.1', 'ID.2', 'ID.3']
+
+# identical except one field wrong in given solution
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 155](OmidC155.qmd)
+-   [Omid - Challenge 157](OmidC157.qmd)
+-   [Omid - Challenge 158](OmidC158.qmd)

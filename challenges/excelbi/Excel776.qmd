@@ -1,0 +1,92 @@
+---
+title: "Excel BI - Excel Challenge 776"
+description: "🔰 Col1 Col2 Answer Expected A H B D C F G"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 776](/challenges/images/exc776.jpg)
+
+## Challenge Description
+
+🔰 Col1 Col2 Answer Expected A H B D C F G
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/776/776 Stack.xlsx"
+input = read_excel(path, range = "A1:B16")
+test  = read_excel(path, range = "D1:D27") %>% pull() %>% str_c(collapse = "")
+
+collapse_column = function(x) {
+  str_extract_all(str_c(na.omit(x), collapse = ""), "(.)\\1*")[[1]]
+}
+
+result = map2_chr(
+  collapse_column(input$Col1),
+  collapse_column(input$Col2),
+  ~ str_c(.x, .y)
+) %>% str_c(collapse = "")
+
+all.equal(result, test)
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Parse the packed text or string structure.
+- **Strengths**: The solution stays close to the text pattern itself, which makes the extraction logic easy to audit.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: A small number of well-targeted text patterns does most of the heavy lifting.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "700-799/776/776 Stack.xlsx"
+
+input = pd.read_excel(path, usecols="A:B", nrows=16)
+test = "".join(pd.read_excel(path, usecols="D", nrows=27).iloc[:, 0].astype(str))
+
+def extract_groups(series):
+    return [m[0] for m in re.findall(r'((.)\2+|.)', "".join(series.dropna().astype(str)))]
+
+result = "".join(a + b for a, b in zip(*(extract_groups(input.iloc[:, i]) for i in range(2))))
+
+print(result == test) # True
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 777](/challenges/excelbi/Excel777.html)
+- [Excel Challenge 778](/challenges/excelbi/Excel778.html)
+- [Excel Challenge 779](/challenges/excelbi/Excel779.html)

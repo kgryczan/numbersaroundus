@@ -1,0 +1,158 @@
+---
+title: "Omid - Challenge 22"
+description: "🔰 Convert Number To Convert"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 22](/challenges/images/OmidC22.jpg)
+
+## Challenge Description
+
+🔰 Convert Number To Convert
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(english)
+
+input = read_excel("files/CH-022 Convert Number To Text.xlsx" , range = "B2:B10")
+test  = read_excel("files/CH-022 Convert Number To Text.xlsx" , range = "G2:H10")
+
+result = input %>%
+  mutate(
+    number = as.character(Number),
+    integer_part = map(number, ~ strsplit(.x, "\\.")[[1]][1]) %>% as.integer(),
+    decimal_part = map(number, ~ strsplit(.x, "\\.")[[1]][2]) %>% as.integer()
+  ) %>%
+  mutate(
+    integer_part_text = map_chr(integer_part, ~ as.character(as.english(.x))),
+    decimal_part_text = map_chr(decimal_part, ~ as.character(as.english(.x))),
+    Text = ifelse(is.na(decimal_part), 
+                  integer_part_text, 
+                  paste0(integer_part_text, " point ", decimal_part_text)) %>%
+      str_to_sentence() %>%
+      str_remove_all(" and")
+  ) %>%
+  select(Number, Text)
+    
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input_data = pd.read_excel("CH-022 Convert Number To Text.xlsx", usecols="B", skiprows=1, nrows=9)
+test = pd.read_excel("CH-022 Convert Number To Text.xlsx", usecols="G:H", skiprows=1, nrows=9)
+
+ones = {
+    0: "zero", 1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight", 9: "nine",
+    10: "ten", 11: "eleven", 12: "twelve", 13: "thirteen", 14: "fourteen", 15: "fifteen", 16: "sixteen",
+    17: "seventeen", 18: "eighteen", 19: "nineteen"
+}
+tens = {2: "twenty", 3: "thirty", 4: "forty", 5: "fifty", 6: "sixty", 7: "seventy", 8: "eighty", 9: "ninety"}
+
+def textify_whole(number: str) -> str:
+    if not number:
+        return ""
+    n = int(number)
+    if n < 20:
+        return ones[n]
+    if n < 100:
+        t, o = divmod(n, 10)
+        return tens[t] if o == 0 else f"{tens[t]}-{ones[o]}"
+    if n < 1000:
+        h, rem = divmod(n, 100)
+        tail = textify_whole(str(rem)).strip()
+        return f"{ones[h]} hundred" if rem == 0 else f"{ones[h]} hundred {tail}"
+    th, rem = divmod(n, 1000)
+    tail = textify_whole(str(rem)).strip()
+    return f"{ones[th]} thousand" if rem == 0 else f"{ones[th]} thousand {tail}"
+
+def textify_number(number):
+    text = str(number)
+    if "." in text:
+        whole, dec = text.split(".", 1)
+        out = f"{textify_whole(whole)} point {textify_whole(str(int(dec)))}"
+    else:
+        out = textify_whole(text)
+    return out.capitalize()
+
+result = input_data.assign(Text=input_data["Number"].map(textify_number))
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 21](OmidC21.qmd)
+-   [Omid - Challenge 23](OmidC23.qmd)
+-   [Omid - Challenge 24](OmidC24.qmd)

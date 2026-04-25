@@ -1,0 +1,109 @@
+---
+title: "Excel BI - Excel Challenge 758"
+description: "🔰 Step 1 - Sum the square of the digits."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 758](/challenges/images/exc758.jpg)
+
+## Challenge Description
+
+🔰 Step 1 - Sum the square of the digits. Step 2 - Sum the square of the digits of the result of Step 1. You need to keep doing it till the sum becomes a single digit. List first 5 consecutive
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(memoise)
+
+path = "Excel/700-799/758/758 First 5 Consecutive Happy Numbers.xlsx"
+test = read_excel(path, range = "A1:A6") %>% pull()
+
+is_happy = memoise(function(n) {
+  repeat {
+    n = sum((as.integer(strsplit(as.character(n), "")[[1]]))^2)
+    if (n == 1) return(TRUE)
+    if (n == 4) return(FALSE)
+  }
+})
+
+find_consec_happy_seq = function(k) {
+  n = 1
+  repeat {
+    if (all(sapply(n:(n+k-1), is_happy))) return(n:(n+k-1))
+    n = n + 1
+  }
+}
+
+result = find_consec_happy_seq(5)
+all.equal(result, test)
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from functools import lru_cache
+
+path = "700-799/758/758 First 5 Consecutive Happy Numbers.xlsx"
+test = pd.read_excel(path, usecols="A", nrows=6).iloc[:, 0].tolist()
+
+@lru_cache(maxsize=None)
+def is_happy(n):
+    while True:
+        n = sum(int(digit) ** 2 for digit in str(n))
+        if n == 1:
+            return True
+        if n == 4:
+            return False
+
+def find_consec_happy_seq(k):
+    n = 1
+    while True:
+        if all(is_happy(x) for x in range(n, n + k)):
+            return list(range(n, n + k))
+        n += 1
+
+result = find_consec_happy_seq(5)
+print(result == test) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 759](/challenges/excelbi/Excel759.html)
+- [Excel Challenge 760](/challenges/excelbi/Excel760.html)
+- [Excel Challenge 761](/challenges/excelbi/Excel761.html)

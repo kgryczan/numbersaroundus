@@ -1,0 +1,142 @@
+---
+title: "Crispo - Excel Challenge 29 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-07-20"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 29 2025](/challenges/images/Crispo292025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ ⭐Calculate the running totals and Reset Instances
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/2025-07-20/Challenge 45.xlsx"
+input1 = read_excel(path, range = "B2", col_names = FALSE) %>% pull()
+input2 = read_excel(path, range = "B3:J3", col_names = FALSE) %>% t() %>% data.frame(Data = .)
+test  = read_excel(path, range = "B4:J4", col_names = FALSE) %>% t() %>% data.frame(res = .)
+
+reset_tracker = function(data, threshold) {
+  running = 0
+  counter = 0
+  
+  map_dbl(data, function(value) {
+    running <<- running + value
+    if (running >= threshold) {
+      counter <<- counter + 1
+      running <<- 0
+      return(counter)
+    } else {
+      return(running)
+    }
+  })
+}
+
+result = input2 %>%
+  mutate(res = reset_tracker(Data, input1)) 
+
+all.equal(result$res, test$res)
+# > [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "files/2025-07-20/Challenge 45.xlsx"
+
+input1 = pd.read_excel(path, header=None, usecols="B", skiprows=1, nrows=1).iloc[0, 0]
+input2 = pd.read_excel(path, header=None, usecols="B:J", skiprows=2, nrows=1).transpose().set_axis(["Data"], axis=1)
+test = pd.read_excel(path, header=None, usecols="B:J", skiprows=3, nrows=1).transpose().set_axis(["res"], axis=1)
+
+def reset_tracker(data, threshold):
+    running, counter, result = 0, 0, []
+    for value in data:
+        running += value
+        if running >= threshold:
+            counter, running = counter + 1, 0
+        result.append(counter if running == 0 else running)
+    return result
+
+result = reset_tracker(input2["Data"], input1)
+
+print(result == test['res'].tolist()) #True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 28 2025](Crispo 282025.qmd)
+-   [Crispo - Excel Challenge 30 2025](Crispo 302025.qmd)

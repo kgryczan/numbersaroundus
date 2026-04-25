@@ -1,0 +1,132 @@
+---
+title: "Omid - Challenge 289"
+description: "🔰 For each cell in the Question table, replace its value with the average of its neighboring cells."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 289](/challenges/images/OmidC289.jpg)
+
+## Challenge Description
+
+🔰 For each cell in the Question table, replace its value with the average of its neighboring cells.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/289/CH-289 Aggregation.xlsx"
+input = read_excel(path, range = "B3:E9", col_names = FALSE) %>% as.matrix()
+test  = read_excel(path, range = "G3:J9", col_names = FALSE) %>% as.matrix()
+
+get_neighbour <- function(df, r, c) {
+  r_rng <- max(1, r-1):min(nrow(df), r+1)
+  c_rng <- max(1, c-1):min(ncol(df), c+1)
+  vals  <- df[r_rng, c_rng, drop = FALSE]
+  vals[match(r, r_rng), match(c, c_rng)] <- NA_real_
+  mean(vals, na.rm = TRUE)
+}
+
+output <- matrix(
+  purrr::map2_dbl(
+    rep(1:nrow(input), times = ncol(input)),
+    rep(1:ncol(input), each = nrow(input)),
+    ~ get_neighbour(input, .x, .y)
+  ),
+  nrow = nrow(input),
+  ncol = ncol(input)
+)
+
+all(output==test) # TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import numpy as np
+import pandas as pd
+
+path = "200-299/289/CH-289 Aggregation.xlsx"
+input = pd.read_excel(path, header=None, usecols="B:E", skiprows=2, nrows=7).to_numpy()
+test  = pd.read_excel(path, header=None, usecols="G:J", skiprows=2, nrows=7).to_numpy()
+
+def get_neighbour(df, r, c):
+    r_rng = slice(max(0, r-1), min(df.shape[0], r+2))
+    c_rng = slice(max(0, c-1), min(df.shape[1], c+2))
+    vals = df[r_rng, c_rng].copy().astype(float)
+    vals[r - max(0, r-1), c - max(0, c-1)] = np.nan
+    return np.nanmean(vals)
+
+output = np.array([
+    [get_neighbour(input, r, c) for c in range(input.shape[1])]
+    for r in range(input.shape[0])
+])
+
+print(np.allclose(output, test, equal_nan=True)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 288](OmidC288.qmd)
+-   [Omid - Challenge 290](OmidC290.qmd)
+-   [Omid - Challenge 291](OmidC291.qmd)

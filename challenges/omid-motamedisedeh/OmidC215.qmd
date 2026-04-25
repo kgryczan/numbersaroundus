@@ -1,0 +1,139 @@
+---
+title: "Omid - Challenge 215"
+description: "🔰 Result Question ID OFDMSD MPMXM/FS PPM/PM/ / XM"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 215](/challenges/images/OmidC215.jpg)
+
+## Challenge Description
+
+🔰 Result Question ID OFDMSD MPMXM/FS PPM/PM/ / XM
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-215 Missing Char.xlsx"
+input = read_excel(path, range = "B2:B7")
+test  = read_excel(path, range = "D2:D7")
+
+result = input %>%
+  mutate(rn = row_number()) %>%
+  separate_rows(ID, sep =  "") %>%
+  filter(ID != "") %>%
+  mutate(is_letter = str_detect(ID, "[a-zA-Z]")) %>%
+  mutate(rn2 = row_number(), .by = c(rn, is_letter)) %>%
+  mutate(final = ifelse(is_letter, ID, rn2)) %>%
+  summarise(ID = paste(final, collapse = ""), .by = rn)
+
+all.equal(result$ID, test$ID)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "CH-215 Missing Char.xlsx"
+
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=5)
+test = pd.read_excel(path, usecols="D", skiprows=1, nrows=5).rename(columns=lambda x: re.sub(r"\.1$", "", x))
+
+input["rn"] = range(1, len(input) + 1)
+input = input.assign(ID=input["ID"].str.split("").apply(lambda x: [c for c in x if c != ""]))
+
+def replace_non_alphanum_with_order(char_list):
+    non_alpha_count = 0
+    result = [
+        (str(non_alpha_count := non_alpha_count + 1) if not char.isalnum() else char)
+        for char in char_list
+    ]
+    return result
+
+input["ID"] = input["ID"].apply(lambda x: "".join(replace_non_alphanum_with_order(x)))
+input.drop(columns=["rn"], inplace=True)
+
+print(input.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 214](OmidC214.qmd)
+-   [Omid - Challenge 216](OmidC216.qmd)
+-   [Omid - Challenge 217](OmidC217.qmd)

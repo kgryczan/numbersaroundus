@@ -1,0 +1,113 @@
+---
+title: "Omid - Challenge 278"
+description: "🔰 CHallenge 278 - Pattern Recognition For each row in the table, count the number of times the sign changes consecutively, from positive to negative or negative to positiv…"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 278](/challenges/images/OmidC278.jpg)
+
+## Challenge Description
+
+🔰 CHallenge 278 - Pattern Recognition For each row in the table, count the number of times the sign changes consecutively, from positive to negative or negative to positiv…
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(charcuterie)
+
+path = "files/200-299/278/CH-278 Pattern Recognition.xlsx"
+input = read_excel(path, range = "B2:C7")
+test  = read_excel(path, range = "D2:D7")
+
+result = input %>%
+  mutate(`Pattern Length` = map_int(Pattern, \(x) length(rle(strsplit(x, "")[[1]])$lengths) - 1))
+
+all.equal(result$`Pattern Length`, test$`Pattern Length`) 
+# > [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from itertools import groupby
+
+path = "200-299/278/CH-278 Pattern Recognition.xlsx"
+input = pd.read_excel(path, usecols="B:C", nrows=6, skiprows=1)
+test = pd.read_excel(path, usecols="D", nrows=6, skiprows=1)
+
+input['Pattern Length'] = input['Pattern'].apply(lambda s: len([k for k,_ in groupby(s)]) - 1)
+
+print(input["Pattern Length"].equals(test['Pattern Length'])) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 277](OmidC277.qmd)
+-   [Omid - Challenge 279](OmidC279.qmd)
+-   [Omid - Challenge 280](OmidC280.qmd)

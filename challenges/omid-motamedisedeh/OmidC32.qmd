@@ -1,0 +1,134 @@
+---
+title: "Omid - Challenge 32"
+description: "🔰 : Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 32](/challenges/images/OmidC32.jpg)
+
+## Challenge Description
+
+🔰 : Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-032 Transformation.xlsx", range = "B2:H15", col_names = FALSE)
+test  = read_excel("files/CH-032 Transformation.xlsx", range = "J2:L38")
+
+input_header = input %>% 
+  filter(!...1 %in% c(1:12)) %>%
+  t() %>%
+  as.data.frame() %>%
+  fill(1, .direction = "down") %>%
+  unite("header", V1, V2, sep = "_", na.rm = T) %>%
+  pull()
+
+colnames(input) = input_header
+
+input_table = input %>%
+  filter(Month %in% c(1:12)) %>%
+  pivot_longer(cols = c(2,4,6), names_to = "Year", values_to = "Sales") %>%
+  select(-c(2,3,4)) %>%
+  separate(col = "Year", into = c("Year", "M")) %>%
+  mutate(across(everything(), as.numeric)) %>%
+  select(-M) %>%
+  arrange(Year, Month)
+  
+identical(test, input_table)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input = pd.read_excel("CH-032 Transformation.xlsx", usecols="B:H", skiprows=1, nrows= 14, header=None) 
+test  = pd.read_excel("CH-032 Transformation.xlsx", usecols="J:L", skiprows=1, nrows=38)
+test.columns = ["Month", "Year", "Sales"]
+
+input.columns = input.iloc[0].astype("str").fillna('') + '' + input.iloc[1].fillna('')
+input = input.drop([0,1], axis=0).reset_index(drop=True)
+input = input.loc[:, ~input.columns.str.contains('%')]
+input = input.melt(id_vars=["Month"], var_name="Year", value_name="Sales")
+input["Year"] = input["Year"].str.extract('(\d+)').astype("int")
+input["Month"] = input["Month"].astype("int")
+input["Sales"] = input["Sales"].astype("int")
+
+print(input == test) # all True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 31](OmidC31.qmd)
+-   [Omid - Challenge 33](OmidC33.qmd)
+-   [Omid - Challenge 34](OmidC34.qmd)

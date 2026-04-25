@@ -1,0 +1,124 @@
+---
+title: "Excel BI - Excel Challenge 869"
+description: "🔰 Extract a strictly increasing sequence of integers from this string, reading from left to right."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 869](/challenges/images/exc869.jpg)
+
+## Challenge Description
+
+🔰 Extract a strictly increasing sequence of integers from this string, reading from left to right. Start from the first digit. Use the minimum number of consecutive digits required to form a number strictly greater than the previous one. If the remaining digits at the end of the string cannot form a number strictly greater than the last extracted number, ignore them.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/869/869 Extract nums.xlsx"
+input <- read_excel(path, range = "A1:A100")
+test <- read_excel(path, range = "B1:B100")
+
+extract_inc_seq_simple <- function(s) {
+  digits <- as.numeric(strsplit(s, "")[[1]])
+  result <- numeric(0)
+  last_num <- -Inf
+  i <- 1
+
+  while (i <= length(digits)) {
+    found <- FALSE
+    for (j in i:length(digits)) {
+      candidate <- as.numeric(paste(digits[i:j], collapse = ""))
+      if (candidate > last_num) {
+        result <- c(result, candidate)
+        last_num <- candidate
+        i <- j + 1
+        found <- TRUE
+        break
+      }
+    }
+    if (!found) break
+  }
+
+  return(paste(result, collapse = ", "))
+}
+
+result <- input %>%
+  mutate(Extracted = map_chr(Data, extract_inc_seq_simple))
+
+all(result$Extracted == test$`Answer Expected`)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel/800-899/869/869 Extract nums.xlsx"
+input_df = pd.read_excel(path, usecols="A", nrows=100)
+test_df = pd.read_excel(path, usecols="B", nrows=100)
+
+def extract_inc_seq_simple(s):
+    digits = [int(ch) for ch in str(s)]
+    result = []
+    last_num = float('-inf')
+    i = 0
+    n = len(digits)
+    while i < n:
+        found = False
+        for j in range(i, n):
+            candidate = int(''.join(str(d) for d in digits[i:j+1]))
+            if candidate > last_num:
+                result.append(candidate)
+                last_num = candidate
+                i = j + 1
+                found = True
+                break
+        if not found:
+            break
+    return ', '.join(str(x) for x in result)
+
+input_df['Extracted'] = input_df.iloc[:, 0].apply(extract_inc_seq_simple)
+
+print(all(input_df['Extracted'] == test_df.iloc[:, 0]))
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Medium / Hard**
+
+The challenge relies on a non-obvious iterative rule rather than a single straight aggregation.
+
+### Related Challenges
+
+- [Excel Challenge 870](/challenges/excelbi/Excel870.html)
+- [Excel Challenge 871](/challenges/excelbi/Excel871.html)
+- [Excel Challenge 872](/challenges/excelbi/Excel872.html)

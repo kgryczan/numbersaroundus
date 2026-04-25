@@ -1,0 +1,125 @@
+---
+title: "Crispo - Excel Challenge 17 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-04-21"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 17 2025](/challenges/images/Crispo172025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Easy Sunday Excel Challenge
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Applies the workbook rule directly and shapes the expected output
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "files/Challenge15-2025.xlsx"
+input = pd.read_excel(path, usecols="B:G", skiprows=2, nrows=2)
+test = pd.read_excel(path, usecols="I:K", skiprows=2, nrows=10)
+
+input = input.fillna(0)
+result = (
+    input.rename(columns={input.columns[0]: "product"})
+    .melt(id_vars="product", var_name="month", value_name="sales")
+    .ffill()
+)
+
+month_order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+result["month"] = pd.Categorical(result["month"], categories=month_order, ordered=True)
+result = (
+    result.dropna()
+    .sort_values(["product", "month"])
+    .reset_index(drop=True)
+    .assign(diff=lambda df: df.groupby("product")["sales"].diff())
+    .query("diff > 0")
+    .loc[lambda df: df.index.repeat(df["diff"].astype(int))]
+    .assign(Req=1)
+    .drop(columns=["sales", "diff"])
+    .reset_index(drop=True)
+)
+result["month"] = result["month"].astype(str)
+result.columns = test.columns
+
+print(result.equals(test)) # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data to the grain required by the task
+
+    -   Aggregates or ranks values at the correct grouping level
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 16 2025](Crispo 162025.qmd)
+-   [Crispo - Excel Challenge 17 2025](Crispo 172025.qmd)

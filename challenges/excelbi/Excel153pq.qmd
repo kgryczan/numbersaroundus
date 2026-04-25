@@ -1,0 +1,140 @@
+---
+title: "Excel BI - PowerQuery Challenge 153"
+description: "Calculate the total fly time and rest time for a pilot in hours."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 153](/challenges/images/exc153pq.jpg)
+
+## Challenge Description
+
+Calculate the total fly time and rest time for a pilot in hours.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("Power Query/PQ_Challenge_153.xlsx", range = "A1:C13") %>% 
+  janitor::clean_names()
+test  = read_excel("Power Query/PQ_Challenge_153.xlsx", range = "E1:G5") %>%
+  janitor::clean_names()
+
+input$pilot = factor(input$pilot, levels = unique(input$pilot), ordered = TRUE)
+test$pilot = factor(test$pilot, levels = unique(test$pilot), ordered = TRUE)
+
+result = input %>%
+  group_by(pilot) %>%
+  mutate(prev_landing = lag(flight_end, default = NA_POSIXct_),
+         flight_time = flight_end - flight_start,
+         rest_time = flight_start - prev_landing) %>%
+  summarise(fly_time = sum(flight_time, na.rm = TRUE),
+            rest_time = sum(rest_time, na.rm = TRUE)) %>%
+  mutate(fly_time = as.numeric(fly_time, units = "hours") %>% round(2),
+         rest_time = as.numeric(rest_time, units = "hours") %>% round(2)) %>%
+  arrange(pilot) %>%
+  ungroup() %>%
+  mutate(fly_time = ifelse(fly_time == 0, NA, fly_time),
+         rest_time = ifelse(rest_time == 0, NA, rest_time))
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input_data = pd.read_excel("PQ_Challenge_153.xlsx", usecols="A:C", nrows=13)
+input_data.columns = [c.strip().lower() for c in input_data.columns]
+test = pd.read_excel("PQ_Challenge_153.xlsx", usecols="E:G", nrows=5)
+test.columns = [c.strip().lower() for c in test.columns]
+
+result = input_data.copy()
+result["prev_landing"] = result.groupby("pilot")["flight_end"].shift()
+result["flight_time"] = result["flight_end"] - result["flight_start"]
+result["rest_time"] = result["flight_start"] - result["prev_landing"]
+result = result.groupby("pilot", as_index=False).agg(fly_time=("flight_time", "sum"), rest_time=("rest_time", "sum"))
+result["fly_time"] = result["fly_time"].dt.total_seconds().div(3600).round(2)
+result["rest_time"] = result["rest_time"].dt.total_seconds().div(3600).round(2)
+result["fly_time"] = result["fly_time"].where(result["fly_time"] != 0)
+result["rest_time"] = result["rest_time"].where(result["rest_time"] != 0)
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 152](Excel152pq.qmd)

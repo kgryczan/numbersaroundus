@@ -1,0 +1,119 @@
+---
+title: "Omid - Challenge 386"
+description: "🔰 Result Question Challenge Overview Frequency: every other day 9:00 PM (UTC) Website: and their solutions"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 386](/challenges/images/OmidC386.jpg)
+
+## Challenge Description
+
+🔰 Result Question Challenge Overview Frequency: every other day 9:00 PM (UTC) Website: and their solutions
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/386/CH-386 Index.xlsx"
+input <- read_excel(path, range = "B3:E11")
+test <- read_excel(path, range = "G3:K11")
+
+result <- input |>
+  mutate(
+    Index = if_else(row_number() == 1, "*", NA_character_),
+    .by = c("Customer", "Product")
+  )
+
+all.equal(result, test)
+## [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import numpy as np
+import pandas as pd
+
+path = "300-399/386/CH-386 Index.xlsx"
+input = pd.read_excel(path, usecols="B:E", skiprows=2, nrows=8)
+test = pd.read_excel(path, usecols="G:K", skiprows=2, nrows=8).rename(
+    columns=lambda c: __import__("re").sub(r"\.\d+$", "", c)
+)
+
+result = input.copy()
+first_purchase = result.groupby(["Customer", "Product"]).cumcount() == 0
+index_values = np.where(first_purchase, "*", None)
+result["Index"] = pd.Series(index_values, dtype="object")
+
+print(result.equals(test))
+## Output: True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 385](OmidC385.qmd)
+-   [Omid - Challenge 387](OmidC387.qmd)
+-   [Omid - Challenge 388](OmidC388.qmd)

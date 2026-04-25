@@ -1,0 +1,116 @@
+---
+title: "Omid - Challenge 310"
+description: "🔰 Question Result 5,6,7 5,6,9 5,7,9 3,6,4 3,6,7 3,6,9"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 310](/challenges/images/OmidC310.jpg)
+
+## Challenge Description
+
+🔰 Question Result 5,6,7 5,6,9 5,7,9 3,6,4 3,6,7 3,6,9
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/300-399/310/CH-310 Numbers Combination.xlsx", range = "B1:B10")
+df = expand_grid(i1 = input$Question, i2 = input$Question, i3 = input$Question)
+ind = input %>% mutate(ind = row_number())
+
+result = df %>%
+  left_join(ind, by = c("i1" = "Question")) %>%
+  left_join(ind, by = c("i2" = "Question"), suffix = c("", "2")) %>%
+  left_join(ind, by = c("i3" = "Question"), suffix = c("", "3")) %>%
+  filter(i2 > i1, i3 > i2, ind < ind2, ind2 < ind3) %>%
+  transmute(Result = paste(i1, i2, i3, sep = ",")) %>%
+  arrange(Result) %>%
+  distinct()
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from itertools import combinations
+
+input = pd.read_excel("300-399/310/CH-310 Numbers Combination.xlsx", usecols="B", nrows=9)
+input = input.rename(columns={input.columns[0]: "Question"})
+questions = input["Question"].tolist()
+
+combos = list(combinations(questions, 3))
+result = pd.DataFrame(combos, columns=["i1", "i2", "i3"])
+
+result = result[(result["i1"] < result["i2"]) & (result["i2"] < result["i3"])]
+
+result["Result"] = result.apply(lambda row: f"{row['i1']},{row['i2']},{row['i3']}", axis=1)
+result = result[["Result"]].sort_values("Result").drop_duplicates().reset_index(drop=True)
+print(result)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 309](OmidC309.qmd)
+-   [Omid - Challenge 311](OmidC311.qmd)
+-   [Omid - Challenge 312](OmidC312.qmd)

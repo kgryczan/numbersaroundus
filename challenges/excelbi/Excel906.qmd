@@ -1,0 +1,103 @@
+---
+title: "Excel BI - Excel Challenge 906"
+description: "🔰 906 Position Swapping.xlsx says: > Swap first letter with last letter, second letter with second last letter and so on."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 906](/challenges/images/exc906.jpg)
+
+## Challenge Description
+
+🔰 The prompt in 906 Position Swapping.xlsx says: Swap first letter with last letter, second letter with second last letter and so on. Do the same for digits also. The goal is to: 1. identify all letter positions,
+2. identify all digit positions,
+3. reverse the letters among letter slots only,
+4. reverse the digits among digit slots only,
+5. leave everything else in place.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/900-999/906/906 Position Swapping.xlsx"
+input <- read_excel(path, range = "A1:A10")
+test <- read_excel(path, range = "B1:B10")
+
+rev_mix <- function(x) {
+  s <- strsplit(x, "")[[1]]
+  l_pos <- str_locate_all(x, "[A-Za-z]")
+  d_pos <- str_locate_all(x, "\\d")
+  s[l_pos[[1]][, 1]] <- rev(s[l_pos[[1]][, 1]])
+  s[d_pos[[1]][, 1]] <- rev(s[d_pos[[1]][, 1]])
+  str_c(s, collapse = "")
+}
+
+result = input %>%
+  mutate(Output = map_chr(String, rev_mix))
+
+all.equal(result$Output, test$`Answer Expected`)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Split the string into characters.; Record the positions of letters.; Record the positions of digits..
+- **Strengths**: The key is that positions are preserved by character type.
+- **Areas for Improvement**: The approach assumes the workbook structure and naming conventions stay stable, so any changed input shape would need minor adjustments.
+- **Gem**: If the string contains:
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "Excel/900-999/906/906 Position Swapping.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=10)
+test = pd.read_excel(path, usecols="B", nrows=10)
+
+def rev_mix(x):
+    s = list(x)
+    l_pos, d_pos = [m.start() for m in re.finditer(r'[A-Za-z]', x)], [m.start() for m in re.finditer(r'\d', x)]
+    for pos, char in zip(l_pos, [s[i] for i in l_pos][::-1]):
+        s[pos] = char
+    for pos, char in zip(d_pos, [s[i] for i in d_pos][::-1]):
+        s[pos] = char
+    return ''.join(s)
+
+result = input['String'].map(rev_mix)
+print(result.equals(test['Answer Expected']))
+# True
+```
+
+### Python
+
+The Python version follows the same structure: convert the string to a mutable character list.; find all letter positions..
+
+## **Difficulty Level**
+
+**Easy**
+
+Once the core pattern is recognized, the implementation is short and direct.
+
+### Related Challenges
+
+- [Excel Challenge 922](/challenges/excelbi/Excel922.html)
+- [Excel Challenge 908](/challenges/excelbi/Excel908.html)
+- [Excel Challenge 917](/challenges/excelbi/Excel917.html)

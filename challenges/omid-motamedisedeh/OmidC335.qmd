@@ -1,0 +1,127 @@
+---
+title: "Omid - Challenge 335"
+description: "🔰 Challenge 335: Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 335](/challenges/images/OmidC335.jpg)
+
+## Challenge Description
+
+🔰 Challenge 335: Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/335/CH-335 Table Transformation.xlsx"
+input <- read_excel(path, range = "B2:C7")
+test <- read_excel(path, range = "G2:H11")
+
+result = input %>%
+  mutate(
+    prefix = str_extract(Level, "^[^0-9]+"),
+    nums = str_extract(Level, "[0-9,]+")
+  ) %>%
+  separate_rows(nums, sep = ",") %>%
+  mutate(Level = str_c(prefix, nums)) %>%
+  select(`Issue ID`, Level)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "300-399/335/CH-335 Table Transformation.xlsx"
+df = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=6)
+test_df = pd.read_excel(path, usecols="G:H", skiprows=1, nrows=10).rename(columns=lambda c: c.replace('.1', ''))
+
+result = pd.DataFrame(
+    [{"Issue ID": r["Issue ID"], "Level": re.match(r"^[^0-9]+", r["Level"]).group(0) + n}
+     for _, r in df.iterrows()
+     if isinstance(r["Level"], str)
+     for n in re.findall(r"\d+", r["Level"])]
+)
+
+print(result.equals(test_df))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 334](OmidC334.qmd)
+-   [Omid - Challenge 336](OmidC336.qmd)
+-   [Omid - Challenge 337](OmidC337.qmd)

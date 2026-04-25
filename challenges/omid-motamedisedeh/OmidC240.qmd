@@ -1,0 +1,139 @@
+---
+title: "Omid - Challenge 240"
+description: "🔰 =Sum(Average(max(A1:A10),2,B1:B3) =Sum( Average( max( A1:A10 ), 2, B1:B3 )"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 240](/challenges/images/OmidC240.jpg)
+
+## Challenge Description
+
+🔰 =Sum(Average(max(A1:A10),2,B1:B3) =Sum( Average( max( A1:A10 ), 2, B1:B3 )
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input <- read_excel("files/200-299/240/CH-240  Clean Up Excel Formulas.xlsx", range = "B2:C7")
+
+format_excel_formula_clean <- function(formula) {
+  chars <- strsplit(formula, "")[[1]]
+  indent <- 0
+  formatted <- character()
+  for (ch in chars) {
+    formatted <- c(formatted, switch(
+      ch,
+      "(" = { indent <- indent + 1; paste0("(\n", strrep("  ", indent)) },
+      ")" = { indent <- indent - 1; paste0("\n", strrep("  ", indent), ")") },
+      "," = paste0(",\n", strrep("  ", indent)),
+      ch
+    ))
+  }
+  paste(formatted, collapse = "")
+}
+
+input %>%
+  mutate(broken = map_chr(`Formula (Unformatted)`, format_excel_formula_clean)) %>%
+  pull(broken) %>%
+  walk(~cat(.x, "\n\n"))
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "200-299/240/CH-240  Clean Up Excel Formulas.xlsx"
+df = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=6)
+
+def format_excel_formula_clean(f):
+    res, indent = [], 0
+    for ch in f:
+        if ch == '(':
+            indent += 1
+            res += ['(\n', '  ' * indent]
+        elif ch == ')':
+            indent -= 1
+            res += ['\n', '  ' * indent, ')']
+        elif ch == ',':
+            res += [',\n', '  ' * indent]
+        else:
+            res.append(ch)
+    return ''.join(res)
+
+df['broken'] = df['Formula (Unformatted)'].apply(format_excel_formula_clean)
+
+for formula in df['broken']:
+    print(formula, '\n')
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 239](OmidC239.qmd)
+-   [Omid - Challenge 241](OmidC241.qmd)
+-   [Omid - Challenge 242](OmidC242.qmd)

@@ -1,0 +1,142 @@
+---
+title: "Omid - Challenge 303"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 303](/challenges/images/OmidC303.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(janitor)
+
+path = "files/300-399/303/CH-303 Table Transformation.xlsx"
+input = read_excel(path, range = "B2:E10")
+test  = read_excel(path, range = "G2:J7")
+
+rotate_until_non_na = function(x) {
+  if (all(is.na(x))) {
+    return(x)                                
+  }
+  i = min(which(!is.na(x)))
+  out = c(x[i:length(x)], x[seq_len(i-1)])
+  length(out) = length(x)
+  out
+}
+
+result <- input %>%
+  mutate(across(everything(), rotate_until_non_na)) %>%
+  remove_empty("rows") %>%
+  row_to_names(1) %>%
+  mutate(Date = excel_numeric_to_date(as.numeric(Date)) %>% as.POSIXct(),
+         Quantity = as.numeric(Quantity))
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "300-399/303/CH-303 Table Transformation.xlsx"
+input = pd.read_excel(path, usecols="B:E", skiprows=1, nrows=9)
+test = pd.read_excel(path, usecols="G:J", skiprows=1, nrows=5)
+
+def rotate_until_non_na(x):
+    x = list(x)
+    if all(pd.isna(x)): return x
+    i = next(idx for idx, val in enumerate(x) if not pd.isna(val))
+    return x[i:] + x[:i]
+
+rotated = input.apply(rotate_until_non_na, axis=0)
+rotated = rotated.dropna(how='all')
+rotated = rotated.iloc[1:].reset_index(drop=True)
+rotated.columns = input.apply(rotate_until_non_na, axis=0).iloc[0]
+if 'Date' in rotated.columns:
+    rotated['Date'] = pd.to_datetime(rotated['Date'])
+rotated.columns.name = None
+
+rotated = rotated.replace(np.nan, '', regex=True)
+test = test.replace(np.nan, '', regex=True)
+
+print(rotated.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 302](OmidC302.qmd)
+-   [Omid - Challenge 304](OmidC304.qmd)
+-   [Omid - Challenge 305](OmidC305.qmd)

@@ -1,0 +1,112 @@
+---
+title: "Excel BI - Excel Challenge 695"
+description: "🔰 Answer Expected Source https://en.wikipedia.org/wiki/Broadcast_calendar Month Month Week Year Week From Date To Date Jan Feb"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 695](/challenges/images/exc695.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Source https://en.wikipedia.org/wiki/Broadcast_calendar Month Month Week Year Week From Date To Date Jan Feb
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/695 Broadcast Calendar.xlsx"
+test = read_excel(path, range = "A2:E54")
+
+monday_of_isoweek <- function(year, week) {
+  ISOdate(year, 1, 4) +
+    weeks(week - 1) -
+    days(wday(ISOdate(year, 1, 4), week_start = 1) - 1)
+}
+
+result = data.frame(
+  From = monday_of_isoweek(2025, 1:52),
+  To = monday_of_isoweek(2025, 1:52) + days(6),
+  Week = 1:52
+) %>%
+  mutate(Month = month(To, label = TRUE, abbr = TRUE, locale = "en")) %>%
+  mutate(month_week = row_number(), .by = Month) %>%
+  mutate(From = format(From, "%Y-%m-%d"), To = format(To, "%Y-%m-%d")) %>%
+  select(
+    Month,
+    `Month Week` = month_week,
+    `Year Week` = Week,
+    `From Date` = From,
+    `To Date` = To
+  )
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from datetime import datetime, timedelta
+
+def monday_of_isoweek(year, week):
+    return datetime(year, 1, 4) + timedelta(days=(week - 1) * 7 - (datetime(year, 1, 4).weekday()))
+
+data = [{
+    "From": monday_of_isoweek(2025, week),
+    "To": monday_of_isoweek(2025, week) + timedelta(days=6),
+    "Week": week
+} for week in range(1, 53)]
+
+df = pd.DataFrame(data)
+df['Month'] = df['To'].dt.strftime('%b')
+df['Month Week'] = df.groupby('Month').cumcount() + 1
+df['From'] = df['From'].dt.strftime('%Y-%m-%d')
+df['To'] = df['To'].dt.strftime('%Y-%m-%d')
+
+result = df[['Month', 'Month Week', 'Week', 'From', 'To']].rename(columns={
+    'Month Week': 'Month Week',
+    'Week': 'Year Week',
+    'From': 'From Date',
+    'To': 'To Date'
+})
+
+print(result)
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 696](/challenges/excelbi/Excel696.html)
+- [Excel Challenge 697](/challenges/excelbi/Excel697.html)
+- [Excel Challenge 698](/challenges/excelbi/Excel698.html)

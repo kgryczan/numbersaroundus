@@ -1,0 +1,132 @@
+---
+title: "Omid - Challenge 285"
+description: "🔰 : Text Matching!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 285](/challenges/images/OmidC285.jpg)
+
+## Challenge Description
+
+🔰 : Text Matching!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/285/CH-285 Text Matching.xlsx"
+input = read_excel(path, range = "B2:B9")
+test  = read_excel(path, range = "D2:E11") %>% arrange(`ID 1`, `ID 2`)
+
+result = input %>%
+mutate(rn = row_number(), IDc = str_remove_all(ID, "-")) %>%
+  expand_grid(., ., .name_repair = "unique") %>%
+  filter(rn...2 > rn...5) %>%
+  transmute(ID_left = ID...1, ID_right = ID...4,
+            a = IDc...3, b = IDc...6) %>%
+  mutate(m1 = map2_int(a, b, ~ sum(str_detect(.x, str_split(.y, "")[[1]]))),
+         m2 = map2_int(b, a, ~ sum(str_detect(.x, str_split(.y, "")[[1]])))) %>%
+  filter(pmax(m1, m2) >= 3) %>%
+  transmute(ID1 = ID_right, ID2 = ID_left) %>%
+  arrange(ID1, ID2)
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from itertools import combinations
+
+path = "200-299/285/CH-285 Text Matching.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=7)
+test = pd.read_excel(path, usecols="D:E", skiprows=1, nrows=10)\
+    .sort_values(['ID 1', 'ID 2']).reset_index(drop=True)
+
+def score(a, b):
+    a, b = a.replace("-", ""), b.replace("-", "")
+    m1 = sum(ch in a for ch in list(b))
+    m2 = sum(ch in b for ch in list(a))
+    return max(m1, m2)
+
+pairs = [(i, j) for i, j in combinations(input["ID"], 2) if score(i, j) >= 3]
+result = pd.DataFrame(pairs, columns=["ID 1", "ID 2"])\
+    .sort_values(["ID 1", "ID 2"]).reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 284](OmidC284.qmd)
+-   [Omid - Challenge 286](OmidC286.qmd)
+-   [Omid - Challenge 287](OmidC287.qmd)

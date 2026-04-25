@@ -1,0 +1,168 @@
+---
+title: "Excel BI - Excel Challenge 661"
+description: "🔰 Converts the T1 matrix to a T2 matrix and the T2 matrix to a T3 matrix."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 661](/challenges/images/exc661.jpg)
+
+## Challenge Description
+
+🔰 Converts the T1 matrix to a T2 matrix and the T2 matrix to a T3 matrix.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/661 Matrix Transformation.xlsx"
+M1 = read_excel(path, range = "B2:F6", col_names = FALSE) %>% as.matrix()
+M2 = read_excel(path, range = "I2:M6", col_names = FALSE) %>% as.matrix()
+M3 = read_excel(path, range = "P2:T6", col_names = FALSE) %>% as.matrix()
+
+M1_values = c(M1[1,], M1[2,], M1[3,], M1[4,], M1[5,]) %>% as.vector()
+
+MT = matrix(NA, nrow = nrow(M1), ncol = ncol(M1))
+
+fill_mrow <- function(MT, M1_values, row_index) {
+  empty_cells = which(is.na(MT[row_index,]))
+  max_value = max(MT, na.rm = TRUE)
+  M1_values[which(M1_values > max_value)][1:length(empty_cells)]
+  MT[row_index,empty_cells] = M1_values[which(M1_values > max_value)][1:length(empty_cells)]
+  return(MT)
+}
+
+fill_mcol <- function(MT, M1_values, col_index) {
+  empty_cells = which(is.na(MT[,col_index]))
+  max_value = max(MT, na.rm = TRUE)
+  M1_values[which(M1_values > max_value)][1:length(empty_cells)]
+  MT[empty_cells,col_index] = M1_values[which(M1_values > max_value)][1:length(empty_cells)]
+  return(MT)
+}
+
+walk(1:5, ~ {
+  MT <<- fill_mrow(MT, M1_values, .x)
+  MT <<- fill_mcol(MT, M1_values, .x)
+})
+
+all(MT == M2) 
+#> [1] TRUE
+
+# ---- reverse transformation ----
+
+
+extract_alternating <- function(M) {
+  result <- accumulate(1:min(nrow(M), ncol(M)), function(MT, i) {
+    if (nrow(MT) == 0 || ncol(MT) == 0) return(MT)
+    
+    assign(paste0("M2_", i, "r"), MT[1, , drop = FALSE], envir = .GlobalEnv)
+    MT <- MT[-1, , drop = FALSE]
+    
+    if (nrow(MT) > 0) {
+      assign(paste0("M2_", i, "c"), MT[, 1, drop = FALSE], envir = .GlobalEnv)
+      MT <- MT[, -1, drop = FALSE]
+    }
+    
+    return(MT)
+  }, .init = M)[-1] 
+  return(result)
+}
+
+M2T <- extract_alternating(M2)
+
+M2T = c(M2_1r, M2_1c, M2_2r, M2_2c, M2_3r, M2_3c, M2_4r, M2_4c, M2_5r) 
+M2T = matrix(M2T, nrow = 5, ncol = 5, byrow = TRUE)
+all(M2T == M3)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "661 Matrix Transformation.xlsx"
+M1 = pd.read_excel(path, usecols="B:F", skiprows=1, nrows=5, header=None).values
+M2 = pd.read_excel(path, usecols="I:M", skiprows=1, nrows=5, header=None).values
+M3 = pd.read_excel(path, usecols="P:T", skiprows=1, nrows=5, header=None).values
+
+M1_values = M1.flatten()
+
+MT = np.full(M1.shape, np.nan)
+
+def fill_mrow(MT, M1_values, row_index):
+    empty_cells = np.where(np.isnan(MT[row_index,]))[0]
+    max_value = np.nanmax(MT)
+    values_to_fill = M1_values[M1_values > max_value][:len(empty_cells)]
+    MT[row_index, empty_cells] = values_to_fill
+    return MT
+
+def fill_mcol(MT, M1_values, col_index):
+    empty_cells = np.where(np.isnan(MT[:, col_index]))[0]
+    max_value = np.nanmax(MT)
+    values_to_fill = M1_values[M1_values > max_value][:len(empty_cells)]
+    MT[empty_cells, col_index] = values_to_fill
+    return MT
+
+for i in range(5):
+    MT = fill_mrow(MT, M1_values, i)
+    MT = fill_mcol(MT, M1_values, i)
+
+print(np.array_equal(MT, M2))
+
+# ---- reverse transformation ----
+
+# def extract_alternating(M):
+#     result = []
+#     while M.shape[0] > 0 and M.shape[1] > 0:
+#         result.append(M[0, :])
+#         M = M[1:, :]
+#         if M.shape[0] > 0:
+#             result.append(M[:, 0])
+#             M = M[:, 1:]
+#     return result
+
+# M2T = extract_alternating(M2)
+# M2T = np.concatenate(M2T).reshape(5, 5)
+# print(np.array_equal(M2T, M3))
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 662](/challenges/excelbi/Excel662.html)
+- [Excel Challenge 663](/challenges/excelbi/Excel663.html)
+- [Excel Challenge 664](/challenges/excelbi/Excel664.html)

@@ -1,0 +1,120 @@
+---
+title: "Excel BI - Excel Challenge 931"
+description: "🔰 Turn hire dates into tenure bands and dense ranks within each department."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-23"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 931](/challenges/images/exc931.jpg)
+
+## Challenge Description
+
+🔰 Work out the tenure level (`Senior` if years of service >= 6, `Mid-Level` if 3 to < 6, `Junior` if < 3) and rank employees within each department on the basis of years of service. Tied ranks should follow dense ranking, such as `1, 2, 2, 3`, and the final result should be sorted by department and rank.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "900-999/931/931 Category & Rank.xlsx"
+input <- read_excel(path, range = "A2:C24")
+test <- read_excel(path, range = "E2:H24")
+
+result <- input %>%
+  mutate(
+    tenure = difftime(
+      Sys.Date(),
+      as.Date(`Hire Date`, format = "%m/%d/%Y"),
+      units = "days"
+    ),
+    tenure_years = as.numeric(tenure) / 365
+  ) %>%
+  mutate(
+    `Tenure Level` = case_when(
+      tenure_years < 3 ~ "Junior",
+      tenure_years >= 3 & tenure_years < 6 ~ "Mid-Level",
+      tenure_years >= 6 ~ "Senior"
+    )
+  ) %>%
+  mutate(Rank = dense_rank(-tenure_years), .by = Department) %>%
+  arrange(Department, desc(tenure_years)) %>%
+  select(`Employee Name`, Department, `Tenure Level`, Rank)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Convert hire dates into tenure in years, map each tenure to a category, then dense-rank employees within each department.
+- **Strengths**: The business rules are clean and transparent, especially the category thresholds and grouped ranking.
+- **Areas for Improvement**: The output depends on the current system date, so challenge verification is time-sensitive.
+- **Gem**: One date column turns into both a categorical feature and a ranking metric without adding any new source data.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import numpy as np
+import pandas as pd
+
+path = "900-999/931/931 Category & Rank.xlsx"
+
+input = pd.read_excel(path, usecols="A:C", header=1, nrows=22)
+test = pd.read_excel(path, usecols="E:H", header=1, nrows=22).rename(columns=lambda c: c.rstrip(".1"))
+
+result = (
+    input
+    .assign(
+        tenure_years=lambda df: (pd.Timestamp.today().normalize() - pd.to_datetime(df["Hire Date"])).dt.days / 365
+    )
+    .assign(**{
+        "Tenure Level": lambda df: np.select(
+            [df["tenure_years"] < 3, df["tenure_years"] < 6],
+            ["Junior", "Mid-Level"],
+            default="Senior"
+        )
+    })
+    .assign(
+        Rank=lambda df: df.groupby("Department")["tenure_years"]
+            .rank(method="dense", ascending=False)
+            .astype(int)
+    )
+    .sort_values(["Department", "tenure_years"], ascending=[True, False])
+    [["Employee Name", "Department", "Tenure Level", "Rank"]]
+    .reset_index(drop=True)
+)
+
+print(result.equals(test))
+# True
+```
+
+### Python
+
+The Python version follows the same business flow: derive tenure from dates, bucket employees into three bands, then apply dense ranking within department groups. One practical note is that the result depends on the current system date. In this environment that means March 23, 2026.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The transformation is business-friendly, but it combines date arithmetic, categorical thresholds, grouped ranking, and sorted output.
+
+### Related Challenges
+
+- [Excel Challenge 918](/challenges/excelbi/Excel918.html)
+- [Excel Challenge 914](/challenges/excelbi/Excel914.html)
+- [Excel Challenge 910](/challenges/excelbi/Excel910.html)

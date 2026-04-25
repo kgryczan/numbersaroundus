@@ -1,0 +1,144 @@
+---
+title: "Excel BI - PowerQuery Challenge 328"
+description: "Unpivot the given table and calculate Opening and Closing Balance for different dates,"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 328](/challenges/images/exc328pq.jpg)
+
+## Challenge Description
+
+Unpivot the given table and calculate Opening and Closing Balance for different dates,
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/300-399/328/PQ_Challenge_328.xlsx"
+input = read_excel(path, range = "A1:K5", .name_repair = "minimal")
+test  = read_excel(path, range = "A9:D18")
+
+result = input %>%
+  pivot_longer(-c(1,2), names_to = c(".value", "transaction"),
+               names_pattern = "(Credit|Debit|Date)(\\d?)") %>%
+  filter(!is.na(Date)) %>%
+  mutate(across(c(Debit, Credit), ~replace_na(., 0))) %>%
+  group_by(Cust) %>%
+  mutate(transaction = row_number(),
+         Closing = `Opening Balance` + cumsum(Credit - Debit),
+         Opening = ifelse(transaction == 1, `Opening Balance`, lag(Closing))) %>%
+  select(Cust, Date, `Opening Balance` = Opening, `Closing Balance` = Closing) %>%
+  ungroup()
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "300-399/328/PQ_Challenge_328.xlsx"
+input = pd.read_excel(path, nrows=5, usecols="A:K")
+test = pd.read_excel(path, skiprows=8, usecols="A:D")
+
+for col in ["Date", "Credit", "Debit"]:
+    if col in input.columns and not col.endswith(".0"):
+        input.rename(columns={col: f"{col}.0"}, inplace=True)
+
+input_long = (
+    pd.wide_to_long(input, stubnames=["Credit", "Debit", "Date"], i=['Cust', 'Opening Balance'], j="transaction", sep='.', suffix='.*')
+    .query("Date.notna()")
+    .reset_index()
+)
+
+input_long[['Credit', 'Debit']] = input_long[['Credit', 'Debit']].fillna(0)
+input_long['Closing Balance'] = input_long['Opening Balance'] + input_long.groupby('Cust').apply(lambda x: (x['Credit'] - x['Debit']).cumsum()).reset_index(level=0, drop=True)
+input_long['Opening Balance'] = input_long.apply(
+    lambda row: row['Opening Balance'] if row['transaction'] == 0 else input_long.loc[row.name - 1, 'Closing Balance'] if row.name > 0 and input_long.loc[row.name, 'Cust'] == input_long.loc[row.name - 1, 'Cust'] else row['Opening Balance'],
+    axis=1
+)
+result = input_long[['Cust', 'Date', 'Opening Balance', 'Closing Balance']].astype({'Opening Balance': 'int64', 'Closing Balance': 'int64'})
+
+print(result.equals(test))  # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 327](Excel327pq.qmd)
+-   [Excel BI - Excel Challenge 708](Excel708.qmd)

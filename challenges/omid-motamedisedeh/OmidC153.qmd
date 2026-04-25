@@ -1,0 +1,125 @@
+---
+title: "Omid - Challenge 153"
+description: "🔰 Challenge 153: Custom Grouping!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 153](/challenges/images/OmidC153.jpg)
+
+## Challenge Description
+
+🔰 Challenge 153: Custom Grouping!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(lubridate)
+
+path = "files/CH-153 Custom Grouping.xlsx"
+input = read_excel(path, range = "B2:C11")
+test  = read_excel(path, range = "G2:H6")
+
+output = input %>%
+  mutate(dates = map2(From, To, seq, by = "1 day")) %>%
+  unnest(dates) %>%
+  distinct(dates) %>%
+  group_by(cons = cumsum(c(0, diff(dates)) != 1)) %>%
+  summarise(From = min(dates), To = max(dates)) %>%
+  ungroup() %>%
+  select(-cons)
+
+all.equal(output, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-153 Custom Grouping.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=10)
+test = pd.read_excel(path, usecols="G:H", skiprows=1, nrows=4).rename(columns=lambda x: x.split('.')[0])
+
+input['dates'] = input.apply(lambda row: pd.date_range(start=row['From'], end=row['To']), axis=1)
+dates = pd.to_datetime(input.explode('dates')['dates'].unique())
+grouped_dates = pd.DataFrame({'dates': dates})
+grouped_dates['group'] = (grouped_dates['dates'].diff().dt.days > 1).cumsum() + 1
+grouped_dates = grouped_dates.groupby('group')['dates'].agg(['min', 'max']).reset_index()
+grouped_dates = grouped_dates.rename(columns={'min': 'From', 'max': 'To'})[['From', 'To']]
+
+print(grouped_dates.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 152](OmidC152.qmd)
+-   [Omid - Challenge 154](OmidC154.qmd)
+-   [Omid - Challenge 155](OmidC155.qmd)

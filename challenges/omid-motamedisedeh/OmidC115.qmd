@@ -1,0 +1,113 @@
+---
+title: "Omid - Challenge 115"
+description: "🔰 Result Question Total Sales Product ID Date Customer ID XNM00012 XNM-13"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 115](/challenges/images/OmidC115.jpg)
+
+## Challenge Description
+
+🔰 Result Question Total Sales Product ID Date Customer ID XNM00012 XNM-13
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-115 Multi Replacement.xlsx"
+input = read_excel(path, range = "B2:E9")
+test  = read_excel(path, range = "G2:J9")
+
+result = input %>%
+  mutate(across(c(`Product ID`, `Customer ID`), ~str_replace(., "0{3}|q", "-")))
+
+identical(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-115 Multi Replacement.xlsx"
+input = pd.read_excel(path, usecols="B:E", skiprows=1)
+test = pd.read_excel(path, usecols="G:J", skiprows=1).rename(columns=lambda x: x.replace(".1", ""))
+
+result = input.replace({"0{3}|q": "-"}, regex=True)
+
+print(result.equals(test))  # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 114](OmidC114.qmd)
+-   [Omid - Challenge 116](OmidC116.qmd)
+-   [Omid - Challenge 117](OmidC117.qmd)

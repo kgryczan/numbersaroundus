@@ -1,0 +1,120 @@
+---
+title: "Omid - Challenge 132"
+description: "🔰 highlighted"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 132](/challenges/images/OmidC132.jpg)
+
+## Challenge Description
+
+🔰 highlighted
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-132 Merge.xlsx"
+input = read_excel(path, range = "B2:C7")
+input2 = read_excel(path, range = "H2:H8")
+test  = read_excel(path, range = "I2:I8") %>% arrange(desc(Value))
+
+result = input %>%
+  cross_join(input2) %>%
+  filter(str_detect(Code, `Sub code`)) %>%
+  select(Value) %>%
+  arrange(desc(Value))
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "CH-132 Merge.xlsx"
+
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=5)
+input2 = pd.read_excel(path, usecols="H:H", skiprows=1, nrows=7)
+test = pd.read_excel(path, usecols="I:I", skiprows=1, nrows=7).rename(columns=lambda x: x.replace('.1', '')).sort_values(by='Value', ascending=False).reset_index(drop=True)
+
+result = input.merge(input2, how='cross')
+result['Match'] = result.apply(lambda x: bool(re.search(x['Sub code'], x['Code'])), axis=1)
+result = result[result['Match']].sort_values(by='Value', ascending=False).reset_index(drop=True)[['Value']]
+ 
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 131](OmidC131.qmd)
+-   [Omid - Challenge 133](OmidC133.qmd)
+-   [Omid - Challenge 134](OmidC134.qmd)

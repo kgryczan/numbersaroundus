@@ -1,0 +1,108 @@
+---
+title: "Omid - Challenge 216"
+description: "🔰 Question Result ID Prefix Root Suffix AB123 AB"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 216](/challenges/images/OmidC216.jpg)
+
+## Challenge Description
+
+🔰 Question Result ID Prefix Root Suffix AB123 AB
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-216 Column Splitting.xlsx"
+input = read_excel(path, range = "B2:B7")
+test  = read_excel(path, range = "D2:F7")
+
+result = input %>%
+  extract(ID, into = c("Prefix", "Root", "Suffix"),
+          regex = "^([A-Z]{2})(.*)([A-Za-z0-9]{1})$")
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "CH-216 Column Splitting.xlsx"
+
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=6)
+test = pd.read_excel(path, usecols="D:F", skiprows=1, nrows=6)
+result = input["ID"].str.extract(r"^([A-Z]{2})(.*)([A-Za-z0-9]{1})$")
+result.columns = ["Prefix", "Root", "Suffix"]
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 215](OmidC215.qmd)
+-   [Omid - Challenge 217](OmidC217.qmd)
+-   [Omid - Challenge 218](OmidC218.qmd)

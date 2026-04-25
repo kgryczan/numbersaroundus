@@ -1,0 +1,91 @@
+---
+title: "Excel BI - Excel Challenge 745"
+description: "🔰 Answer Expected Company Dept Revenue Cost Total Revenue Total Cost Total Profit MSFT Sales"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 745](/challenges/images/exc745.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Company Dept Revenue Cost Total Revenue Total Cost Total Profit MSFT Sales
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/745/745 Financial Pivot.xlsx"
+input = read_excel(path, range = "A2:D16")
+test  = read_excel(path, range = "F2:I6")
+
+result = input %>%
+  fill(Company) %>%
+  summarise(`Total Revenue` = sum(Revenue, na.rm = TRUE),
+            `Total Cost` = sum(Cost, na.rm = TRUE),
+            .by = Company) %>%
+  mutate(`Total Profit` = `Total Revenue` - `Total Cost`) %>%
+  janitor::adorn_totals("row", name = "Grand Total") %>% 
+  as_tibble() 
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/745/745 Financial Pivot.xlsx"
+input = pd.read_excel(path, usecols="A:D", skiprows=1, nrows=15)
+test = pd.read_excel(path, usecols="F:I", skiprows=1, nrows=4).rename(columns=lambda c: c.replace('.1', ''))
+
+input['Company'] = input['Company'].ffill()
+result = input.groupby('Company', as_index=False)[['Revenue', 'Cost']].sum()
+result.columns = ['Company', 'Total Revenue', 'Total Cost']
+result['Total Profit'] = result['Total Revenue'] - result['Total Cost']
+result = result.sort_values('Total Profit', ascending=True, ignore_index=True)
+result.loc[len(result)] = ['Grand Total'] + result.iloc[:, 1:].sum().tolist()
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 746](/challenges/excelbi/Excel746.html)
+- [Excel Challenge 747](/challenges/excelbi/Excel747.html)
+- [Excel Challenge 748](/challenges/excelbi/Excel748.html)

@@ -1,0 +1,113 @@
+---
+title: "Omid - Challenge 332"
+description: "🔰 Calculate the End Date by adding the Duration to the Start Date/Time."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 332](/challenges/images/OmidC332.jpg)
+
+## Challenge Description
+
+🔰 Calculate the End Date by adding the Duration to the Start Date/Time.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/332/CH-332 Date Calculation.xlsx"
+input <- read_excel(path, range = "B2:C8")
+test <- read_excel(path, range = "D2:D8") %>%
+  mutate(`End Time` = dmy_hms(`End Time`))
+
+result = input %>%
+  mutate(`Start Date` = dmy_hms(`Start Date`)) %>%
+  mutate(`End Date` = `Start Date` + hours(as.numeric(`Duration [h]`)))
+
+all.equal(result$`End Date`, test$`End Time`)
+# First time incorrect in the Excel file, others correct
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from datetime import timedelta
+
+path = "300-399/332/CH-332 Date Calculation.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=7)
+test = pd.read_excel(path, usecols="D", skiprows=1, nrows=7)
+test['End Time'] = pd.to_datetime(test['End Time'] , format="%d/%m/%Y - %H:%M:%S")
+
+input['Start Date'] = pd.to_datetime(input['Start Date'], format="%d/%m/%Y - %H:%M:%S")
+# durarion + start date
+input['Calculated End Date'] = input.apply(lambda row: row['Start Date'] + timedelta(hours=row['Duration [h]']), axis=1)
+
+print(input['Calculated End Date'].equals(test['End Time']))  # First entry wrong
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 331](OmidC331.qmd)
+-   [Omid - Challenge 333](OmidC333.qmd)
+-   [Omid - Challenge 334](OmidC334.qmd)

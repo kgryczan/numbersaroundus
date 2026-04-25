@@ -1,0 +1,122 @@
+---
+title: "Omid - Challenge 210"
+description: "🔰 Challenge 210: Removing characters !"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 210](/challenges/images/OmidC210.jpg)
+
+## Challenge Description
+
+🔰 Challenge 210: Removing characters !
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-210Removing a character.xlsx"
+input = read_excel(path, range = "B2:B6")
+test  = read_excel(path, range = "D2:E6")
+
+result = input %>%
+  mutate(rn = row_number()) %>%
+  separate_rows(Text, sep = "") %>%
+  filter(Text != "") %>%
+  mutate(counter = row_number(), .by = Text) %>%
+  mutate(rem = ifelse(counter > 1, "Removed chars", "Revised Text")) %>%
+  select(-counter) %>%
+  pivot_wider(names_from = rem, values_from = Text, values_fn = list(Text = toString))
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+path = "CH-210Removing a character.xlsx"
+
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=5)
+test = pd.read_excel(path, usecols="D:E", skiprows=1, nrows=5)
+
+input = input.rename(columns={input.columns[0]: "Text"}).dropna(subset=["Text"])
+input = input.assign(rn=range(1, len(input) + 1), characters=input["Text"].apply(list))
+input = input.explode("characters").assign(counter=lambda x: x.groupby("characters").cumcount() + 1)
+input["rem"] = input["counter"].eq(1).map({True: "Revised Text", False: "Removed chars"})
+input = input.groupby(["rn", "rem"])["characters"].apply("".join).unstack().reset_index()
+input = input.rename_axis(None, axis=1)[["Revised Text", "Removed chars"]]
+print(input)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 209](OmidC209.qmd)
+-   [Omid - Challenge 211](OmidC211.qmd)
+-   [Omid - Challenge 212](OmidC212.qmd)

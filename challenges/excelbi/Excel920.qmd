@@ -1,0 +1,128 @@
+---
+title: "Excel BI - Excel Challenge 920"
+description: "🔰 Generate descendant numbers by summing adjacent digits until a palindrome appears or the process fails."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-23"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 920](/challenges/images/exc920.jpg)
+
+## Challenge Description
+
+🔰 Build descendant numbers by summing adjacent digits. For digits `d1 d2 d3 d4`, the child becomes `[d1+d2, d2+d3, d3+d4]`. If a sum is 10 or more, both digits are kept. Repeat until a palindrome of at least two digits appears; otherwise return `None`.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(stringi)
+
+path <- "Excel/900-999/920/920 Descendant Palindrome.xlsx"
+input <- read_excel(path, range = "A1:A9")
+test <- read_excel(path, range = "B1:B9")
+
+step_once <- function(n) {
+  d <- str_split(as.character(n), "", simplify = TRUE) %>% as.integer()
+  out <- map2_chr(d[-length(d)], d[-1], ~ as.character(.x + .y)) %>%
+    str_c(collapse = "")
+  if (!is.na(out) && nchar(out) > 1) as.numeric(out) else NA
+}
+
+find_palindrome <- function(n) {
+  seen <- numeric()
+  while (!is.na(n) && !n %in% seen) {
+    s <- as.character(n)
+    if (nchar(s) > 1 && s == stri_reverse(s)) {
+      return(n)
+    }
+    seen <- c(seen, n)
+    n <- step_once(n)
+  }
+  NA
+}
+
+result <- input %>%
+  mutate(Palindrome = map_dbl(Number, find_palindrome)) %>%
+  mutate(Palindrome = ifelse(is.na(Palindrome), "None", as.character(Palindrome)))
+
+all.equal(result$Palindrome, test$Palindrome)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Generate the next descendant from overlapping adjacent sums, preserve two-digit sums as two characters, and iterate until a palindrome appears or the process repeats.
+- **Strengths**: The helper-step structure makes the state transition clear and keeps the palindrome search separate from the generation rule.
+- **Areas for Improvement**: Iterative descendant processes can grow quickly, so practical safeguards against loops or excessive growth are important.
+- **Gem**: The output palindrome is often not present in the original number at all; it emerges only through repeated local transformations.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel/900-999/920/920 Descendant Palindrome.xlsx"
+input = pd.read_excel(path, usecols=[0], nrows=9)
+test = pd.read_excel(path, usecols=[1], nrows=9, dtype=str).fillna("None")
+
+def split_step(word):
+    digits = [int(d) for d in str(word)]
+    out = []
+    for num in (digits[i] + digits[i + 1] for i in range(len(digits) - 1)):
+        if num >= 10:
+            out.extend(map(int, str(num)))
+        else:
+            out.append(num)
+    return "".join(map(str, out))
+
+def split_and_process(word, max_iter=5000, max_len=20000):
+    out = str(word)
+    seen = set()
+
+    for _ in range(max_iter):
+        if len(out) >= 2 and out == out[::-1]:
+            return out
+        if out in seen or len(out) > max_len:
+            return "None"
+        seen.add(out)
+        out = split_step(out)
+        if len(out) < 2:
+            return "None"
+
+    return "None"
+
+result = input["Number"].apply(split_and_process)
+print(result.equals(test["Palindrome"]))
+# True
+```
+
+### Python
+
+The Python version makes the descendant process very explicit by separating one-generation logic from the loop controller. That keeps the unusual “split two-digit sums into separate digits” rule easy to inspect.
+
+## **Difficulty Level**
+
+**Medium / Hard**
+
+The puzzle is not about a single formula. It is about an evolving state process with cycle detection and a nonstandard child-generation rule.
+
+### Related Challenges
+
+- [Excel Challenge 932](/challenges/excelbi/Excel932.html)
+- [Excel Challenge 922](/challenges/excelbi/Excel922.html)
+- [Excel Challenge 937](/challenges/excelbi/Excel937.html)

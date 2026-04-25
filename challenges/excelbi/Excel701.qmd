@@ -1,0 +1,88 @@
+---
+title: "Excel BI - Excel Challenge 701"
+description: "🔰 Answer Expected Swap the diagonals in 10x10 grid as shown."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 701](/challenges/images/exc701.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Swap the diagonals in 10x10 grid as shown.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/701 Swap Diagonals.xlsx"
+input = read_excel(path, range = "A2:J11", col_names = FALSE) %>% as.matrix()
+test = read_excel(path, range = "L2:U11", col_names = FALSE) %>% as.matrix()
+
+d1 = diag(input)
+d2 = diag(input[, ncol(input):1])
+
+diag(input) <- d2
+diag(input[, ncol(input):1]) <- d1
+
+all(input == test) # [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "701 Swap Diagonals.xlsx"
+input_matrix = pd.read_excel(path, sheet_name=0, usecols="A:J", skiprows=1, nrows=10, header=None).to_numpy()
+test_matrix = pd.read_excel(path, sheet_name=0, usecols="L:U", skiprows=1, nrows=10, header=None).to_numpy()
+
+def swap_diagonals(matrix):
+    for i in range(len(matrix)):
+        matrix[i][i], matrix[i][~i] = matrix[i][~i], matrix[i][i]
+    return matrix
+
+res_matrix = swap_diagonals(input_matrix.copy())
+
+print(np.array_equal(res_matrix, test_matrix)) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 702](/challenges/excelbi/Excel702.html)
+- [Excel Challenge 703](/challenges/excelbi/Excel703.html)
+- [Excel Challenge 704](/challenges/excelbi/Excel704.html)

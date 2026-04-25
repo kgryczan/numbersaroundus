@@ -1,0 +1,125 @@
+---
+title: "Excel BI - PowerQuery Challenge 335"
+description: "Transpose the table as shown."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 335](/challenges/images/exc335pq.jpg)
+
+## Challenge Description
+
+Transpose the table as shown.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/300-399/335/PQ_Challenge_335.xlsx"
+input = read_excel(path, range = "A1:F7")
+test  = read_excel(path, range = "A12:I15")
+
+result = input %>%
+  fill(Fruits) %>%
+  pivot_longer(-c(Fruits, Quarters), names_to = "Quarter") %>%
+  arrange(Fruits, Quarter) %>%
+  pivot_wider(names_from = c(Quarters, Quarter), values_from = value,
+              names_glue = "{Quarters}-{Quarter}", names_vary = "slowest")
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "300-399/335/PQ_Challenge_335.xlsx"
+input = pd.read_excel(path, sheet_name=None, header=0)
+input = pd.read_excel(path, usecols="A:F", nrows=7)
+test = pd.read_excel(path, usecols="A:I", skiprows=11, nrows=4)
+
+input['Fruits'] = input['Fruits'].ffill()
+result = input.set_index(['Fruits', 'Quarters']).unstack().sort_index(axis=1, level=1)
+result.columns = [f"{q}-{col}" for col, q in result.columns]
+result = result.reset_index()
+cols = result.columns.tolist()
+result = result[['Fruits'] + sorted([c for c in cols if c != 'Fruits'], key=lambda x: x.split('-')[::-1])]
+result.columns.name = None
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 334](Excel334pq.qmd)
+-   [Excel BI - Excel Challenge 715](Excel715.qmd)

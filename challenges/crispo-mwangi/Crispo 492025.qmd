@@ -1,0 +1,139 @@
+---
+title: "Crispo - Excel Challenge 49 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-12-07"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 49 2025](/challenges/images/Crispo492025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ ⭐Sum ONLY quantities above 100
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path <- "2025-12-07/Challenge 82.xlsx"
+input <- read_excel(path, range = "B2:C6")
+test <- read_excel(path, range = "D2:D6")
+
+result = input %>%
+  separate_rows(`Price/Qty/Store No.`, sep = ", ") %>%
+  separate_wider_delim(
+    `Price/Qty/Store No.`,
+    delim = "/",
+    names = c("Price", "Qty", "Store No.")
+  ) %>%
+  mutate(Qty = ifelse(as.integer(Qty) > 100, as.integer(Qty), 0L)) %>%
+  summarise(`Total Quantity` = sum(as.integer(Qty)), .by = Date)
+
+all.equal(result$`Total Quantity`, test$`Total Qty`)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "2025-12-07/Challenge 82.xlsx"
+input_df = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=4)
+test = pd.read_excel(path, usecols="D:D", skiprows=1, nrows=4)
+
+result = (
+    input_df
+    .assign(**{"Price/Qty/Store No.": input_df["Price/Qty/Store No."].str.split(", ")})
+    .explode("Price/Qty/Store No.")
+    .reset_index(drop=True)
+    .assign(**{
+        "Price": lambda df: df["Price/Qty/Store No."].str.split("/", expand=True)[0],
+        "Qty": lambda df: pd.to_numeric(
+            df["Price/Qty/Store No."].str.split("/", expand=True)[1],
+            errors="coerce"
+        ).fillna(0).astype(int).where(lambda x: x > 100, 0)
+    })
+    .groupby("Date", as_index=False)
+    .agg(**{"Total Quantity": ("Qty", "sum")})
+)
+
+print(result["Total Quantity"].equals(test["Total Qty"]))
+# True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 48 2025](Crispo 482025.qmd)
+-   [Crispo - Excel Challenge 50 2025](Crispo 502025.qmd)

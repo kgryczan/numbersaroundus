@@ -1,0 +1,120 @@
+---
+title: "Omid - Challenge 157"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 157](/challenges/images/OmidC157.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-157 Table Transformation.xlsx"
+input = read_excel(path, range = "C2:C17", col_types = "text")
+test  = read_excel(path, range = "E2:G12")
+
+result = input %>%
+  as.matrix() %>%
+  matrix(., ncol = 3, byrow = TRUE) %>%
+  as.data.frame() %>%
+  separate_rows(V2:V3, sep = ",") %>%
+  mutate(V1 = as.Date(as.integer(V1), origin = "1899-12-30") %>% as.POSIXct(), 
+         V3 = as.integer(V3)) %>%
+  set_names(c("Date", "Product", "Quantity")) 
+
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+path = "CH-157 Table Transformation.xlsx"
+input = pd.read_excel(path, usecols="C", skiprows=1, nrows=15, dtype=str)
+test = pd.read_excel(path, usecols="E:G", skiprows=1, nrows=10)
+
+input_matrix = input.values.reshape(-1, 3)
+result = pd.DataFrame(input_matrix, columns=["V1", "V2", "V3"])
+result = result.assign(V2=result['V2'].str.split(','), V3=result['V3'].str.split(',')).explode(['V2', 'V3'])
+result['V1'] = pd.to_datetime(result['V1'], errors='coerce')
+result['V3'] = pd.to_numeric(result['V3'], errors='coerce').astype('Int64')
+result.reset_index(drop=True, inplace=True)
+result.columns = test.columns
+print(all(result == test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 156](OmidC156.qmd)
+-   [Omid - Challenge 158](OmidC158.qmd)
+-   [Omid - Challenge 159](OmidC159.qmd)

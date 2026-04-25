@@ -1,0 +1,105 @@
+---
+title: "Excel BI - Excel Challenge 798"
+description: "🔰 Traversing from back, extract"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 798](/challenges/images/exc798.jpg)
+
+## Challenge Description
+
+🔰 Traversing from back, extract
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/798/798 From back - Extract String Before a Repeated Character.xlsx"
+input = read_excel(path, range = "A1:A11")
+test  = read_excel(path, range = "B1:B11")
+
+cut_at_first_global_dup <- function(x) {
+  map_chr(x, ~{
+    ch <- str_split(.x, "", simplify = TRUE)
+    dups <- names(which(table(ch) > 1))
+    if (length(dups) == 0) return(.x)
+    start <- max(map_int(dups, ~ which(ch == .x)[1])) + 1
+    str_sub(.x, start)
+  })
+}
+
+result = input %>%
+  mutate(`Answer Expected` = cut_at_first_global_dup(String))
+
+all.equal(result$`Answer Expected`, test$`Answer Expected`)
+result$`Answer Expected` == test$`Answer Expected`
+# one solution different from expected
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/798/798 From back - Extract String Before a Repeated Character.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=11)
+test = pd.read_excel(path, usecols="B", nrows=11)
+
+def cut_at_first_global_dup(x):
+    result = []
+    for s in x:
+        chars = list(str(s))
+        counts = pd.Series(chars).value_counts()
+        dups = counts[counts > 1].index.tolist()
+        if not dups:
+            result.append(s)
+            continue
+        starts = [chars.index(d) for d in dups]
+        start = max(starts) + 1
+        result.append(''.join(chars[start:]))
+    return result
+
+input['Answer Expected'] = cut_at_first_global_dup(input.iloc[:, 0])
+print(input['Answer Expected'] == test.iloc[:, 0])
+# one solution different from expected
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 799](/challenges/excelbi/Excel799.html)
+- [Excel Challenge 800](/challenges/excelbi/Excel800.html)
+- [Excel Challenge 801](/challenges/excelbi/Excel801.html)

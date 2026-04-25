@@ -1,0 +1,108 @@
+---
+title: "Excel BI - Excel Challenge 887"
+description: "🔰 Calculate the Cumulative Minimum Product Triplet which is the minimum possible product of any three distinct elements."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 887](/challenges/images/exc887.jpg)
+
+## Challenge Description
+
+🔰 Calculate the Cumulative Minimum Product Triplet which is the minimum possible product of any three distinct elements. Also give the minimum computed. In case of more than one answer, separate tuples by comma only. Triplets should be sorted ascending and should be unique. Ex. 10, -5, 15, -2, 8: (-5, 10, 15) will lead to -750 which is minimum for all triplets considered.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/887/887 Minimum Product Triplet.xlsx"
+input <- read_excel(path, range = "A2:A22")
+test <- read_excel(path, range = "B2:C22") %>%
+  mutate_all(~ str_replace_all(., "\\{", "\\(")) %>%
+  mutate_all(~ str_replace_all(., "\\}", "\\)"))
+
+
+find_triplet = function(s) {
+  x = as.numeric(strsplit(s, ", ")[[1]])
+  c = combn(x, 3)
+  m = min(p <- apply(c, 2, prod))
+  t = unique(apply(apply(c[,p==m,drop=F],2,sort),2,paste,collapse=", "))
+  t = t[order(rowSums(matrix(as.numeric(unlist(strsplit(t,", "))),ncol=3,byrow=T)))]
+  list(`Min Product`=as.character(m), Triplets=paste0("(",paste(t,collapse=") , ("),")"))
+}
+
+result = map_dfr(input$Data, find_triplet)
+
+all.equal(result, test, check.attributes = FALSE)
+# FALSE, two cells has wrong min product in solution. And there is some sorting problems
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+import itertools
+import re
+
+path = "Excel/800-899/887/887 Minimum Product Triplet.xlsx"
+input = pd.read_excel(path, usecols="A", skiprows=1, nrows=20)
+test = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=20)
+test = test.applymap(lambda x: re.sub(r'\{', '(', str(x)))
+test = test.applymap(lambda x: re.sub(r'\}', ')', str(x)))
+
+def find_triplet(s):
+    x = list(map(int, s.split(", ")))
+    combs = list(itertools.combinations(x, 3))
+    prods = [np.prod(c) for c in combs]
+    m = min(prods)
+    min_triplets = [tuple(sorted(combs[i])) for i, p in enumerate(prods) if p == m]
+    unique_triplets = sorted(set(min_triplets), key=lambda t: sum(t))
+    triplet_strs = [", ".join(map(str, t)) for t in unique_triplets]
+    triplets_fmt = "(" + ") , (".join(triplet_strs) + ")"
+    return {"Min Product": str(m), "Triplets": triplets_fmt}
+
+result = pd.DataFrame([find_triplet(s) for s in input.iloc[:,0]])
+
+print(result.equals(test))
+# FALSE, two cells has wrong min product in solution. And there is some sorting problems
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 888](/challenges/excelbi/Excel888.html)
+- [Excel Challenge 889](/challenges/excelbi/Excel889.html)
+- [Excel Challenge 890](/challenges/excelbi/Excel890.html)

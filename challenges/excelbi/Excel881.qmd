@@ -1,0 +1,94 @@
+---
+title: "Excel BI - Excel Challenge 881"
+description: "🔰 Inout Word Target Word Answer Expected docu documentation doto tent dcmd butl beautiful"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 881](/challenges/images/exc881.jpg)
+
+## Challenge Description
+
+🔰 Inout Word Target Word Answer Expected docu documentation doto tent dcmd butl beautiful
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/881/881 Completion of Words.xlsx"
+input <- read_excel(path, range = "A1:B38")
+test <- read_excel(path, range = "C1:C38")
+
+is_subsequence <- function(s, l) {
+  purrr::map2_lgl(s, l, function(s1, l1) {
+    pat <- str_c(str_split(s1, "", simplify = TRUE), collapse = ".*")
+    str_detect(l1, pat)
+  })
+}
+
+result = input %>%
+  mutate(`Answer Expected` = is_subsequence(`Inout Word`, `Target Word`))
+
+all.equal(result$`Answer Expected`, test$`Answer Expected`)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "Excel\\800-899\\881\\881 Completion of Words.xlsx"
+input = pd.read_excel(path, usecols="A:B", nrows = 37)
+test = pd.read_excel(path, usecols="C", nrows = 37)
+
+def is_subsequence(short, long):
+    return bool(re.search(".*".join(map(re.escape, short)), long))
+
+result = input.apply(
+    lambda row: is_subsequence(row['Inout Word'], row['Target Word']),
+    axis=1
+)
+
+print(result.equals(test['Answer Expected']))  # True
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 882](/challenges/excelbi/Excel882.html)
+- [Excel Challenge 883](/challenges/excelbi/Excel883.html)
+- [Excel Challenge 884](/challenges/excelbi/Excel884.html)

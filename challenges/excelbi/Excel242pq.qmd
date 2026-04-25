@@ -1,0 +1,133 @@
+---
+title: "Excel BI - PowerQuery Challenge 242"
+description: "Hall Date Guest1 Guest2 Guest3 Guest4"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 242](/challenges/images/exc242pq.jpg)
+
+## Challenge Description
+
+Hall Date Guest1 Guest2 Guest3 Guest4
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_242.xlsx"
+input = read_excel(path, range = "A1:F5")
+test  = read_excel(path, range = "H1:I16") 
+
+result = input %>%
+  mutate(across(everything(), as.character)) %>%
+  mutate(no = row_number() %>% as.character(), .by = Hall) %>%
+  unite(Hall, Hall, no, sep = "_") %>%
+  pivot_longer(everything(), names_to = "name", values_to = "value") %>%
+  filter(!is.na(value), !str_ends(value, "_2")) %>%
+  mutate(value = str_remove(value, "_1"))
+
+colnames(result) = colnames(test)
+
+all.equal(result, test, check.attributes = FALSE)         
+# not equal because of wrong formating of dates in equipment.
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "PQ_Challenge_242.xlsx"
+input = pd.read_excel(path, usecols="A:F", nrows=4)
+test = pd.read_excel(path, usecols="H:I", nrows=16).astype(str)
+test['Column2'] = test['Column2'].str.replace(' 00:00:00', '')
+
+input = input.astype(str)
+input['Hall'] = input.groupby('Hall').cumcount().add(1).astype(str).radd(input['Hall'] + "_")
+
+result = input.stack().reset_index()
+result = result[~result[0].str.endswith('_2') & (result[0] != "nan")]
+result.columns = ['Row', 'Column1', 'Column2']
+result.drop(columns=['Row'], inplace=True)
+result['Column2'] = result['Column2'].str.replace('_1', '')
+result.reset_index(drop=True, inplace=True)
+
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 241](Excel241pq.qmd)

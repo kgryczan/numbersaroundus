@@ -1,0 +1,120 @@
+---
+title: "Omid - Challenge 354"
+description: "🔰 Grouping Starting from the top row, group every two rows and calculate the total sales for each group"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 354](/challenges/images/OmidC354.jpg)
+
+## Challenge Description
+
+🔰 Grouping Starting from the top row, group every two rows and calculate the total sales for each group
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/354/CH-354 Custom Grouping.xlsx"
+input <- read_excel(path, range = "B3:C9")
+test <- read_excel(path, range = "F3:G9")
+
+result = input %>%
+  transmute(
+    IDs = ifelse(row_number() == n(), ID, paste0(ID, ",", lead(ID, 1, ))),
+    Sales = ifelse(row_number() == n(), Sales, Sales + lead(Sales, 1))
+  )
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "300-399/354/CH-354 Custom Grouping.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=2, nrows=7)
+test = pd.read_excel(path, usecols="F:G", skiprows=2, nrows=7).rename(columns=lambda col: col.replace('.1', ''))
+
+def custom_transmute(df):
+    result = pd.DataFrame()
+    result["IDs"] = df["ID"].astype(str)
+    result["Sales"] = df["Sales"]
+    result.iloc[:-1, result.columns.get_loc("IDs")] = (
+        df["ID"].astype(str).values[:-1] + "," + df["ID"].astype(str).values[1:]
+    )
+    result.iloc[:-1, result.columns.get_loc("Sales")] = (
+        df["Sales"].values[:-1] + df["Sales"].values[1:]
+    )
+    return result
+
+result = custom_transmute(input)
+print(result.equals(test))
+# True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 353](OmidC353.qmd)
+-   [Omid - Challenge 355](OmidC355.qmd)
+-   [Omid - Challenge 356](OmidC356.qmd)

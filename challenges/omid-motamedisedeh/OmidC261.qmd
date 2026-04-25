@@ -1,0 +1,134 @@
+---
+title: "Omid - Challenge 261"
+description: "🔰 Group Challenge 261: Custom Grouping!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 261](/challenges/images/OmidC261.jpg)
+
+## Challenge Description
+
+🔰 Group Challenge 261: Custom Grouping!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/261/CH-261 Custom Grouping .xlsx"
+input = read_excel(path, range = "B2:C16")
+test  = read_excel(path, range = "F2:H16")
+
+group = 1
+seen = character()
+
+result = input %>% mutate(
+  Group = map_int(ID, ~{
+    if (.x %in% seen) {
+      group <<- group + 1
+      seen <<- .x
+    } else {
+      seen <<- c(seen, .x)
+    }
+    group
+  })
+)
+
+all.equal(result, test)
+# > [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "200-299/261/CH-261 Custom Grouping .xlsx"
+input = pd.read_excel(path, skiprows=1, usecols="B:C", nrows=14)
+test = pd.read_excel(path, skiprows=1, usecols="F:H", nrows=14).rename(columns=lambda col: col.replace('.1', ''))
+
+def make_assign_group():
+    group = [1]
+    seen = set()
+    def assign(id_val):
+        if id_val in seen:
+            group[0] += 1
+            seen.clear()
+        seen.add(id_val)
+        return group[0]
+    return assign
+
+result = input.copy()
+result['Group'] = result['ID'].apply(make_assign_group())
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 260](OmidC260.qmd)
+-   [Omid - Challenge 262](OmidC262.qmd)
+-   [Omid - Challenge 263](OmidC263.qmd)

@@ -1,0 +1,127 @@
+---
+title: "Omid - Challenge 21"
+description: "🔰 : Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 21](/challenges/images/OmidC21.jpg)
+
+## Challenge Description
+
+🔰 : Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-021 Transformation.xlsx", range = "B2:E11")
+test  = read_excel("files/CH-021 Transformation.xlsx", range = "G2:H8")
+
+result = input %>%
+  select(`Machinary code`, Product_1 = 2, Product_2 = 3, Product_3 = 4) %>%
+  pivot_longer(cols = -`Machinary code`, names_to = "Product", values_to = "Value") %>%
+  na.omit() %>%
+  arrange(Product) %>%
+  group_by(Value) %>%
+  summarise(Machine = paste0(`Machinary code`, collapse = " ,")) %>%
+  select(`Product Code`= Value, `Machinary Code` = Machine)
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input_data = pd.read_excel("CH-021 Transformation.xlsx", usecols="B:E", skiprows=1, nrows=10)
+test = pd.read_excel("CH-021 Transformation.xlsx", usecols="G:H", skiprows=1, nrows=7)
+
+result = (
+    input_data.rename(columns={input_data.columns[1]: "Product_1", input_data.columns[2]: "Product_2", input_data.columns[3]: "Product_3"})
+    .melt(id_vars="Machinary code", var_name="Product", value_name="Value")
+    .dropna(subset=["Value"])
+    .sort_values("Product")
+    .groupby("Value", as_index=False)["Machinary code"]
+    .agg(lambda s: " ,".join(s.astype(str)))
+    .rename(columns={"Value": "Product Code", "Machinary code": "Machinary Code"})
+)
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 20](OmidC20.qmd)
+-   [Omid - Challenge 22](OmidC22.qmd)
+-   [Omid - Challenge 23](OmidC23.qmd)

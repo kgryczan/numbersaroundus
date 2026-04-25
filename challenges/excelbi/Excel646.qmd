@@ -1,0 +1,92 @@
+---
+title: "Excel BI - Excel Challenge 646"
+description: "🔰 Answer Expected Data Value Jan Feb Mar Apr Quarter Total May Jun"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 646](/challenges/images/exc646.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Data Value Jan Feb Mar Apr Quarter Total May Jun
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/646 Insert Quarterly Total Line.xlsx"
+input = read_excel(path, range = "A2:B14")
+test  = read_excel(path, range = "D2:E18")
+
+result = input %>%
+  mutate(Quarter = rep(1:4, each = 3)) 
+qt = result %>%
+  summarise(Data = "Quarter Total", Value = sum(Value), .by = Quarter) %>%
+  bind_rows(result) %>%
+  arrange(Quarter, grepl("Total", Data)) %>%
+  select(-Quarter)
+
+all.equal(qt, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "646 Insert Quarterly Total Line.xlsx"
+input = pd.read_excel(path, usecols="A:B", skiprows=1, nrows=12)
+test = pd.read_excel(path, usecols="D:E", skiprows=1, nrows=17).rename(columns=lambda x: x.split('.')[0])
+
+def insert_quarterly_totals(df):
+    quarters = {'Q1': ['Jan', 'Feb', 'Mar'], 'Q2': ['Apr', 'May', 'Jun'], 
+                'Q3': ['Jul', 'Aug', 'Sep'], 'Q4': ['Oct', 'Nov', 'Dec']}
+    result = pd.concat([df[df['Data'].isin(months)]._append(
+        {'Data': 'Quarter Total', 'Value': df[df['Data'].isin(months)]['Value'].sum()}, ignore_index=True)
+        for months in quarters.values()])
+    return result.reset_index(drop=True)
+
+input_with_totals = insert_quarterly_totals(input)
+print(all(input_with_totals == test)) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 647](/challenges/excelbi/Excel647.html)
+- [Excel Challenge 648](/challenges/excelbi/Excel648.html)
+- [Excel Challenge 649](/challenges/excelbi/Excel649.html)

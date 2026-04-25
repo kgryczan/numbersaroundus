@@ -1,0 +1,116 @@
+---
+title: "Excel BI - Excel Challenge 893"
+description: "🔰 Work out the indexes where capital letters are."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 893](/challenges/images/exc893.jpg)
+
+## Challenge Description
+
+🔰 Work out the indexes where capital letters are.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/893/893 Capitalize at Same Indexes.xlsx"
+input <- read_excel(path, range = "A1:A10")
+test <- read_excel(path, range = "B1:B10")
+
+myfun <- function(text) {
+  tibble(ch = str_split(text, "")[[1]]) |>
+    mutate(
+      i1 = row_number(),
+      i2 = cumsum(ch != " "),
+      cap = str_detect(ch, "[A-Z]")
+    ) |>
+    (\(df) {
+      cap1 <- df$i1[df$cap]
+      df |>
+        mutate(
+          ch = str_to_lower(ch),
+          ch = if_else(i2 %in% cap1 & ch != " ", str_to_upper(ch), ch)
+        )
+    })() |>
+    summarise(out = str_c(ch, collapse = "")) |>
+    pull(out)
+}
+
+result = input %>%
+  rowwise() %>%
+  mutate(result = myfun(Sentences))
+
+all.equal(result$result, test$`Answer Expected`)
+# TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+import pandas as pd
+
+path = "Excel\\800-899\\893\\893 Capitalize at Same Indexes.xlsx"
+input = pd.read_excel(path, usecols="A", nrows = 10)
+test = pd.read_excel(path, usecols="B", nrows = 10)
+
+def myfun(text):
+    df = pd.DataFrame({"ch": list(text)})
+    df["i1"] = range(1, len(df) + 1)
+    df["i2"] = (df["ch"] != " ").cumsum()
+    df["cap"] = df["ch"].str.match(r"[A-Z]")
+
+    cap1 = df.loc[df["cap"], "i1"]
+
+    df["ch"] = df["ch"].str.lower()
+    m = df["i2"].isin(cap1) & (df["ch"] != " ")
+    df.loc[m, "ch"] = df.loc[m, "ch"].str.upper()
+
+    return "".join(df["ch"])
+
+result = input.assign(result=input["Sentences"].map(myfun))
+
+print(result['result'].equals(test['Answer Expected'])) # True
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 894](/challenges/excelbi/Excel894.html)
+- [Excel Challenge 895](/challenges/excelbi/Excel895.html)
+- [Excel Challenge 896](/challenges/excelbi/Excel896.html)

@@ -1,0 +1,84 @@
+---
+title: "Excel BI - Excel Challenge 784"
+description: "🔰 Find the sum of all rows + sum of all columns + sum of both diagonals."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 784](/challenges/images/exc784.jpg)
+
+## Challenge Description
+
+🔰 Find the sum of all rows + sum of all columns + sum of both diagonals.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(matricks)
+
+path = "Excel/700-799/784/784 Sum of Square.xlsx"
+input = read_excel(path, range = "B2:K11", col_names = FALSE) %>% as.matrix()
+test  = read_excel(path, range = "M1:M2") %>% pull()
+
+result = sum(rowSums(input)) + sum(colSums(input)) + sum(diag(input)) + sum(antidiag(input))
+
+result == test 
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge.
+- **Strengths**: The solution stays close to the text pattern itself, which makes the extraction logic easy to audit.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: A small number of well-targeted text patterns does most of the heavy lifting.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import numpy as np
+import pandas as pd
+
+path = "700-799/784/784 Sum of Square.xlsx"
+input_matrix = pd.read_excel(path, header=None, usecols="B:K", skiprows=1, nrows=10).values
+test = pd.read_excel(path, usecols="M", nrows=1).values.flatten()
+
+result = input_matrix.sum(axis=1).sum() \
+    + input_matrix.sum(axis=0).sum() \
+    + np.trace(input_matrix) \
+    + np.trace(np.fliplr(input_matrix)) 
+
+print(result == test) # True
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 785](/challenges/excelbi/Excel785.html)
+- [Excel Challenge 786](/challenges/excelbi/Excel786.html)
+- [Excel Challenge 787](/challenges/excelbi/Excel787.html)

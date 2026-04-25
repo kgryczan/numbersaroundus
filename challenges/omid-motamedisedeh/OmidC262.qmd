@@ -1,0 +1,132 @@
+---
+title: "Omid - Challenge 262"
+description: "🔰 Question ID A B C Value Data {'sales':[{'region':'A','val':100},{'region':'B','val':200}]}"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 262](/challenges/images/OmidC262.jpg)
+
+## Challenge Description
+
+🔰 Question ID A B C Value Data {"sales":[{"region":"A","val":100},{"region":"B","val":200}]}
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(jsonlite)
+
+path = "files/200-299/262/CH-262 JSON Structures.xlsx"
+input = read_excel(path, range = "B2:C5")
+test  = read_excel(path, range = "E2:G8")
+
+result = input %>%
+  mutate(
+    sales = map(Data, ~ fromJSON(.x)$sales %>% as_tibble())
+  ) %>% 
+  unnest(cols = sales) %>%
+  select(ID, Region = region, Value = val)
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import json
+
+path = "200-299/262/CH-262 JSON Structures.xlsx"
+
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=3)
+test = pd.read_excel(path, usecols="E:G", skiprows=1, nrows=6).rename(columns=lambda c: c.replace('.1', ''))
+
+def extract_sales(cell):
+    if not isinstance(cell, str):
+        return []
+    try:
+        obj = json.loads(cell)
+        return obj.get('sales', [])
+    except json.JSONDecodeError:
+        return []
+
+input['sales_list'] = input['Data'].apply(extract_sales)
+result = pd.json_normalize(
+    input.explode('sales_list').assign(sales=lambda df: df['sales_list'])[['ID', 'sales']]
+    .dropna(subset=['sales'])
+    .reset_index(drop=True)['sales']
+    .apply(lambda x: x if isinstance(x, dict) else {})
+).assign(ID=input.explode('sales_list')['ID'].values)[['ID', 'region', 'val']].rename(columns={'region': 'Region', 'val': 'Value'})
+
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 261](OmidC261.qmd)
+-   [Omid - Challenge 263](OmidC263.qmd)
+-   [Omid - Challenge 264](OmidC264.qmd)

@@ -1,0 +1,135 @@
+---
+title: "Omid - Challenge 379"
+description: "🔰 Challenge 379: Filter!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 379](/challenges/images/OmidC379.jpg)
+
+## Challenge Description
+
+🔰 Challenge 379: Filter!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/379/CH-379 Filter.xlsx"
+input <- read_excel(path, range = "B3:B10")
+test <- read_excel(path, range = "F3:F8")
+
+digit_sum <- function(x, pattern) {
+  x |>
+    str_extract_all(pattern) |>
+    map_dbl(~ sum(as.numeric(.x), na.rm = TRUE))
+}
+
+result <- input |>
+  mutate(
+    even_sum = digit_sum(ID, "[02468]"),
+    odd_sum = digit_sum(ID, "[13579]")
+  ) |>
+  filter(xor(even_sum < 10, odd_sum > 10))
+
+all.equal(result$ID, test$ID)
+# GH9087 and PQ1357 dont meet condition of "either or",
+# but met if there would be "normal or" == "one or the other or both".
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "300-399/379/CH-379 Filter.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=2, nrows=8)
+test = pd.read_excel(path, usecols="F", skiprows=2, nrows=5).rename(columns=lambda c: re.sub(r"\.\d+$", "", c))
+
+def digit_sum(ids, pat):
+    return [sum(int(d) for d in re.findall(pat, x)) for x in ids]
+
+result = input.copy()
+result["even_sum"] = digit_sum(result["ID"], r"[02468]")
+result["odd_sum"]  = digit_sum(result["ID"], r"[13579]")
+result = result[result["even_sum"].lt(10) ^ result["odd_sum"].gt(10)][["ID"]].reset_index(drop=True)
+
+print(result.equals(test))
+# GH9087 and PQ1357 dont meet condition of "either or", 
+# but met if there would be "normal or" == "one or the other or both".
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 378](OmidC378.qmd)
+-   [Omid - Challenge 380](OmidC380.qmd)
+-   [Omid - Challenge 381](OmidC381.qmd)

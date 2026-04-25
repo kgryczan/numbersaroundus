@@ -1,0 +1,149 @@
+---
+title: "Excel BI - PowerQuery Challenge 260"
+description: "Group Transpose the problem table into result"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 260](/challenges/images/exc260pq.jpg)
+
+## Challenge Description
+
+Group Transpose the problem table into result
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_260.xlsx"
+input = read_excel(path, range = "A1:C16")
+test  = read_excel(path, range = "E1:N4") %>% mutate(across(everything(), as.character))
+
+names_ = names(test)
+
+df_sum <- input %>% 
+  group_by(Group, Dept) %>% 
+  summarize(Team = paste(Team, collapse = ", "), .groups = "drop") %>% 
+  arrange(Team) %>% 
+  mutate(rn = row_number(), .by = Group)
+
+r1 <- df_sum %>% 
+  pivot_wider(id_cols = rn, names_from = c(Group, Dept), values_from = Team, names_sep = "  ") %>% 
+  left_join(df_sum %>% 
+              select(-Team) %>% 
+              pivot_wider(names_from = Group, values_from = Dept),
+            by = "rn") %>% 
+  select(-rn) %>% 
+  rename_with(~ifelse(nchar(.) == 2, ., str_trim(substr(., 4, nchar(.))))) %>% 
+  select(any_of(names_))
+
+all.equal(r1, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "PQ_Challenge_260.xlsx"
+input = pd.read_excel(path, usecols="A:C", nrows=16)
+test = pd.read_excel(path, usecols="E:N", nrows=3).astype(str).applymap(lambda x: x.replace('.0', ''))
+names_ = list(test.columns)
+
+df_sum = (
+    input
+    .groupby(['Group', 'Dept'], as_index=False)
+    .agg({'Team': lambda x: ", ".join(x.astype(str)) if len(x) > 1 else x.iloc[0]})
+    .sort_values('Team', key=lambda x: x.astype(str))
+)
+df_sum['rn'] = df_sum.groupby('Group').cumcount() + 1
+
+r1_left = df_sum.pivot(index='rn', columns=['Group', 'Dept'], values='Team').reset_index()
+r1_left.columns = ['rn'] + [f"{g}  {d}" for g, d in r1_left.columns[1:]]
+r1_right = df_sum.drop(columns='Team').pivot(index='rn', columns='Group', values='Dept').reset_index()
+r1_merge = pd.merge(r1_left, r1_right, on='rn').drop(columns='rn').rename(columns=lambda x: x[3:].strip() if len(x) > 2 else x)
+r1_final = r1_merge[[col for col in names_ if col in r1_merge.columns]].astype(str)
+
+print(r1_final.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 259](Excel259pq.qmd)
+-   [Excel BI - Excel Challenge 640](Excel640.qmd)

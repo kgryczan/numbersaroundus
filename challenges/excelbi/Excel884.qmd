@@ -1,0 +1,98 @@
+---
+title: "Excel BI - Excel Challenge 884"
+description: "🔰 Work out the Total Score which is the sum of scores for all identified longest blocks in the number."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 884](/challenges/images/exc884.jpg)
+
+## Challenge Description
+
+🔰 Work out the Total Score which is the sum of scores for all identified longest blocks in the number.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/884/884 Scoring.xlsx"
+input <- read_excel(path, range = "A1:A51")
+test <- read_excel(path, range = "B1:B51")
+
+result = input %>%
+  mutate(characters = map(`Text Numbers`, ~ str_split(.x, "")[[1]])) %>%
+  unnest(characters) %>%
+  mutate(id = consecutive_id(characters), .by = `Text Numbers`) %>%
+  mutate(max_id = max(id), .by = `Text Numbers`) %>%
+  mutate(len = n(), .by = c(`Text Numbers`, id)) %>%
+  distinct() %>%
+  mutate(
+    score = ifelse(len == 1, 0, 10^(len - 2) * ifelse(id == max_id, 2, 1))
+  ) %>%
+  summarise(Score = sum(score), .by = `Text Numbers`)
+
+all.equal(result$Score, test$Score)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel/800-899/884/884 Scoring.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=51)
+test = pd.read_excel(path, usecols="B", nrows=51)
+
+def score(text):
+    result, count = [], 1
+    for i in range(1, len(text)):
+        count = count + 1 if text[i] == text[i - 1] else result.append(text[i - 1] * count) or 1
+    result.append(text[-1] * count)
+    df = pd.DataFrame({'Result': result})
+    df['Score'] = df['Result'].astype(str).str.len().apply(lambda l: 0 if l == 1 else 10 ** (l - 2))
+    df['Score'] *= df.index.to_series().apply(lambda i: 2 if i == len(df) - 1 else 1)
+    return df['Score'].sum()
+
+result = input['Text Numbers'].apply(score)
+print(result.equals(test['Score'])) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 885](/challenges/excelbi/Excel885.html)
+- [Excel Challenge 886](/challenges/excelbi/Excel886.html)
+- [Excel Challenge 887](/challenges/excelbi/Excel887.html)

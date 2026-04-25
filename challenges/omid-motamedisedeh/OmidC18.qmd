@@ -1,0 +1,149 @@
+---
+title: "Omid - Challenge 18"
+description: "🔰 Sales Calendar Extraction 'U' for days where sales exceed the month's average daily sales (calculating only days with sales), 'L' for days where sales are below the mont…"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 18](/challenges/images/OmidC18.jpg)
+
+## Challenge Description
+
+🔰 Sales Calendar Extraction "U" for days where sales exceed the month's average daily sales (calculating only days with sales), "L" for days where sales are below the mont…
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(padr)
+
+input = read_excel("files/CH-018 Sales Calendar Extraction.xlsx", range = "B2:C121")
+test_month = 2
+test = read_excel("files/CH-018 Sales Calendar Extraction.xlsx", range = "I2:O7")
+
+result = input %>%
+  pad() %>% #fill dataseries with missing dates
+mutate(month = month(Date),
+       wday = wday(Date, abbr = TRUE, label = TRUE, locale = "English"),
+       week = week(Date)) %>%
+  group_by(month) %>%
+  mutate(monthly_av = mean(Quantity[!is.na(Quantity)], na.rm = TRUE) %>%
+           round(0)) %>%
+  ungroup() %>%
+  filter(month == test_month) %>%
+  mutate(Quantity_check = case_when(Quantity <= monthly_av ~ "L",
+                                    Quantity > monthly_av ~ "U",
+                                    .default = "-")) %>%
+  select(wday, week, Quantity_check) %>%
+  pivot_wider(names_from = wday, values_from = Quantity_check, 
+              values_fill = list(Quantity_check = NA)) %>%
+  select(Su= Sun, Mo = Mon, Tu = Tue, We = Wed, Th = Thu, Fr = Fri,Sa = Sat)
+
+all.equal(test, result)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input_data = pd.read_excel("CH-018 Sales Calendar Extraction.xlsx", usecols="B:C", skiprows=1, nrows=120)
+test_month = 2
+test = pd.read_excel("CH-018 Sales Calendar Extraction.xlsx", usecols="I:O", skiprows=1, nrows=6)
+
+input_data["Date"] = pd.to_datetime(input_data["Date"])
+all_dates = pd.DataFrame({"Date": pd.date_range(input_data["Date"].min(), input_data["Date"].max(), freq="D")})
+result = all_dates.merge(input_data, on="Date", how="left")
+result["month"] = result["Date"].dt.month
+result["wday"] = result["Date"].dt.day_name().str[:3]
+result["week"] = result["Date"].dt.isocalendar().week.astype(int)
+monthly_avg = result.groupby("month")["Quantity"].transform(lambda s: round(s.dropna().mean(), 0))
+result["monthly_av"] = monthly_avg
+result = result.loc[result["month"] == test_month].copy()
+result["Quantity_check"] = result.apply(
+    lambda r: "L" if pd.notna(r["Quantity"]) and r["Quantity"] <= r["monthly_av"]
+    else ("U" if pd.notna(r["Quantity"]) and r["Quantity"] > r["monthly_av"] else "-"),
+    axis=1,
+)
+result = result[["wday", "week", "Quantity_check"]].pivot(index="week", columns="wday", values="Quantity_check").reset_index(drop=True)
+result = result.rename(columns={"Sun": "Su", "Mon": "Mo", "Tue": "Tu", "Wed": "We", "Thu": "Th", "Fri": "Fr", "Sat": "Sa"})
+result = result[["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]]
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 17](OmidC17.qmd)
+-   [Omid - Challenge 19](OmidC19.qmd)
+-   [Omid - Challenge 20](OmidC20.qmd)

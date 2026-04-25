@@ -1,0 +1,97 @@
+---
+title: "Excel BI - Excel Challenge 725"
+description: "🔰 Work out the count of animals with different companies as shown."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 725](/challenges/images/exc725.jpg)
+
+## Challenge Description
+
+🔰 Work out the count of animals with different companies as shown.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+  library(readxl)
+
+  path = "Excel/700-799/725/725 Animal Count.xlsx"
+  input = read_excel(path, range = "A2:D14")
+  test = read_excel(path, range = "F2:J6")
+
+  result = input %>%
+    pivot_longer(
+      cols = everything(),
+      names_to = "Store",
+      values_to = "Animal"
+    ) %>%
+    summarise(count = n(), .by = c("Store", "Animal")) %>%
+    pivot_wider(
+      names_from = Animal,
+      values_from = count,
+      values_fill = list(count = 0)
+    ) %>%
+    arrange(Store) %>%
+    select(Store, sort(names(.), decreasing = FALSE))
+
+  all.equal(result, test, check.attributes = FALSE)
+  #  [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Aggregate or rank the data at the required grouping level; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/725/725 Animal Count.xlsx"
+
+input = pd.read_excel(path, sheet_name=0, usecols="A:D", skiprows=1, nrows=13)
+test = pd.read_excel(path, sheet_name=0, usecols="F:J", skiprows=1, nrows=4)
+
+long = input.melt(var_name="Company", value_name="Animal")
+result = (long.groupby(['Company', 'Animal']).size()
+          .unstack(fill_value=0)
+          .reset_index())
+result = result[['Company'] + sorted(result.columns.drop('Company'))]
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 726](/challenges/excelbi/Excel726.html)
+- [Excel Challenge 727](/challenges/excelbi/Excel727.html)
+- [Excel Challenge 728](/challenges/excelbi/Excel728.html)

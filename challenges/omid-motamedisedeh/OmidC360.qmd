@@ -1,0 +1,150 @@
+---
+title: "Omid - Challenge 360"
+description: "🔰 In Table 1, extract all sub-matrices of size three which are symmetric."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 360](/challenges/images/OmidC360.jpg)
+
+## Challenge Description
+
+🔰 In Table 1, extract all sub-matrices of size three which are symmetric.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/360/CH-360 Matrix Calculation.xlsx"
+input <- read_excel(path, range = "C4:H9", col_names = FALSE) %>% as.matrix()
+test1 <- read_excel(path, range = "K4:M6", col_names = FALSE) %>% as.matrix()
+test2 <- read_excel(path, range = "P4:R6", col_names = FALSE) %>% as.matrix()
+test3 <- read_excel(path, range = "U4:W6", col_names = FALSE) %>% as.matrix()
+
+find_sym_submatrices <- function(mat, n) {
+  r <- list()
+  sz <- nrow(mat) - n + 1
+  for (i in 1:sz) {
+    for (j in 1:sz) {
+      s <- mat[i:(i + n - 1), j:(j + n - 1)]
+      if (all(s == t(s))) r[[length(r) + 1]] <- list(pos = c(i, j), mat = s)
+    }
+  }
+  return(r)
+}
+
+res = find_sym_submatrices(input, 3)
+all(res[[1]]$mat == test1) # TRUE
+all(res[[4]]$mat == test2) # TRUE
+all(res[[3]]$mat == test3) # TRUE
+
+# one extra find
+res[[2]]$mat
+
+#      ...3 ...4 ...5
+# [1,]    1    4    8
+# [2,]    4    7    7
+# [3,]    8    7    3
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "300-399/360/CH-360 Matrix Calculation.xlsx"
+input = pd.read_excel(path, usecols="C:H", skiprows=3, nrows=6, header=None).values
+test1 = pd.read_excel(path, usecols="K:M", skiprows=3, nrows=3, header=None).values
+test2 = pd.read_excel(path, usecols="P:R", skiprows=3, nrows=3, header=None).values
+test3 = pd.read_excel(path, usecols="U:W", skiprows=3, nrows=3, header=None).values
+
+def find_sym_submatrices(mat, n):
+    r = []
+    sz = mat.shape[0] - n + 1
+    for i in range(sz):
+        for j in range(sz):
+            s = mat[i:i+n, j:j+n]
+            if np.array_equal(s, s.T):
+                r.append({'pos':(i,j), 'mat':s})
+    return r
+
+result = find_sym_submatrices(input, 3)
+
+print((result[0]['mat'] == test1).all()) # True
+print((result[3]['mat'] == test2).all()) # True
+print((result[2]['mat'] == test3).all()) # True
+# one extra symmetric matrix exists
+print(result[1]['mat'])
+# [[1 4 8]
+#  [4 7 7]
+#  [8 7 3]]
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 359](OmidC359.qmd)
+-   [Omid - Challenge 361](OmidC361.qmd)
+-   [Omid - Challenge 362](OmidC362.qmd)

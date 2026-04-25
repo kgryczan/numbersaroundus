@@ -1,0 +1,153 @@
+---
+title: "Omid - Challenge 167"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 167](/challenges/images/OmidC167.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-167 Table Transformation.xlsx"
+input = read_excel(path, range = "C2:C27")
+test  = read_excel(path, range = "E2:G12")
+
+result = tibble(raw = input$`Column 1`) %>%
+  mutate(
+    type = case_when(
+      str_detect(raw, "^\\d{5}$") ~ "date",
+      str_detect(raw, "^[A-Za-z]+$") ~ "letter",
+      str_detect(raw, "^\\d+$") ~ "digit",
+      TRUE ~ "unknown"
+    ),
+    group = cumsum(type == "date")
+  ) %>%
+  pivot_wider(names_from = type, values_from = raw, values_fn = list(raw = list)) %>%
+  unnest(cols = c(date, letter, digit)) %>%
+  select(Date = date, Product = letter, Quantity = digit) %>%
+  mutate(Date = as.POSIXct(as.Date(as.numeric(Date), origin = "1899-12-30")),
+         Quantity = as.numeric(Quantity))
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+import re
+
+path = "CH-167 Table Transformation.xlsx"
+input = pd.read_excel(path, usecols="C", skiprows=1, nrows=25)
+test = pd.read_excel(path, usecols="E:G", skiprows=1, nrows=10)
+
+def classify_type(value):
+    str_val = str(value)
+    if re.match(r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$', str_val):
+        return 'date'
+    if re.match(r'^[A-Za-z]+$', str_val):
+        return 'letter'
+    if re.match(r'^\d+$', str_val):
+        return 'digit'
+    return 'unknown'
+
+input['type'] = input.iloc[:, 0].apply(classify_type)
+input['group'] = (input['type'] == 'date').cumsum()
+
+result = input.groupby(['group', 'type'])[input.columns[0]].apply(list).unstack().reset_index()
+result = result.explode(['letter', 'digit']).reset_index(drop=True)
+result.columns.name = None
+
+result = result[['date', 'letter', 'digit']]
+result.columns = ['Date', 'Product', 'Quantity']
+
+result['Date'] = pd.to_datetime(result['Date'].apply(lambda x: x[0] if isinstance(x, list) else x), errors='coerce')
+result['Quantity'] = pd.to_numeric(result['Quantity'], errors='coerce').astype('int64')
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 166](OmidC166.qmd)
+-   [Omid - Challenge 168](OmidC168.qmd)
+-   [Omid - Challenge 169](OmidC169.qmd)

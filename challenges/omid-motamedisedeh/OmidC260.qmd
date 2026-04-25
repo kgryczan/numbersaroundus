@@ -1,0 +1,171 @@
+---
+title: "Omid - Challenge 260"
+description: "🔰 Group Group rows from a list of numbers into three different groups such that: Each group has the same number of rows The sum of values in each group is equal"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 260](/challenges/images/OmidC260.jpg)
+
+## Challenge Description
+
+🔰 Group Group rows from a list of numbers into three different groups such that: Each group has the same number of rows The sum of values in each group is equal
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/260/CH-260 Custom Grouping.xlsx"
+input = read_excel(path, range = "B2:C11")
+test  = read_excel(path, range = "E2:G11")
+
+inp = input$Value
+names(inp) = input$ID
+
+k           = 3
+group_size  = length(inp) / k
+target      = sum(inp) / k
+
+valid_groups  = combn(names(inp), k, simplify = FALSE) %>%
+  keep(~ sum(inp[.x]) == target)
+
+all_groups = expand.grid(valid_groups, valid_groups, valid_groups) %>%
+  rowwise() %>%
+  mutate(group = list(c_across(everything()))) %>%
+  mutate(group = list(unique(unlist(group)))) %>%
+  ungroup() %>%
+  filter(lengths(group) == 9) %>%
+  unnest_wider(starts_with("Var"), names_sep = "_") %>%
+  unite("Var1", starts_with("Var1"), sep = "", na.rm = TRUE) %>%
+  unite("Var2", starts_with("Var2"), sep = "", na.rm = TRUE) %>%
+  unite("Var3", starts_with("Var3"), sep = "", na.rm = TRUE) %>%
+  mutate(unique_group = pmap_chr(list(Var1, Var2, Var3), ~ sort(c(..1, ..2, ..3)) %>% paste(collapse = " "))) %>%
+  summarise(sekw = list(group), .by = unique_group) %>% 
+  select(-sekw)
+
+print(paste0("Possible sequence by IDs:", all_groups$unique_group))
+# "Possible sequence by IDs:148 259 367" 
+# "Possible sequence by IDs:156 278 349"
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import itertools
+
+path = "200-299/260/CH-260 Custom Grouping.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=9)
+test  = pd.read_excel(path, usecols="E:G", skiprows=1, nrows=9)
+
+inp = input.set_index('ID')['Value'].to_dict()
+
+k = 3
+group_size = len(inp) // k
+target = sum(inp.values()) / k
+
+valid_groups = [
+    group for group in itertools.combinations(inp.keys(), group_size)
+    if sum(inp[id_] for id_ in group) == target
+]
+
+all_partitions = []
+used = set()
+
+for groups in itertools.product(valid_groups, repeat=k):
+    flat = [id_ for group in groups for id_ in group]
+    if len(set(flat)) == len(inp):
+        sorted_groups = tuple(sorted(tuple(sorted(g)) for g in groups))
+        key = tuple(sorted_groups)
+        if key not in used:
+            used.add(key)
+            all_partitions.append(sorted_groups)
+
+for idx, partition in enumerate(all_partitions, 1):
+    print(f"Partition {idx}:")
+    for gidx, group in enumerate(partition, 1):
+        values = [inp[id_] for id_ in group]
+        print(f"  Group {gidx}: IDs {group}, Values {values}, Sum = {sum(values)}")
+    print("-" * 40)
+
+# Partition 1:
+#   Group 1: IDs (1, 4, 8), Values [4, 11, 3], Sum = 18
+#   Group 2: IDs (2, 5, 9), Values [7, 5, 6], Sum = 18
+#   Group 3: IDs (3, 6, 7), Values [1, 9, 8], Sum = 18
+# ----------------------------------------
+# Partition 2:
+#   Group 1: IDs (1, 5, 6), Values [4, 5, 9], Sum = 18
+#   Group 2: IDs (2, 7, 8), Values [7, 8, 3], Sum = 18
+#   Group 3: IDs (3, 4, 9), Values [1, 11, 6], Sum = 18
+# ----------------------------------------
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 259](OmidC259.qmd)
+-   [Omid - Challenge 261](OmidC261.qmd)
+-   [Omid - Challenge 262](OmidC262.qmd)

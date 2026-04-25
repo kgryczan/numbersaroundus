@@ -1,0 +1,132 @@
+---
+title: "Excel BI - PowerQuery Challenge 184"
+description: "Extract the last group of alphabets followed by numbers in each Text and concat them with a dash in between for each Set. Ex. U67G3QR - Last group is G3."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 184](/challenges/images/exc184pq.jpg)
+
+## Challenge Description
+
+Extract the last group of alphabets followed by numbers in each Text and concat them with a dash in between for each Set. Ex. U67G3QR - Last group is G3.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("Power Query/PQ_Challenge_184.xlsx", range = "A1:B10")
+test  = read_excel("Power Query/PQ_Challenge_184.xlsx", range = "D1:G4")
+
+result = input %>%
+  mutate(group = str_extract_all(Text,"[A-Za-z]+\\d+")) %>%
+  mutate(group = map_chr(group, ~if(length(.x) > 1) tail(.x, 1) else if(length(.x) == 0) NA_character_ else .x)) %>%
+  summarise(
+      Text = paste(group[!is.na(group)], collapse = "-"),
+      `Original Count` = n() %>% as.numeric(),
+      `New Count` = sum(!is.na(group)) %>% as.numeric(),
+      .by = Set
+      )
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+input = pd.read_excel("PQ_Challenge_184.xlsx", usecols="A:B", nrows = 9)
+test = pd.read_excel("PQ_Challenge_184.xlsx", usecols="D:G", nrows = 3) 
+test.columns = test.columns.str.replace(".1", "")
+
+input["group"] = input["Text"].str.findall("[A-Za-z]+\\d+")
+input["group"] = input["group"].apply(lambda x: x[-1] if len(x) > 1 else x[0] if len(x) == 1 else None)
+
+result = input.groupby("Set").agg(
+    Text=("group", lambda x: "-".join([group for group in x if group])),
+    Original_Count=("group", "size"),
+    New_Count=("group", lambda x: x.notnull().sum())).rename(columns={"Original_Count": "Original Count",
+                  "New_Count": "New Count"}).reset_index()
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 183](Excel183pq.qmd)

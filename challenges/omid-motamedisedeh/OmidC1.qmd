@@ -1,0 +1,135 @@
+---
+title: "Omid - Challenge 1"
+description: "🔰 Our objective is to calculate the sales figures for these products between different For example, in the Question table , the cumulative sales for Product A on the dates…"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 1](/challenges/images/OmidC1.jpg)
+
+## Challenge Description
+
+🔰 Our objective is to calculate the sales figures for these products between different For example, in the Question table , the cumulative sales for Product A on the dates…
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-001.xlsx"
+input = read_excel(path, range = "B2:E9")
+test  = read_excel(path, range = "K2:N13")
+
+result = input %>%
+  pivot_longer(-Date, names_to = "Product", values_to = "Value") %>%
+  drop_na() %>%
+  arrange(Product, Date) %>%
+  mutate(date_1 = lag(Date, 1, default = as.Date("2024-01-01")),
+         diff = Value - lag(Value, 1, default = 0),
+         .by = Product) %>%
+  separate(Product, into = c("Product", "Type"), sep = " ") %>%
+  select(From = date_1, To = Date, Product = Type, diff) %>%
+  arrange(From, Product)
+  
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-001.xlsx"
+input_data = pd.read_excel(path, usecols="B:E", skiprows=1, nrows=8)
+test = pd.read_excel(path, usecols="K:N", skiprows=1, nrows=12)
+
+result = (
+    input_data.melt(id_vars="Date", var_name="Product", value_name="Value")
+    .dropna(subset=["Value"])
+    .sort_values(["Product", "Date"])
+)
+result["From"] = result.groupby("Product")["Date"].shift(fill_value=pd.Timestamp("2024-01-01"))
+result["diff"] = result.groupby("Product")["Value"].diff().fillna(result["Value"])
+result[["Product Name", "Product"]] = result["Product"].str.rsplit(" ", n=1, expand=True)
+result = (
+    result[["From", "Date", "Product", "diff"]]
+    .rename(columns={"Date": "To"})
+    .sort_values(["From", "Product"])
+    .reset_index(drop=True)
+)
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 2](OmidC2.qmd)
+-   [Omid - Challenge 3](OmidC3.qmd)

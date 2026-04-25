@@ -1,0 +1,118 @@
+---
+title: "Excel BI - Excel Challenge 863"
+description: "🔰 Amount is Sum for that date."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 863](/challenges/images/exc863.jpg)
+
+## Challenge Description
+
+🔰 Amount is Sum for that date.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/863/863 Transpose.xlsx"
+input <- read_excel(path, range = "A2:A13")
+test <- read_excel(path, range = "C2:F5")
+
+result = input %>%
+  mutate(
+    Date = ifelse(str_detect(Data, "Group"), NA, Data) %>% as.numeric()
+  ) %>%
+  fill(Date) %>%
+  filter(Date != Data) %>%
+  mutate(
+    Date = janitor::excel_numeric_to_date(Date) %>% as.POSIXct(),
+    Group = str_extract(Data, "(?<=Group )[A-Z]"),
+    Item = str_extract(Data, "(?<=Item)[0-9]"),
+    Amount = str_extract(Data, "[0-9]+$") %>% as.numeric()
+  ) %>%
+  select(-Data) %>%
+  arrange(Date, Group) %>%
+  summarise(
+    Groups = paste0(unique(Group), collapse = ", "),
+    Items = paste0(unique(Item), collapse = ", "),
+    Total_Amount = sum(Amount),
+    .by = Date
+  )
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The solution stays close to the text pattern itself, which makes the extraction logic easy to audit.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: A small number of well-targeted text patterns does most of the heavy lifting.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel/800-899/863/863 Transpose.xlsx"
+input = pd.read_excel(path, usecols="A", skiprows=1, nrows=12)
+test = pd.read_excel(path, usecols="C:F", skiprows=1, nrows=3)
+
+input["Date"] = input["Data"].apply(
+    lambda x: pd.NA if str(x).startswith("Group") else x
+).ffill()
+
+input = input[input["Data"] != input["Date"]]
+input["Group"] = input["Data"].str.extract(r"Group ([A-Z])")
+input["Item"] = input["Data"].str.extract(r"Item\s*([0-9])")
+input["Amount"] = input["Data"].str.extract(r"([0-9]+)$").astype("int64")
+
+result = input.copy()
+result = result.drop(columns=["Data"])
+result = result.sort_values(by=["Date", "Group"])
+
+result = (
+    result.groupby("Date", as_index=False)
+    .agg({
+        "Group": lambda x: ", ".join(x.dropna().astype(str)),
+        "Item": lambda x: ", ".join(x.dropna().astype(str)),
+        "Amount": "sum"
+    })
+    .rename(columns={"Group": "Groups", "Item": "Items", "Amount": "Amount"})
+)
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 864](/challenges/excelbi/Excel864.html)
+- [Excel Challenge 865](/challenges/excelbi/Excel865.html)
+- [Excel Challenge 866](/challenges/excelbi/Excel866.html)

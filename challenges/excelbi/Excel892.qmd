@@ -1,0 +1,97 @@
+---
+title: "Excel BI - Excel Challenge 892"
+description: "🔰 Find the Quarter & Running total for each quarter."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 892](/challenges/images/exc892.jpg)
+
+## Challenge Description
+
+🔰 Find the Quarter & Running total for each quarter.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(lubridate)
+
+path <- "Excel/800-899/892/892 Quarterly Running Total.xlsx"
+input <- read_excel(path, range = "A2:D50")
+test <- read_excel(path, range = "E2:F50")
+
+result = input %>%
+  mutate(
+    Quarter = paste0("Q", ceiling(month(as.Date(Date)) / 3)),
+    amount = Credit + Interest - Debit
+  ) %>%
+  mutate(RunningTotal = cumsum(amount), .by = Quarter) %>%
+  select(Quarter, RunningTotal)
+
+all.equal(test, result)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel\\800-899\\892\\892 Quarterly Running Total.xlsx"
+input = pd.read_excel(path, usecols="A:D", nrows = 50, skiprows = 1)
+test = pd.read_excel(path, usecols="E:F", nrows = 50, skiprows = 1)
+
+result = (
+    input
+    .assign(
+        Quarter = lambda df: 'Q' + ((pd.to_datetime(df['Date']).dt.month - 1) // 3 + 1).astype(str),
+        amount = lambda df: df['Credit'] + df['Interest'] - df['Debit']
+    )
+    .assign(
+        RunningTotal = lambda df: df.groupby('Quarter')['amount'].cumsum()
+    )
+    [['Quarter', 'RunningTotal']]
+)
+
+print(result.equals(test))
+# True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 893](/challenges/excelbi/Excel893.html)
+- [Excel Challenge 894](/challenges/excelbi/Excel894.html)
+- [Excel Challenge 895](/challenges/excelbi/Excel895.html)

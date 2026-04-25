@@ -1,0 +1,94 @@
+---
+title: "Excel BI - Excel Challenge 774"
+description: "🔰 List the names which have common words in other names also along with common words."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 774](/challenges/images/exc774.jpg)
+
+## Challenge Description
+
+🔰 List the names which have common words in other names also along with common words.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/774/774 Names Having Common Words.xlsx"
+input = read_excel(path, range = "A2:A22")
+test  = read_excel(path, range = "C2:D18") %>% arrange(Words, Names)
+
+common_words = input %>%
+  mutate(id = row_number()) %>%
+  separate_rows(Names, sep = " ") %>%
+  count(Names, sort = TRUE) %>%
+  filter(n > 1) %>%
+  pull(Names)
+
+result = expand.grid(common_words, input$Names, stringsAsFactors = F) %>%
+  filter(str_detect(Var2, Var1)) %>%
+  arrange(Var1, Var2)
+
+all.equal(result, test, check.names = FALSE, check.attributes = FALSE)
+#<> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/774/774 Names Having Common Words.xlsx"
+input = pd.read_excel(path, usecols="A", skiprows=1, nrows=20, names=["Names"])
+test = pd.read_excel(path, usecols="C:D", skiprows=1, nrows=16, names=["Words", "Names"])\
+    .sort_values(["Words", "Names"]).reset_index(drop=True)
+
+common_words = pd.Series(' '.join(input['Names']).split()).value_counts()
+common_words = common_words[common_words > 1].index.tolist()
+
+result = pd.DataFrame([(word, name) for word in common_words for name in input['Names'] if word in str(name)],
+                      columns=['Words', 'Names'])
+result = result.sort_values(['Words', 'Names']).reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 775](/challenges/excelbi/Excel775.html)
+- [Excel Challenge 776](/challenges/excelbi/Excel776.html)
+- [Excel Challenge 777](/challenges/excelbi/Excel777.html)

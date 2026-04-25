@@ -1,0 +1,122 @@
+---
+title: "Omid - Challenge 194"
+description: "🔰 For each date, samples are evaluated based on quality and marked with a '+' sign if they are within range and a '-' sign if they are out of range."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 194](/challenges/images/OmidC194.jpg)
+
+## Challenge Description
+
+🔰 For each date, samples are evaluated based on quality and marked with a "+" sign if they are within range and a "-" sign if they are out of range.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-194 Pattern Length.xlsx"
+input = read_excel(path, range = "B2:C7")
+test  = read_excel(path, range = "G2:H7")
+
+result <- input %>%
+  separate_rows(Pattern, sep = " ") %>%
+  mutate(cn = consecutive_id(Pattern), .by = Date) %>%
+  mutate(n = n(), .by = c(Date, cn)) %>%
+  filter(n == max(n), .by = Date) %>%
+  unite("Length", Pattern, n, sep = "") %>%
+  select(-cn) %>%
+  distinct()
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-194 Pattern Length.xlsx"
+input = pd.read_excel(path, usecols="A:C", skiprows=1, nrows=5)
+test = pd.read_excel(path, usecols="G:H", skiprows=1, nrows=5, dtype={'Length': str}).rename(columns=lambda x: x.split('.')[0])
+
+input = input.assign(Pattern=input['Pattern'].str.split(" ")).explode('Pattern').reset_index(drop=True)
+input['cn'] = (input.groupby('Date')['Pattern'].transform(lambda x: (x != x.shift()).cumsum()))
+input['n'] = input.groupby(['Date', 'cn'])['Pattern'].transform('size')
+max_df = input.loc[input.groupby('Date')['n'].idxmax()].copy()
+max_df['Length'] = max_df['Pattern'] + max_df['n'].astype(str)
+result = max_df[["Date", "Length"]].reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 193](OmidC193.qmd)
+-   [Omid - Challenge 195](OmidC195.qmd)
+-   [Omid - Challenge 196](OmidC196.qmd)

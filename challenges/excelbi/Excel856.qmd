@@ -1,0 +1,88 @@
+---
+title: "Excel BI - Excel Challenge 856"
+description: "🔰 Authors Expected Answer william shakespeare WiLLiaM sHaKeSPeaRe agatha mary clarissa christie aGaTHa MaRy cLaRiSSa chRiSTie danielle steel DaNieLLe sTeeL harold robbins HaRoLd RoB…"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 856](/challenges/images/exc856.jpg)
+
+## Challenge Description
+
+🔰 Authors Expected Answer william shakespeare WiLLiaM sHaKeSPeaRe agatha mary clarissa christie aGaTHa MaRy cLaRiSSa chRiSTie danielle steel DaNieLLe sTeeL harold robbins HaRoLd RoBBiNs
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/856/856 Capitalize Consonants Around Vowels.xlsx"
+input <- read_excel(path, range = "A1:A10")
+test <- read_excel(path, range = "B1:B10")
+
+result = input %>%
+  mutate(
+    out = str_replace_all(
+      Authors,
+      "(?<=[aeiou])([^aeiou])|([^aeiou])(?=[aeiou])",
+      ~ toupper(.x)
+    )
+  )
+
+all.equal(result$out, test$`Expected Answer`)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "Excel/800-899/856/856 Capitalize Consonants Around Vowels.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=10)
+test = pd.read_excel(path, usecols="B", nrows=10)
+
+pattern = r'(?<=[aeiou])([^aeiou])|([^aeiou])(?=[aeiou])'
+input['out'] = input.iloc[:, 0].str.replace(pattern, lambda m: m.group(0).upper(), regex=True, flags=re.IGNORECASE)
+
+print(input['out'].equals(test.iloc[:, 0])) # True
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 857](/challenges/excelbi/Excel857.html)
+- [Excel Challenge 858](/challenges/excelbi/Excel858.html)
+- [Excel Challenge 859](/challenges/excelbi/Excel859.html)

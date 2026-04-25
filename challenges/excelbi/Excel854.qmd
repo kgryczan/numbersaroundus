@@ -1,0 +1,156 @@
+---
+title: "Excel BI - Excel Challenge 854"
+description: "🔰 Sum of Digits"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 854](/challenges/images/exc854.jpg)
+
+## Challenge Description
+
+🔰 Sum of Digits
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/854/854 Sum of Digits Min and Max.xlsx"
+input <- read_excel(path, range = "A2:B10")
+test <- read_excel(path, range = "C2:D10")
+
+max = function(n, s) {
+  if (s < 9) {
+    m = paste0(s, paste0(rep(0, n - 1), collapse = ""))
+  } else {
+    digits = c()
+    while (s > 9) {
+      digits = c(digits, 9)
+      s = s - 9
+      n = n - 1
+    }
+    m = paste0(
+      paste0(digits, collapse = ""),
+      s,
+      paste0(rep(0, n - 1), collapse = "")
+    )
+  }
+  return(m)
+}
+
+min = function(n, s) {
+  if (s < 9) {
+    m = paste(1, paste0(rep(0, n - 2), collapse = ""), s - 1, sep = "")
+  } else {
+    digits = c()
+    s = s - 1
+    while (s > 9) {
+      digits = c(digits, 9)
+      s = s - 9
+      n = n - 1
+    }
+    digits = c(digits, s)
+    n = n - 1
+    m = paste0(
+      1,
+      paste0(rep(0, n - 1), collapse = ""),
+      paste0(rev(digits), collapse = "")
+    )
+  }
+}
+
+results <- input %>%
+  mutate(
+    `Min Number` = map2_chr(`Number of Digits`, `Sum of Digits`, min) %>%
+      as.numeric(),
+    `Max Number` = map2_chr(`Number of Digits`, `Sum of Digits`, max) %>%
+      as.numeric()
+  ) %>%
+  select(`Min Number`, `Max Number`)
+
+all.equal(results, test)
+# one difference
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel/800-899/854/854 Sum of Digits Min and Max.xlsx"
+input = pd.read_excel(path, usecols="A:B", skiprows=1, nrows=9)
+test = pd.read_excel(path, usecols="C:D", skiprows=1, nrows=9)
+
+def max_num(n, s):
+    if s < 9:
+        m = str(s) + "0" * (n - 1)
+    else:
+        digits = []
+        while s > 9:
+            digits.append(9)
+            s -= 9
+            n -= 1
+        m = "".join(str(d) for d in digits) + str(s) + "0" * (n - 1)
+    return m
+
+def min_num(n, s):
+    if s < 9:
+        m = "1" + "0" * (n - 2) + str(s - 1)
+    else:
+        digits = []
+        s -= 1
+        while s > 9:
+            digits.append(9)
+            s -= 9
+            n -= 1
+        digits.append(s)
+        n -= 1
+        m = "1" + "0" * (n - 1) + "".join(str(d) for d in digits[::-1])
+    return m
+
+results = input.copy()
+results["Min Number"] = results.apply(lambda row: int(min_num(row["Number of Digits"], row["Sum of Digits"])), axis=1)
+results["Max Number"] = results.apply(lambda row: int(max_num(row["Number of Digits"], row["Sum of Digits"])), axis=1)
+results = results[["Min Number", "Max Number"]]
+
+print(results.equals(test)) # One difference found
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Medium / Hard**
+
+The challenge relies on a non-obvious iterative rule rather than a single straight aggregation.
+
+### Related Challenges
+
+- [Excel Challenge 855](/challenges/excelbi/Excel855.html)
+- [Excel Challenge 856](/challenges/excelbi/Excel856.html)
+- [Excel Challenge 857](/challenges/excelbi/Excel857.html)

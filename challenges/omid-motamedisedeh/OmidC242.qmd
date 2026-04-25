@@ -1,0 +1,138 @@
+---
+title: "Omid - Challenge 242"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 242](/challenges/images/OmidC242.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/242/CH-242 Table Transformation.xlsx"
+input = read_excel(path, range = "B2:B14")
+test = read_excel(path, range = "D2:F7") %>% arrange(Product)
+
+result = tibble(
+  Product = input$`Column 1`[seq(1, nrow(input), 2)],
+  Price = input$`Column 1`[seq(2, nrow(input), 2)]
+) %>%
+  separate(Product, into = c("Product", "unit"), sep = " (?=[^ ]+$)") %>%
+  separate_rows(Product, sep = ", ") %>%
+  mutate(
+    unit = trimws(unit),
+    Product = trimws(Product),
+    Price = as.integer(Price)
+  ) %>%
+  arrange(Product) %>%
+  pivot_wider(names_from = unit, values_from = Price) %>%
+  select(Code, Product, Price)
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "200-299/242/CH-242 Table Transformation.xlsx"
+input_df = pd.read_excel(path, usecols="B", skiprows=1, nrows=13)
+test = pd.read_excel(path, usecols="D:F", skiprows=1, nrows=5).sort_values("Product").reset_index(drop=True)
+
+df = pd.DataFrame({
+    'Product': input_df.iloc[::2, 0].reset_index(drop=True),
+    'Price': input_df.iloc[1::2, 0].reset_index(drop=True)
+})
+df[['Product', 'unit']] = df['Product'].str.rsplit(' ', n=1, expand=True)
+df = df.assign(Product=df['Product'].str.split(', ')).explode('Product')
+df[['Product', 'unit']] = df[['Product', 'unit']].apply(lambda x: x.str.strip())
+df['Price'] = df['Price'].astype(int)
+result = df.sort_values('Product').pivot(index='Product', columns='unit', values='Price').reset_index()
+result.columns.name = None
+result = result[['Code', 'Product', 'Price']]
+
+print(result.equals(test))
+# True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 241](OmidC241.qmd)
+-   [Omid - Challenge 243](OmidC243.qmd)
+-   [Omid - Challenge 244](OmidC244.qmd)

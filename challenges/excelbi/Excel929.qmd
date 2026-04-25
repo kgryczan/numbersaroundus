@@ -1,0 +1,113 @@
+---
+title: "Excel BI - Excel Challenge 929"
+description: "🔰 Parse packed shipment strings, keep delivered loads only, and summarize revenue plus last delivery date by truck."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-23"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 929](/challenges/images/exc929.jpg)
+
+## Challenge Description
+
+🔰 For each Truck ID, find the total revenue for all `DELIVERED` shipments and the last delivery date. The source data is stored as one underscore-delimited field containing date, truck ID, status, and revenue.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "900-999/929/929 Delivered Shipments.xlsx"
+input <- read_excel(path, range = "A2:A22")
+test <- read_excel(path, range = "C2:E7")
+
+result <- input %>%
+  separate_wider_delim(
+    Data,
+    delim = "_",
+    names = c("Date", "TruckID", "Status", "Revenue")
+  ) %>%
+  mutate(Revenue = parse_number(Revenue)) %>%
+  filter(Status == "DELIVERED") %>%
+  summarise(
+    `Total Revenue` = paste0(
+      "$",
+      formatC(sum(Revenue), format = "f", digits = 2, big.mark = ",")
+    ),
+    `Last_Delivery_Date` = max(as.Date(Date)) %>% as.POSIXct(),
+    .by = TruckID
+  ) %>%
+  arrange(parse_number(TruckID)) %>%
+  select(TruckID, `Total Revenue`, `Last_Delivery_Date`)
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Split the packed field into columns, filter for delivered rows, then aggregate revenue and latest date by truck.
+- **Strengths**: Once the string is normalized, the rest of the solution becomes a clean filter-and-summarize pipeline.
+- **Areas for Improvement**: String-heavy source data can hide formatting edge cases, especially in currency and date fields.
+- **Gem**: The real transformation is normalization; everything after that is standard grouped analytics.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "900-999/929/929 Delivered Shipments.xlsx"
+input = pd.read_excel(path, usecols="A", header=1, nrows=20)
+test = pd.read_excel(path, usecols="C:E", header=1, nrows=5)
+
+result = (
+    input["Data"].str.split("_", expand=True)
+    .set_axis(["Date", "Truck ID", "Status", "Revenue"], axis=1)
+    .assign(
+        Revenue=lambda df: pd.to_numeric(df["Revenue"].str.replace(r"[^\\d.]", "", regex=True)),
+        Date=lambda df: pd.to_datetime(df["Date"])
+    )
+    .query("Status == 'DELIVERED'")
+    .groupby("Truck ID", as_index=False)
+    .agg(**{
+        "Total Revenue": ("Revenue", lambda x: f"${x.sum():,.2f}"),
+        "Last Delivery Date": ("Date", "max")
+    })
+    .sort_values("Truck ID", key=lambda s: s.str.extract(r'(\\d+)', expand=False).astype(int))
+    [["Truck ID", "Total Revenue", "Last Delivery Date"]]
+    .reset_index(drop=True)
+)
+
+print(result.equals(test))
+# True
+```
+
+### Python
+
+The Python solution follows the same structure: split the text field, clean revenue into numeric form, parse dates, filter `DELIVERED`, and aggregate. A nice touch is the numeric sort on truck IDs, which avoids the usual `Truck10` before `Truck2` issue that plain alphabetical sorting would create.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The aggregation is straightforward once the packed string is unpacked, but the parsing step is the whole challenge.
+
+### Related Challenges
+
+- [Excel Challenge 923](/challenges/excelbi/Excel923.html)
+- [Excel Challenge 922](/challenges/excelbi/Excel922.html)
+- [Excel Challenge 905](/challenges/excelbi/Excel905.html)

@@ -1,0 +1,125 @@
+---
+title: "Omid - Challenge 37"
+description: "🔰 Groups In the question table, the IDs of 20 people who call each other are provided."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 37](/challenges/images/OmidC37.jpg)
+
+## Challenge Description
+
+🔰 Groups In the question table, the IDs of 20 people who call each other are provided.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(igraph)
+
+input = read_excel("files/CH-037 Connected people.xlsx", range = "B2:C25")
+test  = read_excel("files/CH-037 Connected people.xlsx", range = "E2:F6")
+
+result = input %>%
+  graph_from_data_frame(directed = FALSE) %>%
+  components() %>%
+  membership()  %>%
+  as.data.frame() %>%
+  rownames_to_column("name") %>%
+  summarise(People = str_c(sort(as.numeric(name)), collapse = ","), .by = "x")
+
+print(result)
+print(test)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import networkx as nx
+
+input = pd.read_excel("CH-037 Connected people.xlsx", sheet_name="Sheet1", usecols="B:C", skiprows=1, nrows=25)
+test  = pd.read_excel("CH-037 Connected people.xlsx", sheet_name="Sheet1", usecols="E:F", skiprows=1, nrows=4)
+
+G = nx.Graph()
+for _, row in input.iterrows():
+    G.add_edge(row['Caller'], row['Respondant'])
+subgraphs = list(nx.connected_components(G))
+nodes_per_subgraph = [list(subgraph) for subgraph in subgraphs]
+result = pd.DataFrame()
+result['People'] = nodes_per_subgraph
+result['People'] = result['People'].apply(lambda x: sorted(x))
+
+print(result)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 36](OmidC36.qmd)
+-   [Omid - Challenge 38](OmidC38.qmd)
+-   [Omid - Challenge 39](OmidC39.qmd)

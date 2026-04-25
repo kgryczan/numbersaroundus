@@ -1,0 +1,100 @@
+---
+title: "Excel BI - Excel Challenge 847"
+description: "🔰 Sort the overall data - Extract the numbers from data, sum them and then sort the data on the basis of this sum."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 847](/challenges/images/exc847.jpg)
+
+## Challenge Description
+
+🔰 Sort the overall data - Extract the numbers from data, sum them and then sort the data on the basis of this sum.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/847/847 Sorting.xlsx"
+input = read_excel(path, range = "A1:A10")
+test  = read_excel(path, range = "B1:B10")
+
+sort_within_cell = function(s) {
+  str_extract_all(s, "[A-Z]\\d+")[[1]] %>%
+    enframe() %>%
+    separate(value, into = c("char", "num"), sep = 1, convert = TRUE) %>%
+    arrange(num) %>%
+    mutate(paired = str_c(char, num)) %>%
+    pull(paired) %>%
+    str_c(collapse = "")
+}
+
+input_processed = input %>%
+  mutate(
+    sorted_within = map_chr(Data, sort_within_cell),
+    sum_weight = map_dbl(sorted_within, ~ str_extract_all(., "\\d+")[[1]] %>% 
+                         as.numeric() %>% sum())) %>%
+    arrange(sum_weight)
+
+all.equal(input_processed$sorted_within,test$`Answer Expected`)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure.
+- **Strengths**: The solution stays close to the text pattern itself, which makes the extraction logic easy to audit.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: A small number of well-targeted text patterns does most of the heavy lifting.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "Excel/800-899/847/847 Sorting.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=10)
+test = pd.read_excel(path, usecols="B", nrows=10)
+
+result  = (input.assign(
+    sorted_codes=input['Data'].apply(lambda s: ''.join(sorted(re.findall(r'[A-Z]\d+', s), key=lambda x: int(x[1:])))),
+    sum_weight=input['Data'].apply(lambda s: sum(map(int, re.findall(r'\d+', s))))
+).sort_values(['sum_weight','Data']))
+
+print(result['sorted_codes'].tolist()) 
+print(test['Answer Expected'].tolist())
+# one difference in order where full weight is same
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 848](/challenges/excelbi/Excel848.html)
+- [Excel Challenge 849](/challenges/excelbi/Excel849.html)
+- [Excel Challenge 850](/challenges/excelbi/Excel850.html)

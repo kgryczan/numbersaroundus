@@ -1,0 +1,154 @@
+---
+title: "Excel BI - PowerQuery Challenge 205"
+description: "Sum"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 205](/challenges/images/exc205pq.jpg)
+
+## Challenge Description
+
+Sum
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_205.xlsx"
+input1 = read_excel(path, range = "A2:B13")
+input2 = read_excel(path, range = "D2:E13")
+test = read_excel(path, range = "H2:L8")
+
+input = left_join(input1, input2, by = "Item") 
+
+result = input %>%
+  arrange(desc(YesNo), Item) %>%
+  mutate(nr = row_number(), .by = YesNo) %>%
+  mutate(nr_rem = nr %% 2,
+         nr_int = ifelse(nr_rem == 1, nr %/% 2 + 1,  nr %/% 2)) %>%
+  select(-nr) %>%
+  pivot_wider(names_from = nr_rem, values_from = c(Item, Value), 
+              values_fill = list(Value = 0)) %>%
+  mutate(Sum = Value_0 + Value_1) %>%
+  select(YesNo, Item1 = Item_1, Item2 = Item_0, Sum) %>%
+  mutate(`%age` = Sum/sum(Sum), .by = YesNo) 
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "PQ_Challenge_205.xlsx"
+input1 = pd.read_excel(path, usecols="A:B", skiprows=1)
+input2 = pd.read_excel(path, usecols="D:E", skiprows=1)
+input2.columns = input2.columns.str.replace(".1", "")
+test  = pd.read_excel(path, usecols="H:L", skiprows=1, nrows = 6)
+test.columns = test.columns.str.replace(".1", "")
+test = test.fillna("")
+
+input = pd.merge(input1, input2, on="Item", how="inner")\
+    .sort_values(by=["YesNo", "Item"], ascending=[False, True])\
+    .reset_index(drop=True)
+
+input["nr"] = input.groupby("YesNo").cumcount() + 1
+input["nr_rem"] = input["nr"] % 2
+input["nr_int"] = np.where(input["nr_rem"] == 1, input["nr"] // 2 + 1, input["nr"] // 2)
+
+input = input.pivot(index=["YesNo", "nr_int"], columns="nr_rem", values=["Item", "Value"]).reset_index()
+input.columns = [f"{a}{b}" for a, b in input.columns]
+input["Value0"] = input["Value0"].fillna(0)
+input["Sum"] = input["Value0"] + input["Value1"]
+input["%age"] = input.groupby("YesNo")["Sum"].transform(lambda x: x / x.sum())
+
+input.drop(columns=["Value0", "Value1", "nr_int"], inplace=True)
+input = input[["YesNo", "Item1", "Item0", "Sum", "%age"]]
+input = input.rename(columns={"Item0": "Item2"})\
+    .sort_values(by="YesNo", ascending=False)\
+    .reset_index(drop=True)\
+    .fillna("")
+
+print(input.equals(test))   # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 204](Excel204pq.qmd)

@@ -1,0 +1,131 @@
+---
+title: "Omid - Challenge 118"
+description: "🔰 DSO= weighted Average Using the sales transactions from the provided table and the account balance as of 31/08/2024, calculate the Daily Sales Outstanding (DSO) for each…"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 118](/challenges/images/OmidC118.jpg)
+
+## Challenge Description
+
+🔰 DSO= weighted Average Using the sales transactions from the provided table and the account balance as of 31/08/2024, calculate the Daily Sales Outstanding (DSO) for each…
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-118 DSO.xlsx"
+input1 = read_excel(path, range = "B2:D25")
+input2 = read_excel(path, range = "F2:G5")
+test  = read_excel(path, range = "H2:H5")
+
+r1 = input1 %>%
+  arrange(Customer, desc(Date))
+
+r2 = input2 %>%
+  left_join(r1, by = "Customer") %>%
+  mutate(days = as.Date("2024/08/31") - as.Date(Date)) %>%
+  mutate(cumsum = cumsum(Sales), .by = Customer) %>%
+  mutate(balance_cover = ifelse(cumsum <= Balance, Sales, Balance - (cumsum - Sales))) %>%
+  filter(balance_cover > 0) %>%
+  mutate(weighted_days = days * balance_cover) %>%
+  summarise(weighted_days = as.numeric(sum(weighted_days) / sum(balance_cover)), .by = Customer)
+
+all.equal(r2$weighted_days, test$`DSO (day)`, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-118 DSO.xlsx"
+input1 = pd.read_excel(path, usecols="B:D", skiprows=1, nrows=23)
+input2 = pd.read_excel(path, usecols="F:G", skiprows=1, nrows=3)
+input2.columns = input2.columns.str.replace('.1', '')
+test = pd.read_excel(path, usecols="H:H", skiprows=1, nrows=3)
+
+input1 = input1.sort_values(by=['Customer', 'Date'], ascending=[True, False])
+
+r2 = input2.merge(input1, on='Customer', how='left')
+r2['days'] = pd.to_datetime('2024-08-31') - pd.to_datetime(r2['Date'])
+r2['cumsum'] = r2.groupby('Customer')['Sales'].cumsum()
+r2['balance_cover'] = r2.apply(lambda row: row['Sales'] if row['cumsum'] <= row['Balance'] else row['Balance'] - (row['cumsum'] - row['Sales']), axis=1)
+r2 = r2[r2['balance_cover'] > 0]
+r2['weighted_days'] = r2['days'].dt.days * r2['balance_cover']
+result = r2.groupby('Customer').apply(lambda x: x['weighted_days'].sum() / x['balance_cover'].sum()).reset_index(name='weighted_days')
+
+print(result["weighted_days"].equals(test["DSO (day)"])) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 117](OmidC117.qmd)
+-   [Omid - Challenge 119](OmidC119.qmd)
+-   [Omid - Challenge 120](OmidC120.qmd)

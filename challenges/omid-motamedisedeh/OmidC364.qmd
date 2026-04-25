@@ -1,0 +1,124 @@
+---
+title: "Omid - Challenge 364"
+description: "🔰 Group IDs Grouping Create all possible product groups such that the sum of prices in each group is equl to 10 or 12."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 364](/challenges/images/OmidC364.jpg)
+
+## Challenge Description
+
+🔰 Group IDs Grouping Create all possible product groups such that the sum of prices in each group is equl to 10 or 12.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/364/CH-364 Custom Grouping.xlsx"
+input <- read_excel(path, range = "B3:C8")
+test <- read_excel(path, range = "F3:G7")
+
+input_combinations <- map(
+  2:nrow(input),
+  ~ combn(input$Price, .x, simplify = FALSE)
+) %>%
+  unlist(recursive = FALSE) %>%
+  keep(~ sum(.x) %in% c(10, 13)) %>%
+  map(~ paste(LETTERS[.x], collapse = ",")) %>%
+  unlist() %>%
+  sort()
+
+# one combination is wrong in test table. should be ACDE, not ABDE (ABDE sum is 12)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from itertools import combinations
+
+path = "300-399/364/CH-364 Custom Grouping.xlsx"
+df = pd.read_excel(path, usecols="B:C", skiprows=2, nrows=6)
+test = pd.read_excel(path, usecols="F:G", skiprows=2, nrows=5)
+
+prices = df['Price'].tolist()
+
+input_combinations = []
+for r in range(2, len(prices) + 1):
+    for comb in combinations(range(len(prices)), r):
+        s = sum(prices[i] for i in comb if pd.notna(prices[i]))
+        if s in {10, 13}:
+            letters = ",".join(chr(65 + i) for i in comb)
+            input_combinations.append(letters)
+
+input_combinations.sort()
+
+# Note: One combination in the test table is incorrect. It should be ACDE, not ABDE (ABDE sum is 12).
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 363](OmidC363.qmd)
+-   [Omid - Challenge 365](OmidC365.qmd)
+-   [Omid - Challenge 366](OmidC366.qmd)

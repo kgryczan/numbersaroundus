@@ -1,0 +1,146 @@
+---
+title: "Crispo - Excel Challenge 08 2026"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-02-22"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 08 2026](/challenges/images/Crispo082026.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ ⭐Count Complete and OK Invoices
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path <- "2026-02-22/Challenge 104.xlsx"
+input <- read_excel(path, sheet = "Sheet3", range = "B3:O24")
+test <- read_excel(path, sheet = "Sheet3", range = "Q8:X12")
+
+
+result = input %>%
+  filter(rowSums(!is.na(.)) > 1) %>%
+  select(where(~ any(!is.na(.)))) %>%
+  janitor::row_to_names(row_number = 1) %>%
+  janitor::clean_names() %>%
+  fill(!starts_with("na"), .direction = "down") %>%
+  fill(na_3, .direction = "down") %>%
+  rename(
+    Course = na,
+    Hours = na_2,
+    Session = na_3
+  ) %>%
+  select(where(~ any(!is.na(.)))) %>%
+  fill(everything(), .direction = "up") %>%
+  distinct() %>%
+  mutate(
+    date = janitor::excel_numeric_to_date(as.numeric(date)) %>% as.POSIXct(),
+    cost = as.numeric(cost)
+  )
+
+names(result) = names(test)
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "2026-02-22/Challenge 104.xlsx"
+input = pd.read_excel(path, sheet_name="Sheet3", usecols="B:O", skiprows=2, nrows=22)
+test = pd.read_excel(path, sheet_name="Sheet3", usecols="Q:X", skiprows=7, nrows=4)
+
+result = input[input.apply(lambda x: x.count(), axis=1) > 1]
+result.columns = result.iloc[0]
+result = result[1:].reset_index(drop=True)
+result = result.dropna(axis=1, how='all')
+result = result.groupby(result.index // 2).agg(lambda x: ' '.join(x.dropna().astype(str)))
+result.columns = test.columns
+for col in ['Hours', 'Sessions', 'Cost']:
+    if col in result.columns:
+        nums = pd.to_numeric(result[col].astype(str).str.extract(r'(-?\d+\.?\d*)')[0], errors='coerce')
+        nums = nums.round(0)           
+        result[col] = nums.astype('int64')
+if 'Date' in result.columns:
+            result['Date'] = pd.to_datetime(result['Date'], errors='coerce')
+print(result.equals(test))
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 07 2026](Crispo 072026.qmd)
+-   [Crispo - Excel Challenge 09 2026](Crispo 092026.qmd)

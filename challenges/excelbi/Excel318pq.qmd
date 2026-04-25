@@ -1,0 +1,127 @@
+---
+title: "Excel BI - PowerQuery Challenge 318"
+description: "Row_Col C1 C2 C3 C4 R1"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 318](/challenges/images/exc318pq.jpg)
+
+## Challenge Description
+
+Row_Col C1 C2 C3 C4 R1
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/300-399/318/PQ_Challenge_318.xlsx"
+input = read_excel(path, sheet = 2, range = "A1:F7")
+test  = read_excel(path, sheet = 2, range = "A11:E17")
+
+result = input %>%
+  pivot_longer(cols = -Alphabet, names_to = "Attribute", values_to = "Value") %>%
+  select(-Attribute) %>%
+  mutate(r = str_extract(Value, 'R[0-9]+'),
+         c = str_extract(Value, 'C[0-9]+')) %>%
+  na.omit() %>%
+  arrange(r, c) %>%
+  pivot_wider(names_from = c, values_from = Alphabet, id_cols = r) 
+
+all.equal(result, test, check.attributes = FALSE)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "300-399/318/PQ_Challenge_318.xlsx"
+input = pd.read_excel(path, sheet_name=1, usecols="A:F", nrows=7)
+test = pd.read_excel(path, sheet_name=1, usecols="A:E", skiprows=10, nrows=7)
+
+df = input.melt(id_vars=["Alphabet"], var_name="atr", value_name="value").dropna(subset=["value"])
+df[['Row', 'Col']] = df['value'].str.extract(r'(R\d+)(C\d+)')
+input = df.pivot(index='Row', columns='Col', values='Alphabet').reset_index().rename_axis(None, axis=1).rename(columns={'Row': 'Row / Col'})
+
+print(input.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 317](Excel317pq.qmd)
+-   [Excel BI - Excel Challenge 698](Excel698.qmd)

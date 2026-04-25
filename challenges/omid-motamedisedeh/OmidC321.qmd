@@ -1,0 +1,119 @@
+---
+title: "Omid - Challenge 321"
+description: "🔰 Extract the correlations between the factors from Table 1 (X1 to X4) and Table 2 (Y1 to Y3), as shown in the result table."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 321](/challenges/images/OmidC321.jpg)
+
+## Challenge Description
+
+🔰 Extract the correlations between the factors from Table 1 (X1 to X4) and Table 2 (Y1 to Y3), as shown in the result table.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(janitor)
+
+path = "files/300-399/321/CH-321 Correlation.xlsx"
+input1 = read_excel(path, range = "B2:F8")
+input2 = read_excel(path, range = "B13:E19") %>%
+  arrange(Year)
+test  = read_excel(path, range = "H2:L5") %>%
+  select(y = 1, everything()) %>%
+  column_to_rownames(var = 'y')
+
+correlation_matrix = cor(input2 %>% select(-Year), 
+                         input1 %>% select(-Year), 
+                         use = "pairwise.complete.obs")
+
+all.equal(correlation_matrix, as.matrix(test))
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "300-399/321/CH-321 Correlation.xlsx"
+input1 = pd.read_excel(path, usecols="B:F", skiprows=1, nrows=6)
+input2 = pd.read_excel(path, usecols="B:E", skiprows=12, nrows=7).sort_values('Year')
+test = pd.read_excel(path, usecols="H:L", skiprows=1, nrows=3).rename(columns=lambda c: c.replace('.1', ''))
+test = test.rename(columns={test.columns[0]: "Y"}).set_index("Y")
+test.index.name = None
+
+mer = pd.merge(input1, input2, on='Year', how='inner')
+corr = mer.corr().loc[['Y1', 'Y2', 'Y3'],['X1', 'X2', 'X3', 'X4']]
+
+# Replace .equals with np.allclose for near equality
+print(np.allclose(corr.values, test.values, atol=1e-8))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 320](OmidC320.qmd)
+-   [Omid - Challenge 322](OmidC322.qmd)
+-   [Omid - Challenge 323](OmidC323.qmd)

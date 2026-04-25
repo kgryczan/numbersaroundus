@@ -1,0 +1,127 @@
+---
+title: "Crispo - Excel Challenge 37 2024"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2024-09-15"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 37 2024](/challenges/images/Crispo372024.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ ⭐Group the staff to their respective salary ranges
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/Excel Challenge September 15th.xlsx"
+input = read_excel(path, range = "B2:C9")
+test  = read_excel(path, range = "E2:F6") %>% na.omit()
+
+result = input %>%
+  mutate(`Salary Range` = cut(x = Salary, 
+                      breaks = c(-Inf, 1000, 5000, 10000, 15000, Inf), 
+                      labels = c("<1000", "1000 - 4999", "5000 - 9999", "10000 - 14999", "> 15000"))) %>%
+  summarise(Staffs = paste0(Staff, collapse = ", "), 
+            .by = `Salary Range`)
+
+cbind(result, test)
+# identical, order of names in concatenation is different.
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "files/Excel Challenge September 15th.xlsx"
+
+input = pd.read_excel(path, usecols = "B:C", skiprows = 1, nrows = 7)
+test = pd.read_excel(path, usecols = "E:F", skiprows = 1, nrows = 4).fillna("")
+
+result = input.assign(Salary_Range = lambda x: pd.cut(x["Salary"], 
+                                                      bins = [1000, 5000, 10000, 15000, 100000], 
+                                                      labels = ["1000 - 4999", "5000 - 9999", "10000 - 14999", "> 15000"]))
+result = result.groupby("Salary_Range")["Staff"].apply(lambda x: ", ".join(x)).reset_index(name="Staffs")
+
+print(result)
+print(test)
+# sorting names in one cell is not the same.
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 36 2024](Crispo 362024.qmd)
+-   [Crispo - Excel Challenge 38 2024](Crispo 382024.qmd)

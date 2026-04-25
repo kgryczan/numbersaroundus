@@ -1,0 +1,166 @@
+---
+title: "Excel BI - PowerQuery Challenge 151"
+description: "Employee Start Date Start Time End Date End Time Total Hours"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 151](/challenges/images/exc151pq.jpg)
+
+## Challenge Description
+
+Employee Start Date Start Time End Date End Time Total Hours
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(hms)
+
+test  = read_excel("Power Query/PQ_Challenge_151.xlsx", range = "G1:H6") %>%
+  janitor::clean_names()
+
+
+read_excel_range <- function(file, range) {
+  read_excel(file, range = range) %>%
+    mutate(across(c(starts_with("Start Time"), starts_with("End Time")), as_hms),
+           across(c(starts_with("Start Date"), starts_with("End Date")), as_date)) %>%
+    janitor::clean_names()
+}
+
+input1 <- read_excel_range("Power Query/PQ_Challenge_151.xlsx", "A1:E6")
+input2 <- read_excel_range("Power Query/PQ_Challenge_151.xlsx", "A9:D14")
+
+result <- input1 %>%
+  mutate(
+    start = as_datetime(start_date) + start_time,
+    end = as_datetime(end_date) + end_time,
+    datetime = map2(start, end, seq, by = "hour")
+  ) %>%
+  unnest(datetime) %>%
+  mutate(
+    weekday = wday(datetime, week_start = 1),
+    time = as_hms(datetime)
+  ) %>%
+  left_join(input2, by = "weekday") %>%
+  filter(datetime >= start & datetime <= end, 
+         time >= start_time.y & time < end_time.y) %>%
+  group_by(employee) %>%
+  summarise(total_hours = n() %>% as.numeric())
+
+identical(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+test = pd.read_excel("PQ_Challenge_151.xlsx", usecols="G:H", nrows=6)
+test.columns = [c.strip().lower() for c in test.columns]
+
+def read_range(path, usecols, skiprows, nrows):
+    df = pd.read_excel(path, usecols=usecols, skiprows=skiprows, nrows=nrows)
+    df.columns = [c.strip().lower().replace(" ", "_") for c in df.columns]
+    return df
+
+input1 = read_range("PQ_Challenge_151.xlsx", "A:E", 0, 6)
+input2 = read_range("PQ_Challenge_151.xlsx", "A:D", 8, 6)
+
+input1["start"] = pd.to_datetime(input1["start_date"]) + pd.to_timedelta(input1["start_time"].astype(str))
+input1["end"] = pd.to_datetime(input1["end_date"]) + pd.to_timedelta(input1["end_time"].astype(str))
+
+rows = []
+for _, row in input1.iterrows():
+    rng = pd.date_range(row["start"], row["end"], freq="H")
+    for dt in rng:
+        rows.append({"employee": row["employee"], "start": row["start"], "end": row["end"], "datetime": dt})
+result = pd.DataFrame(rows)
+result["weekday"] = result["datetime"].dt.weekday + 1
+result["time"] = result["datetime"].dt.time
+input2["start_time"] = pd.to_timedelta(input2["start_time"].astype(str))
+input2["end_time"] = pd.to_timedelta(input2["end_time"].astype(str))
+result["time_td"] = pd.to_timedelta(result["time"].astype(str))
+result = result.merge(input2, on="weekday", how="left")
+result = result[(result["datetime"] >= result["start"]) & (result["datetime"] <= result["end"]) & (result["time_td"] >= result["start_time"]) & (result["time_td"] < result["end_time"])]
+result = result.groupby("employee", as_index=False).size().rename(columns={"size": "total_hours"})
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 150](Excel150pq.qmd)

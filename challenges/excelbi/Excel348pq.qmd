@@ -1,0 +1,161 @@
+---
+title: "Excel BI - PowerQuery Challenge 348"
+description: "UserID,Timestamp,Page UserID SessionID StartTime EndTime PageCount"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 348](/challenges/images/exc348pq.jpg)
+
+## Challenge Description
+
+UserID,Timestamp,Page UserID SessionID StartTime EndTime PageCount
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(lubridate)
+
+path <- "PowerQuery/300-399/348/PQ_Challenge_348.xlsx"
+input <- read_excel(path, range = "A1:A96", col_names = FALSE)
+test <- read_excel(path, range = "C1:H46")
+
+result = input %>%
+  separate_wider_delim(`...1`, delim = ",", names_sep = "_") %>%
+  janitor::row_to_names(1) %>%
+  mutate(Timestamp = ymd_hms(Timestamp)) %>%
+  group_by(UserID) %>%
+  mutate(
+    SessionID = cumsum(
+      Timestamp - lag(Timestamp, default = first(Timestamp)) > 30 * 60
+    ) +
+      1
+  ) %>%
+  ungroup() %>%
+  group_by(UserID, SessionID) %>%
+  summarise(
+    StartTime = min(Timestamp),
+    EndTime = max(Timestamp),
+    PageCount = n(),
+    Duration = as.numeric(difftime(
+      max(Timestamp),
+      min(Timestamp),
+      units = "mins"
+    )),
+    .groups = "drop"
+  )
+
+all.equal(result, test)
+#TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+excel_path = "Power Query/300-399/348/PQ_Challenge_348.xlsx"
+input = pd.read_excel(excel_path, header=None, usecols="A", nrows=96)
+test = pd.read_excel(excel_path, usecols="C:H", nrows=45)
+
+df = input.iloc[:, 0].str.split(",", expand=True)
+df.columns = df.iloc[0]
+df = df.iloc[1:].reset_index(drop=True)
+df["Timestamp"] = pd.to_datetime(
+    df["Timestamp"].str.strip().str.replace("T", " ").str.replace("Z", "").str[:19],
+    format="%Y-%m-%d %H:%M:%S",
+)
+df = df.sort_values(["UserID", "Timestamp"]).reset_index(drop=True)
+df["delta_secs"] = df.groupby("UserID")["Timestamp"].diff().dt.total_seconds().fillna(0)
+df["SessionID"] = (df["delta_secs"] > 1800).groupby(df["UserID"]).cumsum() + 1
+
+result = (
+    df.groupby(["UserID", "SessionID"], as_index=False)
+    .agg(
+        StartTime=("Timestamp", "min"),
+        EndTime=("Timestamp", "max"),
+        PageCount=("Timestamp", "count"),
+        Duration=("Timestamp", lambda x: (x.max() - x.min()).total_seconds() / 60),
+    )
+    .sort_values(["UserID", "SessionID"])
+    .reset_index(drop=True)
+)
+result["Duration"] = result["Duration"].astype("int64")
+test["Duration"] = test["Duration"].astype("int64")
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 347](Excel347pq.qmd)
+-   [Excel BI - Excel Challenge 728](Excel728.qmd)

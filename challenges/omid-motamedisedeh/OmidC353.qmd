@@ -1,0 +1,146 @@
+---
+title: "Omid - Challenge 353"
+description: "🔰 Result 🧩 Adding Explanations If you want to include explanations or extra notes: 🌐 Sharing External Content 🗣 Feedback I always appreciate your feedback — feel free to s…"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 353](/challenges/images/OmidC353.jpg)
+
+## Challenge Description
+
+🔰 Result 🧩 Adding Explanations If you want to include explanations or extra notes: 🌐 Sharing External Content 🗣 Feedback I always appreciate your feedback — feel free to s…
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(readxl)
+
+path <- "300-399/353/CH-353 Appending.xlsx"
+input1 <- read_excel(path, range = "B3:E6")
+input2 <- read_excel(path, range = "B9:E12")
+test <- read_excel(path, range = "G3:J9")
+
+semantic_type <- function(x) {
+  if (inherits(x, "POSIXct")) {
+    if (all(as.Date(x) == as.Date("1899-12-31"))) "time" else "date"
+  } else if (is.character(x)) {
+    "character"
+  } else if (is.numeric(x)) {
+    "numeric"
+  } else {
+    "other"
+  }
+}
+
+append_by_semantic_type <- function(base, new) {
+  bt <- purrr::map_chr(base, semantic_type)
+  nt <- purrr::map_chr(new, semantic_type)
+  if (!setequal(bt, nt)) {
+    stop("Semantic type mismatch")
+  }
+  new2 <- purrr::map_dfc(bt, ~ new[which(nt == .x)])
+  colnames(new2) <- colnames(base)
+  dplyr::bind_rows(base, new2)
+}
+
+result <- append_by_semantic_type(input1, input2)
+all.equal(result, test)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import datetime as dt
+import numpy as np
+
+path = "300-399\\353\\CH-353 Appending.xlsx"
+input1 = pd.read_excel(path, usecols="B:E", nrows = 3, skiprows = 2)
+input2 = pd.read_excel(path, usecols="B:E", nrows = 3, skiprows = 8)
+test = pd.read_excel(path, usecols="G:J", nrows=6, skiprows=2)
+test.columns = [col.replace('.1', '') for col in test.columns] if any('.1' in col for col in test.columns) else test.columns
+
+def semantic_type(s):
+    if pd.api.types.is_datetime64_any_dtype(s): return "date"
+    if s.map(type).eq(dt.time).all(): return "time"
+    if pd.api.types.is_string_dtype(s): return "character"
+    if pd.api.types.is_numeric_dtype(s): return "numeric"
+    return "other"
+
+def append_by_semantic_type(base, new):
+    bt = [semantic_type(base[c]) for c in base]
+    nt = [semantic_type(new[c]) for c in new]
+    if sorted(bt) != sorted(nt): raise ValueError("Semantic type mismatch")
+    new2 = pd.concat([new[[c for c, t in zip(new, nt) if t == typ]] for typ in bt], axis=1)
+    new2.columns = base.columns
+    return pd.concat([base, new2], ignore_index=True)
+
+output = append_by_semantic_type(input1, input2)
+
+print(output.equals(test))  # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 352](OmidC352.qmd)
+-   [Omid - Challenge 354](OmidC354.qmd)
+-   [Omid - Challenge 355](OmidC355.qmd)

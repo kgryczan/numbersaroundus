@@ -1,0 +1,94 @@
+---
+title: "Excel BI - Excel Challenge 873"
+description: "🔰 Find the smaller angle between hour and minute hands in a clock for the given times."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 873](/challenges/images/exc873.jpg)
+
+## Challenge Description
+
+🔰 Find the smaller angle between hour and minute hands in a clock for the given times. Answer should be upto 1 decimal place only.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/873/873 Smaller Angle Between Clock Hands.xlsx"
+input <- read_excel(path, range = "A1:A51")
+test <- read_excel(path, range = "B1:B51")
+
+angle <- function(h, m) {
+  d <- abs((30 * h + .5 * m) - 6 * m)
+  ifelse(d <= 180, d, 360 - d)
+}
+
+result = input %>%
+  mutate(
+    h = ifelse(hour(Time) >= 12, hour(Time) - 12, hour(Time)),
+    m = minute(Time)
+  ) %>%
+  mutate(`Answer Expected` = angle(h, m))
+
+all.equal(result$`Answer Expected`, test$`Answer Expected`)
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Apply the business rule conditions explicitly.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel/800-899/873/873 Smaller Angle Between Clock Hands.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=51)
+test = pd.read_excel(path, usecols="B", nrows=51)
+
+def angle(h, m):
+    d = abs((30*h + 0.5*m) - 6*m)
+    return min(d, 360-d)
+
+input['h'] = input['Time'].apply(lambda t: t.hour%12)
+input['m'] = input['Time'].apply(lambda t: t.minute)
+input['Answer Expected'] = input.apply(lambda r: angle(r['h'], r['m']), axis=1)
+
+print(input['Answer Expected'].equals(test['Answer Expected']))
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 874](/challenges/excelbi/Excel874.html)
+- [Excel Challenge 875](/challenges/excelbi/Excel875.html)
+- [Excel Challenge 876](/challenges/excelbi/Excel876.html)

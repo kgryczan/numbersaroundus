@@ -1,0 +1,130 @@
+---
+title: "Excel BI - PowerQuery Challenge 145"
+description: "Date Store Sale Column1 A B"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 145](/challenges/images/exc145pq.jpg)
+
+## Challenge Description
+
+Date Store Sale Column1 A B
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("Power Query/PQ_Challenge_145.xlsx", range = "A1:C16")
+test  = read_excel("Power Query/PQ_Challenge_145.xlsx", range = "F1:I16")
+
+result = input %>%
+  group_by(Store) %>%
+  mutate(min_date = min(Date),
+         year = case_when(
+           between(Date, min_date, min_date + years(1)) ~ 1,
+           between(Date, min_date + years(1), min_date + years(2)) ~ 2,
+           between(Date, min_date + years(2), min_date + years(3)) ~ 3,
+           between(Date, min_date + years(3), min_date + years(4)) ~ 4,
+           between(Date, min_date + years(4), min_date + years(5)) ~ 5
+         )) %>%
+  ungroup()  %>%
+  group_by(Store, year) %>%
+  mutate(Column1 = cumsum(Sale)) %>%
+  ungroup() %>%
+  select(-year, -min_date)
+
+identical(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input_data = pd.read_excel("PQ_Challenge_145.xlsx", usecols="A:C", nrows=16)
+test = pd.read_excel("PQ_Challenge_145.xlsx", usecols="F:I", nrows=16)
+
+result = input_data.copy()
+result["Date"] = pd.to_datetime(result["Date"])
+result["min_date"] = result.groupby("Store")["Date"].transform("min")
+result["year"] = ((result["Date"] - result["min_date"]).dt.days / 365.25).floordiv(1).astype(int) + 1
+result["Column1"] = result.groupby(["Store", "year"])["Sale"].cumsum()
+result = result.drop(columns=["year", "min_date"])
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 144](Excel144pq.qmd)

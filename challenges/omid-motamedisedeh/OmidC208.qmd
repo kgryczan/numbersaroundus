@@ -1,0 +1,121 @@
+---
+title: "Omid - Challenge 208"
+description: "🔰 Create a formula that, for any 'n x n' matrix, calculates all the values on the primary diagonal as z."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 208](/challenges/images/OmidC208.jpg)
+
+## Challenge Description
+
+🔰 Create a formula that, for any 'n x n' matrix, calculates all the values on the primary diagonal as z.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-208 Matrix Calculation.xlsx"
+input1 = read_excel(path, range = "C3:D4", col_names = FALSE) %>% as.matrix()
+input2 = read_excel(path, range = "C6:E8", col_names = FALSE) %>% as.matrix()
+input3 = read_excel(path, range = "C10:G14", col_names = FALSE) %>% as.matrix()
+test1  = read_excel(path, range = "K3", col_names = FALSE) %>% pull()
+test2  = read_excel(path, range = "K6", col_names = FALSE) %>% pull()
+test3  = read_excel(path, range = "K10", col_names = FALSE) %>% pull()
+
+result1 = sum(diag(input1))
+result2 = sum(diag(input2))
+result3 = sum(diag(input3))
+
+all.equal(result1, test1) # TRUE
+all.equal(result2, test2) # TRUE
+all.equal(result3, test3) # TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "CH-208 Matrix Calculation.xlsx"
+
+input1 = pd.read_excel(path, usecols="C:D", skiprows=2, nrows=2, header=None).to_numpy()
+input2 = pd.read_excel(path, usecols="C:E", skiprows=5, nrows=3, header=None).to_numpy()
+input3 = pd.read_excel(path, usecols="C:G", skiprows=9, nrows=5, header=None).to_numpy()
+test1 = pd.read_excel(path, usecols="K", skiprows=2, nrows=1, header=None).iloc[0, 0]
+test2 = pd.read_excel(path, usecols="K", skiprows=5, nrows=1, header=None).iloc[0, 0]
+test3 = pd.read_excel(path,  usecols="K", skiprows=9, nrows=1, header=None).iloc[0, 0]
+
+result1 = np.trace(input1)
+result2 = np.trace(input2)
+result3 = np.trace(input3)
+
+print(np.isclose(result1, test1))  # TRUE
+print(np.isclose(result2, test2))  # TRUE
+print(np.isclose(result3, test3))  # TRUE
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 207](OmidC207.qmd)
+-   [Omid - Challenge 209](OmidC209.qmd)
+-   [Omid - Challenge 210](OmidC210.qmd)

@@ -1,0 +1,117 @@
+---
+title: "Omid - Challenge 163"
+description: "🔰 Custom Grouping!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 163](/challenges/images/OmidC163.jpg)
+
+## Challenge Description
+
+🔰 Custom Grouping!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-163 Custom Grouping.xlsx"
+input = read_excel(path, range = "B2:D39")
+test  = read_excel(path, range = "G2:I17")
+
+result = input %>% 
+  unite("ym", Year, Month ,  sep = " ", remove = F) %>%
+  mutate(ym = ym(ym),
+         Season = quarter(ym)) %>%
+  summarise(`Total Sale` = sum(Sale), .by = c(Year, Season))
+
+all.equal(result, test)
+# TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-163 Custom Grouping.xlsx"
+input = pd.read_excel(path, usecols="B:D", skiprows=1, nrows=38)
+test = pd.read_excel(path, usecols="G:I", skiprows=1, nrows=15)
+
+input['Season'] = pd.to_datetime(input['Year'].astype(str) + " " + input['Month'], format='%Y %b').dt.quarter
+
+result = input.groupby(['Year', 'Season'])['Sale'].sum().reset_index()
+result.columns = test.columns = ['Year', 'Season', 'Total Sale']
+
+print(all(result ==test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 162](OmidC162.qmd)
+-   [Omid - Challenge 164](OmidC164.qmd)
+-   [Omid - Challenge 165](OmidC165.qmd)

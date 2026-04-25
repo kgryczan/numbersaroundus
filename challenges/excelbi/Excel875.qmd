@@ -1,0 +1,125 @@
+---
+title: "Excel BI - Excel Challenge 875"
+description: "🔰 Data Answer Expected ghost biopsy wronged begins access ghost story trollied ace biopsy lab"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 875](/challenges/images/exc875.jpg)
+
+## Challenge Description
+
+🔰 Data Answer Expected ghost biopsy wronged begins access ghost story trollied ace biopsy lab
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/875/Excel_Challenge_875 - Counting As Per Criteria.xlsx"
+input <- read_excel(path, range = "A1:A25")
+test <- read_excel(path, range = "B1:B25")
+
+result = input %>%
+  mutate(chars = str_split(Data, "")) %>%
+  unnest(chars) %>%
+  mutate(count = cumsum(chars == " ") + 1, .by = Data) %>%
+  filter(chars != " ") %>%
+  mutate(var = ifelse(chars > lag(chars, default = NA), 1L, 0L), .by = Data) %>%
+  mutate(
+    var = ifelse(row_number() == 1, NA_integer_, var),
+    .by = c(Data, count)
+  ) %>%
+  summarise(Result = sum(var, na.rm = TRUE), .by = c(Data, count)) %>%
+  filter(Result != 0) %>%
+  summarise(
+    `Answer Expected` = as.numeric(paste0(Result, collapse = "")),
+    .by = Data
+  )
+
+r1 = input %>%
+  left_join(result, by = "Data")
+
+all.equal(
+  r1$`Answer Expected`,
+  test$`Answer Expected`,
+  check.attributes = FALSE
+)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "Excel/800-899/875/Excel_Challenge_875 - Counting As Per Criteria.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=25)
+test = pd.read_excel(path, usecols="B", nrows=25).fillna(0.0)
+
+results = []
+for data in input['Data']:
+    chars = [c for c in str(data) if c != ' ']
+    groups = ''.join(str(data)).split(' ')
+    prev = {}
+    vars_ = []
+    for idx, grp in enumerate(groups, 1):
+        for i, c in enumerate(grp):
+            if i == 0:
+                vars_.append(np.nan)
+            else:
+                vars_.append(1 if c > grp[i-1] else 0)
+    group_sizes = [len(g) for g in groups]
+    idx = 0
+    group_sums = []
+    for sz in group_sizes:
+        vals = vars_[idx:idx+sz]
+        s = np.nansum(vals)
+        if s != 0 and not np.isnan(s):
+            group_sums.append(int(s))
+        idx += sz
+    answer = float(''.join(map(str, group_sums))) if group_sums else 0.0
+    results.append(answer)
+
+input['Answer Expected'] = results
+print(results == test['Answer Expected'].tolist())
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 876](/challenges/excelbi/Excel876.html)
+- [Excel Challenge 877](/challenges/excelbi/Excel877.html)
+- [Excel Challenge 878](/challenges/excelbi/Excel878.html)

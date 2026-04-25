@@ -1,0 +1,122 @@
+---
+title: "Crispo - Excel Challenge 25 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-06-22"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 25 2025](/challenges/images/Crispo252025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Problem Solution Students Subject Student Easy Sunday Excel Challenge
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/2025-06-22/Challenge 36.xlsx"
+input = read_excel(path, range = "B3:C7")
+test  = read_excel(path, range = "E3:F11")
+
+result = input %>%
+  separate_longer_delim(Students, delim = ", ") 
+
+all.equal(test, result, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data to the grain required by the task
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "files/2025-06-22/Challenge 36.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=2, nrows=4)
+test = (
+    pd.read_excel(path, usecols="E:F", skiprows=2, nrows=8)
+      .rename(columns=lambda col: col.replace('.1', ''))
+)
+
+result = (
+    input
+    .assign(Student=input['Students'].str.split(', '))
+    .explode('Student')
+    .reset_index(drop=True)
+    [['Student', 'Subject']]
+)
+
+print(result.equals(test))
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 24 2025](Crispo 242025.qmd)
+-   [Crispo - Excel Challenge 26 2025](Crispo 262025.qmd)

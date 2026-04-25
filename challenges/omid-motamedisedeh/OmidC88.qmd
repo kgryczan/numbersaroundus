@@ -1,0 +1,133 @@
+---
+title: "Omid - Challenge 88"
+description: "🔰 Question Result A B C Product D Season"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 88](/challenges/images/OmidC88.jpg)
+
+## Challenge Description
+
+🔰 Question Result A B C Product D Season
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(reshape2)
+
+path = "files/CH-088 Subtotal Calculation.xlsx"
+input = read_excel(path, range = "B2:E18")
+test  = read_excel(path, range = "I2:M23")
+
+result = input %>%
+  pivot_longer(cols = -c(1, 2), names_to = "Region", values_to = "value") %>%
+  dcast(Product + Season ~ Region, 
+                     value.var = "value", 
+                     fun.aggregate = sum, 
+                     margins = c("Product", "Season")) %>%
+  mutate(`Total Regions` = rowSums(.[, -c(1, 2)], na.rm = TRUE)) %>%
+  as_tibble()
+
+all.equal(result[,3:5], test[,3:5], check.attributes = FALSE)
+# [1] TRUE - result the same, didn't change total labels
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-088 Subtotal Calculation.xlsx"
+input = pd.read_excel(path, usecols = "B:E", skiprows = 1, nrows = 16)
+test = pd.read_excel(path, usecols="I:M", skiprows=1, nrows=21)
+test.columns = test.columns.str.replace(".1", "")
+pivot_table = (
+    input.melt(id_vars=["Product", "Season"], var_name="Region", value_name="value")
+    .pivot_table(values="value", index=["Product", "Season"], columns="Region", aggfunc="sum")
+    .reset_index()
+)
+
+subtotals = pivot_table.groupby("Product").sum(numeric_only=True).reset_index()
+grand_total = pivot_table.sum(numeric_only=True).to_frame().T
+pivot_table = pd.concat([pivot_table, subtotals, grand_total], ignore_index=True)
+pivot_table["Total Regions"] = pivot_table.loc[:, pivot_table.columns[2:]].sum(axis=1)
+pivot_table = pivot_table.sort_values(by=["Product", "Season"], ignore_index=True)
+
+print(pivot_table.columns[2:].all() == test.columns[2:].all()) # True
+# only numerical values compared, didn't check labels.
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 87](OmidC87.qmd)
+-   [Omid - Challenge 89](OmidC89.qmd)
+-   [Omid - Challenge 90](OmidC90.qmd)

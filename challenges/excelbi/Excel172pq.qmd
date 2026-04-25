@@ -1,0 +1,144 @@
+---
+title: "Excel BI - PowerQuery Challenge 172"
+description: "Item Amount Agent1 Agent2 Commission % Share %"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 172](/challenges/images/exc172pq.jpg)
+
+## Challenge Description
+
+Item Amount Agent1 Agent2 Commission % Share %
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("Power Query/PQ_Challenge_172.xlsx", range = "A1:F10") %>% 
+  janitor::clean_names()
+test  = read_excel("Power Query/PQ_Challenge_172.xlsx", range = "H1:I6")
+
+r1 = input %>%
+  mutate(share_percent = ifelse(is.na(share_percent), "100", share_percent)) %>%
+  separate_rows(share_percent, sep = ", ") %>%
+  group_by(item) %>%
+  mutate(nr = row_number(), 
+         Agent = ifelse(nr == 1, agent1, agent2)) %>%
+  ungroup() %>%
+  mutate(Commission = amount * as.numeric(share_percent) / 100 * commission_percent / 100)
+
+top = r1 %>%
+  group_by(Agent) %>%
+  summarise(Commission = sum(Commission) %>% round(0))
+
+total = top %>%
+  summarise(Commission = sum(Commission))
+
+total$Agent = "Total"
+result = select(total, Agent, Commission) %>%
+  bind_rows(top) %>%
+  arrange(Agent)
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input = pd.read_excel("PQ_Challenge_172.xlsx", usecols="A:F", nrows = 10)
+test = pd.read_excel("PQ_Challenge_172.xlsx", usecols="H:I", nrows = 5)
+
+r1 = input.copy()
+r1["share_percent"] = r1["Share %"].fillna("100")
+r1 = r1.assign(share_percent=r1["share_percent"].str.split(", ")).explode("share_percent")
+r1["nr"] = r1.groupby("Item").cumcount() + 1
+r1["Agent"] = r1.apply(lambda x: x["Agent1"] if x["nr"] == 1 else x["Agent2"], axis=1)
+r1["Commission"] = r1["Amount"] * r1["share_percent"].astype(float) / 100 * r1["Commission %"] / 100
+
+top = r1.groupby("Agent").agg(Commission=("Commission", "sum")).round(0).astype(int).reset_index()
+total = top.agg(Commission=("Commission", "sum")).reset_index()
+total["Agent"] = "Total"
+
+result = pd.concat([total[["Agent", "Commission"]], top[["Agent", "Commission"]]]).sort_values("Agent").reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 171](Excel171pq.qmd)

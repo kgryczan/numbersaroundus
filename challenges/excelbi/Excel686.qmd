@@ -1,0 +1,116 @@
+---
+title: "Excel BI - Excel Challenge 686"
+description: "🔰 Date EmpCode Role EMP_1157 Branch Manager Title/Emp ID EMP_1078 EMP_1247 Mar18 to Aug20, Feb21 to Sep21 Apr18 to Dec21"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 686](/challenges/images/exc686.jpg)
+
+## Challenge Description
+
+🔰 Date EmpCode Role EMP_1157 Branch Manager Title/Emp ID EMP_1078 EMP_1247 Mar18 to Aug20, Feb21 to Sep21 Apr18 to Dec21
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/686 Data Alignment.xlsx"
+input = read_excel(path, range = "A1:C23")
+test  = read_excel(path, range = "E2:H8")
+
+Sys.setlocale("LC_TIME", "English")
+
+result = input %>%
+  mutate(Role_no = cumsum(Role != lag(Role, default = first(Role)))+1, .by = EmpCode) %>%
+  summarise(max_date = max(Date) %>% 
+              format("%b%y"),
+            min_date = min(Date) %>%
+              format("%b%y"),
+            .by = c(EmpCode, Role_no, Role)) %>%
+  mutate(period = ifelse(max_date == min_date, min_date, paste0(min_date, " to ", max_date))) %>%
+  select(EmpCode, Role, period) %>%
+  pivot_wider(names_from = EmpCode, values_from = period, values_fn = ~paste(., collapse = ", ")) %>%
+  select(Role, sort(names(.))) %>%
+  arrange(Role)
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from datetime import datetime
+import locale
+
+path = "686 Data Alignment.xlsx"
+input = pd.read_excel(path, usecols="A:C", nrows=23)
+test = pd.read_excel(path, usecols="E:H", skiprows=1, nrows=7)
+
+locale.setlocale(locale.LC_TIME, "English")
+
+input['Role_no'] = input.groupby('EmpCode')['Role'].apply(
+    lambda x: (x != x.shift().fillna(x.iloc[0])).cumsum()
+).reset_index(level=0, drop=True)
+
+result = (
+    input.groupby(['EmpCode', 'Role_no', 'Role'])
+    .agg(
+        max_date=('Date', lambda x: x.max().strftime("%b%y")),
+        min_date=('Date', lambda x: x.min().strftime("%b%y"))
+    )
+    .reset_index()
+)
+
+result['period'] = result.apply(
+    lambda row: row['min_date'] if row['max_date'] == row['min_date'] else f"{row['min_date']} to {row['max_date']}",
+    axis=1
+)
+
+result = result.pivot_table(
+    index='Role', 
+    columns='EmpCode', 
+    values='period', 
+    aggfunc=lambda x: ', '.join(x)
+).reset_index()
+
+print(result)
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 687](/challenges/excelbi/Excel687.html)
+- [Excel Challenge 688](/challenges/excelbi/Excel688.html)
+- [Excel Challenge 689](/challenges/excelbi/Excel689.html)

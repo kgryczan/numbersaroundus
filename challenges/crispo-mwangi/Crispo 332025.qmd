@@ -1,0 +1,140 @@
+---
+title: "Crispo - Excel Challenge 33 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-08-17"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 33 2025](/challenges/images/Crispo332025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ GROUP ⭐Group the Data in 3 Columns letters ⭐For example first group is column letters U,V,W
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/2025-08-17/Challenge 51.xlsx"
+input = read_excel(path, range = "B2:D3")
+test  = read_excel(path, range = "F2:G7")
+
+excel_cols = function(start, end) {
+  col = function(i) ifelse(i == 0, "", paste0(col((i - 1) %/% 26), LETTERS[(i - 1) %% 26 + 1]))
+  idx = function(x) match(x, map_chr(1:16384, col))
+  map_chr(seq(idx(start), idx(end)), col)
+}
+
+result = input %>%
+  mutate(seq = map2(`From Column`, `To Column`, 
+                   ~ excel_cols(.x, .y))) %>%
+  unnest(seq) %>%
+  mutate(GROUP = (row_number()-1) %/% 3 + 1) %>%
+  summarise(COLUMNS = paste0(seq, collapse = ","),
+            .by = GROUP) 
+
+all.equal(result$COLUMNS, test$COLUMNS)
+# > [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import string
+
+df1 = pd.read_excel("files/2025-08-17/Challenge 51.xlsx", usecols="B:D", skiprows=1, nrows=1)
+df2 = pd.read_excel("files/2025-08-17/Challenge 51.xlsx", usecols="F:G", skiprows=1, nrows=6)
+
+def col(i): return "" if i == 0 else col((i-1)//26) + string.ascii_uppercase[(i-1)%26]
+def idx(x): return [col(i) for i in range(1,16385)].index(x)+1
+def excel_cols(a,b): return [col(i) for i in range(idx(a),idx(b)+1)]
+
+seqs = sum([excel_cols(r['From Column'], r['To Column']) for _,r in df1.iterrows()], [])
+groups = [(i//3)+1 for i in range(len(seqs))]
+res = (
+    pd.DataFrame({'seq': seqs, 'GROUP': groups})
+      .groupby('GROUP')['seq']
+      .apply(lambda x: ','.join(x))
+      .reset_index()
+      .rename(columns={'seq': 'COLUMNS'})
+)
+
+print(res['COLUMNS'].equals(df2['COLUMNS'])) # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 32 2025](Crispo 322025.qmd)
+-   [Crispo - Excel Challenge 34 2025](Crispo 342025.qmd)

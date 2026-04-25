@@ -1,0 +1,146 @@
+---
+title: "Crispo - Excel Challenge 14 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-04-06"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 14 2025](/challenges/images/Crispo142025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ ⭐Create Weekly Groups and Sum
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/Challenge1425.xlsx"
+input = read_excel(path, range = "B3:D23")
+test  = read_excel(path, range = "F3:H7")
+
+input = input %>%
+  mutate(Date = str_replace(Date, "29-02", "27-02") %>% dmy())
+
+seq = seq.Date(min(input$Date), max(input$Date), by = "1 day") %>%
+  data.frame(Date = .) %>%
+  left_join(input, by = "Date") %>%
+  fill(`Staff No.`, .direction = "down") %>%
+  mutate(week = isoweek(Date)) %>%
+  summarise(`Total Hours` = sum(`Worked Hours`, na.rm = TRUE),
+            `Week Dates` = paste(min(Date), max(Date), sep = " - "),
+            .by = c("Staff No.", "week")) %>%
+  select(1,4,3)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+    -   Uses direct text-pattern extraction instead of manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "files/Challenge1425.xlsx"
+input = pd.read_excel(path, usecols="B:D", skiprows=2, nrows=21)
+test = pd.read_excel(path, usecols="F:H", skiprows=2, nrows=4)
+
+input['Date'] = input['Date'].str.replace("29-02", "27-02", regex=False)
+input['Date'] = pd.to_datetime(input['Date'], format='%d-%m-%Y')
+
+date_range = pd.date_range(start=input['Date'].min(), end=input['Date'].max(), freq='D')
+seq = pd.DataFrame({'Date': date_range})
+
+seq = seq.merge(input, on='Date', how='left')
+seq['Staff No.'] = seq['Staff No.'].ffill()
+
+seq['week'] = seq['Date'].dt.isocalendar().week
+
+summary = (
+    seq.groupby(['Staff No.', 'week'])
+    .agg(
+        **{
+            'Total Hours': ('Worked Hours', lambda x: x.sum(skipna=True)),
+            'Week Dates': ('Date', lambda x: f"{x.min().strftime('%Y-%m-%d')} - {x.max().strftime('%Y-%m-%d')}")
+        }
+    )
+    .reset_index()
+)
+summary = summary[['Staff No.', 'Week Dates', 'Total Hours']]
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines familiar Excel-style logic with at least one non-trivial reshape, grouping, or parsing step.
+
+-   The answer depends on getting the output layout exactly right.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 13 2025](Crispo 132025.qmd)
+-   [Crispo - Excel Challenge 15 2025](Crispo 152025.qmd)

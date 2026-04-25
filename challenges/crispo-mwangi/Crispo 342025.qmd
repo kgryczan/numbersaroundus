@@ -1,0 +1,146 @@
+---
+title: "Crispo - Excel Challenge 34 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-08-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 34 2025](/challenges/images/Crispo342025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Problem Solution Customer Date Item Value
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/2025-08-24/Challenge 52.xlsx"
+input = read_excel(path, range = "B2:E8")
+test  = read_excel(path, range = "G2:H8") %>%
+  replace_na(list(`Missing Data` = ""))
+
+result = input %>%
+  mutate(Customer = as.factor(Customer)) %>%
+  pivot_longer(cols = -Customer, 
+               names_to = "Var", 
+               values_to = "val", 
+               values_transform = as.character) %>%
+  mutate(missing = ifelse(is.na(val), Var, NA)) %>%
+  summarise(`Missing Data` = paste(missing[!is.na(missing)], collapse = ", "), .by = Customer) %>%
+  mutate(Customer = as.character(Customer))
+
+all.equal(result, test, check.attributes = FALSE)
+# > [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data to the grain required by the task
+
+    -   Aggregates or ranks values at the correct grouping level
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "files/2025-08-24/Challenge 52.xlsx"
+
+input = pd.read_excel(path, usecols="B:E", skiprows=1, nrows=6, dtype = str)
+test = pd.read_excel(path, usecols="G:H", skiprows=1, nrows=6).rename(columns=lambda c: c.replace('.1', '')).assign(**{"Missing Data": lambda df: df["Missing Data"].fillna("")})
+
+input["Customer"] = input["Customer"].astype("category")
+
+long = input.melt(id_vars="Customer", var_name="Var", value_name="val")
+long["val"] = long["val"].astype(str)
+long.loc[long["val"] == "nan", "val"] = None
+long["missing"] = long.apply(lambda row: row["Var"] if pd.isna(row["val"]) else None, axis=1)
+
+result = (
+    long.groupby("Customer")["missing"]
+    .apply(lambda x: ", ".join([v for v in x if pd.notna(v)]))
+    .reset_index()
+    .rename(columns={"missing": "Missing Data"})
+)
+
+result["Customer"] = result["Customer"].astype(str)
+
+print(result.equals(test))
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data to the grain required by the task
+
+    -   Aggregates or ranks values at the correct grouping level
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines familiar Excel-style logic with at least one non-trivial reshape, grouping, or parsing step.
+
+-   The answer depends on getting the output layout exactly right.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 33 2025](Crispo 332025.qmd)
+-   [Crispo - Excel Challenge 35 2025](Crispo 352025.qmd)

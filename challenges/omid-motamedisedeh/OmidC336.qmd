@@ -1,0 +1,141 @@
+---
+title: "Omid - Challenge 336"
+description: "🔰 Question Result F ID XMS128 F1M810 MMKN 12AA21"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 336](/challenges/images/OmidC336.jpg)
+
+## Challenge Description
+
+🔰 Question Result F ID XMS128 F1M810 MMKN 12AA21
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/336/CH-336 Column Splitting .xlsx"
+input <- read_excel(path, range = "B2:B7")
+test <- read_excel(path, range = "F2:I7")
+
+result <- input %>%
+  mutate(
+    ID = str_replace_all(ID, "(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)", "|")
+  ) %>%
+  separate_wider_delim(
+    ID,
+    delim = "|",
+    names_sep = " ",
+    too_few = "align_start"
+  )
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+import re
+
+path = "300-399/336/CH-336 Column Splitting .xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=6, dtype=str)
+test = pd.read_excel(path, usecols="F:I", skiprows=1, nrows=6, dtype=str)
+
+def insert_pipe(val):
+    if pd.isna(val):
+        return val
+    return re.sub(r'(?<=\D)(?=\d)|(?<=\d)(?=\D)', '|', str(val))
+
+input["ID"] = input["ID"].apply(insert_pipe)
+
+split_cols = (
+    input["ID"]
+    .str.split("|", expand=True)
+    .replace(["None", None], np.nan)
+)
+split_cols.columns = [f"ID {i+1}" for i in range(split_cols.shape[1])]
+
+input = input.drop(columns=["ID"])
+
+result = pd.concat([input, split_cols], axis=1)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 335](OmidC335.qmd)
+-   [Omid - Challenge 337](OmidC337.qmd)
+-   [Omid - Challenge 338](OmidC338.qmd)

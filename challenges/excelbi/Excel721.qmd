@@ -1,0 +1,102 @@
+---
+title: "Excel BI - Excel Challenge 721"
+description: "🔰 Extract the prime numbers that satisfy all of these."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 721](/challenges/images/exc721.jpg)
+
+## Challenge Description
+
+🔰 Extract the prime numbers that satisfy all of these.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(arrangements)
+library(primes)
+
+path = "Excel/700-799/721/721 Prime_number_5digit.xlsx"
+test = read_excel(path, range = "A1:A62")
+
+perms <- permutations(1:9, 5) %>%
+  as.data.frame() %>%
+  unite("number", everything(), sep = "")
+
+res <- perms %>%
+  mutate(
+    last4 = as.numeric(substr(number, 2, 5)),
+    last3 = as.numeric(substr(number, 3, 5)),
+    last2 = as.numeric(substr(number, 4, 5)),
+    last1 = as.numeric(substr(number, 5, 5)),
+    number = as.numeric(number)
+  ) %>%
+  filter(
+    is_prime(last4) &
+      is_prime(last3) &
+      is_prime(last2) &
+      is_prime(last1) &
+      is_prime(number)
+  ) %>%
+  select(number)
+
+all.equal(test, res, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Reshape the result into the workbook output format.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from itertools import permutations
+from sympy import isprime
+
+test = pd.read_excel("700-799/721/721 Prime_number_5digit.xlsx", usecols="A", nrows=62)
+perms = (int(''.join(map(str, p))) for p in permutations(range(1,10), 5))
+
+def check(n):
+    return all(isprime(n % 10**i) for i in range(1, 6))
+
+res = pd.DataFrame({'number': [n for n in perms if check(n)]})
+print(res['number'].equals(test['Result']))
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 722](/challenges/excelbi/Excel722.html)
+- [Excel Challenge 723](/challenges/excelbi/Excel723.html)
+- [Excel Challenge 724](/challenges/excelbi/Excel724.html)

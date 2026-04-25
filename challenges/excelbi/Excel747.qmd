@@ -1,0 +1,107 @@
+---
+title: "Excel BI - Excel Challenge 747"
+description: "🔰 String Answer Expected 1 plus 2 18 minus 11 24 division 12 24 multiplication 11 36 modulo 8 3 plus 4 minus 2 24 division 3 plus 4 minus 3 34 plus 12 minus 2 division 2"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 747](/challenges/images/exc747.jpg)
+
+## Challenge Description
+
+🔰 String Answer Expected 1 plus 2 18 minus 11 24 division 12 24 multiplication 11 36 modulo 8 3 plus 4 minus 2 24 division 3 plus 4 minus 3 34 plus 12 minus 2 division 2
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(rlang)
+
+path = "Excel/700-799/747/747 Mathematical Operations.xlsx"
+input = read_excel(path, range = "A1:A10")
+test  = read_excel(path, range = "B1:B10")
+
+evaluate_text = function(text) {
+  text %>% str_replace_all(c("minus" = "-",
+                             "plus" = "+",
+                             "multiplication" = "*",
+                             "division" = "/",
+                             "modulo" = "%%")) %>%
+    parse_expr() %>%
+    eval_bare()
+}
+
+result = input %>%
+  mutate(`Answer Expected` = map_dbl(String, evaluate_text)) %>%
+  select(-String)
+
+all.equal(result, test)
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+import operator
+
+path = "700-799/747/747 Mathematical Operations.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=10)
+test = pd.read_excel(path, usecols="B", nrows=10)
+
+replacements = {
+    r"\bminus\b": "-",
+    r"\bplus\b": "+",
+    r"\bmultiplication\b": "*",
+    r"\bdivision\b": "/",
+    r"\bmodulo\b": "%"
+}
+
+exprs = input.iloc[:, 0]
+for word, op in replacements.items():
+    exprs = exprs.str.replace(word, op, regex=True)
+
+input['Answer Expected'] = exprs.apply(lambda x: int(eval(x)) if pd.notnull(x) else float('nan'))
+result = input[['Answer Expected']]
+
+print(result.equals(test))
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 748](/challenges/excelbi/Excel748.html)
+- [Excel Challenge 749](/challenges/excelbi/Excel749.html)
+- [Excel Challenge 750](/challenges/excelbi/Excel750.html)

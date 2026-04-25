@@ -1,0 +1,97 @@
+---
+title: "Excel BI - Excel Challenge 759"
+description: "🔰 Look up the Letter in column B in corresponding row in column A and extract the value."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 759](/challenges/images/exc759.jpg)
+
+## Challenge Description
+
+🔰 Look up the Letter in column B in corresponding row in column A and extract the value. Column A follows the
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/759/759 Lookup Value.xlsx"
+input = read_excel(path, range = "A1:B5")
+test  = read_excel(path, range = "C1:C5")
+
+result = input %>%
+mutate(
+  dict = str_split(String, ",\\s*") %>% 
+    map(~ tibble(
+      key = str_extract(.x, "^[^:]+"),
+      val = str_extract(.x, "(?<=:).*")
+    )),
+  letters = str_split(Letter, ",\\s*"),
+  `Answer Expected` = map2_chr(dict, letters, ~ .x %>%
+                     filter(key %in% .y) %>%
+                     pull(val) %>%
+                     paste(collapse = ", ")
+)) %>%
+  select(`Answer Expected`) 
+
+all.equal(result$`Answer Expected`, test$`Answer Expected`, check.attributes = FALSE) 
+# Pi and Phi are not the same, solution is correct
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure.
+- **Strengths**: The solution stays close to the text pattern itself, which makes the extraction logic easy to audit.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: A small number of well-targeted text patterns does most of the heavy lifting.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/759/759 Lookup Value.xlsx"
+input = pd.read_excel(path, usecols="A:B", nrows=5)
+test = pd.read_excel(path, usecols="C", nrows=5)
+
+def extract(s, letters):
+    d = dict(x.split(":") for x in s.split(", "))
+    return [d[k] for k in letters.split(", ")]
+
+input["extracted"] = input.apply(lambda r: ", ".join(extract(r["String"], r["Letter"])), axis=1)
+result = input["extracted"]
+
+# one discrepancy: Pi is not the same as Phi.
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 760](/challenges/excelbi/Excel760.html)
+- [Excel Challenge 761](/challenges/excelbi/Excel761.html)
+- [Excel Challenge 762](/challenges/excelbi/Excel762.html)

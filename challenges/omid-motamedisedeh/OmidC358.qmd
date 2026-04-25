@@ -1,0 +1,162 @@
+---
+title: "Omid - Challenge 358"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 358](/challenges/images/OmidC358.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(janitor)
+
+path <- "300-399/358/CH-358 Table Transformation.xlsx"
+input <- read_excel(path, range = "B3:E17")
+test <- read_excel(path, range = "G3:K8") %>%
+  mutate(Date = as.Date(Date, origin = "1899-12-30"))
+
+result = input |>
+  mutate(across(1, ~ replace_na(.x, "Date"))) %>%
+  mutate(Group = cumsum(Column1 == "Date")) %>%
+  nest_by(Group) %>%
+  mutate(data = list(data |> select(where(~ !all(is.na(.x)))))) %>%
+  mutate(data = list(row_to_names(data, row_number = 1))) %>%
+  mutate(
+    data = list(
+      data |> pivot_longer(-Date, names_to = "Variable", values_to = "Value")
+    )
+  ) %>%
+  unnest(data) %>%
+  ungroup() %>%
+  mutate(
+    Date = excel_numeric_to_date(round(as.numeric(Date), 0)),
+    Value = as.numeric(Value)
+  ) %>%
+  summarise(Value = sum(Value, na.rm = T), .by = c(Date, Variable)) %>%
+  pivot_wider(names_from = Variable, values_from = Value, values_fn = sum)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "300-399\\358\\CH-358 Table Transformation.xlsx"
+input = pd.read_excel(path, usecols="B:E", nrows = 14, skiprows = 2)
+test = pd.read_excel(path, usecols="G:K", nrows = 5, skiprows = 2)
+
+split_dfs, cur_df = [], []
+input.iloc[:, 0] = input.iloc[:, 0].fillna("Date")
+
+for _, row in input.iterrows():
+    if row.iloc[0] == "Date" and cur_df:
+        split_dfs.append(pd.DataFrame(cur_df, columns=input.columns))
+        cur_df = []
+    cur_df.append(row)
+
+if cur_df: 
+    split_dfs.append(pd.DataFrame(cur_df, columns=input.columns))
+
+for i, df in enumerate(split_dfs):
+    df.columns = df.iloc[0]
+    split_dfs[i] = df[1:].reset_index(drop=True)
+    split_dfs[i] = split_dfs[i].dropna(axis=1, how='all')
+
+final_dfs = []
+for df in split_dfs:
+    df_long = df.melt(id_vars=[df.columns[0]], var_name="ABC", value_name="Value")
+    final_dfs.append(df_long)
+
+result = pd.concat(final_dfs, ignore_index=True)
+grouped_result = result.groupby([result.columns[0], "ABC"], as_index=False).agg({"Value": "sum"})
+pivoted_result = grouped_result.pivot(index=grouped_result.columns[0], columns="ABC", values="Value").reset_index()
+
+print(all(pivoted_result == test)) #
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 357](OmidC357.qmd)
+-   [Omid - Challenge 359](OmidC359.qmd)
+-   [Omid - Challenge 360](OmidC360.qmd)

@@ -1,0 +1,100 @@
+---
+title: "Excel BI - Excel Challenge 750"
+description: "🔰 Data Answer Expected Emp ID Name Age Robert Anne Lisa Align the data as shown."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 750](/challenges/images/exc750.jpg)
+
+## Challenge Description
+
+🔰 Data Answer Expected Emp ID Name Age Robert Anne Lisa Align the data as shown.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/750/750 Data Alignment.xlsx"
+input = read_excel(path, range = "A1:A21")
+test  = read_excel(path, range = "C2:E6")
+
+result = input %>%
+  mutate(group = cumsum(str_detect(Data, "Emp ID"))) %>% 
+  mutate(cn = ifelse(row_number() > n() / 2, "values", "labels"), .by = group) %>%
+  pivot_wider(names_from = cn, values_from = Data) %>%
+  unnest() %>%
+  pivot_wider(names_from = labels, values_from = values) %>%
+  select(-group) %>% 
+  mutate(across(c("Age", "Emp ID"), as.numeric)) 
+
+all.equal(result, test)
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+import re
+
+path = "700-799/750/750 Data Alignment.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=21).astype(str)
+test = pd.read_excel(path, usecols="C:E", skiprows=1, nrows=4).rename(columns=lambda x: re.sub(r'\.1$', '', x))
+
+input['group'] = input['Data'].str.contains("Emp ID").cumsum()
+input['cn'] = np.where(input.groupby('group').cumcount() < input.groupby('group')['Data'].transform('count') // 2, 'labels', 'values')
+
+labels_rows, values_rows = (input[input['cn'] == x] for x in ['labels', 'values'])
+
+wide = pd.DataFrame({'labels': labels_rows['Data'].values, 'values': values_rows['Data'].values})
+wide['group'] = wide['labels'].str.contains("Emp ID").cumsum()
+
+pivoted = wide.pivot(index='group', columns='labels', values='values')
+wide = pivoted.reset_index()
+result = wide[['Emp ID', 'Name', 'Age']].copy()
+result['Emp ID'] = result['Emp ID'].astype(int)
+result['Age'] = result['Age'].astype(float)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 751](/challenges/excelbi/Excel751.html)
+- [Excel Challenge 752](/challenges/excelbi/Excel752.html)
+- [Excel Challenge 753](/challenges/excelbi/Excel753.html)

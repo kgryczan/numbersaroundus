@@ -1,0 +1,118 @@
+---
+title: "Crispo - Excel Challenge 23 2024"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2024-06-03"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 23 2024](/challenges/images/Crispo232024.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Easy Sunday Excel Challenge
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Applies the workbook rule directly and shapes the expected output
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+import numpy as np
+
+input = pd.read_excel('files/Excel Challenge 2nd June.xlsx', usecols='C', skiprows=1, nrows = 6)
+test  = pd.read_excel('files/Excel Challenge 2nd June.xlsx', usecols='D', skiprows=1, nrows = 6)
+
+test['Last Correct Order'] = test['Last Correct Order'].replace(np.nan, '', regex=True)
+
+def extract_after_last_letter(s):
+    match = list(re.finditer(r'[A-Za-z]', s))
+    if match:
+        last_letter_pos = match[-1].end()
+        return s[last_letter_pos:] if last_letter_pos < len(s) else ''
+    return ''
+
+input['answer'] = input['Customers & Orders'].apply(extract_after_last_letter)
+
+print(input.merge(test, left_index=True, right_index=True))
+
+#                     Customers & Orders  answer Last Correct Order
+# 0                  Emily15423Jake56243   56243              56243
+# 1       Adrian Order not yet confirmed
+# 2                           Amani#2546   #2546              #2546
+# 3   25698 -To confirm if correct Order
+# 4        Sean235Tyler58614Manito015236  015236             015236
+# 5  Orders #564 and #5862 were rejected
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Uses direct text-pattern extraction instead of manual cleanup
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 22 2024](Crispo 222024.qmd)
+-   [Crispo - Excel Challenge 23 2024](Crispo 232024.qmd)

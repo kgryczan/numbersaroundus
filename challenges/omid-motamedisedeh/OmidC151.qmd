@@ -1,0 +1,121 @@
+---
+title: "Omid - Challenge 151"
+description: "🔰 The results of the simulation in SolidWorks are provided in the Question table, including values of X, Y, and Z ."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 151](/challenges/images/OmidC151.jpg)
+
+## Challenge Description
+
+🔰 The results of the simulation in SolidWorks are provided in the Question table, including values of X, Y, and Z .
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-151 Solid Worl.xlsx"
+input = read_excel(path, range = "B2:F10")
+test  = read_excel(path, range = "H2:J11") %>%
+  mutate(across(c("y", "z")), round(., 5))
+
+result = input %>%
+  as.matrix() %>% 
+  t() %>%
+  as.numeric() %>%
+  keep(!is.na(.)) %>%
+  matrix(ncol = 3, byrow = TRUE) %>%
+  as.data.frame() %>%
+  setNames(c("x", "y", "z")) %>%
+  mutate(across(c("y", "z")), round(., 5))
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "CH-151 Solid Worl.xlsx"
+
+input = pd.read_excel(path, usecols="B:F", skiprows=1, nrows=8).to_numpy().flatten()
+test = pd.read_excel(path, usecols="H:J", skiprows=1, nrows=9)
+
+result = [x for x in input if isinstance(x, (int, float)) and not pd.isna(x)]
+matrix = np.array(result).reshape(-1, 3)
+result_df = pd.DataFrame(matrix, columns=["x", "y", "z"])
+
+print(all(result_df == test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 150](OmidC150.qmd)
+-   [Omid - Challenge 152](OmidC152.qmd)
+-   [Omid - Challenge 153](OmidC153.qmd)

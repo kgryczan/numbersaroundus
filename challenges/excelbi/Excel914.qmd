@@ -1,0 +1,124 @@
+---
+title: "Excel BI - Excel Challenge 914"
+description: "🔰 914 Billing Amount.xlsx says: > Standard working hours for this company is 9AM to 5PM."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 914](/challenges/images/exc914.jpg)
+
+## Challenge Description
+
+🔰 The prompt in 914 Billing Amount.xlsx says: Standard working hours for this company is 9AM to 5PM.
+> Overtime - Outside standard working hours, rates will be 20% more.
+> Weekend Rates - Rates will be 50% more (Overtime will not be applicable)
+> Work out the total amount to be paid to each employee. The input includes: The goal is to split each interval into regular hours and overtime hours, apply the correct multiplier, and total the billed amount by employee.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(lubridate)
+
+path <- "Excel/900-999/914/914 Billing Amount.xlsx"
+input <- read_excel(path, range = "A2:D13")
+test <- read_excel(path, range = "F2:G4")
+
+overlap <- function(a1, a2, b1, b2) {
+  pmax(as.numeric(pmin(a2, b2) - pmax(a1, b1), "hours"), 0)
+}
+result = input %>%
+  mutate(Date = as.Date(Date, tryFormats = c("%d.%m.%Y", "%Y-%m-%d"))) %>%
+  separate_rows(Time, sep = ",") %>%
+  separate(Time, c("s", "e"), "-") %>%
+  mutate(
+    s = ymd_hm(paste(Date, s)),
+    e = ymd_hm(paste(Date, e)),
+    d1 = ymd_hm(paste(Date, "09:00")),
+    d2 = ymd_hm(paste(Date, "17:00")),
+    tot = as.numeric(difftime(e, s, units = "hours")),
+    reg = overlap(s, e, d1, d2),
+    ot = tot - reg,
+    amt = if_else(
+      wday(Date, week_start = 1) >= 6,
+      tot * Rate * 1.5,
+      reg * Rate + ot * Rate * 1.2
+    )
+  ) %>%
+  summarise(`Billed Amount` = sum(amt), .by = Resource)
+
+all.equal(result, test)
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Normalize the date format.; Split multiple time ranges into separate rows.; Parse start and end timestamps..
+- **Strengths**: The key technical move is interval overlap.
+- **Areas for Improvement**: The approach assumes the workbook structure and naming conventions stay stable, so any changed input shape would need minor adjustments.
+- **Gem**: Regular hours are not calculated by naive if/else checks.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "Excel/900-999/914/914 Billing Amount.xlsx"
+input = pd.read_excel(path, usecols="A:D", skiprows=1, nrows=12)
+test = pd.read_excel(path, usecols="F:G", skiprows=1, nrows=2).rename(columns=lambda x: x.replace('.1', ''))
+
+def overlap(a1, a2, b1, b2):
+    return np.maximum((np.minimum(a2, b2) - np.maximum(a1, b1)).total_seconds() / 3600, 0)
+
+input['Date'] = pd.to_datetime(input['Date'], format='%d.%m.%Y', errors='coerce').fillna(
+    pd.to_datetime(input['Date'], format='%Y-%m-%d', errors='coerce')
+)
+input = input.assign(Time=input['Time'].str.split(",")).explode('Time')
+input[['s', 'e']] = input['Time'].str.split('-', expand=True)
+input['s'] = pd.to_datetime(input['Date'].dt.strftime('%Y-%m-%d') + ' ' + input['s'], format='%Y-%m-%d %H:%M')
+input['e'] = pd.to_datetime(input['Date'].dt.strftime('%Y-%m-%d') + ' ' + input['e'], format='%Y-%m-%d %H:%M')
+input['d1'], input['d2'] = [pd.to_datetime(input['Date'].dt.strftime('%Y-%m-%d') + f' {t}', format='%Y-%m-%d %H:%M') for t in ['09:00', '17:00']]
+input['tot'] = (input['e'] - input['s']).dt.total_seconds() / 3600
+input['reg'] = input.apply(lambda row: overlap(row['s'], row['e'], row['d1'], row['d2']), axis=1)
+input['ot'] = input['tot'] - input['reg']
+input['amt'] = np.where(
+    input['Date'].dt.weekday >= 5,
+    input['tot'] * input['Rate'] * 1.5,
+    input['reg'] * input['Rate'] + input['ot'] * input['Rate'] * 1.2
+)
+result = input.groupby('Resource', as_index=False).agg({'amt': 'sum'}).rename(columns={'amt': 'Billed Amount'})
+
+print(result.equals(test))
+```
+
+### Python
+
+The Python version follows the same structure: parse dates and explode multiple time intervals.; build start and end timestamps..
+
+## **Difficulty Level**
+
+**Easy**
+
+Once the core pattern is recognized, the implementation is short and direct.
+
+### Related Challenges
+
+- [Excel Challenge 931](/challenges/excelbi/Excel931.html)
+- [Excel Challenge 918](/challenges/excelbi/Excel918.html)
+- [Excel Challenge 930](/challenges/excelbi/Excel930.html)

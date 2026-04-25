@@ -1,0 +1,108 @@
+---
+title: "Crispo - Excel Challenge 11 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-03-16"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 11 2025](/challenges/images/Crispo112025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ PROBLEM SOLUTION SUB-DEPARTMENT NAMES SALES & MARKETING PROCUREMENT ADMIN
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Applies the workbook rule directly and shapes the expected output
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "files/CHALLENGE 1205.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=2, nrows=11)
+test = pd.read_excel(path, usecols="D:G", skiprows=2, nrows=4)
+
+input[['sub_department', 'department']] = input['SUB-DEPARTMENT NAMES'].str.split('-', n=1, expand=True)
+input['rn'] = input.groupby('sub_department').cumcount() + 1
+input = input.drop(columns=['department'])
+
+result = input.pivot(index='rn', columns='sub_department', values='SUB-DEPARTMENT NAMES').reindex(columns=input['sub_department'].unique()).reset_index(drop=True)
+result.index.name = None
+result.columns.name = None
+
+print(result.equals(test)) # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data to the grain required by the task
+
+    -   Aggregates or ranks values at the correct grouping level
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 10 2025](Crispo 102025.qmd)
+-   [Crispo - Excel Challenge 12 2025](Crispo 122025.qmd)

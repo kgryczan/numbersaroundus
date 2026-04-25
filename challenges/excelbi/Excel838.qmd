@@ -1,0 +1,92 @@
+---
+title: "Excel BI - Excel Challenge 838"
+description: "🔰 Answer Expected Store Item Store 1 Store 2 Store 3 D/C A B A/G"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 838](/challenges/images/exc838.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Store Item Store 1 Store 2 Store 3 D/C A B A/G
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/838/838 Stack.xlsx"
+input = read_excel(path, range = "A2:B10")
+test  = read_excel(path, range = "C2:E6")
+
+result = input %>%
+  separate_rows(Item, sep = "/") %>%
+  distinct() %>%
+  arrange(Store, Item) %>%
+  mutate(nr = row_number(), .by = Store) %>%
+  pivot_wider(names_from = Store, values_from = Item) %>%
+  select(-nr)
+
+# Cannot validate, Unexpected C in output
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "800-899/838/838 Stack.xlsx"
+
+input = pd.read_excel(path, usecols="A:B", skiprows=1, nrows=9)
+test = pd.read_excel(path, usecols="C:E", skiprows=1, nrows=5)
+
+result = (input.assign(Item=input['Item'].str.split('/'))
+               .explode('Item')
+               .drop_duplicates()
+               .sort_values(['Store','Item'])
+               .assign(nr=lambda x: x.groupby('Store').cumcount())
+               .pivot(index='nr', columns='Store', values='Item')
+               .reset_index(drop=True))
+
+print(result)
+# Cannot validate, Unexpected C in output
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 839](/challenges/excelbi/Excel839.html)
+- [Excel Challenge 840](/challenges/excelbi/Excel840.html)
+- [Excel Challenge 841](/challenges/excelbi/Excel841.html)

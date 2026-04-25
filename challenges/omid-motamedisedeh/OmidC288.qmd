@@ -1,0 +1,134 @@
+---
+title: "Omid - Challenge 288"
+description: "🔰 Challenge 288: Transforming!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 288](/challenges/images/OmidC288.jpg)
+
+## Challenge Description
+
+🔰 Challenge 288: Transforming!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/288/CH-288 Transforming.xlsx"
+input = read_excel(path, range = "B2:C11")
+test  = read_excel(path, range = "G2:H7")
+
+result = input %>%
+  mutate(Product = ifelse(Price >= 10, Product, "Other")) %>%
+  summarise(Price = sum(Price, na.rm = TRUE), .by = Product) %>%
+  arrange(desc(Price))
+
+all.equal(result, test)
+# > [1] TRUE
+
+ggplot(result, aes(x = "", y = Price, fill = Product)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y", start = 0) +
+  theme_void() +
+  labs(title = "Price Distribution by Product") +
+  theme(legend.title = element_blank())
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+path = "200-299/288/CH-288 Transforming.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=9)
+test = pd.read_excel(path, usecols="G:H", skiprows=1, nrows=5).rename(columns=lambda col: col.replace('.1', ''))
+
+input['Product'] = input.apply(lambda row: row['Product'] if row['Price'] >= 10 else 'Other', axis=1)
+result = input.groupby('Product', as_index=False)['Price'].sum()
+result = result.sort_values('Price', ascending=False).reset_index(drop=True)
+print(result.equals(test))
+
+pie = result.copy()
+plt.figure(figsize=(6, 6))
+plt.pie(
+    pie['Price'],
+    labels=pie['Product'],
+    autopct='%1.1f%%',
+    startangle=90
+)
+plt.title("Price Distribution by Product")
+plt.axis('equal')
+plt.show()
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 287](OmidC287.qmd)
+-   [Omid - Challenge 289](OmidC289.qmd)
+-   [Omid - Challenge 290](OmidC290.qmd)

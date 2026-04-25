@@ -1,0 +1,147 @@
+---
+title: "Omid - Challenge 211"
+description: "🔰 Question Result ID MN XYZ AB CD A"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 211](/challenges/images/OmidC211.jpg)
+
+## Challenge Description
+
+🔰 Question Result ID MN XYZ AB CD A
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-211Column Splitting.xlsx"
+input = read_excel(path, range = "B2:B8")
+test  = read_excel(path, range = "D2:F8")
+
+split_string <- function(x) {
+  x <- as.character(x)
+  n <- nchar(x)
+  
+  get_parts <- function(s, len) {
+    if (len <= 3) {
+      c(s, NA, NA)
+    } else if (len <= 6) {
+      mid <- ceiling(len / 2)
+      c(substr(s, 1, mid),
+        substr(s, mid + 1, len),
+        NA)
+    } else {
+      first <- substr(s, 1, 3)
+      second <- substr(s, 4, 6)
+      third <- substr(s, 7, len)
+      c(first, second, third)
+    }
+  }
+  result <- t(sapply(seq_along(x), function(i) {
+    get_parts(x[i], n[i])
+  }))
+  colnames(result) <- c("Part 1", "Part 2", "Part 3")
+  as.data.frame(result, stringsAsFactors = FALSE)
+}
+
+result = split_string(input$ID)
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-211Column Splitting.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=7)
+test = pd.read_excel(path, usecols="D:F", skiprows=1, nrows=7).fillna("").astype(str)
+
+def split_string(series):
+    def get_parts(s):
+        s = str(s)
+        n = len(s)
+        if n <= 3:
+            return [s, "", ""]
+        elif n <= 6:
+            mid = (n + 1) // 2
+            return [s[:mid], s[mid:], ""]
+        else:
+            return [s[:3], s[3:6], s[6:]]
+    
+    result = [get_parts(x) for x in series]
+    return pd.DataFrame(result, columns=["Part 1", "Part 2", "Part 3"]).astype(str)
+
+result = split_string(input["ID"])
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 210](OmidC210.qmd)
+-   [Omid - Challenge 212](OmidC212.qmd)
+-   [Omid - Challenge 213](OmidC213.qmd)

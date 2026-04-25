@@ -1,0 +1,127 @@
+---
+title: "Omid - Challenge 204"
+description: "🔰 Group Custom Grouping Group the rows from top which in each group the total cost be lower than 150$ and each group includes up to three rows."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 204](/challenges/images/OmidC204.jpg)
+
+## Challenge Description
+
+🔰 Group Custom Grouping Group the rows from top which in each group the total cost be lower than 150$ and each group includes up to three rows.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-204 Custom Grouping.xlsx"
+input = read_excel(path, range = "B2:C19")
+test  = read_excel(path, range = "H2:J19")
+
+result = input %>%
+  mutate(Group = accumulate(Cost, 
+                              ~ if (.x$sum + .y > 150 | .x$count == 3) 
+                                list(sum = .y, count = 1, group = .x$group + 1) 
+                              else 
+                                list(sum = .x$sum + .y, count = .x$count + 1, group = .x$group),
+                              .init = list(sum = 0, count = 0, group = 1)
+  )[-1] %>% map_int("group"))
+
+# Solution has differences in Cost so Groups are not matching.
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from itertools import accumulate
+
+path = "CH-204 Custom Grouping.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=17)
+test = pd.read_excel(path, usecols="H:J", skiprows=1, nrows=17)
+
+def accumulate_groups(costs):
+    groups, acc_sum, acc_count, group = [], 0, 0, 1
+    for cost in costs:
+        if acc_sum + cost > 150 or acc_count == 3:
+            group += 1
+            acc_sum, acc_count = cost, 1
+        else:
+            acc_sum += cost
+            acc_count += 1
+        groups.append(group)
+    return groups
+
+input['Group'] = accumulate_groups(input['Cost'])
+
+print(input)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 203](OmidC203.qmd)
+-   [Omid - Challenge 205](OmidC205.qmd)
+-   [Omid - Challenge 206](OmidC206.qmd)

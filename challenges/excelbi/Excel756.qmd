@@ -1,0 +1,100 @@
+---
+title: "Excel BI - Excel Challenge 756"
+description: "🔰 Words Answer Expected education e1du2ca3ti4o5n bats ba1ts audiovisual a1u2di3o4vi5su6a7l alien a1li2e3n"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 756](/challenges/images/exc756.jpg)
+
+## Challenge Description
+
+🔰 Words Answer Expected education e1du2ca3ti4o5n bats ba1ts audiovisual a1u2di3o4vi5su6a7l alien a1li2e3n
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/756/756 Replace Vowels.xlsx"
+input = read_excel(path, range = "A1:A9")
+test  = read_excel(path, range = "B1:B9")
+
+result = input %>%
+  mutate(char = str_split(Words, "")) %>%
+  unnest(char) %>%
+  mutate(counter = ifelse(char %in% c("a", "e", "i", "o", "u"), 
+                          cumsum(char %in% c("a", "e", "i", "o", "u")), 
+                          NA_integer_), .by = Words) %>%
+  unite("Word_c", char, counter, sep = "", remove = T, na.rm = T) %>%
+  summarise(`Answer Expected` = paste(Word_c, collapse = ""), .by = Words)
+
+all.equal(result$`Answer Expected`, test$`Answer Expected`, check.attributes = FALSE) 
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/756/756 Replace Vowels.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=9)
+test = pd.read_excel(path, usecols="B", nrows=9)
+
+def process_word(word):
+    vowels = 'aeiou'
+    word = str(word)
+    count = 0
+    result = []
+    for c in word:
+        if c in vowels:
+            count += 1
+            result.append(f"{c}{count}")
+        else:
+            result.append(c)
+    return ''.join(result)
+
+input['Answer Expected'] = input.iloc[:,0].apply(process_word)
+result = input.rename(columns={input.columns[0]: 'Words'})[['Words', 'Answer Expected']]
+
+print(result['Answer Expected'].equals(test['Answer Expected'])) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 757](/challenges/excelbi/Excel757.html)
+- [Excel Challenge 758](/challenges/excelbi/Excel758.html)
+- [Excel Challenge 759](/challenges/excelbi/Excel759.html)

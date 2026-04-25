@@ -1,0 +1,131 @@
+---
+title: "Omid - Challenge 6"
+description: "🔰 3- Calculate the distance (absolute defference for value 5 and cluster's ceter 2, is |5-2|=3) of each values from the center of each clusters 4- Calculate the average of…"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 6](/challenges/images/OmidC6.jpg)
+
+## Challenge Description
+
+🔰 3- Calculate the distance (absolute defference for value 5 and cluster's ceter 2, is |5-2|=3) of each values from the center of each clusters 4- Calculate the average of…
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyvverse)
+library(readxl)
+library(FNN)
+
+path = "files/CH-006.xlsx"
+input = read_excel(path, range = "B2:B12")
+
+# conduct knn with n = 2 on input values and put cluster number in column C, then n = 3 into D, and n = 4 into E
+
+output = input %>%
+  mutate(C = kmeans(input, centers = 2)$cluster,
+         D = kmeans(input, centers = 3)$cluster,
+         E = kmeans(input, centers = 4)$cluster)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import numpy as np
+import pandas as pd
+
+path = "CH-006.xlsx"
+input_data = pd.read_excel(path, usecols="B", skiprows=1, nrows=11)
+
+def kmeans_1d(values, k, max_iter=100):
+    x = np.asarray(values, dtype=float)
+    centers = np.quantile(x, np.linspace(0, 1, k + 2)[1:-1])
+    labels = np.zeros(len(x), dtype=int)
+    for _ in range(max_iter):
+        new_labels = np.argmin(np.abs(x[:, None] - centers[None, :]), axis=1)
+        if np.array_equal(new_labels, labels):
+            break
+        labels = new_labels
+        new_centers = centers.copy()
+        for i in range(k):
+            pts = x[labels == i]
+            if len(pts):
+                new_centers[i] = pts.mean()
+        if np.allclose(new_centers, centers):
+            break
+        centers = new_centers
+    return labels + 1
+
+result = input_data.copy()
+result["C"] = kmeans_1d(result.iloc[:, 0], 2)
+result["D"] = kmeans_1d(result.iloc[:, 0], 3)
+result["E"] = kmeans_1d(result.iloc[:, 0], 4)
+print(result)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 5](OmidC5.qmd)
+-   [Omid - Challenge 7](OmidC7.qmd)
+-   [Omid - Challenge 8](OmidC8.qmd)

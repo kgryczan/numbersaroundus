@@ -1,0 +1,92 @@
+---
+title: "Excel BI - Excel Challenge 737"
+description: "🔰 Split the text in different columns where split is on the basis of transition from number to text and text to numbers."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 737](/challenges/images/exc737.jpg)
+
+## Challenge Description
+
+🔰 Split the text in different columns where split is on the basis of transition from number to text and text to numbers.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/737/737 Split Text on Transition.xlsx"
+input = read_excel(path, range = "A2:A6")
+test = read_excel(path, range = "B2:F6")
+
+result = input %>%
+  mutate(
+    Value = str_split(Text, "(?<=[A-Za-z])-(?=\\d)|(?<=\\d)-(?=[A-Za-z])")
+  ) %>%
+  unnest_wider(Value, names_sep = "") %>%
+  select(-Text)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "700-799/737/737 Split Text on Transition.xlsx"
+input = pd.read_excel(path, usecols="A", skiprows=1, nrows=5)
+test = pd.read_excel(path, usecols="B:F", skiprows=1, nrows=5)
+
+value_cols = input.iloc[:, 0].astype(str).str.split(
+    r'(?<=[A-Za-z])-(?=\d)|(?<=\d)-(?=[A-Za-z])',
+    expand=True
+)
+result = value_cols.set_axis(
+    [f'Value{i+1}' for i in range(value_cols.shape[1])],
+    axis=1
+)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 738](/challenges/excelbi/Excel738.html)
+- [Excel Challenge 739](/challenges/excelbi/Excel739.html)
+- [Excel Challenge 740](/challenges/excelbi/Excel740.html)

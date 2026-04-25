@@ -1,0 +1,118 @@
+---
+title: "Excel BI - PowerQuery Challenge 262"
+description: "Transpose problem table into result table."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 262](/challenges/images/exc262pq.jpg)
+
+## Challenge Description
+
+Transpose problem table into result table.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_262.xlsx"
+input = read_excel(path, range = "A1:J5")
+test  = read_excel(path, range = "A10:C20")
+
+result = input %>%
+  pivot_longer(everything(), names_to = c(".value", "Subject"), names_sep = "-",values_drop_na = T) %>%
+  select(Class, Subject, Marks)
+
+all.equal(result, test, check.attributes = F)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "PQ_Challenge_262.xlsx"
+input = pd.read_excel(path, usecols="A:J", nrows=5)
+test = pd.read_excel(path, usecols="A:C", skiprows=9, nrows=11)
+
+df = input.reset_index().rename(columns={'index': 'id'})
+df_long = df.melt(id_vars='id', var_name='Category', value_name='Value')
+df_long[['Type', 'Subject']] = df_long['Category'].str.split('-', expand=True)
+df_final = df_long.pivot_table(index=['id', 'Subject'], columns='Type', values='Value', dropna=False).reset_index()
+df_final = df_final.dropna(subset=['Marks', 'Class'])[['Class', 'Subject', 'Marks']].astype({'Marks': 'int64', 'Class': 'int64'}).reset_index(drop=True)
+
+print(df_final.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 261](Excel261pq.qmd)
+-   [Excel BI - Excel Challenge 642](Excel642.qmd)

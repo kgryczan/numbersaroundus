@@ -1,0 +1,119 @@
+---
+title: "Omid - Challenge 41"
+description: "🔰 Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 41](/challenges/images/OmidC41.jpg)
+
+## Challenge Description
+
+🔰 Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-041 Transformation.xlsx", range = "B2:E11")
+test  = read_excel("files/CH-041 Transformation.xlsx", range = "G2:H21")
+
+result = input %>%
+  select(`Machinary Code` = 1, Col1 = 2, Col2 = 3, Col3 = 4) %>%
+  pivot_longer(cols = -c(1), names_to = "col", values_to = "Product Code", values_drop_na = TRUE) %>%
+  arrange(str_extract(`Product Code`, "\\d+"), col) %>%
+  select(-col)
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input = pd.read_excel("CH-041 Transformation.xlsx", usecols="B:E", skiprows=1, nrows = 9)
+test = pd.read_excel("CH-041 Transformation.xlsx", usecols="G:H", skiprows=1, nrows = 20)
+
+result = input.copy()
+# name columns
+result.columns = ["Machinary Code", "Col1", "Col2", "Col3"]
+result = result.melt(id_vars=["Machinary Code"], var_name="col", value_name="Product Code").dropna(subset=["Product Code"])
+result = result.sort_values(by=["Product Code", "col"])
+result = result.drop(columns=["col"]).reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 40](OmidC40.qmd)
+-   [Omid - Challenge 42](OmidC42.qmd)
+-   [Omid - Challenge 43](OmidC43.qmd)

@@ -1,0 +1,171 @@
+---
+title: "Excel BI - PowerQuery Challenge 252"
+description: "Store No Store Name Column1 Column2 Customer First Visit Date"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 252](/challenges/images/exc252pq.jpg)
+
+## Challenge Description
+
+Store No Store Name Column1 Column2 Customer First Visit Date
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(janitor)
+
+path = "Power Query/PQ_Challenge_252.xlsx"
+input = read_excel(path, range = "A1:D17")
+test  = read_excel(path, range = "F1:J11")
+r1 = input %>%
+  mutate(group = consecutive_id(nchar(`Store No`) == 1)) %>%
+  split(.$group) %>%
+  map(~ {
+    if (.x$group[1] %% 2 == 0) {
+      colnames(.x) <- .x[1, ]
+      .x <- .x[-1, ]
+    }
+    .x
+  })
+
+r2 = r1 %>%
+  keep(~ nrow(.x) == 1) %>%
+  reduce(bind_rows) %>%
+  remove_empty("cols")
+
+r3 = r1 %>%
+  keep(~ nrow(.x) > 1) %>%
+  map(~ .x %>%
+    remove_empty("cols") %>%
+    clean_names()) %>%
+  reduce(bind_rows) %>%
+  mutate(group = coalesce(x2, x4, x6) - 1,
+         first_visit_date = as.POSIXct(excel_numeric_to_date(as.numeric(first_visit_date))),
+         last_purchase_date = as.POSIXct(excel_numeric_to_date(as.numeric(last_purchase_date)))) %>%
+  select(-starts_with("x"))
+
+result = r2 %>%
+  left_join(r3, by = "group") %>%
+  select(-group)
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "PQ_Challenge_252.xlsx"
+input = pd.read_excel(path, usecols="A:D", nrows=17)
+test = pd.read_excel(path, usecols="F:J", nrows=10).rename(columns=lambda x: x.split('.')[0])
+
+def consecutive_id(condition):
+    group = 0
+    ids = []
+    for cond in condition:
+        if cond:
+            group += 1
+        ids.append(group)
+    return ids
+
+
+input['store_no_nchar'] = input['Store No'].str.len()==1
+input['group'] = consecutive_id(input['store_no_nchar'])
+input['group'] = (input['store_no_nchar'] != input['store_no_nchar'].shift()).cumsum()
+
+odd_groups = input[input['group'] % 2 != 0]
+odd_groups = pd.concat([odd_groups]).reset_index(drop=True)
+odd_groups = odd_groups[['Store No', 'Store Name', 'group']]
+odd_groups['group'] = odd_groups['group'] + 1
+
+even_groups = input[input['group'] % 2 == 0]
+even_groups = pd.concat([even_groups]).reset_index(drop=True)
+even_groups.columns = even_groups.iloc[0]
+even_groups = even_groups[1:].reset_index(drop=True)
+even_groups = even_groups[['Customer', 'First Visit Date', 'Last Purchase Date',2]] 
+even_groups = even_groups[even_groups['Customer'] != 'Customer']
+even_groups = even_groups.rename(columns={2: 'group'})
+
+merged_groups = pd.merge(odd_groups, even_groups, on='group', how='inner')
+merged_groups = merged_groups.drop(columns=['group'])
+merged_groups['First Visit Date'] = pd.to_datetime(merged_groups['First Visit Date'])
+merged_groups['Last Purchase Date'] = pd.to_datetime(merged_groups['Last Purchase Date'])
+
+
+print(merged_groups == type)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The transformation rule is readable, but the final layout still requires a careful implementation.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 251](Excel251pq.qmd)
+-   [Excel BI - PowerQuery Challenge 253](Excel253pq.qmd)
+-   [Excel BI - Excel Challenge 632](Excel632.qmd)

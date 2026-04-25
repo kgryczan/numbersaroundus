@@ -1,0 +1,147 @@
+---
+title: "Omid - Challenge 98"
+description: "🔰 In the Question table, historical sales values are provided in a single cell, including the Date, Product Name, and Quantity, but in a disorganized order."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 98](/challenges/images/OmidC98.jpg)
+
+## Challenge Description
+
+🔰 In the Question table, historical sales values are provided in a single cell, including the Date, Product Name, and Quantity, but in a disorganized order.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-98 Data Cleaning.xlsx"
+input = read_excel(path, range = "B2:B9")
+test  = read_excel(path, range = "D2:F9")
+
+pattern_date = "(\\d{4}\\/\\d{2}\\/\\d{2})"
+pattern_num = "(\\s\\d{1,2}\\s|^\\d{1,2}\\s|\\s\\d{1,2}$)"
+pattern_let = "([A-Z]+)"
+
+result = input %>%
+  mutate(Description = str_remove_all(Description, ","),
+         Date = str_extract(Description, pattern_date) %>% as.POSIXct(., tz = "UTC"),
+         Product = str_extract(Description, pattern_let),
+         Quantity = str_extract(Description, pattern_num) %>% as.numeric()) %>%
+  select(-Description)
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-98 Data Cleaning.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=1)
+test = pd.read_excel(path, usecols="D:F", skiprows=1)
+
+input = input["Description"].str.split(", ", expand=True)
+result = pd.DataFrame(columns=["Date", "Product", "Quantity"])
+
+for i in range(len(input)):
+    temp = input.iloc[i]
+    date = None
+    product = None
+    quantity = None
+
+    for j in range(temp.size):
+        if "/" in temp[j]:
+            date = temp[j]
+        elif temp[j].isalpha():
+            product = temp[j]
+        elif temp[j].isdigit():
+            quantity = temp[j]
+        else:
+            if any(char.isalpha() for char in temp[j]):
+                product = temp[j]
+            if any(char.isdigit() for char in temp[j]):
+                quantity = ''.join(filter(str.isdigit, temp[j]))
+
+    result = result._append({"Date": date, "Product": product, "Quantity": quantity}, ignore_index=True)
+
+result["Date"] = pd.to_datetime(result["Date"])
+result["Quantity"] = pd.to_numeric(result["Quantity"])
+result["Product"] = result["Product"].str.strip()
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 97](OmidC97.qmd)
+-   [Omid - Challenge 99](OmidC99.qmd)
+-   [Omid - Challenge 100](OmidC100.qmd)

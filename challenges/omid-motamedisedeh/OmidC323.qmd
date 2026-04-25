@@ -1,0 +1,137 @@
+---
+title: "Omid - Challenge 323"
+description: "🔰 Question Table Result Table Column 1 Column 2 A X C B"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 323](/challenges/images/OmidC323.jpg)
+
+## Challenge Description
+
+🔰 Question Table Result Table Column 1 Column 2 A X C B
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "300-399/323/CH-323 Pattern Combinations.xlsx"
+input = read_excel(path, range = "B2:C12")
+test  = read_excel(path, range = "E2:E4")
+
+n = nrow(input)
+result <- input %>%
+  mutate(group = map2(1:n, 1:n, ~ rep(.x, .y)) %>% unlist() %>% head(n)) %>%
+  mutate(f_word = ifelse(group %% 2 == 1, `Column 1`, `Column 2`),
+         s_word = ifelse(group %% 2 == 0, `Column 1`, `Column 2`)) %>%
+  summarise(f_word = paste(f_word, collapse = ""),
+            s_word = paste(s_word, collapse = "")) %>%
+  pivot_longer(everything(), values_to = "Combinations") %>%
+  select(-name)
+
+all.equal(result, test)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import polars as pl
+import numpy as np
+
+path = "300-399/323/CH-323 Pattern Combinations.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=10)
+test = pd.read_excel(path, usecols="E", skiprows=1, nrows=2).values.flatten()
+
+input_pl = pl.from_pandas(input)
+n = input_pl.height
+
+group = np.concatenate([np.repeat(i+1, i+1) for i in range(n)])[:n]
+input_pl = input_pl.with_columns(pl.Series("group", group))
+
+input_pl = input_pl.with_columns([
+    pl.when(pl.col("group") % 2 == 1).then(pl.col("Column 1")).otherwise(pl.col("Column 2")).alias("f_word"),
+    pl.when(pl.col("group") % 2 == 0).then(pl.col("Column 1")).otherwise(pl.col("Column 2")).alias("s_word"),
+])
+
+f_word = "".join(input_pl["f_word"].to_list())
+s_word = "".join(input_pl["s_word"].to_list())
+
+result = np.array([f_word, s_word])
+
+print((result == test).all())  # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 322](OmidC322.qmd)
+-   [Omid - Challenge 324](OmidC324.qmd)
+-   [Omid - Challenge 325](OmidC325.qmd)

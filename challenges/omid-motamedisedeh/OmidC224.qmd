@@ -1,0 +1,119 @@
+---
+title: "Omid - Challenge 224"
+description: "🔰 Question Result ID MN-123-98-24 XMN-0-0-23-2 MN-B-10-12 NHJ-A-B-I23 I-XX-MN1"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 224](/challenges/images/OmidC224.jpg)
+
+## Challenge Description
+
+🔰 Question Result ID MN-123-98-24 XMN-0-0-23-2 MN-B-10-12 NHJ-A-B-I23 I-XX-MN1
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-224 Column Splitting.xlsx"
+input = read_excel(path, range = "B2:B7")
+test = read_excel(path, range = "D2:E7")
+
+result = input %>%
+  separate(
+    col = "ID",
+    into = c("ID1", "ID2", "ID3", "ID4"),
+    sep = "-",
+    extra = "merge"
+  ) %>%
+  unite(col = "ID.1", ID1, ID2, sep = "-", na.rm = TRUE) %>%
+  unite(col = "ID.2", ID3, ID4, sep = "-", na.rm = TRUE)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-224 Column Splitting.xlsx"
+
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=6)
+test = pd.read_excel(path, usecols="D:E", skiprows=1, nrows=6)
+
+result = input["ID"].str.split("-", expand=True)
+result.columns = ["ID1", "ID2", "ID3", "ID4", "ID5"]
+
+result["ID.1"] = result[["ID1", "ID2"]].apply(lambda x: "-".join(x.dropna()), axis=1)
+result["ID.2"] = result[["ID3", "ID4", "ID5"]].apply(lambda x: "-".join(x.dropna()), axis=1)
+
+result = result[["ID.1", "ID.2"]]
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 223](OmidC223.qmd)
+-   [Omid - Challenge 225](OmidC225.qmd)
+-   [Omid - Challenge 226](OmidC226.qmd)

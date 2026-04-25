@@ -1,0 +1,166 @@
+---
+title: "Excel BI - PowerQuery Challenge 343"
+description: "Transpose the table as shown."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 343](/challenges/images/exc343pq.jpg)
+
+## Challenge Description
+
+Transpose the table as shown.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(unpivotr)
+
+path <- "Power Query/300-399/343/PQ_Challenge_343.xlsx"
+input <- read_excel(path, range = "A1:B19")
+test <- read_excel(path, range = "D1:H6")
+
+result <- input %>%
+  mutate(group = cumsum(Data1 == "Dept")) %>%
+  filter(group > 0) %>%
+  group_by(group) %>%
+  group_modify(
+    ~ {
+      emp_rows <- which(.x$Data1 == "Emp ID") + 1
+      salary_rows <- which(.x$Data1 == "Salary") + 1
+      n_emps <- salary_rows[1] - emp_rows[1]
+
+      tibble(
+        Dept = .x$Data1[2],
+        Emp_ID = .x$Data1[emp_rows:(emp_rows + n_emps - 1)],
+        Location = .x$Data2[emp_rows:(emp_rows + n_emps - 1)],
+        Salary = as.numeric(.x$Data1[salary_rows:(salary_rows + n_emps - 1)]),
+        Age = as.numeric(.x$Data2[salary_rows:(salary_rows + n_emps - 1)])
+      )
+    }
+  ) %>%
+  ungroup() %>%
+  select(-group) %>%
+  na.omit()
+
+all.equal(result, test, check.attributes = FALSE)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Power Query/300-399/343/PQ_Challenge_343.xlsx"
+input_df = pd.read_excel(path, usecols="A:B", nrows=19)
+test_df = pd.read_excel(path, usecols="D:H", nrows=5)
+
+input_df['group'] = (input_df['Data1'] == "Dept").cumsum()
+input_df = input_df[input_df['group'] > 0]
+
+result_rows = []
+for group_id, group in input_df.groupby('group'):
+    emp_rows = group.index[group['Data1'] == "Emp ID"][0] + 1
+    salary_rows = group.index[group['Data1'] == "Salary"][0] + 1
+    n_emps = salary_rows - emp_rows
+
+    dept = group['Data1'].iloc[1]
+    emp_ids = input_df.loc[emp_rows:emp_rows + n_emps - 1, 'Data1'].tolist()
+    locations = input_df.loc[emp_rows:emp_rows + n_emps - 1, 'Data2'].tolist()
+    salaries = pd.to_numeric(input_df.loc[salary_rows:salary_rows + n_emps - 1, 'Data1'], errors='coerce').tolist()
+    ages = pd.to_numeric(input_df.loc[salary_rows:salary_rows + n_emps - 1, 'Data2'], errors='coerce').tolist()
+
+    for eid, loc, sal, age in zip(emp_ids, locations, salaries, ages):
+        result_rows.append({
+            'Dept': dept,
+            'Emp ID': eid,
+            'Location': loc,
+            'Salary': sal,
+            'Age': age
+        })
+
+result_df = pd.DataFrame(result_rows).dropna()
+result_df['Salary'] = result_df['Salary'].astype('int64')
+result_df['Age'] = result_df['Age'].astype('int64')
+result_df = result_df.reset_index(drop=True)
+
+print(result_df.equals(test_df)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 342](Excel342pq.qmd)
+-   [Excel BI - Excel Challenge 723](Excel723.qmd)

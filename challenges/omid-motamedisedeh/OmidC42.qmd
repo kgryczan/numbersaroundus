@@ -1,0 +1,123 @@
+---
+title: "Omid - Challenge 42"
+description: "🔰 In the question table, a list of patients is provided who are scheduled to visit the doctor for consultations and surgery."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 42](/challenges/images/OmidC42.jpg)
+
+## Challenge Description
+
+🔰 In the question table, a list of patients is provided who are scheduled to visit the doctor for consultations and surgery.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel('files/CH-042 Revisit after surgury.xlsx', range = "B2:E27")
+test  = read_excel('files/CH-042 Revisit after surgury.xlsx', range = "I2:K4")
+
+result = input %>%
+  group_by(`Patient-ID`, Gander) %>%
+  arrange(Date) %>%
+  summarise(seq = paste0(Referral, collapse = ' -> ')) %>%
+  ungroup() %>%
+  filter(str_detect(seq, "Surgery -> ")) %>%
+  summarise('No of re-visit after surgery' = n() %>% as.numeric(),
+            'Patient ID' = paste0(sort(`Patient-ID`), collapse = ', '),
+            .by = Gander) %>%
+  select(Gender = Gander, everything())
+
+identical(result, test)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+input = pd.read_excel('CH-042 Revisit after surgury.xlsx', usecols="B:E", skiprows=1, nrows = 27)
+test = pd.read_excel('CH-042 Revisit after surgury.xlsx', usecols="I:K", skiprows=1, nrows = 2)
+
+result = input.groupby(['Patient-ID', 'Gander\t']).apply(lambda x: ' -> '.join(x['Referral'])).reset_index(name='seq')
+result = result[result['seq'].str.contains('Surgery ->')]
+result = result.groupby('Gander\t').agg({'seq': 'count', 'Patient-ID': lambda x: ', '.join(sorted(x))})\
+    .rename(columns={'seq': 'No of re-visit after surgery', 'Patient-ID': 'Patient ID'}).reset_index()
+result = result.rename(columns={'Gander\t': 'Gender'}).sort_values(by= 'Gender', ascending=False).reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 41](OmidC41.qmd)
+-   [Omid - Challenge 43](OmidC43.qmd)
+-   [Omid - Challenge 44](OmidC44.qmd)

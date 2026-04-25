@@ -1,0 +1,113 @@
+---
+title: "Omid - Challenge 49"
+description: "🔰 Assignment Assignment Problem is a well-known problem for assigning tasks to different people by the minimum cost and we want to solve it with The Hungarian method withi…"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 49](/challenges/images/OmidC49.jpg)
+
+## Challenge Description
+
+🔰 Assignment Assignment Problem is a well-known problem for assigning tasks to different people by the minimum cost and we want to solve it with The Hungarian method withi…
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-049 Assignment Problem Part 1.xlsx", range = "C2:F6") 
+step2 = read_excel("files/CH-049 Assignment Problem Part 1.xlsx", range = "P2:S6")
+
+result = input %>%
+  rowwise() %>%
+  mutate(across(everything(), ~ . - min(c_across(everything())))) %>%
+  ungroup() %>%
+  mutate(across(everything(), ~ . - min(.)))
+
+identical(result, step2)
+#  [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input = pd.read_excel("CH-049 Assignment Problem Part 1.xlsx", usecols="C:F", skiprows=1).values
+test = pd.read_excel("CH-049 Assignment Problem Part 1.xlsx", usecols="P:S", skiprows=1).values
+
+input = [[val - min(row) for val in row] for row in input]
+input = list(map(list, zip(*input)))
+input = [[val - min(row) for val in row] for row in input]
+input = list(map(list, zip(*input)))
+
+print(input == test)    # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 48](OmidC48.qmd)
+-   [Omid - Challenge 50](OmidC50.qmd)
+-   [Omid - Challenge 51](OmidC51.qmd)

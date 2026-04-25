@@ -1,0 +1,144 @@
+---
+title: "Omid - Challenge 142"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 142](/challenges/images/OmidC142.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(hms)
+
+path = "files/CH-142 Table Transformation.xlsx"
+input = read_excel(path, range = "B2:E18") 
+test  = read_excel(path, range = "G2:J12") %>% 
+  mutate(across(c(In, Out), as_hms))
+
+input = input %>% mutate(Time = as_hms(Time))
+ins = input %>% filter(Type == "In") %>% rename(In = Time)
+outs = input %>% filter(Type == "Out") %>% rename(Out = Time)
+
+result_df = ins %>%
+  left_join(outs, by = c("Date", "ID")) %>%
+  filter(In < Out) %>%
+  group_by(Date, ID, In) %>%
+  slice_min(Out) %>%
+  ungroup()
+
+unmatched_ins = anti_join(ins, result_df, by = c("Date", "ID", "In"))
+unmatched_outs = anti_join(outs, result_df, by = c("Date", "ID", "Out"))
+
+result = bind_rows(result_df, unmatched_outs, unmatched_ins) %>%
+  arrange(Date, ID, coalesce(In,Out)) %>%
+  select(Date, ID, In, Out)
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-142 Table Transformation.xlsx"
+input = pd.read_excel(path, usecols="B:E", skiprows=1, nrows=16)
+test = pd.read_excel(path, usecols="G:J", skiprows=1, nrows=10).rename(columns=lambda x: x.split('.')[0])
+
+ins = input[input['Type'] == 'In'].rename(columns={'Time': 'In'})
+outs = input[input['Type'] == 'Out'].rename(columns={'Time': 'Out'})
+
+result = ins.merge(outs, on=['Date', 'ID']).query('In < Out').sort_values(by=['Date', 'ID', 'In'])\
+    .drop_duplicates(subset=['Date', 'ID', 'In']).reset_index(drop=True)
+
+unmatched_ins = pd.merge(ins, result, on=['Date', 'ID', 'In'], how='left', indicator=True)
+unmatched_ins = unmatched_ins[unmatched_ins['_merge'] == 'left_only'].drop(columns=['_merge'])
+
+unmatched_outs = pd.merge(outs, result, on=['Date', 'ID', 'Out'], how='left', indicator=True)
+unmatched_outs = unmatched_outs[unmatched_outs['_merge'] == 'left_only'].drop(columns=['_merge'])
+
+result['In_Out'] = result[['In', 'Out']].max(axis=1)
+
+result = pd.concat([result, unmatched_outs, unmatched_ins])\
+    .sort_values(by=['Date', 'ID', 'In_Out']).reset_index(drop=True)
+result = result[['Date', 'ID', 'In', 'Out']]
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 141](OmidC141.qmd)
+-   [Omid - Challenge 143](OmidC143.qmd)
+-   [Omid - Challenge 144](OmidC144.qmd)

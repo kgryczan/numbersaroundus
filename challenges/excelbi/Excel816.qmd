@@ -1,0 +1,83 @@
+---
+title: "Excel BI - Excel Challenge 816"
+description: "🔰 List all Penholodigital squares."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 816](/challenges/images/exc816.jpg)
+
+## Challenge Description
+
+🔰 List all Penholodigital squares. A Penholodigital square is perfect square number that contains every digit from 1 to 9 exactly once, not including zero.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(combinat)
+
+path = "Excel/800-899/816/816 Penholodigial Numbers.xlsx"
+test  = read_excel(path, range = "A1:A31", col_types = "numeric") %>% pull()
+
+squares_df = (ceiling(sqrt(123456789)):floor(sqrt(987654321)))^2
+squares_df = squares_df[map_lgl(squares_df, ~ setequal(as.integer(str_split(.x, "", simplify = TRUE)), 1:9))]
+all.equal(squares_df, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Parse the packed text or string structure.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "800-899/816/816 Penholodigial Numbers.xlsx"
+test_raw = pd.read_excel(path, usecols="A", nrows=31, header=None).iloc[:, 0]
+test = [int(x) for x in test_raw if str(x).isdigit()]
+
+squares = [i**2 for i in range(int(np.ceil(np.sqrt(123456789))), int(np.floor(np.sqrt(987654321))) + 1)]
+is_pandigital = lambda n: set(str(n)) == set('123456789') and len(str(n)) == 9
+squares_df = [sq for sq in squares if is_pandigital(sq)]
+
+result = squares_df == test
+print(result)
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 817](/challenges/excelbi/Excel817.html)
+- [Excel Challenge 818](/challenges/excelbi/Excel818.html)
+- [Excel Challenge 819](/challenges/excelbi/Excel819.html)

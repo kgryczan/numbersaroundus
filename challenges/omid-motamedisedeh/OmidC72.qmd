@@ -1,0 +1,137 @@
+---
+title: "Omid - Challenge 72"
+description: "🔰 Challenge 72 : Fibonacci sequence!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 72](/challenges/images/OmidC72.jpg)
+
+## Challenge Description
+
+🔰 Challenge 72 : Fibonacci sequence!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-072 Fibonacci sequence .xlsx"
+test = read_excel(path,  range = "B1:B19") %>% pull()
+
+
+fibonacci <- function(n) {
+  if (n == 1) {
+    return(c(0))
+  } else if (n == 2) {
+    return(c(0, 1))
+  } else {
+    fib_sequence <- accumulate(3:n, .init = c(0, 1), ~ c(.x, .x[length(.x)] + .x[length(.x) - 1]))
+    return(unlist(fib_sequence[n - 1]))
+  }
+}
+identical(fibonacci(18), test) 
+# [1] TRUE
+
+fibonacci1 <- function(n) {
+  fib_sequence <- numeric(n)
+  fib_sequence[1] <- 0
+  if (n > 1) {
+    fib_sequence[2] <- 1
+  }
+  if (n > 2) {
+    map(3:n, ~ {
+      fib_sequence[.x] <<- fib_sequence[.x - 1] + fib_sequence[.x - 2]
+    })
+  }
+  return(fib_sequence)
+}
+identical(fibonacci1(18), test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-072 Fibonacci sequence .xlsx"
+test = pd.read_excel(path, usecols="B").values.tolist()
+test = [item for sublist in test for item in sublist]
+
+def fibonacci_memo(n, memo={0: 0, 1: 1}):
+    if n not in memo:
+        memo[n] = fibonacci_memo(n - 1, memo) + fibonacci_memo(n - 2, memo)
+    return memo[n]
+
+def generate_fibonacci_sequence(N):
+    return [fibonacci_memo(i) for i in range(N)]
+
+result = generate_fibonacci_sequence(18)
+print(result == test)  # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 71](OmidC71.qmd)
+-   [Omid - Challenge 73](OmidC73.qmd)
+-   [Omid - Challenge 74](OmidC74.qmd)

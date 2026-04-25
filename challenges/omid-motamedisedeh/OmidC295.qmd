@@ -1,0 +1,184 @@
+---
+title: "Omid - Challenge 295"
+description: "🔰 : Consecutive Character Matching!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 295](/challenges/images/OmidC295.jpg)
+
+## Challenge Description
+
+🔰 : Consecutive Character Matching!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/295/CH-295 Text Matching.xlsx"
+input = read_excel(path, range = "B2:B9")
+test  = read_excel(path, range = "D2:E9")
+
+get_substrings <- function(id, min_length = 3, max_length = NULL) {
+  id1 = unlist(strsplit(id, ""))
+  n = length(id1)
+  if (is.null(max_length)) max_length = n
+  purrr::flatten_chr(
+    purrr::map(min_length:min(max_length, n), function(len) {
+      purrr::map_chr(1:(n - len + 1), function(start) {
+        paste(id1[start:(start + len - 1)], collapse = "")
+      })
+    })
+  )
+}
+
+result = expand.grid(`ID 1` = input$ID, `ID 2` = input$ID) %>%
+  mutate_all(as.character) %>%
+  filter(`ID 1` != `ID 2`,`ID 1` < `ID 2`) %>%
+  rowwise() %>%
+  mutate(substrings = list(get_substrings(`ID 1`))) %>%
+  unnest(substrings) %>%
+  ungroup() %>%
+  filter(str_detect(`ID 2`, substrings))
+
+# # A tibble: 10 × 3
+# `ID 1`      `ID 2`   substrings
+# <chr>       <chr>    <chr>     
+# 1 MA-210      MX-21551 -21       
+# 2 MX-21551    MX-21F   MX-       
+# 3 MX-21551    MX-21F   X-2       
+# 4 MX-21551    MX-21F   -21       
+# 5 MA-210      MX-21F   -21       
+# 6 MX-21551    MX-M5512 MX-       
+# 7 MX-21551    MX-M5512 551       
+# 8 MX-21F      MX-M5512 MX-       
+# 9 FF-512      MX-M5512 512       
+# 10 BN-8213F2  RF_821   821       
+
+
+r2 = result %>%
+  select(-substrings) %>%
+  distinct()
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+input = pd.read_excel("200-299/295/CH-295 Text Matching.xlsx", usecols="B", skiprows=1, nrows=8)
+
+ids = input['ID'].astype(str).tolist()
+def subs(s): return [s[i:j] for i in range(len(s)) for j in range(i+3, len(s)+1)]
+result = pd.DataFrame([
+    {'ID 1': a, 'ID 2': b, 'substrings': sub}
+    for i, a in enumerate(ids) for j, b in enumerate(ids)
+    if a != b and a < b
+    for sub in subs(a) if sub in b
+])
+
+print(result)
+
+# r2: distinct id1/id2 pairs where a substring match exists
+r2 = result[['ID 1', 'ID 2']].drop_duplicates().reset_index(drop=True)
+print(r2)
+
+#          ID 1      ID 2 substrings
+# 0    MX-21551    MX-21F        MX-
+# 1    MX-21551    MX-21F       MX-2
+# 2    MX-21551    MX-21F      MX-21
+# 3    MX-21551    MX-21F        X-2
+# 4    MX-21551    MX-21F       X-21
+# 5    MX-21551    MX-21F        -21
+# 6    MX-21551  MX-M5512        MX-
+# 7    MX-21551  MX-M5512        551
+# 8      MX-21F  MX-M5512        MX-
+# 9   BN-8213F2    RF_821        821
+# 10     MA-210  MX-21551        -21
+# 11     MA-210    MX-21F        -21
+# 12     FF-512  MX-M5512        512
+
+# r2: distinct id1/id2 pairs where a substring match exists
+r2 = result[['ID 1', 'ID 2']].drop_duplicates().reset_index(drop=True)
+print(r2)
+
+#          ID 1      ID 2
+# 0    MX-21551    MX-21F
+# 1    MX-21551  MX-M5512
+# 2      MX-21F  MX-M5512
+# 3   BN-8213F2    RF_821
+# 4     MA-210   MX-21551
+# 5     MA-210     MX-21F
+# 6     FF-512   MX-M5512
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 294](OmidC294.qmd)
+-   [Omid - Challenge 296](OmidC296.qmd)
+-   [Omid - Challenge 297](OmidC297.qmd)

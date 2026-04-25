@@ -1,0 +1,90 @@
+---
+title: "Excel BI - Excel Challenge 659"
+description: "🔰 Find those 2 digits to 5 digits numbers whose cube results into numbers where frequency of appearing digits are same."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 659](/challenges/images/exc659.jpg)
+
+## Challenge Description
+
+🔰 Find those 2 digits to 5 digits numbers whose cube results into numbers where frequency of appearing digits are same.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/659 Cube Frequency of All Digits Same.xlsx"
+test  = read_excel(path, range = "A1:A81")
+
+find_numbers <- function(min_n = 10, max_n = 99999) {
+  nums <- min_n:max_n
+  keep(nums, ~ length(unique(table(str_split(as.character(.x^3), "", simplify = TRUE)))) == 1) %>%
+    enframe(name = NULL, value = "Answer Expected") 
+}
+
+result <- find_numbers()
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Parse the packed text or string structure.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "659 Cube Frequency of All Digits Same.xlsx"
+test = pd.read_excel(path, usecols="A", nrows=81)
+
+def find_numbers(min_n=10, max_n=99999):
+    return pd.DataFrame(
+        [num for num in range(min_n, max_n + 1) 
+         if len(set(str(num ** 3).count(digit) for digit in set(str(num ** 3)))) == 1], 
+        columns=["Answer Expected"]
+    )
+
+result = find_numbers()
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 660](/challenges/excelbi/Excel660.html)
+- [Excel Challenge 661](/challenges/excelbi/Excel661.html)
+- [Excel Challenge 662](/challenges/excelbi/Excel662.html)

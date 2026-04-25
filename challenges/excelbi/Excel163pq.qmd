@@ -1,0 +1,149 @@
+---
+title: "Excel BI - PowerQuery Challenge 163"
+description: "Extract the valid vehicle registration numbers from given data table T2. A registration number format is Vehicle Code (given in Table T1) followed by 2 digits number (all 2 digits can't be 0s) followed by 2 English alphabets followed by 4 digits number (all 4 digits can't be 0s)."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 163](/challenges/images/exc163pq.jpg)
+
+## Challenge Description
+
+Extract the valid vehicle registration numbers from given data table T2. A registration number format is Vehicle Code (given in Table T1) followed by 2 digits number (all 2 digits can't be 0s) followed by 2 English alphabets followed by 4 digits number (all 4 digits can't be 0s).
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input1 = read_excel("Power Query/PQ_Challenge_163.xlsx", range = "A1:B29")
+input2 = read_excel("Power Query/PQ_Challenge_163.xlsx", range = "D1:D10")
+test   = read_excel("Power Query/PQ_Challenge_163.xlsx", range = "F1:G10")
+
+pattern = "([A-Z]{2})(\\d{2})([A-Z]{2})(\\d{4})"
+
+res = input2 %>%
+  mutate(Data = str_remove_all(Data, " ")) %>%
+  mutate(a = str_match_all(Data, pattern), nr = row_number()) %>%
+  unnest_longer(a, keep_empty = TRUE) %>%
+  mutate(p1_valid = a[,2] %in% input1$`Vehicle code`,
+         p2_valid = a[,3] != "00",
+         p4_valid = a[,5] != "0000",
+         `Vehicle Numbers` = ifelse(p1_valid & p2_valid & p4_valid, a[,1], NA_character_)) %>%
+  select(Data, `Vehicle Numbers`, nr) %>%
+  group_by(nr) %>%
+  mutate(r = row_number()) %>%
+  pivot_wider(names_from = r, values_from = `Vehicle Numbers`) %>%
+  ungroup() %>%
+  unite("Vehicle Numbers", `1`, `2`, na.rm = TRUE, sep = ", ") %>%
+  mutate(`Vehicle Numbers` = ifelse(`Vehicle Numbers` == "", NA, `Vehicle Numbers`))
+
+identical(res$`Vehicle Numbers`, test$`Vehicle Numbers`)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import re
+import pandas as pd
+
+input1 = pd.read_excel("PQ_Challenge_163.xlsx", usecols="A:B", nrows=29)
+input2 = pd.read_excel("PQ_Challenge_163.xlsx", usecols="D", nrows=10)
+test = pd.read_excel("PQ_Challenge_163.xlsx", usecols="F:G", nrows=10)
+
+pattern = re.compile(r"([A-Z]{2})(\d{2})([A-Z]{2})(\d{4})")
+valid_codes = set(input1["Vehicle code"])
+
+rows = []
+for idx, raw in enumerate(input2["Data"], start=1):
+    text = str(raw).replace(" ", "")
+    matches = []
+    for m in pattern.finditer(text):
+        full = m.group(0)
+        p1_valid = m.group(1) in valid_codes
+        p2_valid = m.group(3) != "00"
+        p4_valid = m.group(4) != "0000"
+        if p1_valid and p2_valid and p4_valid:
+            matches.append(full)
+    rows.append(", ".join(matches) if matches else None)
+
+result = pd.DataFrame({"Vehicle Numbers": rows})
+print(result["Vehicle Numbers"].equals(test["Vehicle Numbers"]))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 162](Excel162pq.qmd)

@@ -1,0 +1,91 @@
+---
+title: "Excel BI - Excel Challenge 924"
+description: "🔰 Detect session breaks from user timestamps and assign sequential session IDs per user."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-23"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 924](/challenges/images/exc924.jpg)
+
+## Challenge Description
+
+🔰 Assign a Session ID to each row. A new session starts if the time difference between the current row and the previous row for the same user is greater than 20 minutes. The Session ID should be formatted like `A101-1`, `A101-2`, and so on.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(readxl)
+library(tidyverse)
+
+path <- "900-999/924/924 Session ID.xlsx"
+input <- read_excel(path, range = "A1:C21")
+test <- read_excel(path, range = "D1:D21")
+
+result <- input %>%
+  mutate(time_diff = as.numeric(Timestamp - lag(Timestamp)), .by = UserID) %>%
+  mutate(
+    session_id = cumsum(if_else(is.na(time_diff) | time_diff > 20, 1, 0)),
+    .by = UserID
+  ) %>%
+  transmute(`Answer Expected` = paste0(UserID, "-", session_id))
+
+all.equal(result$`Answer Expected`, test$`Answer Expected`)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Compute the timestamp gap within each user, mark gaps above 20 minutes as new sessions, then cumulatively number those boundaries.
+- **Strengths**: The solution reduces sessionization to one boolean rule and one cumulative sum.
+- **Areas for Improvement**: The logic assumes events are already in chronological order per user, so sorting is an important implicit requirement.
+- **Gem**: Once you have a “new session” flag, a cumulative sum gives you the full session index for free.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "900-999/924/924 Session ID.xlsx"
+input = pd.read_excel(path, usecols="A:C", nrows=21)
+test = pd.read_excel(path, usecols="D", nrows=21)
+
+result = (
+    input.sort_values(["UserID", "Timestamp"])
+    .assign(time_diff=lambda d: d.groupby("UserID")["Timestamp"].diff().dt.total_seconds() / 60)
+    .assign(session_id=lambda d: (d.time_diff > 20).groupby(d.UserID).cumsum() + 1)
+    .assign(**{"Answer Expected": lambda d: d.UserID.astype(str) + "-" + d.session_id.astype(str)})
+)
+
+print(result["Answer Expected"].equals(test["Answer Expected"]))
+# True
+```
+
+### Python
+
+The Python version makes the prerequisite sort explicit and then uses `diff()` plus grouped cumulative sums to produce session numbers. It is a clean clickstream-style solution that scales well as a mental model beyond this puzzle.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The rule itself is simple. The subtle part is seeing that session IDs can be derived from a boundary flag instead of constructed with loops.
+
+### Related Challenges
+
+- [Excel Challenge 930](/challenges/excelbi/Excel930.html)
+- [Excel Challenge 918](/challenges/excelbi/Excel918.html)
+- [Excel Challenge 905](/challenges/excelbi/Excel905.html)

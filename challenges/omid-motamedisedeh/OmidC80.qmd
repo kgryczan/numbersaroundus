@@ -1,0 +1,152 @@
+---
+title: "Omid - Challenge 80"
+description: "🔰 The Convex Hull Algorithm leads to the smallest convex area (Polygon) that includes all the points in the dataset."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 80](/challenges/images/OmidC80.jpg)
+
+## Challenge Description
+
+🔰 The Convex Hull Algorithm leads to the smallest convex area (Polygon) that includes all the points in the dataset.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(patchwork)
+
+path = "files/CH-80 Convex Hulls.xlsx"
+input = read_excel(path, range = "B2:C25")
+test  = read_excel(path, range = "E2:F7")
+
+hull_indices = chull(input$X, input$Y)
+hull_vertices = input[hull_indices,]
+hull_vertices = rbind(hull_vertices, hull_vertices[1,])
+
+
+# code for plot ----
+CH = ggplot(input, aes(x = X, y = Y)) +
+  geom_point() +
+  geom_polygon(data = hull_vertices, aes(x = X, y = Y), fill = "blue", alpha = 0.2) +
+  scale_x_continuous(breaks = seq(0, 20, 1)) +
+  scale_y_continuous(breaks = seq(0, 20, 1)) +
+  labs(title = "Convex Hull of Points")
+
+P = ggplot(input, aes(x = X, y = Y)) +
+  geom_point() +
+  scale_x_continuous(breaks = seq(0, 20, 1)) +
+  scale_y_continuous(breaks = seq(0, 20, 1)) +
+  labs(title = "Points")
+
+P + CH
+
+# validation ----
+hull_vertices_val = hull_vertices %>% distinct() %>% arrange(X, Y)
+test = test %>% arrange(X, Y)
+
+identical(hull_vertices_val, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+from scipy.spatial import ConvexHull
+import matplotlib.pyplot as plt
+
+path = "CH-80 Convex Hulls.xlsx"
+input = pd.read_excel(path, usecols="B:C", nrows=24, skiprows = 1)
+test = pd.read_excel(path, usecols="E:F", nrows=5, skiprows = 1)
+test.columns = ['X', 'Y']
+
+points = input[['X', 'Y']].values
+
+hull = ConvexHull(points)
+
+# Plotting the convex hull
+plt.plot(points[:,0], points[:,1], 'o', label='Points')
+for simplex in hull.simplices:
+    plt.plot(points[simplex, 0], points[simplex, 1], 'k-') 
+
+plt.xlabel('X-axis')
+plt.ylabel('Y-axis')
+plt.title('Convex Hull of DataFrame Points')
+plt.legend()
+plt.show()
+
+# Validation 
+vertices = pd.DataFrame(points[hull.vertices], columns=['X', 'Y']).sort_values(by=['X', 'Y']).reset_index(drop=True)
+test = test.sort_values(by=['X', 'Y']).reset_index(drop=True)
+print(test.equals(vertices)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 79](OmidC79.qmd)
+-   [Omid - Challenge 81](OmidC81.qmd)
+-   [Omid - Challenge 82](OmidC82.qmd)

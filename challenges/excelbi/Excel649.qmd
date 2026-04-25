@@ -1,0 +1,92 @@
+---
+title: "Excel BI - Excel Challenge 649"
+description: "🔰 Calculate the running total for each group."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 649](/challenges/images/exc649.jpg)
+
+## Challenge Description
+
+🔰 Calculate the running total for each group. If it encounters Y in Reset column, running total will become 0 for that entry and will restart from next N entry.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/649 Conditional Running Total.xlsx"
+input = read_excel(path, range = "A1:C20")
+test  = read_excel(path, range = "D1:D20")
+
+result = input %>%
+    mutate(or_ind = row_number()) %>%
+    arrange(Group) %>%
+    mutate(Value = ifelse(Reset == "Y", 0, Value)) %>%
+    mutate(inner_group = cumsum(Reset == "Y")) %>% 
+    group_by(Group, inner_group) %>%
+    mutate(`Answer Expected` = cumsum(Value)) %>%
+    ungroup() %>%
+    arrange(or_ind)
+
+all.equal(result$`Answer Expected`, test$`Answer Expected`)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Apply the business rule conditions explicitly.
+- **Strengths**: The transformation is organized around the correct grouping level, which keeps the business logic clear.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The key move is solving the problem at the right grain before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "649 Conditional Running Total.xlsx"
+input = pd.read_excel(path, usecols="A:C", nrows=20)
+test = pd.read_excel(path, usecols="D:D", nrows=20)
+
+input['or_ind'] = input.index + 1
+input = input.sort_values(by=['Group', 'or_ind'])
+input['Value'] = input.apply(lambda row: 0 if row['Reset'] == 'Y' else row['Value'], axis=1)
+input['inner_group'] = input['Reset'].eq('Y').cumsum()
+input['Answer Expected'] = input.groupby(['Group', 'inner_group'])['Value'].cumsum()
+input = input.sort_values(by='or_ind').reset_index(drop=True)
+
+print(input['Answer Expected'].equals(test['Answer Expected'])) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 650](/challenges/excelbi/Excel650.html)
+- [Excel Challenge 651](/challenges/excelbi/Excel651.html)
+- [Excel Challenge 652](/challenges/excelbi/Excel652.html)

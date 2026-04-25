@@ -1,0 +1,99 @@
+---
+title: "Excel BI - Excel Challenge 669"
+description: "🔰 Tech Number - A number is a tech number if it has even number of digits and square of sum of first half and last half is equal to number itself."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 669](/challenges/images/exc669.jpg)
+
+## Challenge Description
+
+🔰 Tech Number - A number is a tech number if it has even number of digits and square of sum of first half and last half is equal to number itself. List the first 10 Tech Numbers.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/669 Tech Numbers.xlsx"
+test <- read_excel(path, range = "A1:A11") %>% pull()
+
+is_tech_number <- function(n) {
+    num_str <- as.character(n)
+    len <- str_length(num_str)
+    if (len %% 2 != 0) return(FALSE)
+    half_len <- len / 2
+    h1 <- as.integer(substr(num_str, 1, half_len))
+    h2 <- as.integer(substr(num_str, half_len + 1, len))
+    (h1 + h2)^2 == n
+}
+
+find_tech_numbers <- function(count = 10) {
+    tech_numbers <- (1:10^4)^2 %>%
+        keep(~ str_length(.) %% 2 == 0 && is_tech_number(.))
+    head(tech_numbers, count)
+}
+
+result = find_tech_numbers(10)
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "669 Tech Numbers.xlsx"
+test = pd.read_excel(path, usecols="A", nrows=10).fillna("").to_numpy().flatten().tolist()
+
+tech_numbers = []
+n = 10
+while len(tech_numbers) < 10:
+    if len(str(n)) % 2 == 0:
+        h1, h2 = int(str(n)[:len(str(n))//2]), int(str(n)[len(str(n))//2:])
+        if (h1 + h2) ** 2 == n:
+            tech_numbers.append(n)
+    n += 1
+
+print(tech_numbers == test)
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 670](/challenges/excelbi/Excel670.html)
+- [Excel Challenge 671](/challenges/excelbi/Excel671.html)
+- [Excel Challenge 672](/challenges/excelbi/Excel672.html)

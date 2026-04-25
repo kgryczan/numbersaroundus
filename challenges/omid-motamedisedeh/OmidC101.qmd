@@ -1,0 +1,133 @@
+---
+title: "Omid - Challenge 101"
+description: "🔰 Extract the subset of ID combinations consisting of 3 members, along with their total cost."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 101](/challenges/images/OmidC101.jpg)
+
+## Challenge Description
+
+🔰 Extract the subset of ID combinations consisting of 3 members, along with their total cost.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(combinat)
+
+path = "files/CH-101 Subsets.xlsx"
+input = read_xlsx(path, range = "B2:C7")
+test = read_xlsx(path, range = "H2:I12")
+
+result = combn(input$ID, 3) %>% t() %>% as_tibble() %>%
+  unite(ID, V1:V3, sep = ",", remove = FALSE) %>%
+  pivot_longer(cols = -ID, names_to = "element", values_to = "value") %>%
+  left_join(input, by = c("value" = "ID")) %>%
+  summarise(total = sum(`value (cost)`), .by = "ID") 
+
+names(result) = names(test)
+
+identical(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import pandas as pd
+# Read the Excel file
+path = "CH-101 Subsets.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=5)
+test = pd.read_excel(path, usecols="H:I", skiprows=1)
+
+ID = input['ID'].tolist()
+df = pd.DataFrame(columns=['ID'])
+for i in range(0, len(ID)):
+    for j in range(i+1, len(ID)):
+        for k in range(j+1, len(ID)):
+            df = df._append({'ID': sorted([ID[i], ID[j], ID[k]])}, ignore_index=True)
+df = df.drop_duplicates()
+df['ID2'] = df['ID']
+df = df.explode('ID').reset_index(drop=True)
+df = df.merge(input, on='ID', how='left')
+df['ID2'] = df['ID2'].apply(lambda x: ','.join(map(str, x)))
+df = df.drop(columns=['ID'])
+df = df.groupby('ID2').sum().reset_index()
+
+df.columns = test.columns
+print(df.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 100](OmidC100.qmd)
+-   [Omid - Challenge 102](OmidC102.qmd)
+-   [Omid - Challenge 103](OmidC103.qmd)

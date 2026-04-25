@@ -1,0 +1,141 @@
+---
+title: "Excel BI - PowerQuery Challenge 376"
+description: "CommitID ParentCommitID Author CommitMessage FullPath c001"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 376](/challenges/images/exc376pq.jpg)
+
+## Challenge Description
+
+CommitID ParentCommitID Author CommitMessage FullPath c001
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(dplyr)
+library(readxl)
+library(purrr)
+
+path <- "300-399/376/PQ_Challenge_376.xlsx"
+input <- read_excel(path, range = "A1:D21")
+test <- read_excel(path, range = "F1:H21")
+
+parent <- setNames(input$ParentCommitID, input$CommitID)
+
+get_path <- function(id) {
+  path <- id
+  while (!is.na(parent[path[1]])) {
+    path <- c(parent[path[1]], path)
+  }
+  paste(path, collapse = " > ")
+}
+
+result <- input |>
+  select(CommitID, Author) |>
+  mutate(FullPath = map_chr(CommitID, get_path))
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds helper columns that drive the final output
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "300-399/376/PQ_Challenge_376.xlsx"
+input = pd.read_excel(path, usecols="A:D", nrows=20)
+test     = pd.read_excel(path, usecols="F:H", nrows=20).rename(columns=lambda c: c.replace(".1", ""))
+
+parent = dict(zip(input["CommitID"], input["ParentCommitID"]))
+
+def get_path(commit_id):
+    """Walk up parent chain from commit_id to root, return ' > '-joined string."""
+    path = [commit_id]
+    while pd.notna(parent.get(path[0])):
+        path.insert(0, parent[path[0]])
+    return " > ".join(path)
+
+result = (
+    input[["CommitID", "Author"]]
+    .assign(FullPath=input["CommitID"].map(get_path))
+    .reset_index(drop=True)
+)
+
+print(result.equals(test))
+# True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds helper columns that drive the final output
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The transformation rule is readable, but the final layout still requires a careful implementation.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 375](Excel375pq.qmd)
+-   [Excel BI - Excel Challenge 756](Excel756.qmd)

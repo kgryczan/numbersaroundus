@@ -1,0 +1,118 @@
+---
+title: "Excel BI - Excel Challenge 778"
+description: "🔰 Divide the given amount in number of coins such that number of coins used are minimum."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 778](/challenges/images/exc778.jpg)
+
+## Challenge Description
+
+🔰 Divide the given amount in number of coins such that number of coins used are minimum.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/778/778 Coin Change.xlsx"
+input1 = read_excel(path, range = "A2:A9")
+input2 = read_excel(path, range = "B2:H2", col_names = FALSE) %>% t() %>% as.numeric()
+test  = read_excel(path, range = "B2:H9") %>%
+  mutate(across(everything(), ~ replace_na(.x, 0)))
+
+find_coin_comb = function(amount) {
+  coins = input2 %>% sort(decreasing = TRUE)
+  left = numeric()
+  coin_count = setNames(numeric(length(coins)), coins)
+  for (coin in coins) {
+    if (amount >= coin) {
+      count = amount %/% coin
+      amount = amount %% coin
+      coin_count[as.character(coin)] = count
+    }
+  }
+  coin_count = as.data.frame(coin_count) %>%
+    rownames_to_column(var = "coin")
+  return(coin_count)
+}
+
+result = input1 %>%
+  mutate(set = map(Amount, find_coin_comb)) %>%
+  unnest(set) %>%
+  mutate(coin = as.numeric(coin)) %>%
+  pivot_wider(names_from = coin, names_sort = T,  values_from = coin_count, values_fill = NA) %>%
+  select(-Amount) 
+
+all.equal(result, test, check.attributes = FALSE) # there are some discrepancies between result and given solution
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Reshape the result into the workbook output format; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/778/778 Coin Change.xlsx"
+input1 = pd.read_excel(path, usecols="A", skiprows=1, nrows=8)
+input2 = pd.read_excel(path, usecols="B:H", nrows=1, header=None, skiprows=1).values.flatten()
+test = pd.read_excel(path, usecols="B:H", skiprows=1, nrows=8).fillna(0).astype(int)
+
+def find_coin_comb(amount, coins):
+    coins = sorted(coins, reverse=True)
+    coin_count = {coin: 0 for coin in coins}
+    for coin in coins:
+        if amount >= coin:
+            count = amount // coin
+            amount = amount % coin
+            coin_count[coin] = count
+    return coin_count
+
+results = []
+for amt in input1.iloc[:, 0]:
+    comb = find_coin_comb(amt, input2)
+    results.append(comb)
+
+result_df = pd.DataFrame(results)[input2]
+
+print(result_df)
+print(test)
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 779](/challenges/excelbi/Excel779.html)
+- [Excel Challenge 780](/challenges/excelbi/Excel780.html)
+- [Excel Challenge 781](/challenges/excelbi/Excel781.html)

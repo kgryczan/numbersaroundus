@@ -1,0 +1,159 @@
+---
+title: "Omid - Challenge 214"
+description: "🔰 Question Result ID Numbers Y QW Letters Before Letters After"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 214](/challenges/images/OmidC214.jpg)
+
+## Challenge Description
+
+🔰 Question Result ID Numbers Y QW Letters Before Letters After
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-214Column Splitting.xlsx"
+input = read_excel(path, range = "B2:B7")
+test  = read_excel(path, range = "D2:F7")
+
+generate_substrings <- function(str) {
+  n <- str_length(str)
+  map_dfr(1:n, function(start) {
+    map_dfr(start:n, function(end) {
+      tibble(substring = str_sub(str, start, end))
+    })
+  })
+}
+
+subs = generate_substrings("1234567890")
+subs = subs %>%
+  filter(str_length(substring) > 1) 
+
+result = crossing(ID = input$ID, match = subs$substring) %>%
+  filter(str_detect(ID, fixed(match))) %>%
+  slice_max(str_length(match), by = ID) %>
+  mutate(
+    before = str_extract(ID, paste0(".*(?=", match, ")")),
+    after = str_extract(ID, paste0("(?<=", match, ").*"))
+  ) %>%
+select(before, match, after)
+
+colnames(result) = colnames(test)
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import itertools
+
+path = "CH-214Column Splitting.xlsx"
+input_data = pd.read_excel(path, usecols="B", skiprows=1, nrows=6, names=["ID"])
+test = pd.read_excel(path, usecols="D:F", skiprows=1, nrows=6)
+
+def generate_substrings(s):
+    n = len(s)
+    substrings = []
+    for start in range(n):
+        for end in range(start + 1, n + 1):
+            substrings.append(s[start:end])
+    return substrings
+
+subs = pd.DataFrame({"substring": generate_substrings("1234567890")})
+subs = subs[subs["substring"].str.len() > 1]
+
+result = pd.DataFrame(
+    itertools.product(input_data["ID"], subs["substring"]),
+    columns=["ID", "match"]
+)
+result = result[result.apply(lambda row: row["match"] in row["ID"], axis=1)]
+result["match_length"] = result["match"].str.len()
+result = result.sort_values("match_length", ascending=False).drop_duplicates("ID")
+result[["before", "after"]] = result.apply(
+    lambda row: pd.Series(row["ID"].split(row["match"])), axis=1
+)
+result = result.sort_values("ID").reset_index(drop=True)
+result = result[["before", "match", "after"]]
+result["match"] = result["match"].astype("int64")
+result.columns = test.columns
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 213](OmidC213.qmd)
+-   [Omid - Challenge 215](OmidC215.qmd)
+-   [Omid - Challenge 216](OmidC216.qmd)

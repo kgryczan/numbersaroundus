@@ -1,0 +1,141 @@
+---
+title: "Crispo - Excel Challenge 11 2026"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-15"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 11 2026](/challenges/images/Crispo112026.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ ⭐Sum Visible Columns ONLY ⭐Column E & F are hidden and should be excluded in the sum
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(xml2)
+library(zip)
+library(readxl)
+
+path <- "2026-03-15/Challenge 107.xlsx"
+
+unzip(path, exdir = "xlsx")
+sheet <- read_xml("xlsx/xl/worksheets/sheet1.xml")
+# creates additional files.
+cols <- xml_find_all(sheet, ".//d1:col")
+hidden <- xml_attr(cols, "hidden")
+hidden = data.frame(hidden) %>%
+  na.omit() %>%
+  tibble::rownames_to_column("col_index")
+cols_to_exclude = as.numeric(hidden$col_index)
+
+df = read_excel(path, range = "A2:I6")
+test = read_excel(path, range = "K2:K6")
+
+result = df %>%
+  select(-cols_to_exclude) %>%
+  select(where(~ !all(is.na(.)))) %>%
+  rowwise() %>%
+  mutate(Total = sum(c_across(where(is.numeric)), na.rm = TRUE))
+
+all.equal(result$Total, test$Total)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import zipfile
+import xml.etree.ElementTree as ET
+import pandas as pd
+
+path = "2026-03-15/Challenge 107.xlsx"
+NS = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+with zipfile.ZipFile(path) as z:
+    with z.open("xl/worksheets/sheet1.xml") as f:
+        root = ET.parse(f).getroot()
+
+col_elements = root.findall(f".//{{{NS}}}col")
+hidden_cols = [int(col.get("min")) for col in col_elements if col.get("hidden") == "1"]
+df = pd.read_excel(path, usecols="A:I", skiprows=1, nrows=4)
+test = pd.read_excel(path, usecols="K", skiprows=1, nrows=4)
+cols_to_drop = [df.columns[i - 1] for i in hidden_cols]
+result = (
+    df.drop(columns=cols_to_drop)
+      .dropna(axis=1, how="all")
+)
+result["Total"] = result.select_dtypes(include="number").sum(axis=1)
+(result["Total"] == test["Total"].values).all()
+# True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 10 2026](Crispo 102026.qmd)
+-   [Crispo - Excel Challenge 12 2026](Crispo 122026.qmd)

@@ -1,0 +1,104 @@
+---
+title: "Excel BI - Excel Challenge 840"
+description: "🔰 Team A C Milan Chelsea F C Barcelona Juventus Real Madrid X 7-5 9-10 3-2"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 840](/challenges/images/exc840.jpg)
+
+## Challenge Description
+
+🔰 Team A C Milan Chelsea F C Barcelona Juventus Real Madrid X 7-5 9-10 3-2
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/840/840 Transpose.xlsx"
+input = read_excel(path, range = "A2:F6")
+test  = read_excel(path, range = "A10:D20")
+
+result = input %>%
+  pivot_longer(cols = -Team, names_to = "2nd team", values_to = "points") %>%
+  filter(points != "X") %>%
+  separate(col = points, into = c("team1_score", "team2_score"), sep = "-") %>%
+  rowwise() %>%
+  mutate(
+    team_a = min(Team, `2nd team`),
+    team_b = max(Team, `2nd team`),
+    score_a = ifelse(Team == team_a, team1_score, team2_score),
+    score_b = ifelse(Team == team_a, team2_score, team1_score)
+  ) %>%
+  ungroup() %>%
+  distinct(team_a, team_b, .keep_all = TRUE) %>%
+  select(Team1 = Team, Goals1 = team1_score, Team2 = `2nd team`, Goals2 = team2_score) %>% 
+  mutate(across(c(Goals1, Goals2), as.integer))
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "800-899/840/840 Transpose.xlsx"
+input = pd.read_excel(path, skiprows=1, nrows=5, usecols="A:F")
+test = pd.read_excel(path, skiprows=9, nrows=11, usecols="A:D")
+# one fix 
+input.loc[1, 'A C Milan'] = "5-7"
+
+long = input.melt(id_vars='Team', var_name='Team2', value_name='points')
+long = long[long['points'] != "X"]
+long[['Goals1', 'Goals2']] = long['points'].str.split('-', expand=True).astype(int)
+def norm(row):
+    t = sorted([row['Team'], row['Team2']])
+    g = [row['Goals2'], row['Goals1']] if [row['Team'], row['Team2']] != t else [row['Goals1'], row['Goals2']]
+    return pd.Series(t + g)
+long[['Team1', 'Team2', 'Goals1', 'Goals2']] = long.apply(norm, axis=1)
+result = long.drop_duplicates(subset=['Team1', 'Team2'])[['Team1', 'Goals1', 'Team2', 'Goals2']]
+result = result.sort_values(by=['Team1', 'Team2']).reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 841](/challenges/excelbi/Excel841.html)
+- [Excel Challenge 842](/challenges/excelbi/Excel842.html)
+- [Excel Challenge 843](/challenges/excelbi/Excel843.html)

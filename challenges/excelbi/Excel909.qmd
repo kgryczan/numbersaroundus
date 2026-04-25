@@ -1,0 +1,114 @@
+---
+title: "Excel BI - Excel Challenge 909"
+description: "🔰 909 Unpivot.xlsx says: > Project Data is given as Project Allocated:Hours Spent."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 909](/challenges/images/exc909.jpg)
+
+## Challenge Description
+
+🔰 The prompt in 909 Unpivot.xlsx says: Project Data is given as Project Allocated:Hours Spent. Hence `A:15|C:12` means, 15 hours were spent on Project A and 12 hours were spent on project B.
+> Unpivot the given data showing project and hours in two different columns.
+> If an employee does not have any project with 10+ hours, they must appear exactly once with the Project name "Bench" and Hours as 0.
+> Sort on Emp ID. The key field is a packed string of project-hour pairs separated by `|`. The goal is to:
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/900-999/909/909 Unpivot.xlsx"
+input <- read_excel(path, range = "A2:D11")
+test <- read_excel(path, range = "F2:J14")
+
+result = input %>%
+  separate_longer_delim(`Project Data`, delim = "|") %>%
+  separate_wider_delim(
+    `Project Data`,
+    delim = ":",
+    names = c("Project", "Hours")
+  ) %>%
+  mutate(
+    Hours = ifelse(is.na(Hours) | as.numeric(Hours) < 10, 0, as.numeric(Hours)),
+    Project = ifelse(Hours == 0, "Bench", Project)
+  ) %>%
+  summarise(Hours = sum(Hours), .by = everything())
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Split the packed project data into multiple rows.; Split each row again into project code and hours.; Convert hours below 10 to zero..
+- **Strengths**: This puzzle is really a two-stage normalization: 1.
+- **Areas for Improvement**: The approach assumes the workbook structure and naming conventions stay stable, so any changed input shape would need minor adjustments.
+- **Gem**: 1.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "Excel/900-999/909/909 Unpivot.xlsx"
+input = pd.read_excel(path, usecols="A:D", skiprows=1, nrows=9)
+test = pd.read_excel(path,  usecols="F:J", skiprows=1, nrows=13).rename(columns=lambda x: x.replace(".1", ""))
+
+result = (
+    input
+    .assign(**{
+        "Project Data": input["Project Data"].str.split("|")
+    })
+    .explode("Project Data")
+    .assign(
+        Project=lambda d: d["Project Data"].str.split(":").str[0],
+        Hours=lambda d: pd.to_numeric(
+            d["Project Data"].str.split(":").str[1],
+            errors="coerce"
+        )
+    )
+    .assign(
+        Hours=lambda d: np.where(d["Hours"].isna() | (d["Hours"] < 10), 0, d["Hours"]),
+        Project=lambda d: np.where(d["Hours"] == 0, "Bench", d["Project"])
+    )
+    .drop(columns="Project Data")
+    .groupby(list(input.columns.drop("Project Data")) + ["Project"], as_index=False)
+    .agg(Hours=("Hours", "sum")).astype({'Hours': 'int64'})
+)
+print(result.equals(test))
+# True
+```
+
+### Python
+
+The Python version follows the same structure: split the project field into a list by `|`.; explode those lists into separate rows..
+
+## **Difficulty Level**
+
+**Easy**
+
+Once the core pattern is recognized, the implementation is short and direct.
+
+### Related Challenges
+
+- [Excel Challenge 924](/challenges/excelbi/Excel924.html)
+- [Excel Challenge 915](/challenges/excelbi/Excel915.html)
+- [Excel Challenge 929](/challenges/excelbi/Excel929.html)

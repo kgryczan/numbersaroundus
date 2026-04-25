@@ -1,0 +1,118 @@
+---
+title: "Omid - Challenge 309"
+description: "🔰 : Advanced Filtering!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 309](/challenges/images/OmidC309.jpg)
+
+## Challenge Description
+
+🔰 : Advanced Filtering!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(slider)
+library(zoo)
+
+path = "files/300-399/309/CH-309 Advanced Filtering.xlsx"
+input = read_excel(path, range = "B2:C17")
+test  = read_excel(path, range = "G2:H6")
+
+# Solution - classic with lag/lead
+result1 = input %>%
+  filter(Sales >= lag(Sales) & Sales >= lead(Sales))
+
+# Solution - with zoo::rollapply
+result2 = input %>%
+  filter(Sales == rollapply(Sales, 3, max, align = "center", fill = NA))
+
+# Solution - with slider::slide_dbl
+result3 = input %>%
+  filter(Sales == slide_dbl(Sales, ~max(.x), .before = 1, .after = 1))
+
+all.equal(result, test)
+# [1] TRUE
+all.equal(result2, test)
+# [1] TRUE
+all.equal(result3, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+path = "300-399/309/CH-309 Advanced Filtering.xlsx"
+df = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=15)
+test = pd.read_excel(path, usecols="G:H", skiprows=1, nrows=4).rename(columns=lambda col: col.replace('.1', ''))
+
+result = df[df.Sales == df.Sales.rolling(3, center=True).max()].dropna().reset_index(drop=True)
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 308](OmidC308.qmd)
+-   [Omid - Challenge 310](OmidC310.qmd)
+-   [Omid - Challenge 311](OmidC311.qmd)

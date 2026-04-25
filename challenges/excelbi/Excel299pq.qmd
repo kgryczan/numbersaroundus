@@ -1,0 +1,183 @@
+---
+title: "Excel BI - PowerQuery Challenge 299"
+description: "List a sentences or a group of sentences which contain those many alphabets. When you are counting alphabets, dots, spaces and any other non-alphabetic characters need to be ignored. Also sentences have to be full sentences."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 299](/challenges/images/exc299pq.jpg)
+
+## Challenge Description
+
+List a sentences or a group of sentences which contain those many alphabets. When you are counting alphabets, dots, spaces and any other non-alphabetic characters need to be ignored. Also sentences have to be full sentences.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(arrangements)
+
+path = "Power Query/200-299/299/PQ_Challenge_299.xlsx"
+input1 = read_excel(path, range = "A1:A2")
+input2 = read_excel(path, range = "A4:A8")
+test  = read_excel(path, range = "C1:D24") 
+
+sent = input1 %>%
+  separate_rows(Paragraph, sep = "(?<=\\.)\\s") 
+
+sentences = sent$Paragraph
+
+get_combos = function(k) {
+  combn(sentences, k, simplify = FALSE) %>%
+    map_chr(~ paste(sort(.x), collapse = " "))
+}
+
+all_combos = map_dfr(1:length(sentences), ~ tibble(
+  size = .x,
+  combination = get_combos(.x)
+)) %>%
+  mutate(n_alpha = str_count(combination, "[a-zA-Z]"))
+
+range = input2 %>%
+  separate_wider_delim(`From - To`, delim = "-", names =c("min", "max"), cols_remove = F) %>%
+  mutate(across(c(min, max), as.integer))
+
+result = all_combos %>%
+  left_join(range, by = character()) %>%
+  filter(n_alpha >= min & n_alpha <= max) %>%
+  select(`From - To`, Sentences = combination) %>%
+  arrange(Sentences)
+
+test2 = test %>%
+  mutate(rn = row_number()) %>%
+  separate_rows(Sentences, sep = "(?<=\\.)\\s") %>%
+  summarise(Sentences = paste(sort(Sentences), collapse = " "), 
+            `From - To` = unique(`From - To`),
+            .by = rn) %>%
+  arrange(Sentences) %>%
+  select(-rn)
+
+all.equal(result$Sentences, test2$Sentences, check.attributes = FALSE)
+# > [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import itertools
+import re
+
+path = "200-299/299/PQ_Challenge_299.xlsx"
+input1 = pd.read_excel(path, usecols="A", nrows=2)
+input2 = pd.read_excel(path, usecols="A", skiprows=3, nrows=5)
+test = pd.read_excel(path, usecols="C:D", nrows=24)
+
+sentences = [s for s in re.split(r'(?<=\.)\s', input1.iloc[0,0]) if s]
+
+combos = [
+    {'size': k, 'combination': ' '.join(sorted(c))}
+    for k in range(1, len(sentences)+1)
+    for c in itertools.combinations(sentences, k)
+]
+all_combos = pd.DataFrame(combos)
+all_combos['n_alpha'] = all_combos['combination'].str.count(r'[a-zA-Z]')
+
+range_df = input2['From - To'].dropna().str.split('-', expand=True).astype(int)
+range_df.columns = ['min', 'max']
+range_df['From - To'] = input2['From - To'].dropna().values
+
+result = all_combos.merge(range_df, how='cross')
+result = result[result.n_alpha.between(result['min'], result['max'])]
+result = result[['From - To','combination']].rename(columns={'combination':'Sentences'}).sort_values('Sentences')
+
+test2 = test.assign(
+    Sentences=test['Sentences'].str.split(r'(?<=\.)\s')
+).explode('Sentences')
+test2 = test2.groupby(test2.index).agg({
+    'Sentences': lambda x: ' '.join(sorted(x)),
+    'From - To': 'first'
+}).reset_index(drop=True).sort_values('Sentences')
+
+print(result['Sentences'].reset_index(drop=True).equals(test2['Sentences'].reset_index(drop=True)))
+# > True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 298](Excel298pq.qmd)
+-   [Excel BI - Excel Challenge 679](Excel679.qmd)

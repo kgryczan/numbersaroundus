@@ -1,0 +1,150 @@
+---
+title: "Omid - Challenge 4"
+description: "🔰 Calculate the mission's income, where the daily rate starts at $1 on the first day and increases by $1 for the next continous days"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 4](/challenges/images/OmidC4.jpg)
+
+## Challenge Description
+
+🔰 Calculate the mission's income, where the daily rate starts at $1 on the first day and increases by $1 for the next continous days
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-004.xlsx"
+input = read_excel(path, range = "B2:C17")
+test  = read_excel(path, range = "G2:H5")
+
+result = input %>%
+  group_by(Person) %>%
+  complete(`Mission Date` = seq.Date(min(as.Date(`Mission Date`)), max(as.Date(`Mission Date`)), by = "day")) %>%
+  ungroup() %>%
+  mutate(wday = wday(`Mission Date`, label = TRUE, locale = "en"),
+         is_weekend = wday %in% c("Sat", "Sun")) %>%
+  full_join(input %>% mutate(n = 1), by = c("Person", "Mission Date")) %>%
+  mutate(n = ifelse(lag(wday) == "Fri" & lag(n) == 1, 1, n), 
+         n = ifelse(lag(wday) == "Sat" & lag(n) == 1, 1, n)) %>%
+  mutate(cons = consecutive_id(n == 1), .by = Person) %>%
+  replace_na(list(n = 0)) %>%
+  mutate(cum1 = cumsum(n), .by = c(Person, cons)) %>%
+  summarise(cum = sum(cum1), .by = Person)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-004.xlsx"
+input_data = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=16)
+test = pd.read_excel(path, usecols="G:H", skiprows=1, nrows=4)
+
+input_data["Mission Date"] = pd.to_datetime(input_data["Mission Date"])
+
+frames = []
+for person, g in input_data.groupby("Person"):
+    full_dates = pd.DataFrame({"Mission Date": pd.date_range(g["Mission Date"].min(), g["Mission Date"].max(), freq="D")})
+    full_dates["Person"] = person
+    frames.append(full_dates)
+result = pd.concat(frames, ignore_index=True)
+result["wday"] = result["Mission Date"].dt.day_name().str[:3]
+result = result.merge(input_data.assign(n=1), on=["Person", "Mission Date"], how="left")
+
+for person, idx in result.groupby("Person").groups.items():
+    sub = result.loc[idx].copy()
+    sub["n"] = sub["n"].where(~((sub["wday"].shift() == "Fri") & (sub["n"].shift() == 1)), 1)
+    sub["n"] = sub["n"].where(~((sub["wday"].shift() == "Sat") & (sub["n"].shift() == 1)), 1)
+    result.loc[idx, "n"] = sub["n"].values
+
+out = []
+for person, g in result.groupby("Person"):
+    g = g.copy()
+    g["flag"] = g["n"].eq(1)
+    g["cons"] = g["flag"].ne(g["flag"].shift(fill_value=False)).cumsum()
+    g["n"] = g["n"].fillna(0)
+    g["cum1"] = g.groupby("cons")["n"].cumsum()
+    out.append({"Person": person, "cum": g["cum1"].sum()})
+
+result2 = pd.DataFrame(out)
+print(result2.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 3](OmidC3.qmd)
+-   [Omid - Challenge 5](OmidC5.qmd)
+-   [Omid - Challenge 6](OmidC6.qmd)

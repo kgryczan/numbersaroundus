@@ -1,0 +1,100 @@
+---
+title: "Excel BI - Excel Challenge 889"
+description: "🔰 Calculate the Commission for each transaction based on the Cumulative Year-to-Date Sales for that specific Sales_Rep."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 889](/challenges/images/exc889.jpg)
+
+## Challenge Description
+
+🔰 Calculate the Commission for each transaction based on the Cumulative Year-to-Date Sales for that specific Sales_Rep. The tiered tax are applied at cumulative YTD level.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/889/889 CYTD Commission Calculation.xlsx"
+input <- read_excel(path, range = "A1:C21")
+test <- read_excel(path, range = "D1:D21")
+
+result = input %>%
+  mutate(year = year(Date)) %>%
+  mutate(CumsumSales = cumsum(Sale_Amount), .by = c(Sales_Rep, year)) %>%
+  mutate(
+    cum_comm = pmin(CumsumSales, 10000) *
+      0.05 +
+      pmax(pmin(CumsumSales - 10000, 10000), 0) * 0.10 +
+      pmax(CumsumSales - 20000, 0) * 0.15
+  ) %>%
+  mutate(
+    tier_comm = cum_comm - lag(cum_comm, default = 0),
+    .by = c(Sales_Rep, year)
+  )
+
+all.equal(result$tier_comm, test$`Answer Expected`, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "Excel/800-899/889/889 CYTD Commission Calculation.xlsx"
+input = pd.read_excel(path, usecols="A:C", nrows=21)
+test = pd.read_excel(path, usecols="D", nrows=21)
+
+input['Date'] = pd.to_datetime(input['Date'])
+input['year'] = input['Date'].dt.year
+input['CumsumSales'] = input.groupby(['Sales_Rep', 'year'])['Sale_Amount'].cumsum()
+input['cum_comm'] = (
+    np.minimum(input['CumsumSales'], 10000) * 0.05 +
+    np.maximum(np.minimum(input['CumsumSales'] - 10000, 10000), 0) * 0.10 +
+    np.maximum(input['CumsumSales'] - 20000, 0) * 0.15
+)
+input['tier_comm'] = input.groupby(['Sales_Rep', 'year'])['cum_comm'].diff().fillna(input['cum_comm']).astype('int64')
+
+print(input['tier_comm'].equals(test['Answer Expected'])) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 890](/challenges/excelbi/Excel890.html)
+- [Excel Challenge 891](/challenges/excelbi/Excel891.html)
+- [Excel Challenge 892](/challenges/excelbi/Excel892.html)

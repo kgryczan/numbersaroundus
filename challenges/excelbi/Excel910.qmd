@@ -1,0 +1,121 @@
+---
+title: "Excel BI - Excel Challenge 910"
+description: "🔰 910 Increasing Numbers.xlsx says: > Pick up the first digit."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 910](/challenges/images/exc910.jpg)
+
+## Challenge Description
+
+🔰 The prompt in 910 Increasing Numbers.xlsx says: Pick up the first digit. From the remaining string, find the shortest substring that forms a number strictly greater than the previous number. Once you use a position, you can't reuse that. Keep finding till you exhaust the string. If the remaining digits cannot form a number larger than the previous one, discard them.
+>
+> Ex. `90212148 => 9 < 021 < 214` (last digit `8` will have to be discarded). The goal is to split the digit string into a left-to-right sequence of strictly increasing numbers, always using the shortest valid next chunk.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/900-999/910/910 Increasing Numbers.xlsx"
+input <- read_excel(path, range = "A1:A11")
+test <- read_excel(path, range = "B1:B11")
+
+split_inc <- function(s) {
+  n <- nchar(s)
+  if (n == 0) {
+    character()
+  }
+  pos <- 1
+  prev <- substr(s, pos, pos)
+  out <- prev
+  pos <- pos + 1
+  while (pos <= n) {
+    found <- FALSE
+    for (len in 1:(n - pos + 1)) {
+      cand <- substr(s, pos, pos + len - 1)
+      if (as.integer(cand) > as.integer(prev)) {
+        out <- c(out, cand)
+        prev <- cand
+        pos <- pos + len
+        found <- TRUE
+        break
+      }
+    }
+    if (!found) break
+  }
+  paste(out, collapse = ", ")
+}
+
+result = input %>%
+  mutate(`Answer Expected` = map_chr(`Digit Strings (Input)`, split_inc))
+
+all.equal(result$`Answer Expected`, test$`Answer Expected`)
+# > TRUE
+```
+
+### R Analysis
+
+- **Logic**: Take the first digit as the first number.; Scan the remaining string from left to right.; Try the shortest possible next chunk first..
+- **Strengths**: The interesting part is the greedy choice: ```text always pick the shortest next substring that is still larger ``` That rule is what makes the parse deterministic.
+- **Areas for Improvement**: The supplied Python file reports three mismatches, so the workbook-aligned reference here is the R logic.
+- **Gem**: ```text always pick the shortest next substring that is still larger ```
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel/900-999/910/910 Increasing Numbers.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=11)
+test = pd.read_excel(path, usecols="B", nrows=11)
+
+def split_inc(s):
+    i, prev, out = 1, int(s[0]), [s[0]]
+    while i < len(s):
+        for j in range(i + 1, len(s) + 1):
+            cand = s[i:j]
+            if int(cand) > prev:
+                out.append(cand)
+                prev, i = int(cand), j
+                break
+        else:
+            break
+    return ", ".join(out)
+
+input['Split Numbers'] = input['Digit Strings (Input)'].astype(str).apply(split_inc)
+print(input['Split Numbers'] == test['Answer Expected'])
+# 3 different
+```
+
+### Python
+
+The supplied Python file reports three mismatches, so the workbook-aligned reference here is the R logic.
+
+## **Difficulty Level**
+
+**Easy**
+
+Once the core pattern is recognized, the implementation is short and direct.
+
+### Related Challenges
+
+- [Excel Challenge 931](/challenges/excelbi/Excel931.html)
+- [Excel Challenge 919](/challenges/excelbi/Excel919.html)
+- [Excel Challenge 907](/challenges/excelbi/Excel907.html)

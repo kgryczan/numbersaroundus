@@ -1,0 +1,119 @@
+---
+title: "Omid - Challenge 306"
+description: "🔰 Increasing Pair Sum Finder"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 306](/challenges/images/OmidC306.jpg)
+
+## Challenge Description
+
+🔰 Increasing Pair Sum Finder
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/300-399/306/CH-306 Increasing Pair Sum Finder.xlsx"
+input = read_excel(path, range = "B1:B10")
+test  = read_excel(path, range = "E1:E10")
+
+df = input %>% mutate(id = row_number())
+
+result = expand_grid(a = df$id, b = df$id) %>%
+  left_join(df, by = c("a" = "id")) %>%
+  left_join(df, by = c("b" = "id"), suffix = c(".a", ".b")) %>%
+  filter(a < b, Question.a < Question.b, Question.a + Question.b >= 12) %>%
+  transmute(Result = paste(Question.a, Question.b, sep = ","))
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from itertools import combinations
+
+path = "300-399/306/CH-306 Increasing Pair Sum Finder.xlsx"
+input = pd.read_excel(path, usecols="B", nrows=10)
+test = pd.read_excel(path, usecols="E", nrows=10)
+
+ids = range(1, len(input) + 1)
+vals = input['Question'].values
+
+pairs = [(a, b) for a, b in combinations(ids, 2) if vals[a-1] < vals[b-1] and vals[a-1] + vals[b-1] >= 12]
+result = pd.DataFrame([f"{vals[a-1]},{vals[b-1]}" for a, b in pairs], columns=['Result'])
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 305](OmidC305.qmd)
+-   [Omid - Challenge 307](OmidC307.qmd)
+-   [Omid - Challenge 308](OmidC308.qmd)

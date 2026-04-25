@@ -1,0 +1,113 @@
+---
+title: "Excel BI - Excel Challenge 882"
+description: "🔰 Numbers Answer Expected Step 1 : Take the number Step 2 : Reverse the number Step 3 : Add Step 1 + Step 2 Repeat steps 1 through 3 till the number becomes Palindrome."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 882](/challenges/images/exc882.jpg)
+
+## Challenge Description
+
+🔰 Numbers Answer Expected Step 1 : Take the number Step 2 : Reverse the number Step 3 : Add Step 1 + Step 2 Repeat steps 1 through 3 till the number becomes Palindrome. Determine the final Palindrome number. Ex. 56 => 56+65 = 143 => 143+341 => 484 which is a Palindrome number
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/882/882 Reverse Add Palindrome.xlsx"
+input <- read_excel(path, range = "A1:A51")
+test <- read_excel(path, range = "B1:B51")
+
+is_palindrome <- function(x) {
+  s <- as.character(x)
+  s == paste(rev(strsplit(s, "")[[1]]), collapse = "")
+}
+
+solve_pals <- function(n) {
+  purrr::accumulate(
+    .x = 0:1000,
+    .init = n,
+    .f = function(current, .) {
+      rev_num <- as.numeric(paste0(
+        rev(strsplit(as.character(current), "")[[1]]),
+        collapse = ""
+      ))
+      current + rev_num
+    }
+  ) -> seqs
+  idx <- purrr::detect_index(seqs, is_palindrome) - 1
+  return(palindrome = seqs[[idx + 1]])
+}
+
+result = input %>%
+  mutate(`Answer Expected` = map_dbl(Numbers, solve_pals))
+
+all.equal(result$`Answer Expected`, test$`Answer Expected`)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel/800-899/882/882 Reverse Add Palindrome.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=51)
+test = pd.read_excel(path, usecols="B", nrows=51)
+
+def is_palindrome(x):
+    s = str(x)
+    return s == s[::-1]
+
+def solve_pals(n):
+    current = n
+    for _ in range(1001):
+        if is_palindrome(current):
+            return current
+        rev_num = int(str(current)[::-1])
+        current += rev_num
+    return current  
+
+input['Answer Expected'] = input['Numbers'].apply(solve_pals)
+print(input['Answer Expected'].equals(test['Answer Expected'])) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 883](/challenges/excelbi/Excel883.html)
+- [Excel Challenge 884](/challenges/excelbi/Excel884.html)
+- [Excel Challenge 885](/challenges/excelbi/Excel885.html)

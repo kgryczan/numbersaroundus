@@ -1,0 +1,113 @@
+---
+title: "Omid - Challenge 124"
+description: "🔰 Extract the price for each date in Question Table 2, use the price reported for the nearest date in Question Table 1."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 124](/challenges/images/OmidC124.jpg)
+
+## Challenge Description
+
+🔰 Extract the price for each date in Question Table 2, use the price reported for the nearest date in Question Table 1.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(data.table)
+
+
+path = "files/CH-124 Merge.xlsx"
+input = read_excel(path, range = "B2:C7") %>% as.data.table()
+input2  = read_excel(path, range = "H2:H9") %>% as.data.table()
+test = read_excel(path, range = "I2:I9")  %>% as.data.table()
+
+result = input[input2, on = "Date", roll = "nearest"]
+
+all.equal(result$price, test$Price, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-124 Merge.xlsx"
+
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=5).sort_values('Date').reset_index(drop=True)
+input2 = pd.read_excel(path, usecols="H:H", skiprows=1, nrows=7) \
+    .rename(columns=lambda x: x.replace('.1', '')) \
+    .sort_values('Date') \
+    .reset_index(drop=True)
+test = pd.read_excel(path, usecols="H:I", skiprows=1, nrows=7).rename(columns=lambda x: x.replace('.1', ''))
+
+result = pd.merge_asof(input2, input, on='Date', direction='nearest')
+result = pd.merge(result, test, on='Date', how='inner')
+
+print(result["Price"].eq(result["price"]).all()) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 123](OmidC123.qmd)
+-   [Omid - Challenge 125](OmidC125.qmd)
+-   [Omid - Challenge 126](OmidC126.qmd)

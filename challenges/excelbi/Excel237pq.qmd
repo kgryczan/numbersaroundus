@@ -1,0 +1,122 @@
+---
+title: "Excel BI - PowerQuery Challenge 237"
+description: "Names English Science Maths Arts Smith"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 237](/challenges/images/exc237pq.jpg)
+
+## Challenge Description
+
+Names English Science Maths Arts Smith
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(glue)
+
+path = "Power Query/PQ_Challenge_237.xlsx"
+input = read_excel(path, range = "A1:E11")
+test  = read_excel(path, range = "G1:K11")
+
+result = input %>%
+  mutate(across(everything(), ~ {
+    empty_index = row_number()[is.na(.)]
+    ifelse(is.na(.),
+           glue("{cur_column()}_{match(row_number(), empty_index)}"),
+           as.character(.))}))
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+path = "PQ_Challenge_237.xlsx"
+
+input = pd.read_excel(path, usecols="A:E", nrows=11)
+test = pd.read_excel(path, usecols="G:K", nrows=11).rename(columns=lambda x: x.split('.')[0])
+
+result = input.apply(lambda col: col.where(
+col.notna(), 
+[f"{col.name}_{sum(pd.isna(col[:i]))+1}" if pd.isna(val) else val for i, val in enumerate(col)]
+))
+
+result = result.map(lambda x: np.int64(x) if isinstance(x, (int, float)) and not np.isnan(x) else x)
+test = test.map(lambda x: np.int64(x) if isinstance(x, (int, float)) and not np.isnan(x) else x)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The transformation rule is readable, but the final layout still requires a careful implementation.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 236](Excel236pq.qmd)

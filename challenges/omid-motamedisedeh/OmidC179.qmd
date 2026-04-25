@@ -1,0 +1,116 @@
+---
+title: "Omid - Challenge 179"
+description: "🔰 Product ID A B Question Quantity Date Result Column1"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 179](/challenges/images/OmidC179.jpg)
+
+## Challenge Description
+
+🔰 Product ID A B Question Quantity Date Result Column1
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-179 Reshape a table.xlsx"
+input = read_excel(path, range = "B2:F10") %>% as.matrix()
+test  = read_excel(path, range = "H2:J14")
+
+result = input %>%
+  t() %>%
+  as.vector() %>%
+  na.omit() %>%
+  matrix(ncol = 3, byrow = TRUE) %>%
+  as.data.frame() %>%
+  setNames(c("Date", "Product ID", "Quantity")) %>%
+  mutate(Date = as.POSIXct(janitor::excel_numeric_to_date(as.numeric(Date))),
+         Quantity = as.numeric(Quantity))
+
+all.equal(result, test, check.attributes = F)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "CH-179 Reshape a table.xlsx"
+input = pd.read_excel(path, usecols="B:F", skiprows=1, nrows=8).to_numpy()
+test = pd.read_excel(path,  usecols="H:J", skiprows=1, nrows=13)
+
+result_df = pd.DataFrame(input.flatten()[~pd.isna(input.flatten())].reshape(-1, 3), columns=["Date", "Product ID", "Quantity"])
+result_df["Quantity"] = result_df["Quantity"].astype(np.int64)
+
+print(result_df.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 178](OmidC178.qmd)
+-   [Omid - Challenge 180](OmidC180.qmd)
+-   [Omid - Challenge 181](OmidC181.qmd)

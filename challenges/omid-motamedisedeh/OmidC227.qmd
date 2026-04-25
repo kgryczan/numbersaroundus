@@ -1,0 +1,108 @@
+---
+title: "Omid - Challenge 227"
+description: "🔰 For this challenge, calculate the minimum and maximum values for each column."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 227](/challenges/images/OmidC227.jpg)
+
+## Challenge Description
+
+🔰 For this challenge, calculate the minimum and maximum values for each column.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-227 Data Normalization Min-Max.xlsx"
+input = read_excel(path, range = "B2:G8")
+test = read_excel(path, range = "J2:O8")
+
+result = input %>%
+  mutate(across(where(is.numeric), ~ (. - min(.)) / (max(.) - min(.))))
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-227 Data Normalization Min-Max.xlsx"
+
+input = pd.read_excel(path, usecols="B:G", skiprows=1, nrows=7)
+test = pd.read_excel(path, usecols="J:O", skiprows=1, nrows=7).rename(columns=lambda col: col.split('.1')[0] if '.1' in col else col)
+
+result = (input - input.min()) / (input.max() - input.min())
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 226](OmidC226.qmd)
+-   [Omid - Challenge 228](OmidC228.qmd)
+-   [Omid - Challenge 229](OmidC229.qmd)

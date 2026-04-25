@@ -1,0 +1,129 @@
+---
+title: "Omid - Challenge 126"
+description: "🔰 Group Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 126](/challenges/images/OmidC126.jpg)
+
+## Challenge Description
+
+🔰 Group Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-126 Transformation.xlsx"
+input = read_excel(path, range = "B2:C8")
+test  = read_excel(path, range = "E2:G20") %>%
+  mutate(Dates = as.Date(Dates))
+
+result = input %>%
+  separate_wider_delim(Dates, delim = ", ", names = c("Registeration", "Evaluation", "Approved")) %>%
+  pivot_longer(cols = -`Order IDS`, names_to = "Group", values_to = "Dates") %>%
+  mutate(Dates = as.Date(Dates)) %>%
+  arrange(`Order IDS`, Dates)
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-126 Transformation.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=6)
+test = pd.read_excel(path, usecols="E:G", skiprows=1, nrows=19).rename(columns=lambda x: x.replace('.1', ''))
+test['Dates'] = pd.to_datetime(test['Dates'])
+
+result = input\
+          .assign(Dates=input['Dates'].str.split(', '))\
+          .explode('Dates')\
+          .assign(Dates=lambda df: pd.to_datetime(df['Dates']))\
+          .assign(rownumber=lambda df: df.groupby('Order IDS').cumcount() + 1)\
+          .assign(Group=lambda df: df['rownumber'].map({1: 'Registeration', 2: 'Evaluation', 3: 'Approved'}))\
+          .drop(columns='rownumber')\
+          .sort_values(by = ['Order IDS', 'Dates'])\
+          .reset_index(drop=True)
+result = result[['Order IDS', 'Group', 'Dates']]
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 125](OmidC125.qmd)
+-   [Omid - Challenge 127](OmidC127.qmd)
+-   [Omid - Challenge 128](OmidC128.qmd)

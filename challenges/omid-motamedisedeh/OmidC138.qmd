@@ -1,0 +1,125 @@
+---
+title: "Omid - Challenge 138"
+description: "🔰 Result Question Date Qty Product A C B"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 138](/challenges/images/OmidC138.jpg)
+
+## Challenge Description
+
+🔰 Result Question Date Qty Product A C B
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-138 Periodic Sales Summary.xlsx"
+input = read_excel(path, range = "C2:E27")
+test  = read_excel(path, range = "G2:J6")
+
+result = input %>%
+  mutate(Month = month(Date),
+         day = day(Date), 
+         decade_days = paste0("P",ifelse(ceiling(day / 10) == 4, 3, ceiling(day/10)))) %>%
+  summarise(`Total Qty` = sum(Qty, na.rm = TRUE), .by = c(decade_days, Month)) %>%
+  pivot_wider(names_from = decade_days, values_from = `Total Qty`, values_fill = 0) %>%
+  select(Month, P1, P2, P3)
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-138 Periodic Sales Summary.xlsx"
+input = pd.read_excel(path, usecols="C:E", skiprows=1, nrows=26)
+test = pd.read_excel(path, usecols="G:J", skiprows=1, nrows = 4 )
+
+input['Month'] = input['Date'].dt.month
+input['decade_days'] = 'P' + (((input['Date'].dt.day - 1) // 10 + 1).clip(upper=3)).astype(str)
+
+result = input.pivot_table(index = "Month", columns = "decade_days", values = "Qty", aggfunc = "sum").reset_index()
+result = result.fillna(0).astype("int64")
+result.columns.name = None
+
+print(test.equals(result)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 137](OmidC137.qmd)
+-   [Omid - Challenge 139](OmidC139.qmd)
+-   [Omid - Challenge 140](OmidC140.qmd)

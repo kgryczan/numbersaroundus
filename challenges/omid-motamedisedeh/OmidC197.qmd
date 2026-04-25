@@ -1,0 +1,145 @@
+---
+title: "Omid - Challenge 197"
+description: "🔰 Group Challenge 197: Custom Grouping!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 197](/challenges/images/OmidC197.jpg)
+
+## Challenge Description
+
+🔰 Group Challenge 197: Custom Grouping!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-197 Custom Grouping.xlsx"
+input = read_excel(path, range = "B2:C19")
+test  = read_excel(path, range = "G2:H7")
+
+result = input %>%
+  mutate(Date = as.Date(Date, format = "%Y-%m-%d")) %>%
+  complete(Date = seq.Date(min(Date), max(Date), by = "day")) %>%
+  replace_na(list(Sales = 0)) %>%
+  mutate(group_ends = ifelse(Sales == 0, cumsum(Sales == 0) %% 2, NA)) %>%
+  group_by(group_ends) %>%
+  mutate(Group = cumsum(group_ends == 0)) %>%
+  ungroup() %>%
+  mutate(Group = ifelse(Group == 0, NA, Group)) %>%
+  fill(Group, .direction = "up") %>%
+  mutate(Group = ifelse(is.na(Group), max(Group, na.rm = TRUE) + 1, Group)) %>%
+  summarise(`Total Sales` = sum(Sales, na.rm = TRUE), .by = Group)
+
+# # A tibble: 6 × 2
+# Group `Total Sales`
+# <dbl>         <dbl>
+# 1     1           137
+# 2     2            27
+# 3     3            89
+# 4     4            51
+# 5     5            53
+# 6     6            23
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "CH-197 Custom Grouping.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=17)
+test = pd.read_excel(path, usecols="G:H", skiprows=1, nrows=6)
+
+input['Date'] = pd.to_datetime(input['Date'], format='%Y-%m-%d')
+input = input.set_index('Date').reindex(pd.date_range(input['Date'].min(), input['Date'].max(), freq='D')).fillna(0).rename_axis('Date').reset_index()
+
+input['Group'] = np.where(input['Sales'] == 0, (input['Sales'] == 0).cumsum() % 2, np.nan)
+input['Group'] = input.groupby('Group').cumcount() + 1
+input['Group'] = input['Group'].replace(0, np.nan).fillna(method='bfill').fillna(input['Group'].max() + 1)
+
+result = input.groupby('Group').agg({'Sales': 'sum'}).reset_index().rename(columns={'Sales': 'Total Sales'})
+
+#    Group  Total Sales
+# 0    1.0        137.0
+# 1    2.0         27.0
+# 2    3.0         89.0
+# 3    4.0         51.0
+# 4    5.0         53.0
+# 5    6.0          0.0
+# 6    7.0         23.0
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 196](OmidC196.qmd)
+-   [Omid - Challenge 198](OmidC198.qmd)
+-   [Omid - Challenge 199](OmidC199.qmd)

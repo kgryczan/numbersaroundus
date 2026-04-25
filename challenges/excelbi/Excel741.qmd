@@ -1,0 +1,93 @@
+---
+title: "Excel BI - Excel Challenge 741"
+description: "🔰 Transform the problem table into result table."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 741](/challenges/images/exc741.jpg)
+
+## Challenge Description
+
+🔰 Transform the problem table into result table. Here numbers are sum for
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/741/741 Pivot.xlsx"
+input = read_excel(path, range = "A2:A10")
+test = read_excel(path, range = "C2:F5")
+
+result = input %>%
+  mutate(
+    Item = str_extract(Data, "Item\\d+"),
+    Group = str_extract(Data, "(?<=Group )\\w")
+  ) %>%
+  mutate(Data = str_remove_all(Data, "Item\\d+|Group [ABC]")) %>%
+  mutate(Data = str_extract_all(Data, "\\d+")) %>%
+  mutate(Data = map_dbl(Data, ~ sum(as.numeric(.)))) %>%
+  summarise(Total = sum(Data), .by = c("Item", "Group")) %>%
+  pivot_wider(names_from = Item, values_from = Total)
+
+all.equal(test, result, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The solution stays close to the text pattern itself, which makes the extraction logic easy to audit.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: A small number of well-targeted text patterns does most of the heavy lifting.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "700-799/741/741 Pivot.xlsx"
+input_df = pd.read_excel(path, usecols="A", skiprows=1, nrows=8, names=["Data"])
+test = pd.read_excel(path, usecols="C:F", skiprows=1, nrows=3)
+
+input_df["Item"] = [re.search(r'Item\d+', s).group(0) if re.search(r'Item\d+', s) else None for s in input_df["Data"]]
+input_df["Group"] = [re.search(r'Group (\w)', s).group(1) if re.search(r'Group (\w)', s) else None for s in input_df["Data"]]
+input_df["Data"] = [sum(map(int, re.findall(r'\d+', re.sub(r'Item\d+|Group [ABC]', '', s)))) for s in input_df["Data"]]
+
+result = input_df.pivot_table(index="Group", columns="Item", values="Data", aggfunc="sum").reset_index()
+
+print(test.equals(result)) # True
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 742](/challenges/excelbi/Excel742.html)
+- [Excel Challenge 743](/challenges/excelbi/Excel743.html)
+- [Excel Challenge 744](/challenges/excelbi/Excel744.html)

@@ -1,0 +1,131 @@
+---
+title: "Omid - Challenge 308"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 308](/challenges/images/OmidC308.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/300-399/308/CH-308 Table Transformation.xlsx"
+input = read_excel(path, range = "B2:B3")
+test  = read_excel(path, range = "B6:C29")
+
+result = input %>%
+  mutate(all = str_extract_all(Info, "\\d{4}/\\d{1}/\\d{1,2}/\\d{2}")) %>%
+  unnest(all) %>%
+  select(-Info) %>%
+  separate(all, into = c("Year", "Month", "Day", "Sale"), sep = "/", convert = TRUE) %>%
+  mutate(Date = as.POSIXct(sprintf("%04d-%02d-%02d", Year, Month, Day), tz = "UTC")) %>%
+  select(Date, Sale)
+
+all.equal(result, test, check.attributes = FALSE)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "300-399/308/CH-308 Table Transformation.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=2)
+test = pd.read_excel(path, usecols="B:C", skiprows=5, nrows=24)
+
+all_extracted = sum(
+    input['Info'].apply(
+        lambda x: re.findall(r"\d{4}/\d{1}/\d{1,2}/\d{2}", str(x))
+    ).tolist(),
+    []
+)
+split = pd.DataFrame(
+    [x.split('/') for x in all_extracted],
+    columns=['Year', 'Month', 'Day', 'Sale']
+).astype(int)
+split['Date'] = pd.to_datetime(split[['Year', 'Month', 'Day']])
+result = split[['Date', 'Sale']]
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 307](OmidC307.qmd)
+-   [Omid - Challenge 309](OmidC309.qmd)
+-   [Omid - Challenge 310](OmidC310.qmd)

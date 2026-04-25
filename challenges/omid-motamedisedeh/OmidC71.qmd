@@ -1,0 +1,122 @@
+---
+title: "Omid - Challenge 71"
+description: "🔰 : Extract Extract all the emails from the text provided in the question table."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 71](/challenges/images/OmidC71.jpg)
+
+## Challenge Description
+
+🔰 : Extract Extract all the emails from the text provided in the question table.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-071 Extract from Text.xlsx"
+input = read_excel(path, range = "B2:B19")
+test  = read_excel(path, range = "D2:D11")
+
+email_regex <- "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+
+result = input %>%
+  mutate(`Email Address` = str_extract(Text, email_regex)) %>%
+  na.omit() %>%
+  select(`Email Address`)
+
+all.equal(result, test, check.attributes = FALSE)
+#  [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-071 Extract from Text.xlsx"
+input = pd.read_excel(path, usecols = "B", skiprows = 1)
+test  = pd.read_excel(path, usecols = "D", skiprows = 1, nrows = 9)
+
+email_regex = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+
+input["Email Address"] = input["Text"].str.findall(email_regex)
+output = input[input["Email Address"].str.len() > 0]
+output["Email Address"] = output["Email Address"].str[0]
+output = output.drop(columns="Text").reset_index(drop=True)
+
+print(output.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 70](OmidC70.qmd)
+-   [Omid - Challenge 72](OmidC72.qmd)
+-   [Omid - Challenge 73](OmidC73.qmd)

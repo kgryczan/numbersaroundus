@@ -1,0 +1,137 @@
+---
+title: "Omid - Challenge 357"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 357](/challenges/images/OmidC357.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(janitor)
+
+path <- "300-399/357/CH-357 Table Transformation.xlsx"
+input <- read_excel(path, range = "B3:F13")
+test <- read_excel(path, range = "H3:L8")
+test$Date = as.Date(test$Date, origin = "1899-12-30")
+
+res = input %>%
+  mutate(Group = cumsum(Column1 == "Date")) %>%
+  nest_by(Group) %>%
+  mutate(data = list(row_to_names(data, row_number = 1))) %>%
+  unnest() %>%
+  mutate(
+    Date = excel_numeric_to_date(round(as.numeric(Date), 0)),
+    across(-Date, as.numeric)
+  ) %>%
+  ungroup() %>%
+  select(Date, A, B, C, D)
+
+all.equal(res, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "300-399\\357\\CH-357 Table Transformation.xlsx"
+input = pd.read_excel(path, usecols="B:F", nrows = 11, skiprows = 2)
+test = pd.read_excel(path, usecols="H:L", nrows = 5, skiprows = 2)
+
+split_dfs, current_df = [], []
+
+for _, row in input.iterrows():
+    if row[0] == "Date" and current_df:
+        split_dfs.append(pd.DataFrame(current_df, columns=input.columns))
+        current_df = []
+    current_df.append(row)
+
+if current_df: 
+    split_dfs.append(pd.DataFrame(current_df, columns=input.columns))
+
+for i, df in enumerate(split_dfs):
+    df.columns = df.iloc[0]
+    split_dfs[i] = df[1:].reset_index(drop=True)
+
+result_df = pd.concat(split_dfs, ignore_index=True)
+result_df = result_df[['Date', 'A', 'B', 'C', 'D']]
+
+print(all(result_df == test))
+# True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 356](OmidC356.qmd)
+-   [Omid - Challenge 358](OmidC358.qmd)
+-   [Omid - Challenge 359](OmidC359.qmd)

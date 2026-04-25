@@ -1,0 +1,90 @@
+---
+title: "Excel BI - Excel Challenge 670"
+description: "🔰 Answer Expected Org Classification Detail Year Revenue Cost Profit A B"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 670](/challenges/images/exc670.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Org Classification Detail Year Revenue Cost Profit A B
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/670 Transpose.xlsx"
+input = read_excel(path, range = "A2:C11")
+test  = read_excel(path, range = "E2:I5")
+
+result = input %>%
+  mutate(Year = ifelse(Classification == "Year", Detail, NA)) %>%
+  fill(Year) %>%
+  filter(Classification != "Year") %>%
+  pivot_wider(names_from = Classification, values_from = Detail) %>%
+  mutate(Profit = Revenue - Cost)
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Reshape the result into the workbook output format; Apply the business rule conditions explicitly.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "670 Transpose.xlsx"
+input = pd.read_excel(path, sheet_name=0, usecols="A:C", skiprows=1, nrows=10)
+test = pd.read_excel(path, sheet_name=0, usecols="E:I", skiprows=1, nrows=3).rename(columns=lambda x: x.split('.')[0])
+
+input['Year'] = input.apply(lambda row: row['Detail'] if row['Classification'] == 'Year' else None, axis=1)
+input['Year'] = input['Year'].ffill().astype('int64')
+input = input[input['Classification'] != 'Year']
+result = input.pivot(index=['Org','Year'], columns='Classification', values='Detail').reset_index()
+result['Profit'] = result['Revenue'] - result['Cost']
+result.columns.name = None
+result = result[['Org', 'Year', 'Revenue', 'Cost', 'Profit']]
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 671](/challenges/excelbi/Excel671.html)
+- [Excel Challenge 672](/challenges/excelbi/Excel672.html)
+- [Excel Challenge 673](/challenges/excelbi/Excel673.html)

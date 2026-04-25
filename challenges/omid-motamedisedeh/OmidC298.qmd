@@ -1,0 +1,127 @@
+---
+title: "Omid - Challenge 298"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 298](/challenges/images/OmidC298.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/298/CH-298 Table Transformation.xlsx"
+input = read_excel(path, range = "B2:C5")
+test  = read_excel(path, range = "E2:F26")
+
+result = input %>%
+  mutate(
+    Date = str_extract_all(Date, "\\d{1,2}/\\d{1,2}/\\d{4}") %>%
+      map(~ {
+        seqs <- mdy(.x)
+        seq(seqs[1], seqs[2], by = "day")
+      })) %>%
+  mutate(n = map_int(Date, length),
+         `Daily Sale` = `Total Sales` / n) %>%
+  unnest() %>%
+  select(Date, `Daily Sale`)
+
+# Result not equal because of mistake in provided data.
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "200-299/298/CH-298 Table Transformation.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=3)
+test = pd.read_excel(path, usecols="E:F", skiprows=1, nrows=25)
+
+dates = input["Date"].str.extractall(r"(\d{1,2}/\d{1,2}/\d{4})")[0].unstack()
+input['start'] = dates[0]
+input['end'] = dates[1]
+input['date_seq'] = input.apply(lambda row: pd.date_range(row['start'], row['end']).strftime('%Y-%m-%d').tolist(), axis=1)
+input['seq_length'] = input.apply(lambda row: len(pd.date_range(row['start'], row['end'])), axis=1)
+input['Daily Sale'] = input['Total Sales'] / input['seq_length']
+input = input[['date_seq', 'Daily Sale']]
+result = input.explode('date_seq').reset_index(drop=True)
+
+# result is not equal because of mistake in data provided
+# expected = pd.DataFrame({
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 297](OmidC297.qmd)
+-   [Omid - Challenge 299](OmidC299.qmd)
+-   [Omid - Challenge 300](OmidC300.qmd)

@@ -1,0 +1,120 @@
+---
+title: "Omid - Challenge 36"
+description: "🔰 we want to extracth all non dominant solutions."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 36](/challenges/images/OmidC36.jpg)
+
+## Challenge Description
+
+🔰 we want to extracth all non dominant solutions.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-036 Pareto Line.xlsx", range = "B2:E14")
+test  = read_excel("files/CH-036 Pareto Line.xlsx", range = "H1:H7") %>% na.omit()
+
+result = input %>%
+  mutate(row_id = row_number()) %>%
+  pmap(., function(...){
+    current = tibble(...)
+    dominated = any(pmap_lgl(input, function(...){
+      other = tibble(...)
+      all(other[2:4] > current[2:4])
+    }))
+    !dominated
+  }) %>%
+  unlist() %>%
+  which() %>%
+  tibble(Result = .) %>%
+  mutate(Result = as.numeric(Result))
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input = pd.read_excel("CH-036 Pareto Line.xlsx", usecols="B:E", nrows = 14, skiprows=1)
+test = pd.read_excel("CH-036 Pareto Line.xlsx", usecols="H", nrows=7).dropna().astype(int).reset_index(drop=True)
+result = input.assign(row_id=range(1, len(input) + 1)).apply(lambda row: not any((input.iloc[:, 1:4] > row[1:4]).all(axis=1)), axis=1)
+result = result[result].index.to_frame(index=False).rename(columns={0: "Result"}) + 1
+result["Result"] = result["Result"].astype(int)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 35](OmidC35.qmd)
+-   [Omid - Challenge 37](OmidC37.qmd)
+-   [Omid - Challenge 38](OmidC38.qmd)

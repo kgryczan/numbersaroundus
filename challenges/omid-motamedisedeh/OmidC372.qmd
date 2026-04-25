@@ -1,0 +1,110 @@
+---
+title: "Omid - Challenge 372"
+description: "🔰 Challenge 372: Filter!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 372](/challenges/images/OmidC372.jpg)
+
+## Challenge Description
+
+🔰 Challenge 372: Filter!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "300-399/372/CH-372 Filter.xlsx"
+input <- read_excel(path, range = "B3:B10")
+test <- read_excel(path, range = "F3:F6")
+
+result = input %>%
+  filter(str_detect(ID, "[13579]"))
+
+all.equal(result$ID, test$ID)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "300-399/372/CH-372 Filter.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=2, nrows=8)
+test = pd.read_excel(path, usecols="F", skiprows=2, nrows=3)
+
+result = input[input['ID'].astype(str).str.contains(r'[13579]')].reset_index(drop=True)
+
+print(result['ID'].equals(test['ID.1']))
+# [1] True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 371](OmidC371.qmd)
+-   [Omid - Challenge 373](OmidC373.qmd)
+-   [Omid - Challenge 374](OmidC374.qmd)

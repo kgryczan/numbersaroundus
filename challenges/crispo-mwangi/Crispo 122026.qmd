@@ -1,0 +1,115 @@
+---
+title: "Crispo - Excel Challenge 12 2026"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-22"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 12 2026](/challenges/images/Crispo122026.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ ⭐Column E & F are hidden and should be excluded in the sum
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path <- "2026-03-22/Challenge 108.xlsx"
+input1 <- read_excel(path, range = "B2:B4")
+input2 <- read_excel(path, range = "B6:B9")
+test <- read_excel(path, range = "D2:D14")
+
+result = expand.grid(input1$Mentors, input2$Staff) %>%
+  as.matrix() %>%
+  t() %>%
+  c()
+
+all.equal(result, test$Session)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from itertools import chain
+
+path = "2026-03-22/Challenge 108.xlsx"
+input1 = pd.read_excel(path, usecols="B", nrows = 2, skiprows = 1).iloc[:, 0].tolist()
+input2 = pd.read_excel(path, usecols="B", nrows = 3, skiprows = 5).iloc[:, 0].tolist()
+test = pd.read_excel(path, usecols="D", nrows = 13, skiprows = 1)
+
+result = list(chain.from_iterable((a, b) for b in input2 for a in input1))
+
+print(result == test.values.flatten().tolist())
+## [1] TRUE
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 11 2026](Crispo 112026.qmd)

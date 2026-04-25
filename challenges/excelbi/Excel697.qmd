@@ -1,0 +1,100 @@
+---
+title: "Excel BI - Excel Challenge 697"
+description: "🔰 Populate all months of the year."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 697](/challenges/images/exc697.jpg)
+
+## Challenge Description
+
+🔰 Populate all months of the year. For missing months IN A QUARTER -
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/697 Fill up or down.xlsx"
+input = read_excel(path, range = "A2:B7")
+test = read_excel(path, range = "D2:E14")
+
+month_abbr = data.frame(month_abbr = month.abb[1:12])
+
+df = month_abbr %>%
+  left_join(input, by = c("month_abbr" = "Month")) %>%
+  mutate(Quarter = paste0("Q", ceiling(match(month_abbr, month.abb) / 3))) %>%
+  group_by(Quarter) %>%
+  fill(Amount, .direction = "downup") %>%
+  ungroup() %>%
+  replace_na(list(Amount = 0)) %>%
+  rename(Month = month_abbr) %>%
+  select(-Quarter)
+
+all.equal(df, test)
+# TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The transformation is organized around the correct grouping level, which keeps the business logic clear.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The key move is solving the problem at the right grain before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+from calendar import month_abbr
+
+path = "697 Fill up or down.xlsx"
+input_df = pd.read_excel(path, usecols="A:B", skiprows=1, nrows=6)
+test_df = pd.read_excel(path, usecols="D:E", skiprows=1, nrows=13).rename(columns=lambda col: col.split('.')[0])
+
+months_df = pd.DataFrame({
+    'Month': list(month_abbr)[1:13],
+    'month_num': range(1, 13),
+    'Quarter': ['Q' + str((i-1)//3 + 1) for i in range(1, 13)]
+})
+
+df = months_df.merge(input_df, on='Month', how='left')
+df = df.sort_values('month_num')
+
+df['Amount'] = df.groupby('Quarter')['Amount'].transform(lambda x: x.ffill().bfill()).fillna(0).astype(int)
+df = df[['Month', 'Amount']].reset_index(drop=True)
+
+print(df.equals(test_df)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 698](/challenges/excelbi/Excel698.html)
+- [Excel Challenge 699](/challenges/excelbi/Excel699.html)
+- [Excel Challenge 700](/challenges/excelbi/Excel700.html)

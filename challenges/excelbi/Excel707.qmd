@@ -1,0 +1,81 @@
+---
+title: "Excel BI - Excel Challenge 707"
+description: "🔰 Split the sentences on the basis of non-alphabets and stack them in a column."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 707](/challenges/images/exc707.jpg)
+
+## Challenge Description
+
+🔰 Split the sentences on the basis of non-alphabets and stack them in a column.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/707 Split at Non Alphabetic Delimiters.xlsx"
+input = read_excel(path, range = "A1:A10")
+test = read_excel(path, range = "B1:B36")
+
+result = input %>%
+  separate_rows(Sentences, sep = "[^[:alpha:]]+")
+
+all.equal(result$Sentences, test$`Expected Answer`)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Parse the packed text or string structure.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "707 Split at Non Alphabetic Delimiters.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=10)
+test = pd.read_excel(path, usecols="B", nrows=36)
+
+result = input['Sentences'].str.split(r'[^a-zA-Z]+', expand=True).stack().reset_index(drop=True)
+
+print(result.equals(test['Expected Answer'])) # True
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 708](/challenges/excelbi/Excel708.html)
+- [Excel Challenge 709](/challenges/excelbi/Excel709.html)
+- [Excel Challenge 710](/challenges/excelbi/Excel710.html)

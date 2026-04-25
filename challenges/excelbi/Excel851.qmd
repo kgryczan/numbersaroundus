@@ -1,0 +1,91 @@
+---
+title: "Excel BI - Excel Challenge 851"
+description: "🔰 Answer Expected Data HR IT Marketing Purchasing Christian Karen Emily Billy"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 851](/challenges/images/exc851.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Data HR IT Marketing Purchasing Christian Karen Emily Billy
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/851/851_Excel_Challenge.xlsx"
+input <- read_excel(path, range = "A2:A20")
+test  <- read_excel(path, range = "C2:F6")
+
+result = input %>%
+  mutate(col1 = ifelse(row_number() == 1 | lag(Data) == "===============", Data, NA)) %>%
+  fill(col1) %>%
+  filter(Data != "===============" & col1 != Data) %>%
+  arrange(col1, Data) %>%
+  mutate(rn = row_number(), .by = col1) %>%
+  pivot_wider(names_from = col1, values_from = Data) %>%
+  select(-rn)
+
+all.equal(result, test)
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel/800-899/851/851_Excel_Challenge.xlsx"
+input = pd.read_excel(path, usecols="A", skiprows=1, nrows=18)
+test = pd.read_excel(path, usecols="C:F", skiprows=1, nrows=4)
+
+input["col1"] = input["Data"].where((input.index == 0) | (input["Data"].shift(1) == "==============="))
+input["col1"] = input["col1"].ffill()
+filtered = input[(input["Data"] != "===============") & (input["col1"] != input["Data"])].reset_index(drop=True)
+filtered = filtered.sort_values(["col1", "Data"])
+filtered["rn"] = filtered.groupby("col1").cumcount() + 1
+result = filtered.pivot(index="rn", columns="col1", values="Data")
+result = result.reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 852](/challenges/excelbi/Excel852.html)
+- [Excel Challenge 853](/challenges/excelbi/Excel853.html)
+- [Excel Challenge 854](/challenges/excelbi/Excel854.html)

@@ -1,0 +1,122 @@
+---
+title: "Omid - Challenge 102"
+description: "🔰 In the historical sales table, identify and extract the dates where the sales value on that date is greater than the sales on the previous date."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 102](/challenges/images/OmidC102.jpg)
+
+## Challenge Description
+
+🔰 In the historical sales table, identify and extract the dates where the sales value on that date is greater than the sales on the previous date.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-102 Compare Rows.xlsx"
+input = read_excel(path, range = "B2:C26")
+test  = read_excel(path, range = "G2:G14")
+
+result = input %>%
+  filter(Sales - lag(Sales) > 0) %>%
+  select(Dates = Date)
+
+identical(result, test)
+# [1] TRUE
+
+# Second approach (no comparison gte or lte)
+
+result = input %>%
+  filter(sign(Sales - lag(Sales)) == 1) %>%
+  select(Dates = Date)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "CH-102 Compare Rows.xlsx"
+input = pd.read_excel(path, usecols = "B:C", skiprows = 1)
+test  = pd.read_excel(path, usecols = "G", skiprows = 1, nrows = 12)
+
+result = input.where(input["Sales"] - input["Sales"].shift(1) > 0).dropna().reset_index(drop = True)
+result = result["Date"].rename("Dates")
+print(result.equals(test["Dates"])) # True
+
+# II Aproach with no comparison using > or < operators
+
+result = input.where(np.sign(input["Sales"] - input["Sales"].shift(1)) == 1).dropna().reset_index(drop = True)
+result = result["Date"].rename("Dates")
+print(result.equals(test["Dates"])) # True
+
+# be careful and call only first or second approach. :D
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 101](OmidC101.qmd)
+-   [Omid - Challenge 103](OmidC103.qmd)
+-   [Omid - Challenge 104](OmidC104.qmd)

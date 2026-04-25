@@ -1,0 +1,148 @@
+---
+title: "Omid - Challenge 220"
+description: "🔰 Continuing from the previous challenge, extract the project's critical path."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 220](/challenges/images/OmidC220.jpg)
+
+## Challenge Description
+
+🔰 Continuing from the previous challenge, extract the project's critical path.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(criticalpath)
+
+path = "files/CH-220 Project Critical path.xlsx"
+df = read_excel(path, range = "B3:D11", col_names = c("id", "duration", "pred"))
+test = read_excel(path, range = "F2:F3")
+
+df <- df %>% mutate(id = as.integer(id), duration = as.integer(duration))
+
+relations <- df %>%
+  drop_na(pred) %>%
+  separate_rows(pred, sep = ",") %>%
+  transmute(from = as.integer(pred), to = id) %>%
+  na.omit()
+
+sch <- sch_new() %>%
+  sch_add_activities(id = df$id, name = paste0("Task ", df$id), duration = df$duration) %>%
+  sch_add_relations(from = relations$from, to = relations$to) %>%
+  sch_plan()
+
+result = sch_critical_activities(sch) %>%
+  select(id) %>%
+  summarise(critical_path = paste(id, collapse = ","))
+result
+
+# 1,2,4,6,8,9
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import networkx as nx
+
+path = "CH-220 Project Critical path.xlsx"
+df = pd.read_excel(path, skiprows=2, usecols="B:D", nrows=9, names=["id", "duration", "pred"])
+
+G = nx.DiGraph()
+for _, r in df.iterrows():
+    G.add_node(r.id, dur=int(r.duration))
+    
+for _, r in df.dropna(subset=['pred']).iterrows():
+    for p in map(int, str(r.pred).split(',')):
+        if p not in G.nodes():
+            G.add_node(p, dur=0)
+        G.add_edge(p, r.id)
+
+ES, EF = {}, {}
+for n in nx.topological_sort(G):
+    ES[n] = 0 if G.in_degree(n)==0 else max(EF[p] for p in G.predecessors(n))
+    EF[n] = ES[n] + G.nodes[n]['dur']
+
+project_len = max(EF.values())
+LF, LS = {}, {}
+for n in reversed(list(nx.topological_sort(G))):
+    LF[n] = project_len if G.out_degree(n)==0 else min(LS[s] for s in G.successors(n))
+    LS[n] = LF[n] - G.nodes[n]['dur']
+
+slack = {n: LS[n] - ES[n] for n in G.nodes()}
+critical_path = sorted([n for n, v in slack.items() if v == 0], key=lambda n: ES[n])
+
+print(critical_path)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 219](OmidC219.qmd)
+-   [Omid - Challenge 221](OmidC221.qmd)
+-   [Omid - Challenge 222](OmidC222.qmd)

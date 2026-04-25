@@ -1,0 +1,132 @@
+---
+title: "Omid - Challenge 20"
+description: "🔰 Hierarchy Transformation transform this table to the result table wich each level is displayed in separate columns ."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 20](/challenges/images/OmidC20.jpg)
+
+## Challenge Description
+
+🔰 Hierarchy Transformation transform this table to the result table wich each level is displayed in separate columns .
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-020 Transform Higherarchey format.xlsx", range = "B2:C18")
+test  = read_excel("files/CH-020 Transform Higherarchey format.xlsx", range = "E2:H10")
+
+result = input %>%
+  mutate(level = str_length(Code), 
+         first_digit = str_sub(Code, 1,1)) %>%
+  pivot_wider(names_from = level, values_from = Description) %>%
+  group_by(first_digit) %>%
+  fill(everything(), .direction = "down")  %>%
+  ungroup() %>%
+  filter(str_length(Code) == 3) %>%
+  select(Code, `Lvel 1` = `1`, `Lvel 2` = `2`, `Lvel 3` = `3`)
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input_data = pd.read_excel("CH-020 Transform Higherarchey format.xlsx", usecols="B:C", skiprows=1, nrows=17)
+test = pd.read_excel("CH-020 Transform Higherarchey format.xlsx", usecols="E:H", skiprows=1, nrows=9)
+
+result = input_data.assign(
+    level=input_data["Code"].astype(str).str.len(),
+    first_digit=input_data["Code"].astype(str).str[0],
+)
+result = result.pivot(index=["Code", "first_digit"], columns="level", values="Description").reset_index()
+result = result.sort_values(["first_digit", "Code"])
+result[["1", "2", "3"]] = result.groupby("first_digit")[["1", "2", "3"]].ffill()
+result = result.loc[result["Code"].astype(str).str.len() == 3, ["Code", "1", "2", "3"]]
+result.columns = ["Code", "Lvel 1", "Lvel 2", "Lvel 3"]
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 19](OmidC19.qmd)
+-   [Omid - Challenge 21](OmidC21.qmd)
+-   [Omid - Challenge 22](OmidC22.qmd)

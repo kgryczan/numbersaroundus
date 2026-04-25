@@ -1,0 +1,113 @@
+---
+title: "Omid - Challenge 144"
+description: "🔰 From the provided 'transactions' table, filter the first transaction for each month."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 144](/challenges/images/OmidC144.jpg)
+
+## Challenge Description
+
+🔰 From the provided "transactions" table, filter the first transaction for each month.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-144 First transaction in each month.xlsx"
+input = read_excel(path, range = "C2:E27")
+test  = read_excel(path, range = "G2:I6")
+
+result = input %>%
+  mutate(month = month(Date)) %>%
+  filter(row_number() == 1, .by = month) %>%
+  select(-month)
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-144 First transaction in each month.xlsx"
+input = pd.read_excel(path, usecols="C:E", skiprows=1, nrows=26)
+test = pd.read_excel(path, usecols="G:I", skiprows=1, nrows=4).rename(columns=lambda x: x.split('.')[0])
+
+result = input.assign(month=input['Date'].dt.month).groupby('month').head(1).drop(columns='month').reset_index(drop=True)
+
+print(result.equals(test))  # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 143](OmidC143.qmd)
+-   [Omid - Challenge 145](OmidC145.qmd)
+-   [Omid - Challenge 146](OmidC146.qmd)

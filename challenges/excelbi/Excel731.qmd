@@ -1,0 +1,96 @@
+---
+title: "Excel BI - Excel Challenge 731"
+description: "🔰 Answer Expected A B C D E F G For the given number in A2, generate those many English alphabets starting with A."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 731](/challenges/images/exc731.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected A B C D E F G For the given number in A2, generate those many English alphabets starting with A. Every succeeding alphabet will be separated by 1, 2, 3...blanks. A2 will never exceed 26.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/731/731 Generate Fill Sequence Blanks.xlsx"
+input = read_excel(path, range = "A2", col_names = FALSE) %>% pull()
+test = read_excel(path, range = "A3:A37", col_names = "Answer Expected")
+
+result = map(
+  1:input,
+  ~ tibble(Answer = LETTERS[.x], `Answer Expected` = rep(NA_character_, .x + 1))
+) %>%
+  bind_rows() %>%
+  mutate(
+    `Answer Expected` = ifelse(row_number() == 1, Answer, `Answer Expected`),
+    .by = Answer
+  )
+
+all.equal(
+  result$`Answer Expected`,
+  test$`Answer Expected`,
+  check.attributes = FALSE
+)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Apply the business rule conditions explicitly.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "700-799/731/731 Generate Fill Sequence Blanks.xlsx"
+input_value = pd.read_excel(path, header=None, usecols="A", skiprows=1, nrows=1).iloc[0, 0]
+test = pd.read_excel(path, header=0, usecols="A", skiprows=1, nrows=35)
+test.columns = ["Answer Expected"]
+
+rows = [{"Answer": chr(64 + i), "Answer Expected": np.nan} for i in range(1, int(input_value) + 1) for _ in range(i + 1)]
+result = pd.DataFrame(rows)
+result.loc[result.groupby('Answer').head(1).index, 'Answer Expected'] = result.loc[result.groupby('Answer').head(1).index, 'Answer']
+result = result.head(len(test))
+
+print(result['Answer Expected'].equals(test['Answer Expected']))
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 732](/challenges/excelbi/Excel732.html)
+- [Excel Challenge 733](/challenges/excelbi/Excel733.html)
+- [Excel Challenge 734](/challenges/excelbi/Excel734.html)

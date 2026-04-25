@@ -1,0 +1,91 @@
+---
+title: "Excel BI - Excel Challenge 677"
+description: "🔰 Generate the given pattern."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 677](/challenges/images/exc677.jpg)
+
+## Challenge Description
+
+🔰 Generate the given pattern.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/677 Generate the Pattern.xlsx"
+test  = read_excel(path, range = "B2:R10", col_names = FALSE) %>% as.matrix() %>% replace(is.na(.), "")
+
+M = matrix("", 9, 17)
+
+generate_sequence <- function(X) {
+  if (X == 1) return(1)
+  c(seq(X, 1, by = -1), seq(2, X, by = 1))
+}
+
+for (i in 1:9) {
+  seq_i <- generate_sequence(i)
+  M[i, 1:length(seq_i)] <- seq_i
+}
+
+all.equal(M, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import numpy as np
+import pandas as pd
+
+path = "677 Generate the Pattern.xlsx"
+test = pd.read_excel(path, sheet_name=0, usecols="B:R", skiprows=1, nrows=9, header=None).fillna("").to_numpy()
+
+M = np.full((9, 17), "", dtype=object)
+def generate_sequence(X):
+    return [x for x in range(X, 0, -1)] + [x for x in range(2, X + 1)]
+M = np.array([generate_sequence(i) + [""] * (17 - len(generate_sequence(i))) for i in range(1, 10)], dtype=object)
+
+print(np.array_equal(M, test))
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 678](/challenges/excelbi/Excel678.html)
+- [Excel Challenge 679](/challenges/excelbi/Excel679.html)
+- [Excel Challenge 680](/challenges/excelbi/Excel680.html)

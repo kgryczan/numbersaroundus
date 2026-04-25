@@ -1,0 +1,124 @@
+---
+title: "Omid - Challenge 113"
+description: "🔰 Question Result Product ID 100-1-1 100-1-2 100-2-1 100-2-2 107-1-1"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 113](/challenges/images/OmidC113.jpg)
+
+## Challenge Description
+
+🔰 Question Result Product ID 100-1-1 100-1-2 100-2-1 100-2-2 107-1-1
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-113 Manage Duplicate Values.xlsx"
+input = read_excel(path, range = "B2:B15")
+test  = read_excel(path, range = "D2:D15")
+
+result <-  input %>%
+  mutate(rn = row_number()) %>%
+  arrange(`Product ID`) %>%
+  mutate(dup = n() > 1,
+         a = cumsum(rn - lag(rn, default = first(rn)) != 1),
+         .by = `Product ID`) %>%
+  mutate(b = row_number(), .by = c(`Product ID`, a)) %>%
+  arrange(rn) %>%
+  mutate(result = ifelse(dup, paste0(`Product ID`,"-",a, "-", b), `Product ID`)) 
+
+
+identical(result$result, test$`Product ID`)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-113 Manage Duplicate Values.xlsx"
+
+input = pd.read_excel(path, usecols="B", skiprows=1, names=["Product ID"])
+test = pd.read_excel(path, usecols="D", skiprows=1, names=["result"])
+
+input['rn'] = input.index + 1
+input = input.sort_values('Product ID').reset_index()
+input['dup'] = input.groupby('Product ID')['Product ID'].transform('size') > 1
+input['a'] = input.groupby('Product ID')['rn'].diff().gt(1).cumsum()
+input['a'] = input.groupby('Product ID')['a'].transform(lambda x: x - x.min() + 1)
+input['b'] = input.groupby(['Product ID', 'a']).cumcount() + 1
+input = input.sort_values('rn').reset_index()
+input['result'] = input.apply(lambda row: f"{row['Product ID']}-{row['a']}-{row['b']}" if row['dup'] else row['Product ID'], axis=1)
+print(input['result'].equals(test["result"])) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 112](OmidC112.qmd)
+-   [Omid - Challenge 114](OmidC114.qmd)
+-   [Omid - Challenge 115](OmidC115.qmd)

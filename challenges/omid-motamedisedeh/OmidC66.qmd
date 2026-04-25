@@ -1,0 +1,143 @@
+---
+title: "Omid - Challenge 66"
+description: "🔰 Convert the Question table with the merge headers into the result table."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 66](/challenges/images/OmidC66.jpg)
+
+## Challenge Description
+
+🔰 Convert the Question table with the merge headers into the result table.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(unpivotr)
+
+input = read_excel("files/CH-066 Merged cells.xlsx", range = "B2:G8", col_names = F)
+test  = read_excel("files/CH-066 Merged cells.xlsx", range = "I2:L17")
+
+result = input %>% 
+  as_cells() %>%
+  behead("up-left", "scenario") %>%
+  behead("up", "Year") %>%
+  behead("left", "Department") %>%
+  select(Department, Year, scenario, dbl, chr) %>%
+  mutate(value = case_when(
+    !is.na(dbl) ~ dbl,
+    !is.na(chr) ~ as.numeric(chr),
+    TRUE ~ NA_real_
+  ),
+  Year = as.numeric(Year)) %>%
+  select(-dbl, -chr) %>%
+  pivot_wider(names_from = scenario, values_from = value)
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input = pd.read_excel("CH-066 Merged cells.xlsx", skiprows=1, usecols="B:G", header=None, nrows=7)
+test = pd.read_excel("CH-066 Merged cells.xlsx", skiprows=1, usecols="I:L", nrows=16)
+test.columns = test.columns.str.replace('.1', '')
+
+input = input.transpose()
+input[0] = input[0].fillna(method='ffill')
+input.columns = input.iloc[0]
+input = input[1:]
+input = input.rename(columns={'Department': 'Scenario'})
+input = input.rename(columns={input.columns[1]: 'Year'})
+
+for i in range(1, len(input.columns)):
+    input[input.columns[i]] = pd.to_numeric(input[input.columns[i]], errors='coerce')
+
+input = pd.melt(input, id_vars=['Scenario', 'Year'], var_name='Department', value_name='Value')
+input = input.pivot_table(index=['Department', 'Year'], columns='Scenario', values='Value').reset_index()
+input = input.sort_values(['Year', 'Department']).reset_index(drop=True)
+input["Budget"] = input["Budget"].astype('int64')
+input.columns.name = None
+
+test = test.sort_values(['Year', 'Department']).reset_index(drop=True)
+
+print(input.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 65](OmidC65.qmd)
+-   [Omid - Challenge 67](OmidC67.qmd)
+-   [Omid - Challenge 68](OmidC68.qmd)

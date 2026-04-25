@@ -1,0 +1,129 @@
+---
+title: "Excel BI - PowerQuery Challenge 159"
+description: "Name Year Month Sales Lisa Smith"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 159](/challenges/images/exc159pq.jpg)
+
+## Challenge Description
+
+Name Year Month Sales Lisa Smith
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("Power Query/PQ_Challenge_159.xlsx", range = "A1:D19")
+test  = read_excel("Power Query/PQ_Challenge_159.xlsx", range = "F1:I73")
+
+calendar = input %>%
+  select(-c(Sales,Month)) %>%
+  group_by(Name) %>%
+  expand_grid(Y = unique(Year), M = 1:12) %>%
+  distinct() %>%
+  filter(Y == Year) %>%
+  select(Name, Year, Month = M) %>%
+  ungroup()
+
+result = calendar %>%
+  left_join(input, by = c("Name", "Year", "Month")) %>%
+  replace_na(list(Sales = 100))
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input_data = pd.read_excel("PQ_Challenge_159.xlsx", usecols="A:D", nrows=19)
+test = pd.read_excel("PQ_Challenge_159.xlsx", usecols="F:I", nrows=73)
+
+calendar = []
+for name, g in input_data.groupby("Name"):
+    for year in sorted(g["Year"].unique()):
+        for month in range(1, 13):
+            calendar.append({"Name": name, "Year": year, "Month": month})
+calendar = pd.DataFrame(calendar)
+result = calendar.merge(input_data, on=["Name", "Year", "Month"], how="left")
+result["Sales"] = result["Sales"].fillna(100)
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 158](Excel158pq.qmd)

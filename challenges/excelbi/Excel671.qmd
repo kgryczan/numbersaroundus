@@ -1,0 +1,98 @@
+---
+title: "Excel BI - Excel Challenge 671"
+description: "🔰 Find the pair of words which together contain all 5 vowels."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 671](/challenges/images/exc671.jpg)
+
+## Challenge Description
+
+🔰 Find the pair of words which together contain all 5 vowels.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/671 Word Pairs Having All Vowels.xlsx"
+input = read_excel(path, range = "A2:A11")
+test  = read_excel(path, range = "B2:C6")
+
+extract_vowels = function(word) {
+  paste(sort(unique(unlist(str_extract_all(word, "[aeiou]")))), collapse = "")
+}
+
+result = expand.grid(input$Words, input$Words, stringsAsFactors = F) %>%
+  filter(nchar(Var1) < nchar(Var2)) %>%
+  mutate(combined = paste(Var1, Var2, sep = "")) %>%
+  filter(map_chr(combined, extract_vowels) == "aeiou") %>%
+  select(Var1, Var2)
+
+# the same pairs, but with different order.
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure.
+- **Strengths**: The solution stays close to the text pattern itself, which makes the extraction logic easy to audit.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: A small number of well-targeted text patterns does most of the heavy lifting.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "671 Word Pairs Having All Vowels.xlsx"
+input = pd.read_excel(path, usecols="A", skiprows=1, nrows=10)
+test = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=5)
+
+def extract_vowels(word):
+    return ''.join(sorted(set(re.findall(r'[aeiou]', word))))
+
+input_words = input.iloc[:, 0].tolist()
+
+result = [
+    (w1, w2) for i, w1 in enumerate(input_words)
+    for w2 in input_words[i + 1:]
+    if extract_vowels(w1 + w2) == 'aeiou'
+]
+
+result = pd.DataFrame(result, columns=['Var1', 'Var2'])
+print(result)
+# the same pairs, but with different order.
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 672](/challenges/excelbi/Excel672.html)
+- [Excel Challenge 673](/challenges/excelbi/Excel673.html)
+- [Excel Challenge 674](/challenges/excelbi/Excel674.html)

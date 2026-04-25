@@ -1,0 +1,135 @@
+---
+title: "Omid - Challenge 195"
+description: "🔰 Challenge 195 : Missing Char!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 195](/challenges/images/OmidC195.jpg)
+
+## Challenge Description
+
+🔰 Challenge 195 : Missing Char!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-195 Missing Char.xlsx"
+input = read_excel(path, range = "B2:B7")
+test  = read_excel(path, range = "D2:D7")
+
+transform_text <- function(text) {
+  chars <- substr(text, 1, 2) 
+  
+  for (i in seq(3, nchar(text))) {
+    char <- substr(text, i, i)  
+    cond <- ((nchar(chars) + 1) %% 3 == 0) && (char != "/") 
+    chars <- paste0(chars, ifelse(cond, "-", ""), char)
+  }
+  
+  return(chars)
+}
+
+result = input %>%
+  mutate(result = map_chr(ID, transform_text))
+
+all.equal(result$result, test$ID, check.attributes = FALSE) # TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-195 Missing Char.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=6)
+test = pd.read_excel(path, usecols="D", skiprows=1, nrows=6).rename(columns=lambda x: x.split('.')[0])
+
+def transform_text(text):
+    chars = text[:2] 
+    
+    for i in range(2, len(text)):
+        char = text[i] 
+        cond = ((len(chars) + 1) % 3 == 0) and (char != "/")  
+        chars += ('-' if cond else '') + char 
+    
+    return chars
+
+input['result'] = input.iloc[:, 0].apply(transform_text)
+
+result = input['result'].tolist()
+expected = test.iloc[:, 0].tolist()
+
+print(result == expected) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 194](OmidC194.qmd)
+-   [Omid - Challenge 196](OmidC196.qmd)
+-   [Omid - Challenge 197](OmidC197.qmd)

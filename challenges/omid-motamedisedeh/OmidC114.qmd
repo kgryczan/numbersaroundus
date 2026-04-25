@@ -1,0 +1,122 @@
+---
+title: "Omid - Challenge 114"
+description: "🔰 In Question Table 1, the dates and product IDs are provided."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 114](/challenges/images/OmidC114.jpg)
+
+## Challenge Description
+
+🔰 In Question Table 1, the dates and product IDs are provided.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-114 Merge.xlsx"
+input1 = read_excel(path, range = "B2:C9")
+input2 = read_excel(path, range = "B13:C18")
+test  = read_excel(path, range = "H2:J9")
+
+r1 = input1 %>%
+  separate_rows(`Product ID`, sep = ",") %>%
+  inner_join(input2, by = c("Product ID" = "product id")) %>%
+  summarise(price = first(price) %>% as.character(), .by = Date) 
+r2 = input1 %>%
+  left_join(r1, by = "Date") %>%
+  replace_na(list(price = "-"))
+
+identical(r2, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-114 Merge.xlsx"
+
+input1 = pd.read_excel(path, usecols = "B:C", nrows = 7, skiprows = 1)
+input2 = pd.read_excel(path, usecols = "B:C", nrows = 5, skiprows = 12)
+test = pd.read_excel(path, usecols="H:J", nrows=7, skiprows=1).rename(columns=lambda x: x.replace('.1', ''))
+test["price"] = test["price"].astype(str)
+
+input1['Product ID'] = input1['Product ID'].str.split(',')
+input1 = input1.explode('Product ID')
+r1 = input1.merge(input2, left_on='Product ID', right_on='product id') \
+           .groupby('Date').agg({'price': lambda x: x.iloc[0].astype(str)}).reset_index()
+r2 = input1.merge(r1, on='Date', how='left').fillna({'price': '-'}).groupby('Date').agg({'Product ID': ','.join, 'price': 'first'}).reset_index()
+
+print(r2.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 113](OmidC113.qmd)
+-   [Omid - Challenge 115](OmidC115.qmd)
+-   [Omid - Challenge 116](OmidC116.qmd)

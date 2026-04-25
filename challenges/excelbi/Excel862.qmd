@@ -1,0 +1,140 @@
+---
+title: "Excel BI - Excel Challenge 862"
+description: "🔰 Gijswijt's Sequence is a self-describing sequence where each term counts the maximum number of repeated 'blocks' of numbers in the sequence directly preceding that term."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 862](/challenges/images/exc862.jpg)
+
+## Challenge Description
+
+🔰 Gijswijt's Sequence is a self-describing sequence where each term counts the maximum number of repeated 'blocks' of numbers in the sequence directly preceding that term. The recursive structure of the sequence means that you only need to find the 'glue' sequences in order to build the entire sequence. Remember the sequence describe the maximum number of repeated blocks of any length that come at the end of the sequence which is why after: 1, 1, 2; we get a '1', even though '1' is repeated twice at the start it is followed by a '2', if the sequence was: 2, 1, 1; then the next number would indeed be '2'.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(purrr)
+library(rlang)
+
+path <- "Excel/800-899/862/862 Gijswijt's Sequence.xlsx"
+excel_data <- read_excel(path, range = "H1:AX65")
+sequence_vector <- as.vector(t(as.matrix(excel_data))) %>%
+  na.omit() %>%
+  as.integer()
+
+find_repetition_length <- function(seq) {
+  max_repeats <- 1
+  n <- length(seq)
+  for (block_size in seq_len(n)) {
+    block <- tail(seq, block_size)
+    num_blocks <- n %/% block_size
+    if (num_blocks <= max_repeats) {
+      return(max_repeats)
+    }
+    repeat_count <- 1
+    repeat {
+      start <- n - (repeat_count + 1) * block_size + 1
+      end <- n - repeat_count * block_size
+      if (start < 1) {
+        break
+      }
+      if (!identical(seq[start:end], block)) {
+        break
+      }
+      repeat_count <- repeat_count + 1
+    }
+    max_repeats <- max(max_repeats, repeat_count)
+  }
+  max_repeats
+}
+
+generate_until_four <- function() {
+  sequence <- list(1)
+  repeat {
+    next_number <- find_repetition_length(unlist(sequence))
+    sequence <- append(sequence, next_number)
+    if (next_number == 4) break
+  }
+  unlist(sequence)
+}
+
+result = generate_until_four()
+
+all.equal(result, sequence_vector)
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+def read_excel_sequence(path):
+    df = pd.read_excel(path, usecols="H:AX", nrows=65)
+    values = df.to_numpy().flatten()
+    sequence = pd.Series(values).dropna().astype(int).to_list()
+    return sequence
+
+expected_sequence = read_excel_sequence("Excel\\800-899\\862\\862 Gijswijt's Sequence.xlsx")
+
+def max_repeated_block_length(seq):
+    max_length = 1
+    for block_size in range(1, len(seq) + 1):
+        count, block, max_possible = 1, seq[-block_size:], len(seq) // block_size
+        if max_possible <= max_length:
+            return max_length
+        while seq[-(count + 1) * block_size : -count * block_size] == block:
+            count += 1
+        max_length = max(max_length, count)
+
+def build_sequence_until_four():
+    sequence = [1]
+    while True:
+        next_number = max_repeated_block_length(sequence)
+        sequence.append(next_number)
+        if next_number == 4:
+            break
+    return sequence
+
+result_sequence = build_sequence_until_four()
+print(result_sequence == expected_sequence)
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 863](/challenges/excelbi/Excel863.html)
+- [Excel Challenge 864](/challenges/excelbi/Excel864.html)
+- [Excel Challenge 865](/challenges/excelbi/Excel865.html)

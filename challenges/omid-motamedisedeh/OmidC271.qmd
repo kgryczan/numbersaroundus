@@ -1,0 +1,98 @@
+---
+title: "Omid - Challenge 271"
+description: "🔰 The output should display the same rows but in a randomized order each time it's calculated or refreshed."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 271](/challenges/images/OmidC271.jpg)
+
+## Challenge Description
+
+🔰 The output should display the same rows but in a randomized order each time it's calculated or refreshed.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/271/CH-271 Randomly Reorder rows.xlsx"
+input = read_excel(path, range = "B2:E9")
+
+result = input[sample(nrow(input)),]
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "200-299/271/CH-271 Randomly Reorder rows.xlsx"
+input = pd.read_excel(path, usecols="B:E", skiprows=1, nrows=7)
+
+result = input.sample(frac=1)
+print(result)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 270](OmidC270.qmd)
+-   [Omid - Challenge 272](OmidC272.qmd)
+-   [Omid - Challenge 273](OmidC273.qmd)

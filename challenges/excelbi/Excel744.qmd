@@ -1,0 +1,92 @@
+---
+title: "Excel BI - Excel Challenge 744"
+description: "🔰 Strings Expected Answer a4jtr a4Jtr wqt8u m5a2yq m5a2Yq x1ioudy x1iouDy 1ayoziiop"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 744](/challenges/images/exc744.jpg)
+
+## Challenge Description
+
+🔰 Strings Expected Answer a4jtr a4Jtr wqt8u m5a2yq m5a2Yq x1ioudy x1iouDy 1ayoziiop
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/744/744 Capitalize the Consonant After a Vowel.xlsx"
+input = read_excel(path, range = "A1:A10")
+test  = read_excel(path, range = "B1:B10")
+
+pattern = "(?<=([aeiou])[0-9]?)([b-df-hj-np-tv-z])"
+
+result = input %>%
+  mutate(`Expected Answer` = map_chr(Strings, ~ {
+    str_replace_all(.x, pattern, function(x) {
+      toupper(x)
+    })
+  }))
+
+all.equal(result$`Expected Answer`, test$`Expected Answer`, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "700-799/744/744 Capitalize the Consonant After a Vowel.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=10)
+test = pd.read_excel(path, usecols="B", nrows=10)
+pattern = r'([aeiou][0-9]?)([b-df-hj-np-tv-z])'
+
+def capitalize_consonant(s):
+    return re.sub(pattern, lambda m: m.group(1) + m.group(2).upper(), s, flags=re.IGNORECASE)
+
+input['Expected Answer'] = input.iloc[:,0].apply(capitalize_consonant)
+input.drop(columns=input.columns[0], inplace=True)
+
+print(input.equals(test)) # True
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 745](/challenges/excelbi/Excel745.html)
+- [Excel Challenge 746](/challenges/excelbi/Excel746.html)
+- [Excel Challenge 747](/challenges/excelbi/Excel747.html)

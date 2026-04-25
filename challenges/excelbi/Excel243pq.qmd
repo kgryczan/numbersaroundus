@@ -1,0 +1,128 @@
+---
+title: "Excel BI - PowerQuery Challenge 243"
+description: "Group Group1 Group2 Group3"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 243](/challenges/images/exc243pq.jpg)
+
+## Challenge Description
+
+Group Group1 Group2 Group3
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_243.xlsx"
+input = read_excel(path, range = "A1:B10")
+test  = read_excel(path, range = "D1:G12")
+
+result = input %>%
+  mutate(Group_2 = paste0("Group", row_number()), .by = `Emp ID`) %>%
+  arrange(`Emp ID`) %>%
+  separate_rows(Group, sep = ", ") %>%
+  mutate(x = row_number(), .by = c(`Emp ID`, Group_2)) %>%
+  pivot_wider(names_from = Group_2, values_from = Group) %>%
+  select(-x)
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "PQ_Challenge_243.xlsx"
+input = pd.read_excel(path,usecols="A:B", nrows=9)
+test = pd.read_excel(path, usecols="D:G", nrows=12).rename(columns=lambda x: x.split('.')[0])
+
+input['Group_2'] = input.groupby('Emp ID').cumcount().add(1).astype(str).radd('Group')
+input = input.sort_values('Emp ID').assign(Group=input['Group'].str.split(', ')).explode('Group')
+input['x'] = input.groupby(['Emp ID', 'Group_2']).cumcount().add(1)
+
+pivot_table = input.pivot_table(index=['Emp ID', 'x'], columns='Group_2', values='Group', aggfunc='first')
+pivot_table = pivot_table.reset_index().drop(columns='x').rename_axis(None, axis=1)
+
+print(pivot_table.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 242](Excel242pq.qmd)

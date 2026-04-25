@@ -1,0 +1,130 @@
+---
+title: "Omid - Challenge 64"
+description: "🔰 In the Question table, historical sales values are provided in a single cell, including the Date, Product Name, and Quantity, with a default value of 1 for missing quant…"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 64](/challenges/images/OmidC64.jpg)
+
+## Challenge Description
+
+🔰 In the Question table, historical sales values are provided in a single cell, including the Date, Product Name, and Quantity, with a default value of 1 for missing quant…
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-064 Text Cleaning.xlsx", range = "B2:B9")
+test  = read_excel("files/CH-064 Text Cleaning.xlsx", range = "D2:F14")
+test$Date = as.character(as.Date(test$Date))
+
+result = input %>%
+  mutate(date = str_split_fixed(Description, ", ", 2),
+         Date = date[,1],
+         Product = date[,2]) %>%
+  select(Date, Product) %>%
+  separate_longer_delim(Product, delim = ", ") %>%
+  separate(Product, into = c("Product", "Quantity"), sep = " ") %>%
+  mutate(Quantity = as.numeric(Quantity),
+         Date = str_replace_all(Date, "/", "-")) %>%
+  replace_na(list(Quantity = 1))
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+input = pd.read_excel("CH-064 Text Cleaning.xlsx", usecols="B", skiprows=1, nrows = 7)
+test = pd.read_excel("CH-064 Text Cleaning.xlsx", usecols="D:F", skiprows = 1, nrows = 12)
+test['Date'] = test['Date'].astype(str)
+
+result = input.copy()
+result[['Date', 'Product']] = result['Description'].str.split(", ", n=1, expand=True)
+result['Product'] = result['Product'].str.split(", ")
+result = result.explode('Product')
+result[['Product', 'Quantity']] = result['Product'].str.split(" ", n=1, expand=True)
+result['Quantity'] = pd.to_numeric(result['Quantity'])
+result['Date'] = result['Date'].str.replace("/", "-")
+result['Quantity'].fillna(1, inplace=True)
+result['Quantity'] = result['Quantity'].astype('int64')
+result.drop('Description', axis=1, inplace=True)a
+result = result.reset_index(drop=True)
+
+print(test.equals(result)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 63](OmidC63.qmd)
+-   [Omid - Challenge 65](OmidC65.qmd)
+-   [Omid - Challenge 66](OmidC66.qmd)

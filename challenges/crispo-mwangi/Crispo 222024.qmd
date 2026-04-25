@@ -1,0 +1,130 @@
+---
+title: "Crispo - Excel Challenge 22 2024"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2024-06-02"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 22 2024](/challenges/images/Crispo222024.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ ⭐Extract the LAST Correct Order
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/Excel Challenge 2nd June.xlsx", range = "C2:C8")
+test  = read_excel("files/Excel Challenge 2nd June.xlsx", range = "D2:D8")
+
+result = input %>%
+  mutate(last_letter = map_int(str_locate_all(`Customers & Orders`,
+                                              "[A-Za-z]"),
+                               ~max(.x[,2]))) %>%
+  mutate(answer = ifelse(last_letter < nchar(`Customers & Orders`), 
+                         str_sub(`Customers & Orders`, last_letter + 1), 
+                         NA_character_))
+           
+identical(result$answer, test$`Last Correct Order`)         
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+    -   Uses direct text-pattern extraction instead of manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "Excel Challenge 2nd June.xlsx"
+input_data = pd.read_excel(path, usecols="C", skiprows=1, nrows=7)
+test = pd.read_excel(path, usecols="D", skiprows=1, nrows=7)
+
+def tail_after_last_letter(text):
+    matches = list(re.finditer(r"[A-Za-z]", str(text)))
+    if not matches:
+        return None
+    last_pos = matches[-1].end()
+    return text[last_pos:] if last_pos < len(text) else None
+
+result = input_data.assign(answer=input_data["Customers & Orders"].map(tail_after_last_letter))
+print(result["answer"].equals(test["Last Correct Order"]))
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+    -   Uses direct text-pattern extraction instead of manual cleanup
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines familiar Excel-style logic with at least one non-trivial reshape, grouping, or parsing step.
+
+-   The answer depends on getting the output layout exactly right.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 21 2024](Crispo 212024.qmd)
+-   [Crispo - Excel Challenge 23 2024](Crispo 232024.qmd)

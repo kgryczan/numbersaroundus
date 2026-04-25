@@ -1,0 +1,92 @@
+---
+title: "Excel BI - Excel Challenge 782"
+description: "🔰 Answer Expected Bird1 Bird2 Bird3 Birds Quantity Dove Goose Peacock Duck"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 782](/challenges/images/exc782.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Bird1 Bird2 Bird3 Birds Quantity Dove Goose Peacock Duck
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/782/782 Align.xlsx"
+input = read_excel(path, range = "A2:C12")
+test  = read_excel(path, range = "E2:F12")
+
+result = c(input$Bird1, input$Bird2, input$Bird3) %>% 
+  data.frame(Col = .) %>%
+  na.omit() %>% 
+  filter(Col != "Quantity") %>%
+  mutate(type = ifelse(str_detect(Col, "\\d+"), 'num', 'text')) %>%
+  mutate(number = row_number(), .by = type) %>%
+  pivot_wider(names_from = type, values_from = Col) %>%
+  mutate(num = as.numeric(num)) %>%
+  select(Birds = text, Quantity = num)
+
+all.equal(result, test, check.attributes = FALSE)
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/782/782 Align.xlsx"
+input = pd.read_excel(path, usecols="A:C", skiprows=1, nrows=11)
+test  = pd.read_excel(path, usecols="E:F", skiprows=1, nrows=11)
+
+input2 = pd.concat([input[col] for col in input.columns], ignore_index=True)
+input2 = input2.dropna()
+input2 = input2[input2 != "Quantity"].reset_index(drop=True)
+text_values = input2[input2.astype(str).str.match(r'^[A-Za-z ]+$')].reset_index(drop=True)
+numeric_values = input2[input2.astype(str).str.match(r'^\d+(\.\d+)?$')].reset_index(drop=True)
+result = pd.DataFrame({'Birds': text_values, 'Quantity': numeric_values})
+
+print((result == test).all().all())
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 783](/challenges/excelbi/Excel783.html)
+- [Excel Challenge 784](/challenges/excelbi/Excel784.html)
+- [Excel Challenge 785](/challenges/excelbi/Excel785.html)

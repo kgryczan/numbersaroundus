@@ -1,0 +1,125 @@
+---
+title: "Excel BI - PowerQuery Challenge 225"
+description: "Group Group A GroupA Group B Group C"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 225](/challenges/images/exc225pq.jpg)
+
+## Challenge Description
+
+Group Group A GroupA Group B Group C
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_225.xlsx"
+input = read_excel(path, range = "A1:D9")
+test  = read_excel(path, range = "F1:G12")
+
+r1 = input %>%
+  mutate(Id = consecutive_id(Group),
+         `Emp ID` = as.character(`Emp ID`),
+         Group = ifelse(Group == "Group A", "GroupA", Group))
+
+r1_1 = r1 %>% select(Column1 = 1, Column2 = 2, ID = 5)
+r1_2 = r1 %>% select(Column1 = 4, Column2 = 3, ID = 5)
+
+r2 = rbind(r1_2, r1_1) %>%
+  arrange(ID) %>%
+  distinct() %>%
+  select(-ID)
+
+all.equal(r2, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "PQ_Challenge_225.xlsx"
+
+input = pd.read_excel(path, usecols="A:D", nrows=8)
+test = pd.read_excel(path, usecols="F:G", nrows=12)
+
+input['Id'] = input['Group'].ne(input['Group'].shift()).cumsum().astype(str)
+input['Group'] = input['Group'].replace('Group A', 'GroupA')
+
+r1_1 = input.iloc[:, [0, 1, 4]].rename(columns={input.columns[0]: 'Column1', input.columns[1]: 'Column2', 'Id': 'ID'})
+r1_2 = input.iloc[:, [3, 2, 4]].rename(columns={input.columns[3]: 'Column1', input.columns[2]: 'Column2', 'Id': 'ID'})
+
+r2 = pd.concat([r1_2, r1_1]).sort_values(by='ID').drop_duplicates().drop(columns='ID').reset_index(drop=True)
+
+print(r2.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The transformation rule is readable, but the final layout still requires a careful implementation.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 224](Excel224pq.qmd)

@@ -1,0 +1,103 @@
+---
+title: "Excel BI - Excel Challenge 921"
+description: "🔰 Classify subject scores as pass or fail and pivot them into one row per student."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-23"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 921](/challenges/images/exc921.jpg)
+
+## Challenge Description
+
+🔰 List the students and the subjects they have passed and failed. The workbook provides one table of marks by subject and another table of passing thresholds by subject, so the task is to classify each subject result and reshape the output to one row per student.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/900-999/921/921 Pass Fail.xlsx"
+input1 <- read_excel(path, range = "A1:C16")
+input2 <- read_excel(path, range = "E1:F6")
+test <- read_excel(path, range = "E10:G13")
+
+result <- input1 %>%
+  left_join(input2, by = "Subject") %>%
+  mutate(Pass = ifelse(Marks < `Passing Marks`, "Fail Subjects", "Pass Subjects")) %>%
+  pivot_wider(
+    id_cols = Student,
+    names_from = Pass,
+    values_from = Subject,
+    values_fn = list(Subject = ~ paste(.x, collapse = ", "))
+  )
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Join marks to passing thresholds, classify each row as pass or fail, then pivot to one row per student with subject lists.
+- **Strengths**: The final shape is much more readable than the raw marks table and mirrors how a human would summarize outcomes.
+- **Areas for Improvement**: This style of reshape assumes a clear one-threshold-per-subject rule, so any subject-specific exceptions would need extra handling.
+- **Gem**: The solution turns a tall score table into a narrative summary by student rather than just another numeric report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import numpy as np
+import pandas as pd
+
+path = "Excel/900-999/921/921 Pass Fail.xlsx"
+input1 = pd.read_excel(path, usecols="A:C", nrows=16)
+input2 = pd.read_excel(path, usecols="E:F", nrows=6).rename(columns=lambda c: c.rstrip(".1"))
+
+test = pd.read_excel(path, usecols="E:G", skiprows=9, nrows=3)
+test = test.rename(columns=lambda c: c.rstrip(".1")).reindex(columns=["Student", "Fail Subjects", "Pass Subjects"]).sort_values("Student").reset_index(drop=True)
+
+merged = input1.merge(input2, on="Subject", how="left").assign(
+    Pass=lambda df: np.where(df["Marks"] < df["Passing Marks"], "Fail Subjects", "Pass Subjects")
+)
+
+result = merged.pivot_table(
+    index="Student",
+    columns="Pass",
+    values="Subject",
+    aggfunc=lambda x: ", ".join(map(str, x))
+).sort_values("Student").reset_index()
+result.columns.name = None
+
+print(result.equals(test))
+# True
+```
+
+### Python
+
+The Python solution follows the same two-step structure: classify first, reshape second. Using `pivot_table()` with a string-join aggregation is the key to producing the compact student-level summary the workbook expects.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The pass/fail rule is simple, but the real output requires a pivoted reporting shape rather than a row-by-row flag.
+
+### Related Challenges
+
+- [Excel Challenge 918](/challenges/excelbi/Excel918.html)
+- [Excel Challenge 931](/challenges/excelbi/Excel931.html)
+- [Excel Challenge 910](/challenges/excelbi/Excel910.html)

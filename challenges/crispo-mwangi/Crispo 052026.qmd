@@ -1,0 +1,126 @@
+---
+title: "Crispo - Excel Challenge 05 2026"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-02-01"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 05 2026](/challenges/images/Crispo052026.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Problem Repeats: Item: Solution Items Apple
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path <- "2026-02-01/Challenge 101.xlsx"
+input1 <- read_excel(path, range = "B3:B6")
+input2 <- read_excel(path, range = "D2:E4")
+test <- read_excel(path, range = "G2:G9")
+
+result <- input1 %>%
+  mutate(row = row_number()) %>%
+  left_join(input2, by = c("row" = "Item:")) %>%
+  mutate(items = map2(`Items`, replace_na(`Repeats:`, 1), rep)) %>%
+  unnest_longer(items) %>%
+  select(items)
+
+all.equal(result$items, test$Solution)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data to the grain required by the task
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "2026-02-01\\Challenge 101.xlsx"
+input1 = pd.read_excel(path, usecols= "B", nrows = 3, skiprows = 2)
+input2 = pd.read_excel(path, usecols= "D:E", nrows = 2, skiprows = 1)
+test = pd.read_excel(path, usecols= "G", nrows = 7, skiprows = 1)
+
+result = pd.DataFrame({
+    'items': [item for i, item in enumerate(input1['Items']) 
+              for _ in range(input2.loc[input2['Item:'] == i+1, 'Repeats:'].values[0] 
+                           if (i+1) in input2['Item:'].values else 1)]
+})
+
+print(result['items'].equals(test['Solution']))
+# True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 04 2026](Crispo 042026.qmd)
+-   [Crispo - Excel Challenge 06 2026](Crispo 062026.qmd)

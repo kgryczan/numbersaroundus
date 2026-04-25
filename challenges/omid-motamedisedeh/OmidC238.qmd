@@ -1,0 +1,114 @@
+---
+title: "Omid - Challenge 238"
+description: "🔰 For example, in the highlighted rows, there are 4 rows containing consecutive numbers."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 238](/challenges/images/OmidC238.jpg)
+
+## Challenge Description
+
+🔰 For example, in the highlighted rows, there are 4 rows containing consecutive numbers.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/238/CH-238 Consecutive Numbers.xlsx"
+input = read_excel(path, range = "B2:B19")
+test = read_excel(path, range = "D2:E19")
+
+result = input %>%
+  mutate(group = cumsum(Numbers - lag(Numbers, default = first(Numbers)) != 1)) %>%
+  mutate(Count = ifelse(n() == 1, "-", as.character(n())), .by = group) %>%
+  select(Numbers, Count)
+
+all.equal(result, test) # One row is different
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "200-299/238/CH-238 Consecutive Numbers.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=18)
+test = pd.read_excel(path, usecols="D:E", skiprows=1, nrows=18).rename(columns=lambda col: col.replace('.1', ''))
+test['Count'] = test['Count'].astype(str)
+
+input.columns = ['Numbers']
+g = (input['Numbers'] != input['Numbers'].shift(1) + 1).cumsum()
+input['Count'] = input.groupby(g)['Numbers'].transform(lambda x: '-' if len(x)==1 else str(len(x)))
+result = input[['Numbers', 'Count']]
+
+print(result == test) # One row is different
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 237](OmidC237.qmd)
+-   [Omid - Challenge 239](OmidC239.qmd)
+-   [Omid - Challenge 240](OmidC240.qmd)

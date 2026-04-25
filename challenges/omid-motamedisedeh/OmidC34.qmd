@@ -1,0 +1,120 @@
+---
+title: "Omid - Challenge 34"
+description: "🔰 In the question table, sales data for different customers are provided."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 34](/challenges/images/OmidC34.jpg)
+
+## Challenge Description
+
+🔰 In the question table, sales data for different customers are provided.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-034 Customer Return Cycle.xlsx", range = "B2:F26")
+test  = read_excel("files/CH-034 Customer Return Cycle.xlsx", range = "J2:K6")
+
+result = input %>%
+  select(Date, `Customer ID`) %>%
+  arrange(`Customer ID`, Date) %>%
+  distinct() %>% 
+  mutate(lag = lag(Date), .by = `Customer ID`) %>%
+  mutate(diff = Date - lag) %>%
+  summarise(`Avg Return Cycle` = mean(diff, na.rm = TRUE), .by = `Customer ID`) %>% 
+  mutate(`Avg Return Cycle` = as.numeric(`Avg Return Cycle`)) %>%
+  select(Customer = `Customer ID`, `Avg Return Cycle`)
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input = pd.read_excel("CH-034 Customer Return Cycle.xlsx", sheet_name="Sheet1", usecols="B:F", skiprows=1)
+test = pd.read_excel("CH-034 Customer Return Cycle.xlsx", sheet_name="Sheet1", usecols="J:K", skiprows=1, nrows = 4)
+
+result = input[['Date', 'Customer ID']].sort_values(by=['Customer ID', 'Date']).drop_duplicates().reset_index(drop=True)
+result['lag'] = result.groupby('Customer ID')['Date'].shift(1)
+result['diff'] = (result['Date'] - result['lag']).dt.days
+result = result.groupby('Customer ID')['diff'].mean().astype(int).reset_index()
+result.columns = ['Customer', 'Avg Return Cycle']
+
+print(result == test)   # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 33](OmidC33.qmd)
+-   [Omid - Challenge 35](OmidC35.qmd)
+-   [Omid - Challenge 36](OmidC36.qmd)

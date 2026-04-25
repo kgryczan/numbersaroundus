@@ -1,0 +1,114 @@
+---
+title: "Excel BI - Excel Challenge 657"
+description: "🔰 Find the largest substring number which has alternating odd/even or even/odd digits."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 657](/challenges/images/exc657.jpg)
+
+## Challenge Description
+
+🔰 Find the largest substring number which has alternating odd/even or even/odd digits.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/657 Largest Alternating Even Odd or Odd Even Substring.xlsx"
+input = read_excel(path, range = "A1:A10")
+test  = read_excel(path, range = "B1:B10")
+
+generate_substrings <- function(num_str) {
+  nchar_num_str <- nchar(num_str)
+  unique(flatten_chr(map(seq_len(nchar_num_str), function(start) {
+    map_chr(start:nchar_num_str, function(end) substr(num_str, start, end))
+  })))
+}
+
+is_alternating <- function(num_str) {
+  all(diff(as.numeric(strsplit(num_str, "")[[1]]) %% 2) != 0)
+}
+
+largest_alternating_substring <- function(number) {
+  num_str <- as.character(number)
+  valid_substrings <- generate_substrings(num_str) %>%
+    map_chr(~ gsub("^0+", "", .x) %>% ifelse(. == "", "0", .)) %>%
+    keep(is_alternating)
+  if (length(valid_substrings) == 0) return(NA)
+  max(valid_substrings[nchar(valid_substrings) == max(nchar(valid_substrings))])
+}
+
+result = input %>%
+  mutate(LAS = map_chr(Numbers, largest_alternating_substring))
+
+all.equal(result$LAS, test$`Answer Expected`, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Apply the business rule conditions explicitly.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "657 Largest Alternating Even Odd or Odd Even Substring.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=10)
+test = pd.read_excel(path, usecols="B", nrows=10).astype(str)
+
+def generate_substrings(num_str):
+    return list(set(num_str[i:j] for i in range(len(num_str)) for j in range(i + 1, len(num_str) + 1)))
+
+def is_alternating(num_str):
+    return all((int(num_str[i]) % 2) != (int(num_str[i + 1]) % 2) for i in range(len(num_str) - 1))
+
+def largest_alternating_substring(number):
+    num_str = str(number)
+    valid_substrings = [s.lstrip('0') or '0' for s in generate_substrings(num_str) if is_alternating(s)]
+    if not valid_substrings:
+        return None
+    max_length = max(len(s) for s in valid_substrings)
+    return max(s for s in valid_substrings if len(s) == max_length)
+
+input['LAS'] = input.iloc[:, 0].apply(largest_alternating_substring)
+
+print(input['LAS'].equals(test['Answer Expected'])) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 658](/challenges/excelbi/Excel658.html)
+- [Excel Challenge 659](/challenges/excelbi/Excel659.html)
+- [Excel Challenge 660](/challenges/excelbi/Excel660.html)

@@ -1,0 +1,85 @@
+---
+title: "Excel BI - Excel Challenge 841"
+description: "🔰 Find the result of the series from 1 through n where + and - signs will alternate."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 841](/challenges/images/exc841.jpg)
+
+## Challenge Description
+
+🔰 Find the result of the series from 1 through n where + and - signs will alternate.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/841/841 Sum of Alternate Signs Series.xlsx"
+input = read_excel(path, range = "A1:A10")
+test  = read_excel(path, range = "B1:B10") %>% pull()
+
+agg = function(n) if(n %% 2 == 0) n / 2 + 2 else (3 - n) / 2
+result = map_dbl(input$N, agg)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "800-899/841/841 Sum of Alternate Signs Series.xlsx"
+input_df = pd.read_excel(path, usecols="A", nrows=10)
+test = pd.read_excel(path, usecols="B", nrows=10).iloc[:, 0].to_numpy()
+
+def agg(n):
+    return n / 2 + 2 if n % 2 == 0 else (3 - n) / 2
+
+result = np.array([agg(n) for n in input_df.iloc[:, 0]])
+
+print(np.allclose(result, test))
+# True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 842](/challenges/excelbi/Excel842.html)
+- [Excel Challenge 843](/challenges/excelbi/Excel843.html)
+- [Excel Challenge 844](/challenges/excelbi/Excel844.html)

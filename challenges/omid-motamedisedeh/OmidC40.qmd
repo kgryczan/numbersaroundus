@@ -1,0 +1,162 @@
+---
+title: "Omid - Challenge 40"
+description: "🔰 Question Result A B C Product Quantity Date"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 40](/challenges/images/OmidC40.jpg)
+
+## Challenge Description
+
+🔰 Question Result A B C Product Quantity Date
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input1 = read_excel("files/CH-040 Cross Selling.xlsx", range = "B2:F26")
+input2 = read_excel("files/CH-040 Cross Selling.xlsx", range = "H3:H7", col_names = "Scenario")
+test   = read_excel("files/CH-040 Cross Selling.xlsx", range = "K2:L7")
+
+r1 = input1 %>%
+  summarise(products = list(unique(Product)), .by = `Invoice ID`)
+
+scen_products = input2 %>%
+  mutate(Scenario_split = map(Scenario, ~str_split(.x, ",")[[1]]))
+
+r2 = expand_grid(prod = r1$products, scen = scen_products$Scenario_split) %>%
+  left_join(r1, by = c("prod" = "products")) %>%
+  select(`Invoice ID`, everything()) %>%
+  mutate(is_present = map2_lgl(scen, prod, ~all(.x %in% .y))) %>%
+  filter(is_present) %>%
+  mutate(diff = map2(scen, prod, ~setdiff(.y, .x))) %>%
+  select(scen, diff, `Invoice ID`) %>%
+  arrange(scen) %>%
+  unnest(cols = c(diff)) %>%
+  summarise(invoices = n_distinct(`Invoice ID`), .by = c(scen, diff)) %>%
+  arrange(scen, desc(invoices)) %>%
+  slice(1, .by = "scen") %>%
+  left_join(scen_products, by = c("scen" = "Scenario_split")) %>%
+  select(Scenario, diff)
+
+
+colnames(r2) = colnames(test)
+
+identical(r2, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+import re
+
+input1 = pd.read_excel("CH-040 Cross Selling.xlsx", sheet_name="Sheet1", skiprows=1, usecols="B:F")
+input2 = pd.read_excel("CH-040 Cross Selling.xlsx", sheet_name="Sheet1", skiprows=1, usecols="H:H", names=["Scenario"], nrows=5)
+test = pd.read_excel("CH-040 Cross Selling.xlsx", sheet_name="Sheet1", skiprows=1, usecols="K:L", nrows=5)
+test = test.sort_values(by=["Customers' Cart"]).reset_index(drop=True)
+
+r1 = input1.groupby('Invoice ID')['Product'].apply(lambda x: list(x.unique())).reset_index(name="products")
+r1["products_string"] = r1["products"].apply(lambda x: ",".join(x))
+
+scen_products = input2.copy()
+scen_products["Scenario_list"] = scen_products["Scenario"].apply(lambda x: re.split(",", x))
+
+r2 = pd.DataFrame(np.array(np.meshgrid(r1["products_string"], scen_products["Scenario_list"])).T.reshape(-1, 2), columns=["prod", "scen"])
+r2 = r2.merge(r1, left_on="prod", right_on="products_string", how="left").drop(columns=["products"])
+r2["prod"] = r2["prod"].str.split(",")
+r2["is_present"] = r2.apply(lambda x: all(elem in x["prod"] for elem in x["scen"]), axis=1)
+r2 = r2[r2["is_present"]].reset_index(drop=True)
+r2["diff"] = r2.apply(lambda x: list(set(x["prod"]) - set(x["scen"])), axis=1)
+r2 = r2.drop(columns=["prod", "products_string", "is_present"]).reset_index(drop=True)
+r2["scen"] = r2["scen"].apply(lambda x: ",".join(x))
+r2 = r2.explode("diff").dropna().reset_index(drop=True)
+r2 = r2.sort_values(by=["scen", "diff"]).drop_duplicates().reset_index(drop=True)
+r2 = r2.groupby(["scen", "diff"]).size().reset_index(name="count")
+r2 = r2.sort_values(by=["count"], ascending=False).groupby("scen").head(1).reset_index(drop=True)
+r2 = r2[["scen", "diff"]].sort_values(by=["scen"]).reset_index(drop=True)
+r2.columns = test.columns
+
+print(r2.equals(test))  # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 39](OmidC39.qmd)
+-   [Omid - Challenge 41](OmidC41.qmd)
+-   [Omid - Challenge 42](OmidC42.qmd)

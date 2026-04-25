@@ -1,0 +1,150 @@
+---
+title: "Excel BI - PowerQuery Challenge 245"
+description: "Names Subjects Days Arts English Maths"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 245](/challenges/images/exc245pq.jpg)
+
+## Challenge Description
+
+Names Subjects Days Arts English Maths
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_245.xlsx"
+input = read_excel(path, range = "A1:B6")
+test = read_excel(path, range = "D1:G9")
+
+r1 = input %>%
+  separate_rows(Subjects, sep = ", ") %>%
+  group_by(Subjects) %>%
+  summarise(Names = list(sort(Names)), .groups = 'drop')
+
+weekdays = c("Mon", "Tue", "Wed", "Thu", "Fri")
+weekday_n = length(weekdays)
+
+subjects_list = r1 %>%
+  summarise(Names = list(unlist(Names)), .by = Subjects) %>%
+  deframe()
+
+longest_subject = max(map_int(r1$Names, length))
+
+first_col = rep("", longest_subject * ceiling(weekday_n / longest_subject))
+subjects = map(subjects_list, ~ rep(.x, ceiling(weekday_n / length(.x))))
+
+df = tibble(
+  Days = c(weekdays, map_chr(seq_along(first_col) - weekday_n, ~paste0("Backup", .x))),
+  Arts = c(subjects[["Arts"]], rep(NA, length(first_col) - length(subjects[["Arts"]]))),
+  English = c(subjects[["English"]], rep(NA, length(first_col) - length(subjects[["English"]]))),
+  Maths = c(subjects[["Maths"]], rep(NA, length(first_col) - length(subjects[["Maths"]])))
+)
+
+all.equal(df, test, check.attributes = FALSE)
+# TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "PQ_Challenge_245.xlsx"
+input = pd.read_excel(path, usecols="A:B", nrows=6)
+test = pd.read_excel(path, usecols="D:G", nrows=9).fillna('')
+
+input = input.assign(Subjects=input['Subjects'].str.split(', ')).explode('Subjects')
+r1 = input.groupby('Subjects')['Names'].apply(lambda x: sorted(x.tolist())).reset_index()
+weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri"]
+weekday_n = len(weekdays)
+subjects_list = r1.set_index('Subjects')['Names'].apply(lambda x: np.array(x)).to_dict()
+longest_subject = max(map(len, subjects_list.values()))
+first_col = [""] * (longest_subject * -(-weekday_n // longest_subject))
+subjects = {k: np.tile(v, -(-weekday_n // len(v))) for k, v in subjects_list.items()}
+
+df = pd.DataFrame({
+    'Days': weekdays + [f"Backup{i}" for i in range(1, len(first_col) - weekday_n + 1)],
+    **{subject: np.concatenate([names, [''] * (len(first_col) - len(names))]) for subject, names in subjects.items()}
+})
+
+print(df.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 244](Excel244pq.qmd)

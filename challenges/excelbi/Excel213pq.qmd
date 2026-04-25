@@ -1,0 +1,137 @@
+---
+title: "Excel BI - PowerQuery Challenge 213"
+description: "Group Merge the 2 tables and pivot them on Item with Total Row and Total Column. Group and Item assignments for Stock are for each element. Hence, Group: A, F and Item: Item2, Item1 and Stock: 370 means"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 213](/challenges/images/exc213pq.jpg)
+
+## Challenge Description
+
+Group Merge the 2 tables and pivot them on Item with Total Row and Total Column. Group and Item assignments for Stock are for each element. Hence, Group: A, F and Item: Item2, Item1 and Stock: 370 means
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(janitor)
+
+path = "Power Query/PQ_Challenge_213.xlsx"
+
+T1 = read_excel(path, range = "A2:C8")
+T2 = read_excel(path, range = "A12:C16")
+
+test = read_excel(path, range = "F2:K9")
+
+T_full = bind_rows(T1, T2) %>%
+  separate_rows(Item, sep = ", ") %>%
+  separate_rows(Group, sep = ", ") %>%
+  pivot_wider(names_from = Item, values_from = Stock, values_fn = sum) %>%
+  adorn_totals(c("row", "col")) 
+
+all.equal(test, T_full, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "PQ_Challenge_213.xlsx"
+
+T1 = pd.read_excel(path, usecols="A:C", skiprows=1, nrows=6)
+T2 = pd.read_excel(path, usecols="A:C", skiprows=11, nrows=6)
+test = pd.read_excel(path, usecols="F:K", skiprows=1, nrows=7).fillna(0)
+test.columns = test.columns.str.replace(".1", "")
+
+for col in test.columns[1:]:
+    test[col] = test[col].astype("int64")
+
+
+T_full = pd.concat([T1, T2], ignore_index=True)
+T_full = T_full.assign(Item=T_full.Item.str.split(", ")).explode("Item")
+T_full = T_full.assign(Group=T_full.Group.str.split(", ")).explode("Group").reset_index(drop=True)
+T_full = T_full.pivot_table(index="Group", columns="Item", values="Stock", aggfunc = "sum", fill_value=0, margins = True, margins_name = "Total").reset_index()
+T_full.columns.name = None
+
+print(T_full.equals(test)) # True
+print(T_full.dtypes)
+print(test.dtypes)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 212](Excel212pq.qmd)

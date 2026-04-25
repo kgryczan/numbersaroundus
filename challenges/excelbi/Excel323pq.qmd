@@ -1,0 +1,158 @@
+---
+title: "Excel BI - PowerQuery Challenge 323"
+description: "Group Group A, 1, 2, 3, Group B, 4, 5, Group C, 6, 7, 8 Group A Group B Group C First row contain groups and employee IDs contained within those groups."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 323](/challenges/images/exc323pq.jpg)
+
+## Challenge Description
+
+Group Group A, 1, 2, 3, Group B, 4, 5, Group C, 6, 7, 8 Group A Group B Group C First row contain groups and employee IDs contained within those groups.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/300-399/323/PQ_Challenge_323.xlsx"
+input = read_excel(path, range = "A1:A4")
+test  = read_excel(path, range = "C1:F9")
+
+d = input %>%
+  transpose() %>%
+  as.data.frame()
+processed_cols = map(1:3, ~ {
+  d %>%
+    select(.x) %>%
+    separate_longer_delim(names(.)[1], ", ")
+})
+
+d1 = processed_cols[[1]] %>%
+  mutate(Group = ifelse(str_detect(Data, "Group"), Data, NA)) %>%
+  fill(Group) %>%
+  filter(!str_detect(Data, "Group")) %>%
+  nest_by(Group)
+d2 = processed_cols[[2]]
+d3 = processed_cols[[3]]
+
+result = d1 %>%
+  bind_cols(d3) %>%
+  unnest(cols = data) %>%
+  bind_cols(d2) %>%
+  fill(everything(), .direction = "down") %>%
+  mutate(Data = as.numeric(Data)) %>%
+  select(Group, `Emp ID` = Data, Name = Data.1, Dept = Data.2)
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+file_path = "300-399/323/PQ_Challenge_323.xlsx"
+
+input_data = pd.read_excel(file_path, usecols="A", nrows=3)
+test = pd.read_excel(file_path, usecols="C:F", nrows=9)
+
+data, names, depts = [input_data.iloc[i, 0].split(',') for i in range(3)]
+data = [x.strip() for x in data]
+names = [x.strip() for x in names]
+depts = [x.strip() for x in depts]
+
+groups, emp_ids = [], {}
+for x in data:
+    if x.startswith('Group'):
+        groups.append(x)
+        emp_ids[x] = []
+    else:
+        emp_ids[groups[-1]].append(int(x))
+
+name_dict = dict(enumerate(names, 1))
+dept_dict = dict(zip(groups, depts))
+
+df = pd.DataFrame([
+    {'Group': g, 'Emp ID': eid, 'Name': name_dict[eid], 'Dept': dept_dict[g]}
+    for g in groups for eid in emp_ids[g]
+])
+print(df.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 322](Excel322pq.qmd)
+-   [Excel BI - Excel Challenge 703](Excel703.qmd)

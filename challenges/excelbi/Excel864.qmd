@@ -1,0 +1,86 @@
+---
+title: "Excel BI - Excel Challenge 864"
+description: "🔰 Considering only weekdays (excluding weekends), find the running total month-wise."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 864](/challenges/images/exc864.jpg)
+
+## Challenge Description
+
+🔰 Considering only weekdays (excluding weekends), find the running total month-wise.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/864/864 Running Total.xlsx"
+input <- read_excel(path, range = "A2:B70")
+test <- read_excel(path, range = "D2:E14")
+
+result = input %>%
+  mutate(wday = wday(Date, week_start = 1), Month = month(Date)) %>%
+  filter(wday <= 5) %>%
+  summarise(Total = sum(Amount), .by = Month) %>%
+  reframe(RunningTotal = cumsum(Total))
+
+all.equal(result$RunningTotal, test$`Running Total`, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input_df = pd.read_excel("Excel/800-899/864/864 Running Total.xlsx", usecols="A:B", skiprows=1, nrows=69)
+test_df = pd.read_excel("Excel/800-899/864/864 Running Total.xlsx", usecols="D:E", skiprows=1, nrows=12)
+
+input_df["wday"] = input_df["Date"].dt.weekday
+input_df["Month"] = input_df["Date"].dt.month
+input_df = input_df[input_df["wday"] <= 4]
+monthly_totals = input_df.groupby("Month", as_index=False)["Amount"].sum()
+monthly_totals["RunningTotal"] = monthly_totals["Amount"].cumsum()
+
+print(monthly_totals['RunningTotal'].equals(test_df['Running Total'])) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 865](/challenges/excelbi/Excel865.html)
+- [Excel Challenge 866](/challenges/excelbi/Excel866.html)
+- [Excel Challenge 867](/challenges/excelbi/Excel867.html)

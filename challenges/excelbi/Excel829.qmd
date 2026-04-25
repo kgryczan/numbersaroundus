@@ -1,0 +1,105 @@
+---
+title: "Excel BI - Excel Challenge 829"
+description: "🔰 Extract the numbers from below strings."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 829](/challenges/images/exc829.jpg)
+
+## Challenge Description
+
+🔰 Extract the numbers from below strings. Multiply 1st with 2nd, 3rd with 4th and so on. If you run out of numbers at the end, take 1 for the last pair. Sum all these numbers together.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/829/829 Extract Numbers Multiply and Sum.xlsx"
+input = read_excel(path, range = "A1:A10")
+test  = read_excel(path, range = "B1:B10")
+
+result = input %>%
+  mutate(numbers = str_extract_all(Strings, "\\d+")) %>%
+  unnest(numbers) %>%
+  mutate(odd = (row_number() - 1) %% 2, 
+         pair =  (row_number() - 1) %/% 2,
+         .by = Strings) %>%
+  pivot_wider(names_from = odd, values_from = numbers) %>%
+  mutate(across(c(`0`, `1`), ~as.numeric(replace_na(.x, "1")))) %>%
+  mutate(multiply = `0` * `1`) %>%
+  summarise(Sum = sum(multiply), .by = Strings) 
+
+all.equal(result$Sum, test$`Answer Expected`, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The solution stays close to the text pattern itself, which makes the extraction logic easy to audit.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: A small number of well-targeted text patterns does most of the heavy lifting.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+import numpy as np
+
+path = "800-899/829/829 Extract Numbers Multiply and Sum.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=10)
+test = pd.read_excel(path, usecols="A:B", nrows=10)
+
+def extract_numbers(s):
+    return re.findall(r'\d+', str(s))
+
+rows = [
+    {'Strings': row[0], 'numbers': num, 'odd': i % 2, 'pair': i // 2}
+    for row in input.values
+    for i, num in enumerate(extract_numbers(row[0]))
+]
+
+df = pd.DataFrame(rows)
+pivot = df.pivot_table(index=['Strings', 'pair'], columns='odd', values='numbers', aggfunc='first')
+pivot = pivot.rename(columns={0: '0', 1: '1'}).fillna(1).astype(int)
+pivot['multiply'] = pivot['0'] * pivot['1']
+
+result = pivot.groupby('Strings')['multiply'].sum().reset_index(name="Sum")
+test = test.sort_values(by='Strings').reset_index()
+
+print(result['Sum'].equals(test['Answer Expected']))  # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 830](/challenges/excelbi/Excel830.html)
+- [Excel Challenge 831](/challenges/excelbi/Excel831.html)
+- [Excel Challenge 832](/challenges/excelbi/Excel832.html)

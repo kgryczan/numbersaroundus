@@ -1,0 +1,114 @@
+---
+title: "Crispo - Excel Challenge 27 2024"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2024-07-07"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 27 2024](/challenges/images/Crispo272024.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ SALES Before & After Dates NEW ORDER Easy Sunday Excel Challenge ⭐Get the dates BEFORE and AFTER a NEW ORDER marks for Legacy solutions or PowerQuery Solution
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/Excel Challenge  7th July.xlsx"
+
+input = read_xlsx(path, range = "B3:B20", col_types = "date")
+test  = read_xlsx(path, range = "D3:D8")
+
+result = input %>%
+  filter((is.na(lag(SALES)) | is.na(lead(SALES))) & (!row_number() %in% c(1, n())))
+
+identical(result$SALES, test$`Before & After Dates`)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Applies the workbook rule directly and shapes the expected output
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "files/Excel Challenge  7th July.xlsx"
+
+input = pd.read_excel(path, usecols="B", skiprows = 2, nrows = 17)
+test  = pd.read_excel(path, usecols="D", skiprows = 2, nrows = 5)
+
+result = np.where((input["SALES"].shift() == "NEW ORDER") | (input["SALES"].shift(-1) == "NEW ORDER"), 1, 0)
+result = input[result == 1].reset_index(drop=True)
+result["SALES"] = result["SALES"].astype("datetime64[ns]")
+
+print(result["SALES"].equals(test["Before & After Dates"])) # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 26 2024](Crispo 262024.qmd)
+-   [Crispo - Excel Challenge 28 2024](Crispo 282024.qmd)

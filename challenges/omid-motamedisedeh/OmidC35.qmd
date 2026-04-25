@@ -1,0 +1,148 @@
+---
+title: "Omid - Challenge 35"
+description: "🔰 In our company, we utilize a grading system to evaluate the technical performance of our agents, assigning grades of C, B, A, and A+."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 35](/challenges/images/OmidC35.jpg)
+
+## Challenge Description
+
+🔰 In our company, we utilize a grading system to evaluate the technical performance of our agents, assigning grades of C, B, A, and A+.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-035 Up and Down Grades.xlsx", range = "B2:D37")
+test  = read_excel("files/CH-035 Up and Down Grades.xlsx", range = "H2:K6")
+
+result = input %>%
+  mutate(month = floor_date(Date, "month"),
+         Grade = factor(Grade, levels = c("A+","A", "B", "C"), ordered = TRUE)) %>%
+  summarise(last_grade = last(Grade), .by = c(`Agent-id`, month)) %>%
+  arrange(`Agent-id`, month) %>%
+  mutate(prev_grade = lag(last_grade), .by = `Agent-id`) %>%
+  filter(!is.na(prev_grade)) %>%
+  mutate(transition = case_when(
+    prev_grade > last_grade ~ "Upgrade",
+    prev_grade < last_grade ~ "Down-grade",
+    TRUE ~ "No change"
+  )) %>%
+  mutate(month = as.numeric(factor(month))) %>%
+  summarise(transitions = n(), .by = c(transition, month)) %>%
+  pivot_wider(names_from = transition, values_from = transitions, values_fill = 0) %>%
+  arrange(month) %>%
+  select(Month = month, Upgrade, `No change`, `Down-grade`)
+
+print(result)
+print(test)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input = pd.read_excel("CH-035 Up and Down Grades.xlsx", sheet_name="Sheet1", usecols="B:D", skiprows=1)
+test = pd.read_excel("CH-035 Up and Down Grades.xlsx", sheet_name="Sheet1", usecols="H:K", skiprows=1, nrows=4)
+
+result = input.assign(
+    Month=pd.to_datetime(input['Date']).dt.to_period('M'),
+    Grade=pd.Categorical(input['Grade'], categories=["A+", "A", "B", "C"], ordered=True)
+).groupby(['Agent-id', 'Month']).agg(last_grade=('Grade', 'last')).reset_index()
+
+result['prev_grade'] = result.groupby('Agent-id')['last_grade'].shift()
+result = result.dropna(subset=['prev_grade'])
+
+grades = {"A+": 4, "A": 3, "B": 2, "C": 1}
+result['prev_grade'] = result['prev_grade'].map(grades)
+result['last_grade'] = result['last_grade'].map(grades)
+result['transition'] = ['Upgrade' if x > y else 'Down-grade' if x < y else 'No Change' for x, y in zip(result['last_grade'], result['prev_grade'])]
+
+result['Month'] = result['Month'].dt.month
+result = result.groupby(['transition', 'Month']).size().reset_index(name='transitions')
+result = result.pivot(index='Month', columns='transition', values='transitions').fillna(0).reset_index().sort_values('Month')
+result = result[['Month', 'Upgrade', 'No Change', 'Down-grade']].astype({"Upgrade": "int64", "No Change": "int64", "Down-grade": "int64"})
+
+print(result == test)  # Discrepancy in month 3
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 34](OmidC34.qmd)
+-   [Omid - Challenge 36](OmidC36.qmd)
+-   [Omid - Challenge 37](OmidC37.qmd)

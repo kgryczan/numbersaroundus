@@ -1,0 +1,139 @@
+---
+title: "Omid - Challenge 356"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 356](/challenges/images/OmidC356.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(janitor)
+
+path <- "300-399/356/CH-356 Table Transformation.xlsx"
+input <- read_excel(path, range = "B3:B18")
+test <- read_excel(path, range = "D3:F8") %>%
+  mutate(Date = as.Date(Date, origin = "1899-12-30"))
+
+Date <- input %>%
+  filter(str_length(Name) > 3) %>%
+  mutate(Date = excel_numeric_to_date(as.numeric(Name))) %>%
+  select(Date)
+Product <- input %>%
+  filter(str_detect(Name, "[A-Za-z]")) %>%
+  rename(Product = Name)
+Sale <- input %>%
+  filter(str_detect(Name, "^[0-9]{1,2}$")) %>%
+  mutate(Sale = as.numeric(Name)) %>%
+  select(Sale)
+
+final <- bind_cols(Date, Product, Sale)
+all_equal(final, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+path = "300-399/356/CH-356 Table Transformation.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=2, nrows=15)
+test = pd.read_excel(path, usecols="D:F", skiprows=2, nrows=5)
+
+input['Type'] = input['Name'].apply(lambda x: type(x).__name__)
+input = input.sort_values('Type').reset_index(drop=True)
+input['GroupIndex'] = input.groupby('Type').cumcount() + 1
+input['Name'] = input.apply(lambda row: pd.Timestamp(row['Name']) if type(row['Name']).__name__ == 'datetime' else row['Name'], axis=1)
+pivoted = input.pivot(index='GroupIndex', columns='Type', values='Name')
+pivoted['int'] = pivoted['int'].astype('int64')
+column_map = {'datetime': 'Date', 'str': 'Product', 'int': 'Sale'}
+pivoted = pivoted.rename(columns=column_map)
+desired_order = ['Date', 'Product', 'Sale']
+pivoted = pivoted[[col for col in desired_order if col in pivoted.columns]].reset_index(drop=True)
+pivoted.columns.name = None
+
+print(all(pivoted == test))
+# True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 355](OmidC355.qmd)
+-   [Omid - Challenge 357](OmidC357.qmd)
+-   [Omid - Challenge 358](OmidC358.qmd)

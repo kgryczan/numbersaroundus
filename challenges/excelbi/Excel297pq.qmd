@@ -1,0 +1,138 @@
+---
+title: "Excel BI - PowerQuery Challenge 297"
+description: "Cage Animals & Count Cage No Animal Count Cage10"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 297](/challenges/images/exc297pq.jpg)
+
+## Challenge Description
+
+Cage Animals & Count Cage No Animal Count Cage10
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/200-299/297/PQ_Challenge_297.xlsx"
+input = read_excel(path, range = "A1:B6")
+test  = read_excel(path, range = "D1:F15")
+
+result = input %>%
+  separate_longer_delim(`Animals & Count`, delim = ", ") %>%
+  separate_wider_delim(`Animals & Count`, delim = "-", names = c("Animal", "Count"), too_few = "align_start", ) %>%
+  mutate(Count = coalesce(as.numeric(Count),1)) %>%
+  arrange(parse_number(Cage), Animal) %>%
+  mutate(Cage = if (n() == 1) Cage else paste0(Cage, "_", row_number()), .by = Cage) 
+
+all.equal(result, test, check.attributes = FALSE)
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "200-299/297/PQ_Challenge_297.xlsx"
+input = pd.read_excel(path, usecols="A:B", nrows=5)
+test = pd.read_excel(path, usecols="D:F", nrows=15)
+
+input_long = input.assign(**{
+    'Animals & Count': input['Animals & Count'].str.split(', ')
+}).explode('Animals & Count')
+
+split = input_long['Animals & Count'].str.split('-', n=1, expand=True)
+input_long['Animal'] = split[0]
+input_long['Count'] = split[1].astype(float)
+
+input_long['Count'] = input_long['Count'].fillna(1).astype(int)
+
+input_long['Cage_num'] = input_long['Cage'].str.extract(r'(\d+)').astype(int)
+input_long = input_long.sort_values(['Cage_num', 'Animal']).drop(columns='Cage_num')
+
+input_long['Cage No'] = input_long.groupby('Cage')['Cage'].transform(
+    lambda x: x if len(x) == 1 else x + '_' + (np.arange(1, len(x)+1)).astype(str)
+)
+
+result = input_long[['Cage No', 'Animal', 'Count']].reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The transformation rule is readable, but the final layout still requires a careful implementation.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 296](Excel296pq.qmd)
+-   [Excel BI - Excel Challenge 677](Excel677.qmd)

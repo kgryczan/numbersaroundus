@@ -1,0 +1,172 @@
+---
+title: "Omid - Challenge 56"
+description: "🔰 In Question Table 2, the sequence of machinery based on the process type is presented, and historical machinery data is provided in Question Table 1."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 56](/challenges/images/OmidC56.jpg)
+
+## Challenge Description
+
+🔰 In Question Table 2, the sequence of machinery based on the process type is presented, and historical machinery data is provided in Question Table 1.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input1 = read_excel("files/CH-056 Process Efficiency.xlsx", range = "B2:E42") %>% janitor::clean_names()
+input2 = read_excel("files/CH-056 Process Efficiency.xlsx", range = "G2:H6") %>% janitor::clean_names()
+test   = read_excel("files/CH-056 Process Efficiency.xlsx", range = "J2:K7") %>% janitor::clean_names()
+
+result = input1 %>%
+  group_by(production_id) %>%
+  summarise(real_sequence = paste0(machinary, collapse = ", "),
+            process_type = first(process_type)) %>%
+  left_join(input2, by = c("process_type" = "process_type")) %>%
+  mutate(aR = str_count(real_sequence, "A"),
+         bR = str_count(real_sequence, "B"),
+         cR = str_count(real_sequence, "C"),
+         dR = str_count(real_sequence, "D"),
+         eR = str_count(real_sequence, "E")) %>%
+  mutate(aT = str_count(sequence, "A"),
+         bT = str_count(sequence, "B"),
+         cT = str_count(sequence, "C"),
+         dT = str_count(sequence, "D"),
+         eT = str_count(sequence, "E")) %>%
+  select(aR, bR, cR, dR, eR, aT, bT, cT, dT, eT) %>%
+  summarise(across(everything(), sum))
+
+result2 = tibble(
+  machinerty = c("A", "B", "C", "D", "E"),
+  returne_to_back_again_percent = c((result$aR - result$aT)/result$aT,
+  (result$bR - result$bT)/result$bT,
+  (result$cR - result$cT)/result$cT,
+  (result$dR - result$dT)/result$dT,
+  (result$eR - result$eT)/result$eT)
+) %>%
+  mutate(returne_to_back_again_percent = round(returne_to_back_again_percent, 2))
+
+identical(result2, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+input1 = pd.read_excel("CH-056 Process Efficiency.xlsx", usecols = "B:E", nrows = 41, skiprows = 1)
+input2 = pd.read_excel("CH-056 Process Efficiency.xlsx", usecols= "G:H", nrows = 4, skiprows = 1)
+test = pd.read_excel("CH-056 Process Efficiency.xlsx", usecols="J:K", nrows = 5, skiprows = 1)
+
+result = input1.groupby("Production Id").agg(
+    real_sequence=("Machinary", lambda x: ", ".join(x)),
+    process_type=("Process type", "first")
+).merge(input2, left_on="process_type", right_on="process type").assign(
+    aR=lambda x: x["real_sequence"].str.count("A"),
+    bR=lambda x: x["real_sequence"].str.count("B"),
+    cR=lambda x: x["real_sequence"].str.count("C"),
+    dR=lambda x: x["real_sequence"].str.count("D"),
+    eR=lambda x: x["real_sequence"].str.count("E"),
+    aT=lambda x: x["Sequence"].str.count("A"),
+    bT=lambda x: x["Sequence"].str.count("B"),
+    cT=lambda x: x["Sequence"].str.count("C"),
+    dT=lambda x: x["Sequence"].str.count("D"),
+    eT=lambda x: x["Sequence"].str.count("E")
+).filter(regex=r"[a-e][RT]").sum().to_frame().T
+
+result2 = pd.DataFrame({
+    "machinerty": ["A", "B", "C", "D", "E"],
+    "returne_to_back_again_percent": [
+        (result["aR"] - result["aT"]) / result["aT"],
+        (result["bR"] - result["bT"]) / result["bT"],
+        (result["cR"] - result["cT"]) / result["cT"],
+        (result["dR"] - result["dT"]) / result["dT"],
+        (result["eR"] - result["eT"]) / result["eT"]
+    ]
+})
+result2["returne_to_back_again_percent"] = result2["returne_to_back_again_percent"].apply(lambda x: round(x, 2))
+test.columns = result2.columns
+
+print(result2.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 55](OmidC55.qmd)
+-   [Omid - Challenge 57](OmidC57.qmd)
+-   [Omid - Challenge 58](OmidC58.qmd)

@@ -1,0 +1,84 @@
+---
+title: "Excel BI - Excel Challenge 836"
+description: "🔰 Populate the Index for the groups as well as running total."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 836](/challenges/images/exc836.jpg)
+
+## Challenge Description
+
+🔰 Populate the Index for the groups as well as running total. Groups are separated by blanks.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/836/836 Index and Running Total.xlsx"
+input = read_excel(path, range = "A2:A21")
+test  = read_excel(path, range = "C2:D21")
+
+result = input %>%
+  mutate(`Group Index` = replace(cumsum(is.na(Data)) + 1, is.na(Data), NA)) %>%
+  mutate(`Running Sum` = cumsum(Data), .by = `Group Index`) %>%
+  select(-Data)
+
+all.equal(result, test)
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "800-899/836/836 Index and Running Total.xlsx"
+
+input = pd.read_excel(path, usecols="A", skiprows=1, nrows=20)
+test = pd.read_excel(path, usecols="C:D", skiprows=1, nrows=20)
+
+input['Group Index'] = (input['Data'].isna().cumsum() + 1).where(~input['Data'].isna())
+input['Running Sum'] = input.groupby('Group Index')['Data'].cumsum()
+result = input.drop(columns=['Data'])
+
+print(result.equals(test))
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 837](/challenges/excelbi/Excel837.html)
+- [Excel Challenge 838](/challenges/excelbi/Excel838.html)
+- [Excel Challenge 839](/challenges/excelbi/Excel839.html)

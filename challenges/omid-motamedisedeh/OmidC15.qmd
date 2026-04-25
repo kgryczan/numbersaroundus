@@ -1,0 +1,128 @@
+---
+title: "Omid - Challenge 15"
+description: "🔰 : Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 15](/challenges/images/OmidC15.jpg)
+
+## Challenge Description
+
+🔰 : Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-015.xlsx", range = "B2:E12")
+test  = read_excel("files/CH-015.xlsx", range = "G2:S6")
+
+result = input %>%
+  group_by(`Product Code`) %>%
+  mutate(nr = row_number()) %>%
+  pivot_wider(names_from = nr, 
+              values_from = c(`Ship Date`, `Po number`, `Po Quantity`), 
+              names_sort = FALSE, 
+              names_sep = " ") %>%
+  ungroup() %>%
+  select(Products = `Product Code`, ends_with("1"), ends_with("2"), ends_with("3"), ends_with("4"))
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input_data = pd.read_excel("CH-015.xlsx", usecols="B:E", skiprows=1, nrows=11)
+test = pd.read_excel("CH-015.xlsx", usecols="G:S", skiprows=1, nrows=5)
+
+input_data["nr"] = input_data.groupby("Product Code").cumcount() + 1
+result = input_data.pivot(index="Product Code", columns="nr", values=["Ship Date", "Po number", "Po Quantity"])
+result.columns = [f"{a} {b}" for a, b in result.columns]
+keep = [c for c in result.columns if c.endswith("1") or c.endswith("2") or c.endswith("3") or c.endswith("4")]
+result = result.reset_index()[["Product Code"] + keep].rename(columns={"Product Code": "Products"})
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 14](OmidC14.qmd)
+-   [Omid - Challenge 16](OmidC16.qmd)
+-   [Omid - Challenge 17](OmidC17.qmd)

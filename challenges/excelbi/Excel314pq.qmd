@@ -1,0 +1,148 @@
+---
+title: "Excel BI - PowerQuery Challenge 314"
+description: "Process Step Previous Step Steps Chain Process1 A"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 314](/challenges/images/exc314pq.jpg)
+
+## Challenge Description
+
+Process Step Previous Step Steps Chain Process1 A
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(igraph)
+
+path = "Power Query/300-399/314/PQ_Challenge_314.xlsx"
+input = read_excel(path, range = "A1:C12")
+test  = read_excel(path, range = "F1:G12")
+
+result = input %>%
+  mutate(`Previous Step` = na_if(`Previous Step`, ""), across(c(Step, `Previous Step`), as.character)) %>%
+  group_by(Process) %>%
+  group_modify(~{
+    prev = deframe(filter(.x, !is.na(`Previous Step`)) %>% select(Step, `Previous Step`))
+    chain = function(s) {
+      out = s
+      while (!is.na(prev[s]) && !(prev[s] %in% out)) {
+        s = prev[s]
+        out = c(out, s)
+      }
+      paste(out, collapse = "-")
+    }
+    mutate(.x, `Steps Chain` = if_else(is.na(`Previous Step`), Step, map_chr(Step, chain)))
+  }) %>%
+  ungroup() %>%
+  select(Process, `Steps Chain`)
+
+all.equal(result, test, check.attributes = FALSE)
+# > [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "300-399/314/PQ_Challenge_314.xlsx"
+input = pd.read_excel(path, usecols="A:C", nrows=12)
+test = pd.read_excel(path, usecols="F:G", nrows=12).rename(columns=lambda col: col.replace('.1', ''))
+
+input['Previous Step'].replace("", np.nan, inplace=True)
+def chain(row, prev):
+    s, out = row['Step'], [row['Step']]
+    while pd.notna(prev.get(s)) and prev[s] not in out:
+        s = prev[s]
+        out.append(s)
+    return "-".join(out)
+def build_chain(g):
+    prev = dict(zip(g['Step'], g['Previous Step']))
+    return g.assign(**{'Steps Chain': g.apply(lambda r: r['Step'] if pd.isna(r['Previous Step']) else chain(r, prev), axis=1)})
+result = input.groupby('Process', group_keys=False).apply(build_chain)[['Process', 'Steps Chain']].reset_index(drop=True)
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Builds helper columns that drive the final output
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 313](Excel313pq.qmd)
+-   [Excel BI - Excel Challenge 694](Excel694.qmd)

@@ -1,0 +1,88 @@
+---
+title: "Excel BI - Excel Challenge 729"
+description: "🔰 Extract texts between delimiter ~ (tilde) only if it is a single word."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 729](/challenges/images/exc729.jpg)
+
+## Challenge Description
+
+🔰 Extract texts between delimiter ~ (tilde) only if it is a single word. Hence, if text extracted is 'hail Mary', then this should not be extracted as this is not a single word.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/729/729 Extract Text Between Delimiters.xlsx"
+input = read_excel(path, range = "A1:A10")
+test = read_excel(path, range = "B1:B10") %>%
+  replace_na(list(`Answer Expected` = ""))
+
+result = input %>%
+  rowwise() %>%
+  mutate(
+    `Answer Expected` = list(str_match_all(Text, "(?<=~)\\w+(?=~)")[[1]]) %>%
+      unlist() %>%
+      paste(collapse = ", ")
+  )
+
+all.equal(result$`Answer Expected`, test$`Answer Expected`)
+#> TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "700-799/729/729 Extract Text Between Delimiters.xlsx"
+input_df = pd.read_excel(path, usecols="A", nrows=10)
+test_df = pd.read_excel(path, usecols="B", nrows=10).fillna({"Answer Expected": ""})
+
+input_df["Answer Expected"] = input_df.iloc[:,0].astype(str).apply(lambda x: ", ".join(re.findall(r"(?<=~)\w+(?=~)", x)))
+
+print(input_df["Answer Expected"].equals(test_df["Answer Expected"]))
+# True
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 730](/challenges/excelbi/Excel730.html)
+- [Excel Challenge 731](/challenges/excelbi/Excel731.html)
+- [Excel Challenge 732](/challenges/excelbi/Excel732.html)

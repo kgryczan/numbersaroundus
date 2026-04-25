@@ -1,0 +1,95 @@
+---
+title: "Excel BI - Excel Challenge 687"
+description: "🔰 Answer Expected Fill in the blank with max of (max of remaining cells of row going to right and max of remaining cells of column going down)."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 687](/challenges/images/exc687.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Fill in the blank with max of (max of remaining cells of row going to right and max of remaining cells of column going down). Hence, if we see cell C2, max of remaining cells in this row going to right (D2:J2) is 81 and max of remaining cells in this column going down (C3:C11) is 95. Max of these 2 values is 95.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/687 Fill Grid with Max Right and Down.xlsx"
+input = read_excel(path, range = "A2:J11", col_names = FALSE) %>% as.matrix()
+test  = read_excel(path, range = "A14:J23", col_names = FALSE) %>% as.matrix()
+
+fill_empty = function(matrix, row, col){
+  max = max(c(matrix[row, col:ncol(matrix) ], matrix[row:nrow(matrix), col]), na.rm = TRUE)
+  return(max)
+}
+empty_cells = which(is.na(input), arr.ind = TRUE)
+test_values = test[empty_cells]
+
+filled_values = as.data.frame(empty_cells) %>%
+  mutate(value = map2_dbl(row, col, ~ fill_empty(input, .x, .y))) %>%
+  select(value)
+
+all.equal(filled_values$value, test_values)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "687 Fill Grid with Max Right and Down.xlsx"
+
+input_matrix = pd.read_excel(path, usecols="A:J", skiprows=1, nrows=10, header=None).to_numpy()
+test_matrix = pd.read_excel(path, usecols="A:J", skiprows=13, nrows=10, header=None).to_numpy()
+
+def fill_empty(matrix, row, col):
+    return np.nanmax(np.r_[matrix[row, col:], matrix[row:, col]])
+
+empty_cells = np.argwhere(np.isnan(input_matrix))
+filled_values = [fill_empty(input_matrix, row, col) for row, col in empty_cells]
+result = np.allclose(filled_values, test_matrix[tuple(empty_cells.T)], equal_nan=True)
+
+print(result)
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 688](/challenges/excelbi/Excel688.html)
+- [Excel Challenge 689](/challenges/excelbi/Excel689.html)
+- [Excel Challenge 690](/challenges/excelbi/Excel690.html)

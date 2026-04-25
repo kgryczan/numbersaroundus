@@ -1,0 +1,111 @@
+---
+title: "Excel BI - Excel Challenge 820"
+description: "🔰 Extract the pair of text and digits following text."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 820](/challenges/images/exc820.jpg)
+
+## Challenge Description
+
+🔰 Extract the pair of text and digits following text. Stack text in one column and numbers in another column. If text is not followed by digits, then only text is extracted. If digits are not preceded by text, then only digits are extracted.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/820/820 Stack Text and Numbers.xlsx"
+input = read_excel(path, range = "A2:A11")
+test  = read_excel(path, range = "B2:C24")
+
+result = input %>%
+  mutate(tok = str_extract_all(Data, "[A-Za-z]+|\\d+")) %>%
+  unnest_longer(tok) %>%
+  mutate(typ = if_else(str_detect(tok, "^\\d+$"), "Numbers", "Text"), .by = Data) %>%
+  mutate(start = row_number() == 1 | !(typ == "Numbers" & lag(typ) == "Text"), .by = Data) %>%
+  mutate(grp = cumsum(start), .by = Data) %>%
+  select(-start) %>%
+  pivot_wider(names_from = typ, values_from = tok) %>%
+  mutate(Numbers = as.integer(Numbers)) %>%
+  select(-c(grp, Data)) 
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The solution stays close to the text pattern itself, which makes the extraction logic easy to audit.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: A small number of well-targeted text patterns does most of the heavy lifting.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "800-899/820/820 Stack Text and Numbers.xlsx"
+input_df = pd.read_excel(path, usecols="A", skiprows=1, nrows=9, dtype=str)
+test = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=23)
+
+def split_consistent_type(s):
+    types = ['num' if c.isdigit() else 'text' for c in s]
+    result = []
+    start = 0
+    for i in range(1, len(s)+1):
+        if i == len(s) or types[i] != types[i-1]:
+            result.append(s[start:i])
+            start = i
+    return result
+
+input = input_df.copy()
+input['Split'] = input.iloc[:, 0].apply(split_consistent_type) 
+input = input.explode('Split').reset_index(drop=True)
+input['ggr'] = input['Split'].apply(lambda x: 0 if x.isdigit() else 1)
+input['ggr_cumsum'] = input.groupby(input.columns[0])['ggr'].cumsum()
+
+
+input['ggr'] = input['ggr'].map({1: 'Text', 0: 'Numbers'})
+pivot = input.pivot(index=[input.columns[0], 'ggr_cumsum'], columns='ggr', values='Split')
+pivot['Numbers'] = pd.to_numeric(pivot['Numbers'], errors='coerce')
+
+result = pd.merge(input_df, pivot, left_on=input.columns[0], right_on=input.columns[0], how='left')
+result = result[['Text','Numbers']]
+
+print(result.equals(test)) #True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 821](/challenges/excelbi/Excel821.html)
+- [Excel Challenge 822](/challenges/excelbi/Excel822.html)
+- [Excel Challenge 823](/challenges/excelbi/Excel823.html)

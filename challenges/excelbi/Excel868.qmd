@@ -1,0 +1,175 @@
+---
+title: "Excel BI - Excel Challenge 868"
+description: "🔰 Plain Text Answer Expected battle won pmh wtpifd spy on prowl repjp vn hpk microsoft excel rwbda pwrmonfau linkedin is great jazjy qt swzaxvyx"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 868](/challenges/images/exc868.jpg)
+
+## Challenge Description
+
+🔰 Plain Text Answer Expected battle won pmh wtpifd spy on prowl repjp vn hpk microsoft excel rwbda pwrmonfau linkedin is great jazjy qt swzaxvyx
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(stringi)
+
+path <- "Excel/800-899/868/868 Mirrored Caesar Pi Cipher.xlsx"
+input <- read_excel(path, range = "A1:A10")
+test <- read_excel(path, range = "B1:B10")
+
+reverse_words <- function(text) {
+  str_split(text, " ") %>%
+    map_chr(~ str_c(rev(.x), collapse = " "))
+}
+
+reverse_characters <- function(text) {
+  str_split(text, " ") %>%
+    map_chr(~ str_c(stringi::stri_reverse(.x), collapse = " "))
+}
+
+atbash_cipher <- function(text) {
+  alphabet <- str_split("abcdefghijklmnopqrstuvwxyz", "", simplify = TRUE)
+  atbash_alphabet <- rev(alphabet)
+  char_map <- set_names(atbash_alphabet, alphabet)
+
+  str_split(text, "", simplify = TRUE) %>%
+    map_chr(~ ifelse(.x %in% names(char_map), char_map[.x], .x)) %>%
+    str_c(collapse = "")
+}
+
+pi_code = function(text) {
+  pi_digits <- c(3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7, 9, 3, 2, 3, 8, 4)
+  text_chars <- str_split(text, "", simplify = TRUE)
+  pi_idx <- 1
+  shifted_chars <- character(length(text_chars))
+  for (i in seq_along(text_chars)) {
+    char <- text_chars[i]
+    if (char == " ") {
+      shifted_chars[i] <- " "
+    } else if (grepl("[a-z]", char)) {
+      shift <- pi_digits[pi_idx]
+      orig_pos <- match(char, letters)
+      new_pos <- ((orig_pos - 1 + shift) %% 26) + 1
+      shifted_chars[i] <- letters[new_pos]
+      pi_idx <- pi_idx + 1
+      if (pi_idx > length(pi_digits)) pi_idx <- 1
+    } else {
+      shifted_chars[i] <- char
+    }
+  }
+  str_c(shifted_chars, collapse = "")
+}
+
+encode = . %>%
+  reverse_characters() %>%
+  reverse_words() %>%
+  atbash_cipher() %>%
+  pi_code()
+
+result = input %>%
+  mutate(`Answer Expected` = map_chr(`Plain Text`, encode))
+
+all.equal(result$`Answer Expected`, test$`Answer Expected`)
+result$`Answer Expected` == test$`Answer Expected`
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure; Apply the business rule conditions explicitly.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import string
+
+path = "Excel/800-899/868/868 Mirrored Caesar Pi Cipher.xlsx"
+input_df = pd.read_excel(path, sheet_name=0, usecols="A", nrows=10)
+test_df = pd.read_excel(path, sheet_name=0, usecols="B", nrows=10)
+
+def reverse_words(text):
+    return " ".join(text.split()[::-1])
+
+def reverse_characters(text):
+    return " ".join([word[::-1] for word in text.split()])
+
+def atbash_cipher(text):
+    lower = string.ascii_lowercase
+    atbash = lower[::-1]
+    trans = str.maketrans(lower, atbash)
+    return "".join([c.translate(trans) if c in lower else c for c in text])
+
+def pi_code(text):
+    pi_digits = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7, 9, 3, 2, 3, 8, 4]
+    lower = string.ascii_lowercase
+    text_chars = list(text)
+    pi_idx = 0
+    shifted_chars = []
+    for char in text_chars:
+        if char == " ":
+            shifted_chars.append(" ")
+        elif char in lower:
+            shift = pi_digits[pi_idx]
+            orig_pos = lower.index(char)
+            new_pos = (orig_pos + shift) % 26
+            shifted_chars.append(lower[new_pos])
+            pi_idx = (pi_idx + 1) % len(pi_digits)
+        else:
+            shifted_chars.append(char)
+    return "".join(shifted_chars)
+
+def encode(text):
+    return (
+        pd.Series(text)
+        .map(reverse_characters)
+        .map(reverse_words)
+        .map(atbash_cipher)
+        .map(pi_code)
+        .iloc[0]
+    )
+
+result = (
+    input_df
+    .assign(**{"Answer Expected": lambda df: df["Plain Text"].map(encode)})
+)
+print(result)
+print(test_df)
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Medium / Hard**
+
+The challenge relies on a non-obvious iterative rule rather than a single straight aggregation.
+
+### Related Challenges
+
+- [Excel Challenge 869](/challenges/excelbi/Excel869.html)
+- [Excel Challenge 870](/challenges/excelbi/Excel870.html)
+- [Excel Challenge 871](/challenges/excelbi/Excel871.html)

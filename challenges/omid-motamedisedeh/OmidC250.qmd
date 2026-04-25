@@ -1,0 +1,137 @@
+---
+title: "Omid - Challenge 250"
+description: "🔰 Question Result ID ParentID Level 1 Level 2 Level 3 Level 4"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 250](/challenges/images/OmidC250.jpg)
+
+## Challenge Description
+
+🔰 Question Result ID ParentID Level 1 Level 2 Level 3 Level 4
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+
+path = "files/200-299/250/CH-250  Hierarchical Structure from ID Codes.xlsx"
+input = read_excel(path, range = "B2:C10")
+test = read_excel(path, range = "E2:H6")
+
+lookup = deframe(input)
+
+get_path = function(id, path = c()) {
+  parent = lookup[as.character(id)]
+  if (is.na(parent)) {
+    return(c(id, path))
+  } else {
+    get_path(parent, c(id, path))
+  }
+}
+
+leaves = setdiff(input$ID, input$ParentID)
+
+paths = map(leaves, get_path)
+
+max_len = max(lengths(paths))
+paths_df = paths %>%
+  map(~ c(.x, rep(NA_integer_, max_len - length(.x)))) %>%
+  map_dfr(~ set_names(as.list(.x), paste0("Level ", seq_along(.x))))
+
+# different outcome than expected.
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "200-299/250/CH-250  Hierarchical Structure from ID Codes.xlsx"
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=9)
+test = pd.read_excel(path, usecols="E:H", skiprows=1, nrows=5)
+
+lookup = dict(zip(input["ID"], input["ParentID"]))
+def get_path(id, path=None):
+    if path is None:
+        path = []
+    parent = lookup.get(id)
+    if pd.isna(parent):
+        return [id] + path
+    else:
+        return get_path(parent, [id] + path)
+
+leaves = set(input["ID"]) - set(input["ParentID"].dropna())
+paths = [get_path(leaf) for leaf in leaves]
+max_len = max(len(p) for p in paths)
+paths_padded = [p + [None] * (max_len - len(p)) for p in paths]
+paths = pd.DataFrame(paths_padded, columns=[f"Level {i+1}" for i in range(max_len)])
+print(paths)
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 249](OmidC249.qmd)
+-   [Omid - Challenge 251](OmidC251.qmd)
+-   [Omid - Challenge 252](OmidC252.qmd)

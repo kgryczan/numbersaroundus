@@ -1,0 +1,116 @@
+---
+title: "Excel BI - Excel Challenge 927"
+description: "🔰 Find each customer’s highest-revenue product and assign a tier from the aggregated revenue amount."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-23"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 927](/challenges/images/exc927.jpg)
+
+## Challenge Description
+
+🔰 Find the highest revenue generating product for each customer and assign a tier on the basis of total revenue, using the provided thresholds: `>= 200000` Platinum, `120000–199999` Gold, `60000–119999` Silver, and `< 60000` Bronze.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "900-999/927/927 Categorization.xlsx"
+input <- read_excel(path, range = "A2:E26")
+test <- read_excel(path, range = "G2:I8")
+
+result <- input %>%
+  mutate(revenue = Qty * UnitPrice) %>%
+  summarise(total_revenue = sum(revenue), .by = c(Customer, Product)) %>%
+  arrange(Customer, desc(total_revenue)) %>%
+  mutate(
+    Tier = case_when(
+      total_revenue >= 200000 ~ "Platinum",
+      total_revenue >= 120000 ~ "Gold",
+      total_revenue >= 60000 ~ "Silver",
+      TRUE ~ "Bronze"
+    )
+  ) %>%
+  slice_max(total_revenue, n = 1, by = Customer) %>%
+  select(Customer, `Highest Revenue Generating Product` = Product, Tier)
+
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Compute row revenue, aggregate it to the customer-product level, assign a tier from the aggregated amount, then keep the top product for each customer.
+- **Strengths**: The solution separates grain, classification, and winner selection cleanly.
+- **Areas for Improvement**: The tier is assigned from the top product’s revenue, not from full customer revenue across all products, so that business rule needs to be read carefully.
+- **Gem**: One grouped summary produces both the best product and the tier label that goes with it.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import numpy as np
+import pandas as pd
+
+path = "900-999/927/927 Categorization.xlsx"
+input = pd.read_excel(path, usecols="A:E", skiprows=1, nrows=25)
+test = pd.read_excel(path, usecols="G:I", skiprows=1, nrows=6).rename(columns=lambda c: c.rstrip(".1"))
+
+result = (
+    input
+    .assign(revenue=lambda d: d.Qty * d.UnitPrice)
+    .groupby(["Customer", "Product"], as_index=False)
+    .agg(total_revenue=("revenue", "sum"))
+    .sort_values(["Customer", "total_revenue"], ascending=[True, False])
+    .assign(
+        Tier=lambda d: np.select(
+            [
+                d.total_revenue >= 200000,
+                d.total_revenue >= 120000,
+                d.total_revenue >= 60000
+            ],
+            ["Platinum", "Gold", "Silver"],
+            default="Bronze"
+        )
+    )
+    .groupby("Customer", as_index=False)
+    .head(1)
+    .rename(columns={"Product": "Highest Revenue Generating Product"})
+    .reset_index(drop=True)
+    [["Customer", "Highest Revenue Generating Product", "Tier"]]
+)
+
+print(result.equals(test))
+# True
+```
+
+### Python
+
+The Python pipeline makes the grain transition very visible. Revenue is first computed per row, then rolled up to customer-product pairs, and only then classified into tiers. That keeps the business logic aligned with the workbook wording.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The individual steps are standard, but the correct aggregation level is the key to getting the classification right.
+
+### Related Challenges
+
+- [Excel Challenge 929](/challenges/excelbi/Excel929.html)
+- [Excel Challenge 931](/challenges/excelbi/Excel931.html)
+- [Excel Challenge 910](/challenges/excelbi/Excel910.html)

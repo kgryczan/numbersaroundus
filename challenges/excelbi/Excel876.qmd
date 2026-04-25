@@ -1,0 +1,91 @@
+---
+title: "Excel BI - Excel Challenge 876"
+description: "🔰 Work out the running total."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 876](/challenges/images/exc876.jpg)
+
+## Challenge Description
+
+🔰 Work out the running total. If the numbers are a streak which is a continuous block of identical values, the values will change like this
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/876/876 Running Total.xlsx"
+input <- read_excel(path, range = "A1:B41")
+test <- read_excel(path, range = "C1:C41")
+
+
+result = input %>%
+  mutate(streak = cumsum(Value != lag(Value, default = first(Value)))) %>%
+  mutate(n = row_number(), .by = streak) %>%
+  mutate(
+    adj = if_else(Value %% 2 == 0, Value - 2 * (n - 1), Value + (n - 1)),
+    running_total = cumsum(adj)
+  )
+
+all.equal(result$running_total, test$`Answer Expected`)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel\\800-899\\876\\876 Running Total.xlsx"
+input = pd.read_excel(path, usecols="A:B", nrows = 51)
+test = pd.read_excel(path, usecols="C", nrows = 51)
+
+g = input["Value"].ne(input["Value"].shift()).cumsum()
+input["running_total"] = (
+    input["Value"]
+    + (input["Value"] % 2) * (input.groupby(g).cumcount())
+    - (input["Value"] % 2 == 0) * 2 * (input.groupby(g).cumcount())
+).cumsum()
+
+print(input["running_total"].equals(test["Answer Expected"])) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 877](/challenges/excelbi/Excel877.html)
+- [Excel Challenge 878](/challenges/excelbi/Excel878.html)
+- [Excel Challenge 879](/challenges/excelbi/Excel879.html)

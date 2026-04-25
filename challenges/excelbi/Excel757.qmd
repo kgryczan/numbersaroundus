@@ -1,0 +1,104 @@
+---
+title: "Excel BI - Excel Challenge 757"
+description: "🔰 Answer Expected Data Zoo Animal Bird Zoo1 Wolf Crow Giraffe Zoo2"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 757](/challenges/images/exc757.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Data Zoo Animal Bird Zoo1 Wolf Crow Giraffe Zoo2
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/757/757 Alignment of Zoo Animals & Birds.xlsx"
+input = read_excel(path, range = "A2:A14")
+test  = read_excel(path, range = "C2:E6")
+
+result <- input %>%
+  mutate(
+    zoo = if_else(str_detect(Data, "^Zoo"), Data, NA_character_),
+    category = if_else(Data %in% c("Animal","Bird"), Data, NA_character_)
+  ) %>%
+  fill(zoo, category) %>%
+  filter(!Data %in% c("Animal","Bird"), Data != zoo) %>%
+  select(zoo, category, item = Data) %>%
+  group_by(zoo, category) %>%
+  mutate(r = row_number()) %>%
+  pivot_wider(names_from = category, values_from = item) %>%
+  select(Zoo = zoo, Animal, Bird)
+
+all.equal(result, test, check.attributes = FALSE)
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Reshape the result into the workbook output format.
+- **Strengths**: The transformation is organized around the correct grouping level, which keeps the business logic clear.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The key move is solving the problem at the right grain before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/757/757 Alignment of Zoo Animals & Birds.xlsx"
+input = pd.read_excel(path, usecols="A", skiprows=1, nrows=13)
+test = pd.read_excel(path, usecols="C:E", skiprows=1, nrows=4)
+
+input["zoo"] = input["Data"].where(input["Data"].str.startswith("Zoo"), pd.NA)
+input["category"] = input["Data"].where(input["Data"].isin(["Animal", "Bird"]), pd.NA)
+input[["zoo", "category"]] = input[["zoo", "category"]].ffill()
+
+filtered = input[
+    (~input["Data"].isin(["Animal", "Bird"])) &
+    (input["Data"] != input["zoo"])
+]
+
+filtered = filtered[["zoo", "category", "Data"]].rename(columns={"Data": "item"})
+filtered["r"] = filtered.groupby(["zoo", "category"]).cumcount() + 1
+
+result = filtered.pivot(index=["zoo", "r"], columns="category", values="item").reset_index()
+result = result.drop(columns="r").rename(columns={"zoo": "Zoo"})
+result = result[["Zoo", "Animal", "Bird"]]
+
+print(result.equals(test))
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 758](/challenges/excelbi/Excel758.html)
+- [Excel Challenge 759](/challenges/excelbi/Excel759.html)
+- [Excel Challenge 760](/challenges/excelbi/Excel760.html)

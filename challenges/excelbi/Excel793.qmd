@@ -1,0 +1,95 @@
+---
+title: "Excel BI - Excel Challenge 793"
+description: "🔰 and shuffle them randomly to create the string."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 793](/challenges/images/exc793.jpg)
+
+## Challenge Description
+
+🔰 and shuffle them randomly to create the string.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/793/793 Alphabet Shuffle.xlsx"
+input = read_excel(path, range = "A1:B8")
+test  = read_excel(path, range = "D1:D8")
+
+gen = function(start, length) {
+  start_idx = which(LETTERS == start)
+  chars = LETTERS[((seq(start_idx, start_idx + length - 1) - 1) %% 26) + 1]
+  
+  shuffled = keep(replicate(10001, sample(chars), simplify = FALSE), 
+                  ~ !any(map2_lgl(.x[-1], .x[-length(.x)], 
+                                  ~ (utf8ToInt(.x) - utf8ToInt(.y)) %% 26 == 25)))
+  if (length(shuffled) > 0) return(paste(shuffled[[1]], collapse = ", "))
+}
+
+result = input %>%
+  mutate(Shuffled = map2_chr(Alphabet, Length, gen))
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import random
+import string
+
+path = "700-799/793/793 Alphabet Shuffle.xlsx"
+input = pd.read_excel(path , usecols="A:B", nrows=8)
+
+def gen(s, l):
+    chars = [string.ascii_uppercase[(string.ascii_uppercase.index(s) + i) % 26] for i in range(l)]
+    for _ in range(10001):
+        p = [x for _, x in sorted((random.random(), c) for c in chars)]
+        if not any((ord(p[i-1]) - ord(p[i])) % 26 == 1 for i in range(1, l)):
+            return ", ".join(p)
+
+input['Shuffled'] = input.apply(lambda r: gen(r.Alphabet, r.Length), axis=1)
+
+print(input)
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 794](/challenges/excelbi/Excel794.html)
+- [Excel Challenge 795](/challenges/excelbi/Excel795.html)
+- [Excel Challenge 796](/challenges/excelbi/Excel796.html)

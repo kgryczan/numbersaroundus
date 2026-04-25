@@ -1,0 +1,100 @@
+---
+title: "Excel BI - Excel Challenge 801"
+description: "🔰 Answer Expected State Data Name Seq California John : 5; Linda : 8; Susan : 2, 14; William : 11 James Kansas David : 9; James : 1, 3, 6; Sarah : 18"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 801](/challenges/images/exc801.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected State Data Name Seq California John : 5; Linda : 8; Susan : 2, 14; William : 11 James Kansas David : 9; James : 1, 3, 6; Sarah : 18
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/800-899/801/801 Name and Seq.xlsx"
+input = read_excel(path, range = "A2:B7")
+test  = read_excel(path, range = "D2:F20")
+
+result = input %>%
+  separate_longer_delim(Data, delim = "; ") %>%
+  mutate(Data= str_replace_all(Data, "\t", " ")) %>%
+  separate_wider_delim(Data, delim = " : ", 
+                       names = c("Name", "Seq"), 
+                       too_few = "align_start") %>%
+  separate_longer_delim(Seq, delim = ", ") %>%
+  select(Name, Seq, State) %>%
+  mutate(Seq = as.numeric(Seq)) %>%
+  arrange(Seq)
+
+all.equal(result, test)
+# TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "800-899/801/801 Name and Seq.xlsx"
+input = pd.read_excel(path, usecols="A:B", skiprows=1, nrows=6)
+test = pd.read_excel(path, usecols="D:F", skiprows=1, nrows=19).rename(columns=lambda c: c.replace('.1', ''))
+
+rows = []
+for _, row in input.iterrows():
+    for data in str(row['Data']).split('; '):
+        data = data.replace('\t', ' ')
+        parts = data.split(' : ')
+        name = parts[0]
+        seqs = parts[1] if len(parts) > 1 else ''
+        for seq in seqs.split(', '):
+            rows.append({'Name': name, 'Seq': pd.to_numeric(seq, errors='coerce'), 'State': row.get('State', None)})
+
+result = pd.DataFrame(rows).dropna(subset=['Seq']).sort_values('Seq').reset_index(drop=True)
+result['Seq'] = result['Seq'].astype('int64')
+
+print(result.equals(test))
+# True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 802](/challenges/excelbi/Excel802.html)
+- [Excel Challenge 803](/challenges/excelbi/Excel803.html)
+- [Excel Challenge 804](/challenges/excelbi/Excel804.html)

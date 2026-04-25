@@ -1,0 +1,130 @@
+---
+title: "Omid - Challenge 217"
+description: "🔰 Table Transformation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 217](/challenges/images/OmidC217.jpg)
+
+## Challenge Description
+
+🔰 Table Transformation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-217 Table Transformation.xlsx"
+input = read_excel(path, range = "B2:C17")
+test  = read_excel(path, range = "E2:G11") %>% arrange(Date, Product, Quantity)
+
+result = input %>%
+  mutate(Product = ifelse(is.na(`Column 2`), `Column 1`, NA) %>% str_extract(".{1}$")) %>%
+  fill(Product) %>%
+  mutate(`Column 2` = ifelse(str_detect(`Column 2`, "^[0-9]+$"), `Column 2`, NA)) %>%
+  na.omit() %>%
+  select(Date = `Column 1`, Product, Quantity = `Column 2`) %>%
+  mutate(Date = as.Date(as.numeric(Date), origin = "1899-12-30") %>% as.POSIXct(),
+         Quantity = as.numeric(Quantity)) %>%
+  arrange(Date, Product, Quantity)
+
+all.equal(result, test, check.attributes = FALSE) 
+#> True
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "CH-217 Table Transformation.xlsx"
+
+input = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=16)
+test = pd.read_excel(path, usecols="E:G", skiprows=1, nrows=9).sort_values(by=["Date", "Product", "Quantity"]).reset_index(drop=True)
+
+input['Product'] = input.apply(
+    lambda row: row['Column 1'][-1] if pd.isna(row['Column 2']) and isinstance(row['Column 1'], str) else None,
+    axis=1
+)
+input['Product'] = input['Product'].ffill()
+input = input[input['Column 2'].apply(lambda x: str(x).isdigit() and len(str(x)) == 1)]
+input.rename(columns={"Column 1": "Date", "Column 2": "Quantity"}, inplace=True)
+input['Quantity'] = input['Quantity'].astype('int64')
+
+input = input[["Date", "Product", "Quantity"]].sort_values(by=["Date", "Product", "Quantity"])
+input.reset_index(drop=True, inplace=True)
+input['Date'] = pd.to_datetime(input['Date'])
+
+print(input.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 216](OmidC216.qmd)
+-   [Omid - Challenge 218](OmidC218.qmd)
+-   [Omid - Challenge 219](OmidC219.qmd)

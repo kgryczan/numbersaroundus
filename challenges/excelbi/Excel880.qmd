@@ -1,0 +1,78 @@
+---
+title: "Excel BI - Excel Challenge 880"
+description: "🔰 İnputs Results Depending upon the input in column A, write a formula to generate the given grid."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 880](/challenges/images/exc880.jpg)
+
+## Challenge Description
+
+🔰 İnputs Results Depending upon the input in column A, write a formula to generate the given grid. Sample cases shown for 1, 2, 4 & 7.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+layer_matrix <- function(n) {
+  outer(1:(2 * n - 1), 1:(2 * n - 1), function(i, j) {
+    pmax(abs(i - n), abs(j - n)) + 1
+  })
+}
+
+print(layer_matrix(2))
+print(layer_matrix(4))
+print(layer_matrix(7))
+```
+
+### R Analysis
+
+- **Logic**: Apply the workbook rule directly and return the expected output shape.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The approach is compact, but it depends on the workbook following the same input structure as the supplied challenge file.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import numpy as np
+
+def layer_matrix(n):
+    size = 2 * n - 1
+    mat = np.fromfunction(lambda i, j: np.maximum(np.abs(i - (n - 1)), np.abs(j - (n - 1))) + 1, (size, size), dtype=int)
+    return mat.astype(int)
+
+print(layer_matrix(2))
+print(layer_matrix(4))
+print(layer_matrix(7))
+```
+
+### Python
+
+The Python version mirrors the same workbook logic with a concise, direct implementation.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 881](/challenges/excelbi/Excel881.html)
+- [Excel Challenge 882](/challenges/excelbi/Excel882.html)
+- [Excel Challenge 883](/challenges/excelbi/Excel883.html)

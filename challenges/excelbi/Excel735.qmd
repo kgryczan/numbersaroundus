@@ -1,0 +1,98 @@
+---
+title: "Excel BI - Excel Challenge 735"
+description: "🔰 Answer Expected String Alphabets Planets Neptune - A, Pluto - Z A Neptune Earth - K K Uranus"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 735](/challenges/images/exc735.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected String Alphabets Planets Neptune - A, Pluto - Z A Neptune Earth - K K Uranus
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/735/735 Transpose.xlsx"
+input = read_excel(path, range = "A2:A6")
+test = read_excel(path, range = "C2:D7")
+
+result = input %>%
+  separate_longer_delim(String, delim = ", ") %>%
+  separate_wider_delim(
+    String,
+    delim = " - ",
+    names = c("Planets", "Alphabet")
+  ) %>%
+  summarise(
+    Planets = paste0(unique(Planets), collapse = ", "),
+    .by = Alphabet
+  ) %>%
+  arrange(Alphabet)
+
+all.equal(result, test, check.attributes = FALSE)
+# Earth missed in expected result
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Parse the packed text or string structure; Aggregate or rank the data at the required grouping level.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/735/735 Transpose.xlsx"
+input = pd.read_excel(path, usecols="A", skiprows=1, nrows=5)
+test = pd.read_excel(path, usecols="C:D", skiprows=1, nrows=6)
+
+input_long = input['String'].str.split(', ', expand=True).stack().str.split(' - ', expand=True)
+result = (input_long.groupby(1)[0]
+          .unique()
+          .apply(', '.join)
+          .reset_index()
+          .sort_values(1)
+          .reset_index(drop=True)
+          .rename(columns={1: 'Alphabet', 0: 'Planets'}))
+
+print(result.equals(test))
+# Earth missing in the expected output.
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 736](/challenges/excelbi/Excel736.html)
+- [Excel Challenge 737](/challenges/excelbi/Excel737.html)
+- [Excel Challenge 738](/challenges/excelbi/Excel738.html)

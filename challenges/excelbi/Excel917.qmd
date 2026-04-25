@@ -1,0 +1,101 @@
+---
+title: "Excel BI - Excel Challenge 917"
+description: "🔰 917 Extract and Vstack.xlsx says: > For each case no, extract the company name, minimum start date, maximum finish data and last person The input table has sparse rows wh"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 917](/challenges/images/exc917.jpg)
+
+## Challenge Description
+
+🔰 The prompt in 917 Extract and Vstack.xlsx says: For each case no, extract the company name, minimum start date, maximum finish data and last person The input table has sparse rows where data for a single case appears across multiple lines. The goal is to rebuild one complete summary row per case containing:
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/900-999/917/917 Extract and Vstack.xlsx"
+input <- read_excel(path, range = "A2:E21")
+test <- read_excel(path, range = "G2:K6")
+
+result = input %>%
+  group_by(`Case No`) %>%
+  fill(everything(), .direction = "downup") %>%
+  summarise(
+    `Case No` = first(`Case No`),
+    Company = first(Company),
+    `Start Date` = min(`Start Date`),
+    `Finish Date` = max(`Finish Date`),
+    Contact = last(Contact),
+    .groups = "drop"
+  )
+
+all.equal(result, test)
+## [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Group rows by case number.; Fill missing values down and up within each case.; Take the first case number and company..
+- **Strengths**: The key move is intra-group filling.
+- **Areas for Improvement**: The approach assumes the workbook structure and naming conventions stay stable, so any changed input shape would need minor adjustments.
+- **Gem**: The dataset is not truly missing information at the case level.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Excel/900-999/917/917 Extract and Vstack.xlsx"
+input = pd.read_excel(path, usecols="A:E", skiprows=1, nrows=20)
+test = pd.read_excel(path, usecols="G:K", skiprows=1, nrows=4).rename(columns=lambda x: x.rstrip('.1'))
+
+result = (
+    input
+    .groupby("Case No", group_keys=False, dropna=False)
+    .apply(lambda g: g.ffill().bfill())
+    .groupby("Case No", as_index=False)
+    .agg({
+        "Company": "first",
+        "Start Date": "min",
+        "Finish Date": "max",
+        "Contact": "last"
+    })
+)
+
+print(result.equals(test))
+# Output: True
+```
+
+### Python
+
+The Python version follows the same structure: group by case number.; forward-fill and backward-fill missing values within each case..
+
+## **Difficulty Level**
+
+**Easy**
+
+Once the core pattern is recognized, the implementation is short and direct.
+
+### Related Challenges
+
+- [Excel Challenge 921](/challenges/excelbi/Excel921.html)
+- [Excel Challenge 914](/challenges/excelbi/Excel914.html)
+- [Excel Challenge 905](/challenges/excelbi/Excel905.html)

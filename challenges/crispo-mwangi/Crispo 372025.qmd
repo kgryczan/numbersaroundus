@@ -1,0 +1,123 @@
+---
+title: "Crispo - Excel Challenge 37 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-09-14"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 37 2025](/challenges/images/Crispo372025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Quantity Stem Leaf Easy Sunday Excel Challenge ⭐ Create a Stem & Leaf Plot ⭐Solution should be dynamic
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/2025-09-14/challenge 60.xlsx"
+input = read_excel(path, range = "B2:B18")
+test  = read_excel(path, range = "D2:E9")
+
+result = input %>%
+  mutate(Stem = Quantity %/% 10, 
+         Leaf = Quantity %% 10) %>%
+  arrange(Stem, Leaf) %>%
+  summarise(Leaf = paste(Leaf, collapse = " "), .by = Stem) 
+  
+all.equal(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "files/2025-09-14/challenge 60.xlsx"
+
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=17)
+test = pd.read_excel(path, usecols="D:E", skiprows=1, nrows=7)
+
+input['Stem'] = (input['Quantity'] // 10)
+input['Leaf'] = (input['Quantity'] % 10)
+input = input.sort_values(['Stem', 'Leaf'])
+input = input.astype(str)
+result = input.groupby('Stem')['Leaf'].apply(' '.join).reset_index()
+
+print(pd.concat([test, result], axis=1))
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Aggregates or ranks values at the correct grouping level
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 36 2025](Crispo 362025.qmd)
+-   [Crispo - Excel Challenge 38 2025](Crispo 382025.qmd)

@@ -1,0 +1,126 @@
+---
+title: "Crispo - Excel Challenge 29 2024"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2024-07-21"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 29 2024](/challenges/images/Crispo292024.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ ⭐Assume Start (1st of Month) & End (Last day of Month)
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/Excel Challange 21st July.xlsx"
+input = read_excel(path, range = "D2:F6")
+test  = read_excel(path, range = "G2:H6")
+
+result = input %>%
+  mutate(month = match(`Expected Start Month`, month.name),
+         `Start Date` = make_date(year(now()), month, 1)) %>%
+  mutate(`End Date` = `Start Date` + months(`Duration (Months)`)- days(1)) %>%
+  select(`Start Date`, `End Date`) %>%
+  mutate(across(everything(), as.POSIXct)) 
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import datetime
+import calendar
+
+path = "files/Excel Challange 21st July.xlsx"
+input_data = pd.read_excel(path, usecols="D:F", skiprows=1, nrows=4)
+test = pd.read_excel(path, usecols="G:H", skiprows=1, nrows=4)
+
+month_dict = {month: index for index, month in enumerate(calendar.month_name) if month}
+
+result = input_data.copy()
+result['Expected Start Month'] = result['Expected Start Month'].str.strip() # May had extra space at the end :D
+result['month'] = result['Expected Start Month'].apply(lambda x: month_dict[x])
+result['Start Date'] = result.apply(lambda row: datetime.datetime(datetime.datetime.now().year, row['month'], 1), axis=1)
+result['End Date'] = result.apply(lambda row: row['Start Date'] + pd.DateOffset(months=row['Duration (Months)']) - pd.DateOffset(days=1), axis=1)
+result = result[['Start Date', 'End Date']].apply(pd.to_datetime)
+
+print(result.equals(test))  # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 28 2024](Crispo 282024.qmd)
+-   [Crispo - Excel Challenge 30 2024](Crispo 302024.qmd)

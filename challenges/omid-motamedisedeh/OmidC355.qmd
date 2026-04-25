@@ -1,0 +1,154 @@
+---
+title: "Omid - Challenge 355"
+description: "🔰 Result 🧩 Adding Explanations If you want to include explanations or extra notes: 🌐 Sharing External Content 🗣 Feedback I always appreciate your feedback — feel free to s…"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 355](/challenges/images/OmidC355.jpg)
+
+## Challenge Description
+
+🔰 Result 🧩 Adding Explanations If you want to include explanations or extra notes: 🌐 Sharing External Content 🗣 Feedback I always appreciate your feedback — feel free to s…
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(igraph)
+
+path <- "300-399/355/CH-355 Graph Calculation.xlsx"
+input1 <- read_excel(path, range = "B3:H9")
+input2 <- read_excel(path, range = "K3:L7")
+test <- read_excel(path, range = "M3:M7")
+
+i1 = input1 %>%
+  pivot_longer(cols = -Edge, names_to = "To", values_to = "Dist") %>%
+  na.omit()
+
+g = graph_from_data_frame(i1, directed = TRUE)
+
+define_shortest_path <- function(g, from_node, to_node) {
+  shortest_path <- shortest_paths(
+    g,
+    from = from_node,
+    to = to_node,
+    weights = E(g)$Dist,
+    output = "vpath"
+  )
+  shortest_path_nodes <- shortest_path$vpath[[1]] %>%
+    as_ids() %>%
+    paste0(collapse = ",")
+  return(shortest_path_nodes)
+}
+
+result = input2 %>%
+  mutate(result = map2_chr(From, To, ~ define_shortest_path(g, .x, .y)))
+
+all.equal(result$result, test$`Shortest Path`)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import networkx as nx
+
+path = "300-399/355/CH-355 Graph Calculation.xlsx"
+input1 = pd.read_excel(path, usecols="B:H", skiprows=2, nrows=6)
+input2 = pd.read_excel(path, usecols="K:L", skiprows=2, nrows=4)
+test = pd.read_excel(path, usecols="M", skiprows=2, nrows=4)
+
+i1 = input1.melt(id_vars=['Edge'], var_name='To', value_name='Dist').dropna()
+
+g = nx.DiGraph()
+for _, row in i1.iterrows():
+    g.add_edge(row['Edge'], row['To'], weight=row['Dist'])
+
+def define_shortest_path(g, from_node, to_node):
+    try:
+        shortest_path = nx.shortest_path(g, source=from_node, target=to_node, weight='weight')
+        shortest_path_nodes = ",".join(shortest_path)
+        return shortest_path_nodes
+    except nx.NetworkXNoPath:
+        return None
+
+result = input2.copy()
+result['result'] = input2.apply(lambda row: define_shortest_path(g, row['From'], row['To']), axis=1)
+
+print(result['result'].equals(test['Shortest Path']))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 354](OmidC354.qmd)
+-   [Omid - Challenge 356](OmidC356.qmd)
+-   [Omid - Challenge 357](OmidC357.qmd)

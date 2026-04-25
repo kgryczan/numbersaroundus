@@ -1,0 +1,125 @@
+---
+title: "Excel BI - PowerQuery Challenge 217"
+description: "Transpose the table as shown by showing the amount paid each month. Amount paid = Amt * number appearing the column. Also show row and column totals."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 217](/challenges/images/exc217pq.jpg)
+
+## Challenge Description
+
+Transpose the table as shown by showing the amount paid each month. Amount paid = Amt * number appearing the column. Also show row and column totals.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(janitor)
+
+path = "Power Query/PQ_Challenge_217.xlsx"
+input = read_excel(path, range = "A1:H5")
+test  = read_excel(path, range = "J1:O8")
+
+result = input %>%
+  mutate(across(3:8, ~ . * Amt)) %>%
+  select(-Amt) %>% 
+  t() %>%
+  as.data.frame() %>%
+  row_to_names(1) %>%
+  rownames_to_column(var = "Month")  %>%
+  mutate(across(-Month, ~ as.numeric(.))) %>%
+  adorn_totals(c("row", "col")) 
+
+all.equal(result, test, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "PQ_Challenge_217.xlsx"
+input = pd.read_excel(path, usecols="A:H", nrows = 4)
+test  = pd.read_excel(path, usecols="J:O", nrows = 7)
+
+input.iloc[:, 2:8] = input.iloc[:, 2:8].apply(lambda x: x * input["Amt"])
+input = input.drop(columns=["Amt"])
+
+input = input.T
+input.columns = input.iloc[0]
+input = input.drop(input.index[0])
+
+input["Total"] = input.sum(axis=1)
+input.loc["Total"] = input.sum()
+input = input.reset_index().rename(columns={"index": "Month"}).rename_axis(None, axis=1)
+
+print(all(input == test))   # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The transformation rule is readable, but the final layout still requires a careful implementation.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 216](Excel216pq.qmd)

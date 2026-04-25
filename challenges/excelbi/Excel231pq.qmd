@@ -1,0 +1,147 @@
+---
+title: "Excel BI - PowerQuery Challenge 231"
+description: "Pivot the problem tables into result table. Result table has values as sum of Quantity * Price."
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 231](/challenges/images/exc231pq.jpg)
+
+## Challenge Description
+
+Pivot the problem tables into result table. Result table has values as sum of Quantity * Price.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(janitor)
+
+path = "Power Query/PQ_Challenge_231.xlsx"
+input1 = read_excel(path, range = "A2:C5")
+input2 = read_excel(path, range = "A8:B15")
+test  = read_excel(path, range = "E2:J6")
+
+input = input1 %>%
+  separate_rows(c(Items, Quantity), sep = ", ") %>%
+  left_join(input2, by = "Items") %>%
+  mutate(Amount = as.numeric(Quantity) * Price) %>%
+  select(-c(Price, Quantity)) %>%
+  pivot_wider(names_from = "Items", values_from = "Amount", values_fn = list(Amount = sum), values_fill = 0) %>%
+  select(Name = Person,u, x, y, z) %>%
+  arrange(Name) %>%
+  adorn_totals(c("row", "col")) 
+
+all.equal(input, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "PQ_Challenge_231.xlsx"
+input1 = pd.read_excel(path, usecols="A:C", skiprows=1, nrows=3)
+input2 = pd.read_excel(path, usecols="A:B", skiprows=7, nrows=8)
+test = pd.read_excel(path, usecols="E:J", skiprows=1, nrows=4)
+
+input1 = input1.assign(
+    Items=input1['Items'].str.split(', '),
+    Quantity=input1['Quantity'].str.split(', ')
+).explode(['Items', 'Quantity'], ignore_index=True)
+
+input = input1.merge(input2, on='Items', how='left')
+input['Amount'] = input.eval('Quantity.astype("int64") * Price').astype('int64')
+input.drop(columns=['Price', 'Quantity'], inplace=True)
+
+input = input.pivot_table(
+    index='Person', 
+    columns='Items', 
+    values='Amount', 
+    aggfunc='sum', 
+    fill_value=0, 
+    margins=True, 
+    margins_name='Total'
+).reset_index().rename(
+    columns={'Person': 'Name'}
+).rename_axis(
+    None, axis=1
+)
+
+print(input.equals(test))   # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 230](Excel230pq.qmd)

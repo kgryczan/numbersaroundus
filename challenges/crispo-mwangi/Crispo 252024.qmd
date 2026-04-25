@@ -1,0 +1,118 @@
+---
+title: "Crispo - Excel Challenge 25 2024"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2024-06-23"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 25 2024](/challenges/images/Crispo252024.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Date & Orders Dates Easy Sunday Excel Challenge ⭐Get Dates with orders Less than the previous Date marks for Legacy solutions or PowerQuery Solution
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/Excel Challenge  22nd June.xlsx"
+
+input = read_xlsx(path, range = "B2:B22", col_types = "text")
+test  = read_xlsx(path, range = "D2:D5")
+
+result <- tibble(
+  Dates = as.POSIXct(as.Date(as.numeric(input$`Date & Orders`[seq(1, nrow(input), 2)]), 
+                             origin = "1899-12-30")),
+  Values = as.numeric(input$`Date & Orders`[seq(2, nrow(input), 2)])
+) %>%
+  filter(Values < lag(Values)) %>%
+  select(Dates)
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Applies the workbook rule directly and shapes the expected output
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = 'files/Excel Challenge  22nd June.xlsx'
+input = pd.read_excel(path, skiprows = 1, usecols= "B")
+test  = pd.read_excel(path, skiprows = 1, usecols= "D", nrows = 3)
+
+input = pd.concat([input.iloc[::2].reset_index(drop=True), input.iloc[1::2].reset_index(drop=True)], axis=1)
+input.columns = ['Dates', 'Values']
+filtered_data = input[input['Values'] < input['Values'].shift()]
+result = filtered_data[['Dates']].astype("datetime64[ns]").reset_index(drop=True)
+
+print(result.equals(test)) # True
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **easy to moderate**:
+
+-   The business rule is readable, but the workbook still needs a few careful transformation steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 24 2024](Crispo 242024.qmd)
+-   [Crispo - Excel Challenge 26 2024](Crispo 262024.qmd)

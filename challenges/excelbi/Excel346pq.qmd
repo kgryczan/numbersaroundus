@@ -1,0 +1,168 @@
+---
+title: "Excel BI - PowerQuery Challenge 346"
+description: "Order_ID Order_Date Cust_Code Product_SKU Qty Status"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 346](/challenges/images/exc346pq.jpg)
+
+## Challenge Description
+
+Order_ID Order_Date Cust_Code Product_SKU Qty Status
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Power Query/300-399/346/PQ_Challenge_346.xlsx"
+input1 <- read_excel(path, range = "A1:F11")
+input2 <- read_excel(path, range = "A14:G26")
+test <- read_excel(path, range = "I1:S11")
+
+result = input1 %>%
+  mutate(
+    Cust_Code = str_replace_all(Cust_Code, "[./_]", "-") %>%
+      str_replace(., "CUST-", "")
+  ) %>%
+  left_join(
+    input2 %>%
+      filter(Record_Type == "CUSTOMER") %>%
+      select(ID_Code, Name, Contact, Region),
+    by = c("Cust_Code" = "ID_Code")
+  ) %>%
+  left_join(
+    input2 %>%
+      filter(Record_Type == "PRODUCT") %>%
+      select(ID_Code, Name, Category, Unit_Price),
+    by = c("Product_SKU" = "ID_Code")
+  ) %>%
+  select(
+    Order_ID,
+    Order_Date,
+    Customer_Name = Name.x,
+    Customer_Contact = Contact,
+    Customer_Region = Region,
+    Product_Name = Name.y,
+    Product_Category = Category,
+    Quantity = Qty,
+    Unit_Price,
+    Order_Status = Status
+  ) %>%
+  mutate(Order_Value = Quantity * Unit_Price, .after = Unit_Price)
+
+all.equal(result, test)
+# TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds helper columns that drive the final output
+
+    -   Uses direct pattern parsing where the workbook encodes logic in text
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "Power Query/300-399/346/PQ_Challenge_346.xlsx"
+input1 = pd.read_excel(path, sheet_name=0, usecols="A:F", nrows=11)
+input2 = pd.read_excel(path, sheet_name=0, usecols="A:G", skiprows=13, nrows=13)
+test = pd.read_excel(path, sheet_name=0, usecols="I:S", nrows=11)
+test.columns = test.columns.str.replace(r"\.1$", "", regex=True)
+
+input1["Cust_Code"] = input1["Cust_Code"].str.replace(r"[./_]", "-", regex=True).str.replace("CUST-", "", regex=False)
+
+result = (
+    input1.merge(
+        input2[input2["Record_Type"] == "CUSTOMER"][["ID_Code", "Name", "Contact", "Region"]],
+        left_on="Cust_Code", right_on="ID_Code", how="left"
+    )
+    .merge(
+        input2[input2["Record_Type"] == "PRODUCT"][["ID_Code", "Name", "Category", "Unit_Price"]],
+        left_on="Product_SKU", right_on="ID_Code", how="left", suffixes=("", ".prod")
+    )
+    .loc[:, [
+        "Order_ID", "Order_Date", "Name", "Contact", "Region",
+        "Name.prod", "Category", "Qty", "Unit_Price", "Status"
+    ]]
+    .rename(columns={
+        "Name": "Customer_Name",
+        "Contact": "Customer_Contact",
+        "Region": "Customer_Region",
+        "Name.prod": "Product_Name",
+        "Category": "Product_Category",
+        "Qty": "Quantity",
+        "Status": "Order_Status"
+    })
+)
+result.insert(result.columns.get_loc("Unit_Price") + 1, "Order_Value", result["Quantity"] * result["Unit_Price"])
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 345](Excel345pq.qmd)
+-   [Excel BI - Excel Challenge 726](Excel726.qmd)

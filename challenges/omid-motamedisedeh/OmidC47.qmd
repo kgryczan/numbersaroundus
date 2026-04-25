@@ -1,0 +1,115 @@
+---
+title: "Omid - Challenge 47"
+description: "🔰 The 'Question' table presents a list of product IDs collected from several warehouses."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 47](/challenges/images/OmidC47.jpg)
+
+## Challenge Description
+
+🔰 The "Question" table presents a list of product IDs collected from several warehouses.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-047 Multiple text replaces.xlsx", range = "B2:B11")
+dict  = read_excel("files/CH-047 Multiple text replaces.xlsx", range = "E2:F10") %>%
+  replace_na(list(Old = " "))
+test  = read_excel("files/CH-047 Multiple text replaces.xlsx", range = "J2:J11")
+
+result = input$`Product IDs` %>%
+  reduce(dict$Old, ~ str_replace_all(.x, fixed(.y), dict$New[dict$Old == .y]), .init = .) %>%
+  tibble(`Product IDs` = .)
+
+identical(result, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input = pd.read_excel("CH-047 Multiple text replaces.xlsx", sheet_name="Sheet1", usecols="B", skiprows=1)
+dict = pd.read_excel("CH-047 Multiple text replaces.xlsx", sheet_name="Sheet1", usecols="E:F", skiprows=1).fillna(" ")
+test = pd.read_excel("CH-047 Multiple text replaces.xlsx", sheet_name="Sheet1", usecols="J", skiprows=1)
+test.columns = input.columns
+
+for index, row in dict.iterrows():
+    input["Product IDs"] = input["Product IDs"].str.replace(row[0], row[1])
+
+print(input.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 46](OmidC46.qmd)
+-   [Omid - Challenge 48](OmidC48.qmd)
+-   [Omid - Challenge 49](OmidC49.qmd)

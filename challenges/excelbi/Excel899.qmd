@@ -1,0 +1,95 @@
+---
+title: "Excel BI - Excel Challenge 899"
+description: "🔰 Input Sentence Answer Expected esse8154ntial da428ta cl19ean i673s clean data is essential tab5912les t256o lea84rn pi1739vot learn to pivot tables che167ck ran3852ges alw23ays yo…"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 899](/challenges/images/exc899.jpg)
+
+## Challenge Description
+
+🔰 Input Sentence Answer Expected esse8154ntial da428ta cl19ean i673s clean data is essential tab5912les t256o lea84rn pi1739vot learn to pivot tables che167ck ran3852ges alw23ays yo941ur always check your ranges cha2981nge dyn76amic ever7435ything arr514ays dynamic arrays change everything
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path <- "Excel/800-899/899/899 Sorting Sentences by Number.xlsx"
+input <- read_excel(path, range = "A1:A11")
+test <- read_excel(path, range = "B1:B11")
+
+reorder_by_digits <- function(text) {
+  str_split(text, " ")[[1]] |>
+    (\(x) x[order(as.integer(str_extract(x, "\\d+")))])() |>
+    str_remove_all("\\d+") |>
+    str_c(collapse = " ")
+}
+
+result = input %>%
+  mutate(reordered = map_chr(`Input Sentence`, reorder_by_digits))
+
+all.equal(result$reordered, test$`Answer Expected`, check.attributes = FALSE)
+# [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Parse the packed text or string structure.
+- **Strengths**: The solution stays close to the text pattern itself, which makes the extraction logic easy to audit.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: A small number of well-targeted text patterns does most of the heavy lifting.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "Excel/800-899/899/899 Sorting Sentences by Number.xlsx"
+input = pd.read_excel(path, usecols=[0], nrows=11)
+test = pd.read_excel(path, usecols=[1], nrows=11)
+
+def reorder_by_digits(text):
+    words = text.split()
+    words.sort(key=lambda x: (re.search(r'\d+', x) is None, int(re.search(r'\d+', x).group()) if re.search(r'\d+', x) else 0))
+    words = [re.sub(r'\d+', '', word) for word in words]
+    return ' '.join(words)
+
+input['reordered'] = input['Input Sentence'].apply(reorder_by_digits)
+
+result = input['reordered'].tolist() == test['Answer Expected'].tolist()
+print(result)  # True
+```
+
+### Python
+
+The Python version expresses the core extraction rule directly and keeps the pattern matching easy to review.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 900](/challenges/excelbi/Excel900.html)
+- [Excel Challenge 901](/challenges/excelbi/Excel901.html)
+- [Excel Challenge 902](/challenges/excelbi/Excel902.html)

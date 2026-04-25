@@ -1,0 +1,95 @@
+---
+title: "Excel BI - Excel Challenge 700"
+description: "🔰 Answer Expected Data Alphabet Value A-234, E-256, D-3673 A Q-897, R-1, S-87 D T-90, A-308, R-45 E"
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 700](/challenges/images/exc700.jpg)
+
+## Challenge Description
+
+🔰 Answer Expected Data Alphabet Value A-234, E-256, D-3673 A Q-897, R-1, S-87 D T-90, A-308, R-45 E
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700 Pivot Data.xlsx"
+input = read_excel(path, range = "A2:A6")
+test = read_excel(path, range = "C2:D10")
+
+result = input %>%
+  separate_rows(Data, sep = ", ") %>%
+  separate(Data, into = c("Alphabet", "Value"), sep = "-", convert = TRUE) %>%
+  summarise(Value = sum(Value), .by = Alphabet) %>%
+  arrange(Alphabet)
+
+r2 = result %>%
+  add_row(Alphabet = "TOTAL", Value = sum(result$Value))
+
+all.equal(r2, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Parse the packed text or string structure; Aggregate or rank the data at the required grouping level; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700 Pivot Data.xlsx"
+input = pd.read_excel(path, usecols="A", skiprows=1, nrows=5)
+test = pd.read_excel(path, usecols="C:D", skiprows=1, nrows=9)
+
+result = (
+    input["Data"]
+    .str.extractall(r"(\w+)-(\d+)")
+    .rename(columns={0: "Alphabet", 1: "Value"})
+    .astype({"Value": int})
+    .groupby("Alphabet", as_index=False)["Value"]
+    .sum()
+)
+
+r2 = pd.concat([result, pd.DataFrame([{"Alphabet": "TOTAL", "Value": result["Value"].sum()}])], ignore_index=True)
+
+print(r2.equals(test))  # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 701](/challenges/excelbi/Excel701.html)
+- [Excel Challenge 702](/challenges/excelbi/Excel702.html)
+- [Excel Challenge 703](/challenges/excelbi/Excel703.html)

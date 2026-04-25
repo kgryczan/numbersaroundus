@@ -1,0 +1,134 @@
+---
+title: "Crispo - Excel Challenge 21 2025"
+description: "Easy Sunday Excel Challenge"
+categories: [excel-challenges, weekly-exercises]
+tags: [crispo-mwangi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2025-05-25"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Crispo - Excel Challenge 21 2025](/challenges/images/Crispo212025.jpg)
+
+## Challenge Description
+
+Easy Sunday Excel Challenge
+
+⭐ Problem Solution Words Easy Sunday Excel Challenge gy mnop
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(readxl)
+
+path = "files/2025-05-25/Challenge25.xlsx"
+input = read_excel(path, range = "B3:B12")
+test = read_excel(path, range = "D3:D6")
+
+letters2 = rep(letters, 2) %>% paste0(collapse = "")
+sequences = map(1:26, ~ substr(letters2, .x, .x + 3)) %>% unlist()
+
+result = input %>%
+  mutate(
+    contains_sequence = map_lgl(Words, ~ any(str_detect(.x, sequences)))
+  ) %>%
+  filter(contains_sequence) %>%
+  select(Words)
+
+all.equal(result$Words, test$Words)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Builds the intermediate helper columns that drive the final answer
+
+    -   Uses direct text-pattern extraction instead of manual cleanup
+
+-   **Strengths**:
+
+    -   The R solution stays compact and mirrors the workbook logic closely.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and named ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing a tidy intermediate shape before producing the final answer.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+import string
+
+path = "files/2025-05-25/Challenge25.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=2, nrows=10)
+test = pd.read_excel(path, usecols="D", skiprows=2, nrows=3).rename(columns=lambda col: col.replace('.1', ''))
+
+seqs = [string.ascii_lowercase * 2][0]
+seqs = [seqs[i:i+4] for i in range(26)]
+
+def has_seq(word):
+    return any(re.search(seq, word) for seq in seqs)
+
+result = input[input['Words'].apply(has_seq)][['Words']].reset_index(drop=True)
+
+print(result.equals(test))
+```
+
+### Python Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Uses direct text-pattern extraction instead of manual cleanup
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version keeps the same rule in a direct pandas-oriented workflow.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the stated challenge instead of adding unnecessary complexity.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines familiar Excel-style logic with at least one non-trivial reshape, grouping, or parsing step.
+
+-   The answer depends on getting the output layout exactly right.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Crispo - Excel Challenge 20 2025](Crispo 202025.qmd)
+-   [Crispo - Excel Challenge 22 2025](Crispo 222025.qmd)

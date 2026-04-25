@@ -1,0 +1,97 @@
+---
+title: "Excel BI - Excel Challenge 858"
+description: "🔰 Work out the first 50 Fibonacci numbers and frequency of digits considering all 50 numbers together."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 858](/challenges/images/exc858.jpg)
+
+## Challenge Description
+
+🔰 Work out the first 50 Fibonacci numbers and frequency of digits considering all 50 numbers together. Find the top 3 digits on the basis of frequency of occurrence.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+library(charcuterie)
+
+path <- "Excel/800-899/858/858 Top 3 Digits in First 50 Fibonacci Numbers.xlsx"
+test <- read_excel(path, range = "A2:B5")
+
+result <- Reduce(
+  function(a, ...) c(a, sum(tail(a, 2))),
+  1:48,
+  init = c(0, 1)
+) |>
+  as.character() |>
+  paste0(collapse = "") |>
+  chars() |>
+  table() |>
+  as.data.frame() |>
+  rename(Digit = 1, Frequency = 2) |>
+  mutate(Digit = as.character(Digit)) |>
+  slice_max(Frequency, n = 3)
+
+all.equal(test, result, check.attributes = FALSE)
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "Excel/800-899/858/858 Top 3 Digits in First 50 Fibonacci Numbers.xlsx"
+test = pd.read_excel(path, usecols="A:B", skiprows=1, nrows=3)
+
+fib = [0, 1]
+for _ in range(48):
+    fib.append(fib[-1] + fib[-2])
+digits = "".join(str(x) for x in fib)
+freq = pd.Series(list(digits)).value_counts().reset_index()
+freq.columns = ["Digit", "Frequency"]
+freq["Digit"] = freq["Digit"].astype('int64')
+result = freq.nlargest(3, "Frequency").reset_index(drop=True)
+
+print(test.equals(result))  # Should output: True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 859](/challenges/excelbi/Excel859.html)
+- [Excel Challenge 860](/challenges/excelbi/Excel860.html)
+- [Excel Challenge 861](/challenges/excelbi/Excel861.html)

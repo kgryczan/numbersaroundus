@@ -1,0 +1,99 @@
+---
+title: "Excel BI - Excel Challenge 791"
+description: "🔰 List both the Delay Period and the Non-Overlapping Delay (NOD)."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 791](/challenges/images/exc791.jpg)
+
+## Challenge Description
+
+🔰 List both the Delay Period and the Non-Overlapping Delay (NOD). The Delay Period is the number of days between the start and end dates of each task (including the start date). The NOD is the actual delay after removing any overlap with other tasks. For example, in Task 3, the delay runs from 06/15/25 to 06/22/25 (8 days). However, Task 2 already covers 06/14/25 to 06/21/25, so only 06/22/25 counts as a new delay.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/700-799/791/791 Non-Overlapping Delay.xlsx"
+input = read_excel(path, range = "A2:C9")
+test  = read_excel(path, range = "E2:F9")
+
+output = input %>%
+  mutate(Dates = map2(`Delay Start`, `Delay End`, seq, by = "day")) %>%
+  mutate(cum_dates = accumulate(Dates, ~ sort(unique(c(.x, .y))))) %>%
+  mutate(Nod = map2(cum_dates, lag(cum_dates, default = list(character(0))), setdiff)) %>%
+  mutate(`Non-Overlapping delay` = map_int(Nod, length),
+         `Delay Period` = map_int(Dates, length)) %>%
+  select(`Delay Period`, `Non-Overlapping delay`)
+
+all.equal(output, test)
+# > [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "700-799/791/791 Non-Overlapping Delay.xlsx"
+input = pd.read_excel(path, usecols="A:C", skiprows=1, nrows=8)
+test = pd.read_excel(path, usecols="E:F", skiprows=1, nrows=8)
+
+input['Delay Start'] = pd.to_datetime(input['Delay Start'])
+input['Delay End'] = pd.to_datetime(input['Delay End'])
+input['Dates'] = input.apply(lambda r: pd.date_range(r['Delay Start'], r['Delay End']), axis=1)
+
+all_dates = pd.DatetimeIndex([])
+nod = []
+for dates in input['Dates']:
+    new_dates = dates.difference(all_dates)
+    nod.append(len(new_dates))
+    all_dates = all_dates.union(dates)
+
+input['Delay Period'] = input['Dates'].apply(len)
+input['Non-Overlapping delay'] = nod
+
+result = input[['Delay Period', 'Non-Overlapping delay']]
+
+print(result.equals(test))
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 792](/challenges/excelbi/Excel792.html)
+- [Excel Challenge 793](/challenges/excelbi/Excel793.html)
+- [Excel Challenge 794](/challenges/excelbi/Excel794.html)

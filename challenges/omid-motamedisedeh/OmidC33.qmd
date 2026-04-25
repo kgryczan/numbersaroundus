@@ -1,0 +1,114 @@
+---
+title: "Omid - Challenge 33"
+description: "🔰 Questionnaires are a common method for collecting data, but they are susceptible to noise from respondents who fill them out randomly."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 33](/challenges/images/OmidC33.jpg)
+
+## Challenge Description
+
+🔰 Questionnaires are a common method for collecting data, but they are susceptible to noise from respondents who fill them out randomly.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+input = read_excel("files/CH-033 Noise Removing.xlsx", range = "B1:J16")
+test  = read_excel("files/CH-033 Noise Removing.xlsx", range = "L1:L7") 
+colnames(test) = "respondent"
+
+r1 = input %>%
+  summarize(across(-c(1), ~cor(.x, rowSums(input[,-1]) - .x))) %>%
+  pivot_longer(cols = everything(), names_to = "respondent", values_to = "correlation") %>%
+  filter(correlation > 0.3) %>%
+  select(respondent)
+
+identical(r1, test)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Reshapes the data into the grain required by the task
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+input = pd.read_excel("CH-033 Noise Removing.xlsx", sheet_name="Sheet1",  usecols="B:J", nrows = 16)
+test = pd.read_excel("CH-033 Noise Removing.xlsx", sheet_name="Sheet1",  usecols="L:L", nrows = 6)
+test.columns = ["respondent"]
+
+r1 = input.drop(columns=['Question ID']).apply(lambda x: x.corr(input.iloc[:, 1:].sum(axis=1) - x)).to_frame().reset_index()
+r1.columns = ["respondent", "correlation"]
+r1 = r1[r1["correlation"] > 0.3][["respondent"]].reset_index(drop=True)
+
+print(r1.equals(test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The core logic is clear, but the correct transformation pattern is not obvious from the raw input.
+
+-   The challenge combines multiple reshaping, grouping, or parsing steps.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 32](OmidC32.qmd)
+-   [Omid - Challenge 34](OmidC34.qmd)
+-   [Omid - Challenge 35](OmidC35.qmd)

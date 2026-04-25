@@ -1,0 +1,122 @@
+---
+title: "Omid - Challenge 247"
+description: "🔰 Result Dates Challenge 247: Date Calculation!"
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 247](/challenges/images/OmidC247.jpg)
+
+## Challenge Description
+
+🔰 Result Dates Challenge 247: Date Calculation!
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/200-299/247/CH-247 Date Calculation.xlsx"
+test = read_excel(path, range = "B2:B14") %>%
+  mutate(Dates = as.Date(Dates))
+
+result = data.frame(
+  date = seq(as.Date("2025-01-01"), as.Date("2025-12-01"), by = "month")
+) %>%
+  mutate(
+    Dates = map(date, ~ date + (8 - wday(date, week_start = 1)) %% 7),
+    .by = "date"
+  ) %>%
+  select(Dates) %>%
+  unnest(Dates)
+
+all.equal(test$Dates, result$Dates)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+from datetime import date, timedelta
+import pandas as pd
+
+path = "200-299/247/CH-247 Date Calculation.xlsx"
+test = pd.read_excel(path, usecols="B", skiprows=1, nrows=12)
+
+first_mondays = [
+    d + timedelta((7 - d.weekday()) % 7)
+    for d in [date(2025, m, 1) for m in range(1, 13)]
+]
+first_mondays = pd.to_datetime(first_mondays)
+first_mondays = pd.DataFrame(first_mondays, columns=["Dates"])
+
+print(test.equals(first_mondays))
+# True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   The business rule is readable, but the workbook still requires careful implementation to reach the expected layout.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 246](OmidC246.qmd)
+-   [Omid - Challenge 248](OmidC248.qmd)
+-   [Omid - Challenge 249](OmidC249.qmd)
