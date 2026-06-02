@@ -1,0 +1,219 @@
+---
+title: "Data Semantics Starts Where Agreement on the Word Customer Ends"
+author: "Numbers around us"
+date: "2026-06-02"
+description: "A practical look at customer definitions, semantic drift, and why data teams need shared meaning before shared dashboards."
+image: images/data-semantics-customer.png
+image-alt: "Multiple systems point to different meanings of the same customer concept."
+categories: [data-engineering, data-quality]
+tags: [data-semantics, metrics, data-modeling, data-products]
+format: html
+execute:
+  eval: false
+---
+
+![Multiple systems point to different meanings of the same customer concept.](images/data-semantics-customer.png)
+
+## Everyone Agrees Until Someone Asks for the Number
+
+There is a familiar kind of meeting in analytical work. Everyone is discussing customer growth. Marketing says the number of customers increased. Finance says the number is flat. Product says active customers declined. Sales says the pipeline looks healthy. Support says the customer base is under pressure.
+
+At first, this looks like a reporting problem. Someone opens a dashboard. Someone else opens a spreadsheet. A third person checks the CRM. Then the conversation slowly changes shape. The question is no longer "what happened?" It becomes "what do we mean by customer?"
+
+That is where data semantics begins.
+
+Not in a modeling tool. Not in a glossary. Not in a large enterprise architecture diagram. It begins in the moment when a company discovers that a familiar business word is carrying several different meanings at once.
+
+The word `customer` is especially dangerous because almost everyone feels confident using it. It sounds simple. It sounds obvious. It sounds like the kind of word that should not need a definition. But in real data systems, `customer` can mean a registered user, a paying account, a billing entity, a company, a contact, a household, an active buyer, a CRM record, or a deduplicated identity stitched together from several systems.
+
+The word looks stable because it is familiar. The data becomes unstable because familiarity hides assumptions.
+
+## The Many Lives of a Customer
+
+Ask five teams what a customer is and you may get five correct answers.
+
+For marketing, a customer may start as a known lead or a person who entered a campaign funnel. For sales, a customer may be an account with an owner, a stage, and a probability of closing. For finance, a customer may be a billing account with at least one non-refunded invoice. For product, a customer may be an active user who logged in during the last 30 days. For support, a customer may be an account entitled to service.
+
+None of these definitions is automatically wrong.
+
+That is the uncomfortable part.
+
+The problem is not that one team understands the business and the others do not. The problem is that each team uses a local definition that fits its local work. Trouble starts when those local definitions are presented as one global number.
+
+Consider a simple question:
+
+> How many customers did we have in May?
+
+This can become several different questions:
+
+- How many people created accounts in May?
+- How many accounts made a purchase in May?
+- How many billing entities had active subscriptions in May?
+- How many companies had at least one active user in May?
+- How many customers were active at the end of May?
+- How many customers were acquired in May?
+- How many customers were retained from previous months?
+
+These are not tiny technical differences. They change the grain, the time window, the inclusion rules, and the decision supported by the metric.
+
+A user account is not the same thing as a payer. A payer is not the same thing as an active user. A company is not the same thing as a contact. A customer today may not be a customer tomorrow, depending on whether the definition is based on registration, purchase, subscription, usage, or entitlement.
+
+When those distinctions are unnamed, the dashboard does not clarify reality. It compresses several realities into one label.
+
+## The Dashboard Does Not Create the War
+
+Dashboards often become the visible battlefield for semantic conflict.
+
+One team says the dashboard is wrong because it does not match CRM. Another says CRM is wrong because it does not match invoices. A third team exports the data and recalculates the number manually. Someone builds a second dashboard because the first one is "not how we look at customers." A spreadsheet becomes the local source of truth because at least it produces the expected number.
+
+The dashboard did not create the conflict. It revealed it.
+
+This distinction matters. If the underlying meanings are inconsistent, changing the chart type will not help much. Reordering pages will not solve it. Adding another filter may even make the problem worse because now users can create more versions of an already unstable concept.
+
+Conflicting reports are often symptoms. Conflicting meanings are the condition.
+
+That is why semantic problems are so frustrating. They appear at the surface as reporting issues, but they usually come from deeper places: source system design, ownership boundaries, metric logic, deduplication rules, business process changes, and undocumented exceptions.
+
+The war over the customer is rarely a war over visualization. It is a war over meaning.
+
+## One Number, Several Truths
+
+Imagine a company reviewing May performance.
+
+Marketing reports 12,000 customers because 12,000 people entered the acquisition funnel and created identifiable profiles. Sales reports 4,200 customers because 4,200 accounts are qualified and assigned to sales owners. Product reports 8,500 customers because 8,500 users were active in the product during the month. Finance reports 2,700 customers because 2,700 billing accounts paid for something that was not refunded.
+
+Each number may be accurate inside its own context.
+
+None of them should be called simply "customers" without that context.
+
+This is where many organizations lose time. They do not only debate performance. They debate whether the number itself is legitimate. The meeting becomes slower. The decision becomes less clear. The data team becomes a translator between systems. Users start to ask who prepared the number before they ask what the number means.
+
+That is a quiet loss of trust.
+
+Trust in data is not created only by correct SQL. It is created when the meaning of a metric is stable enough that people can argue about the business instead of arguing about the calculation.
+
+When semantics is missing, every important number becomes negotiable.
+
+## Semantics Is a Trust Layer
+
+Data semantics is sometimes treated as a naming exercise. Make a glossary. Standardize terms. Add descriptions. Clean up column names. These things help, but they are not enough.
+
+A useful semantic definition must be operational. It should tell us not only what a word means in ordinary language, but how that meaning behaves inside data.
+
+For a business concept like customer, we need to know:
+
+- what entity the word refers to,
+- what grain the data uses,
+- which source is authoritative,
+- what rules include or exclude records,
+- what time window applies,
+- who owns the definition,
+- which decisions it supports,
+- where the definition should not be used.
+
+This is why semantics is a trust layer.
+
+It sits between raw data and business interpretation. It prevents familiar words from becoming containers for incompatible assumptions. It does not remove every ambiguity from the business, but it makes the important ambiguity visible.
+
+A weak definition says:
+
+> Customer: a person or company that buys from us.
+
+That may be fine in a conversation, but it is not enough for analytics.
+
+A more useful definition says:
+
+> Paying customer: a billing account with at least one non-refunded invoice in the last 12 months, excluding test accounts and internal accounts. Grain: billing account. Owner: Finance. Used for revenue reporting and retention analysis.
+
+This second definition does more work. It names the grain. It names the exclusions. It names ownership. It names the intended use. It also implies that this definition may not be the right one for product engagement, campaign analysis, or support workload.
+
+That is not bureaucracy. That is protection against false agreement.
+
+## The Grain Is Part of the Meaning
+
+Many semantic failures are grain failures.
+
+When someone says `customer`, they may be thinking about a person. Another team may be thinking about a company. Another may be thinking about a billing account. Another may be thinking about a CRM account that contains several contacts. If those objects are mixed without being named, even a correct aggregation can produce a misleading number.
+
+Grain is not a technical detail hidden under the business meaning. Grain is part of the business meaning.
+
+Revenue per customer means something different depending on whether customer means user, account, company, household, or billing entity. Churn means something different depending on whether the disappearing object is a subscription, a payer, an active user, or a logo. Conversion means something different depending on whether the starting population is leads, trials, visits, signups, or qualified opportunities.
+
+This is why semantic definitions should not live only in prose. They need to connect to data shape.
+
+If the grain is not clear, people will still use the metric. They will just use it with private assumptions.
+
+## How to Start Without Building a Cathedral
+
+Semantic work can easily become too large. A team decides to define every business term, build a complete catalog, design ownership workflows, and create a perfect metric layer before anyone can use it. That is usually too much.
+
+The first useful version can be smaller.
+
+Start with the words that already cause friction. Most organizations have a few of them:
+
+- customer,
+- active,
+- revenue,
+- churn,
+- conversion,
+- order,
+- account,
+- product.
+
+Pick three to five. Do not start with the entire business vocabulary.
+
+For each word, define only what is needed to reduce current confusion:
+
+- business meaning,
+- analytical grain,
+- source system,
+- owner,
+- inclusion rules,
+- exclusion rules,
+- examples,
+- non-use cases.
+
+The non-use cases are especially useful. They prevent a definition from quietly expanding beyond its purpose.
+
+For example, a finance-owned definition of paying customer may be valid for revenue reporting but unsuitable for product adoption. A product-owned definition of active customer may be useful for engagement but unsuitable for invoicing. A marketing definition of acquired customer may be useful for campaign performance but unsuitable for retention reporting.
+
+The goal is not one universal meaning for every situation. The goal is controlled meaning for each decision.
+
+## Shared Meaning Before Shared Dashboards
+
+A shared dashboard without shared semantics can create the illusion of alignment.
+
+Everyone sees the same page. Everyone sees the same number. Everyone may still interpret it differently.
+
+That is worse than disagreement, because the disagreement becomes hidden. People leave the meeting thinking they agreed, then act according to different meanings. One team optimizes for signups. Another optimizes for payers. Another optimizes for usage. Later, the business asks why the numbers do not reconcile.
+
+The dashboard did not fail because it was ugly. It failed because the meaning beneath it was unstable.
+
+This is why semantic work should happen before dashboards become official truth. Not as a long theoretical exercise, but as part of building anything that will be reused, automated, or trusted.
+
+Before publishing a customer metric, ask:
+
+- Which customer?
+- At what grain?
+- From which system?
+- With which exclusions?
+- For which decision?
+- Owned by whom?
+
+If those questions feel tedious, that is a signal. The system has been relying on silent agreement.
+
+## The End of Silent Agreement
+
+Data semantics starts where silent agreement ends.
+
+As long as everyone casually agrees on a word, the ambiguity can stay hidden. The problem appears only when the word becomes operational: a metric, a filter, a dashboard title, a column name, a target, a bonus calculation, a retention cohort, a board slide.
+
+Then the word has to carry weight.
+
+`Customer` is not difficult because people are careless. It is difficult because real businesses contain several valid perspectives on the same relationship. Sales sees one part of that relationship. Finance sees another. Product sees another. Support sees another. Analytics has to build structures that make those perspectives explicit enough to use.
+
+The goal is not to force every team to use one definition forever. The goal is to stop pretending that one word can safely carry many incompatible meanings without context.
+
+The next time a meeting gets stuck on a customer number, do not start by asking which dashboard is wrong.
+
+Ask which customer you mean.
