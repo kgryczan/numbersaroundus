@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>adf-pipeline-patterns-and-antipatterns – Numbers Around Us</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-697306ee647f3aecb60be57249203282.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-3fe3df12cb322cd60d4f50ab5ce79ec8.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-22ad72553b0c6ece34244e7d478a550c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-e7896b1a3545e9ceb1288d7a25a4c55a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<meta property="og:title" content="Numbers Around Us">
+<meta property="og:description" content="Practical articles on data science, business intelligence, and data thinking with R, Tableau, Power BI, SQL, and Quarto.">
+<meta property="og:site_name" content="Numbers Around Us">
+<meta name="twitter:title" content="Numbers Around Us">
+<meta name="twitter:description" content="Practical articles on data science, business intelligence, and data thinking with R, Tableau, Power BI, SQL, and Quarto.">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Numbers Around Us</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./last-articles.html"> 
+<span class="menu-text">Newest articles</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./challenges/index.html"> 
+<span class="menu-text">Challenges</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./bi/index.html"> 
+<span class="menu-text">Business Intelligence</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./ds/index.html"> 
+<span class="menu-text">Data Science</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./dp/index.html"> 
+<span class="menu-text">Data Philosophy</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <a href="https://github.com" title="Github" class="quarto-navigation-tool px-1" aria-label="Github"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+
+
+
+
+<section id="azure-data-factory-pipeline-patterns-and-antipatterns" class="level1">
+<h1>Azure Data Factory Pipeline Patterns and Antipatterns</h1>
+<p>This document is an ADF-oriented companion to the generic pipeline patterns catalog.</p>
+<p>The focus here is narrower:</p>
+<ul>
+<li>when a pattern is useful,</li>
+<li>how to build it in Azure Data Factory,</li>
+<li>which ADF activities or components to use,</li>
+<li>where ADF is strong,</li>
+<li>where ADF needs extra design discipline.</li>
+</ul>
+<p>This is written for classic Azure Data Factory pipelines, not Fabric Data Factory.</p>
+<section id="how-to-read-this-document" class="level2">
+<h2 class="anchored" data-anchor-id="how-to-read-this-document">How to Read This Document</h2>
+<p>Each pattern includes:</p>
+<ul>
+<li><code>What it is</code></li>
+<li><code>Typical use case</code></li>
+<li><code>How to do it in ADF</code></li>
+<li><code>Main ADF activities/components</code></li>
+<li>a Mermaid diagram</li>
+</ul>
+<p>Each antipattern includes:</p>
+<ul>
+<li>what it looks like in ADF,</li>
+<li>why it causes trouble,</li>
+<li>what to do instead.</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="adf-pattern-catalog" class="level1">
+<h1>ADF Pattern Catalog</h1>
+<section id="staging-landing-pattern" class="level2">
+<h2 class="anchored" data-anchor-id="staging-landing-pattern">1. Staging / Landing Pattern</h2>
+<section id="what-it-is" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-is">What it is</h3>
+<p>Land source data as-is in a raw zone before any cleansing or business transformation.</p>
+</section>
+<section id="typical-use-case" class="level3">
+<h3 class="anchored" data-anchor-id="typical-use-case">Typical use case</h3>
+<ul>
+<li>ingesting files from SFTP to ADLS,</li>
+<li>preserving raw API payloads,</li>
+<li>keeping evidence for replay and debugging.</li>
+</ul>
+</section>
+<section id="how-to-do-it-in-adf" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-do-it-in-adf">How to do it in ADF</h3>
+<p>Build one pipeline dedicated to landing:</p>
+<ol type="1">
+<li>Use <code>Copy Data</code> to move source data into a raw container or folder.</li>
+<li>Use <code>Get Metadata</code> before or after copy if you need file existence, size, or structure checks.</li>
+<li>Use <code>Validation</code> when downstream should wait until the landed file is really present.</li>
+<li>Keep landing logic separate from conformance logic by calling a second pipeline with <code>Execute Pipeline</code>.</li>
+</ol>
+</section>
+<section id="main-adf-activitiescomponents" class="level3">
+<h3 class="anchored" data-anchor-id="main-adf-activitiescomponents">Main ADF activities/components</h3>
+<ul>
+<li><code>Copy Data</code></li>
+<li><code>Get Metadata</code></li>
+<li><code>Validation</code></li>
+<li><code>Execute Pipeline</code></li>
+<li>parameterized datasets</li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    A["Source: SFTP / DB / API"] --&gt; B["Copy Data"]
+    B --&gt; C["Raw ADLS Landing"]
+    C --&gt; D["Validation / Metadata Check"]
+    D --&gt; E["Execute Pipeline: Conformance"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="split-validate-publish-pattern" class="level2">
+<h2 class="anchored" data-anchor-id="split-validate-publish-pattern">2. Split, Validate, Publish Pattern</h2>
+<section id="what-it-is-1" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-is-1">What it is</h3>
+<p>Separate ingestion, validation, and publication into explicit stages.</p>
+</section>
+<section id="typical-use-case-1" class="level3">
+<h3 class="anchored" data-anchor-id="typical-use-case-1">Typical use case</h3>
+<ul>
+<li>publishing trusted fact tables,</li>
+<li>releasing curated files only after quality checks,</li>
+<li>preventing half-cleaned data from reaching BI.</li>
+</ul>
+</section>
+<section id="how-to-do-it-in-adf-1" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-do-it-in-adf-1">How to do it in ADF</h3>
+<ol type="1">
+<li>Pipeline A ingests into raw/staging using <code>Copy Data</code>.</li>
+<li>Pipeline B validates using <code>Get Metadata</code>, <code>Lookup</code>, <code>If Condition</code>, and optionally <code>Data Flow</code>.</li>
+<li>Pipeline C publishes to serving storage only when validation passes.</li>
+<li>Parent orchestration uses <code>Execute Pipeline</code> with <code>waitOnCompletion</code>.</li>
+</ol>
+</section>
+<section id="main-adf-activitiescomponents-1" class="level3">
+<h3 class="anchored" data-anchor-id="main-adf-activitiescomponents-1">Main ADF activities/components</h3>
+<ul>
+<li><code>Execute Pipeline</code></li>
+<li><code>Copy Data</code></li>
+<li><code>Get Metadata</code></li>
+<li><code>Lookup</code></li>
+<li><code>If Condition</code></li>
+<li><code>Data Flow</code></li>
+<li><code>Fail</code></li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    A["Ingest"] --&gt; B["Validate"]
+    B --&gt;|Pass| C["Publish"]
+    B --&gt;|Fail| D["Fail / Stop / Alert"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="idempotent-load-pattern" class="level2">
+<h2 class="anchored" data-anchor-id="idempotent-load-pattern">3. Idempotent Load Pattern</h2>
+<section id="what-it-is-2" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-is-2">What it is</h3>
+<p>Rerunning the same input does not duplicate or corrupt the target.</p>
+</section>
+<section id="typical-use-case-2" class="level3">
+<h3 class="anchored" data-anchor-id="typical-use-case-2">Typical use case</h3>
+<ul>
+<li>nightly loads that may be retried,</li>
+<li>backfills,</li>
+<li>unstable source windows.</li>
+</ul>
+</section>
+<section id="how-to-do-it-in-adf-2" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-do-it-in-adf-2">How to do it in ADF</h3>
+<p>ADF itself does not guarantee idempotency. You design it into the target write strategy:</p>
+<ol type="1">
+<li>Load into a temporary or staging target with <code>Copy Data</code> or <code>Data Flow</code>.</li>
+<li>Use <code>Stored Procedure</code> for deterministic <code>MERGE</code>, replace-partition, or delete-then-insert logic.</li>
+<li>Pass batch keys and watermark parameters explicitly.</li>
+<li>Store run metadata externally if needed.</li>
+</ol>
+</section>
+<section id="main-adf-activitiescomponents-2" class="level3">
+<h3 class="anchored" data-anchor-id="main-adf-activitiescomponents-2">Main ADF activities/components</h3>
+<ul>
+<li><code>Copy Data</code></li>
+<li><code>Data Flow</code></li>
+<li><code>Stored Procedure</code></li>
+<li>pipeline parameters</li>
+<li>variables for run context</li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    A["Input Batch"] --&gt; B["Stage Target"]
+    B --&gt; C["Stored Procedure: MERGE / REPLACE"]
+    C --&gt; D["Stable Target State"]
+    E["Rerun Same Batch"] --&gt; B</code></pre>
+<hr>
+</section>
+</section>
+<section id="full-refresh-pattern" class="level2">
+<h2 class="anchored" data-anchor-id="full-refresh-pattern">4. Full Refresh Pattern</h2>
+<section id="what-it-is-3" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-is-3">What it is</h3>
+<p>Rebuild the entire target on each run.</p>
+</section>
+<section id="typical-use-case-3" class="level3">
+<h3 class="anchored" data-anchor-id="typical-use-case-3">Typical use case</h3>
+<ul>
+<li>small dimensions,</li>
+<li>early-stage datasets,</li>
+<li>logic that changes often,</li>
+<li>sources without reliable change tracking.</li>
+</ul>
+</section>
+<section id="how-to-do-it-in-adf-3" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-do-it-in-adf-3">How to do it in ADF</h3>
+<ol type="1">
+<li>Use <code>Copy Data</code> or <code>Data Flow</code> to rebuild a temp object or folder.</li>
+<li>Use <code>Stored Procedure</code>, <code>Script</code>, or file replacement strategy to swap temp into final.</li>
+<li>Optionally <code>Delete</code> old folder contents if file-based serving is intended.</li>
+</ol>
+</section>
+<section id="main-adf-activitiescomponents-3" class="level3">
+<h3 class="anchored" data-anchor-id="main-adf-activitiescomponents-3">Main ADF activities/components</h3>
+<ul>
+<li><code>Copy Data</code></li>
+<li><code>Data Flow</code></li>
+<li><code>Stored Procedure</code> or <code>Script</code></li>
+<li><code>Delete</code></li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    A["All Source Data"] --&gt; B["Rebuild Temp Target"]
+    B --&gt; C["Swap / Replace Final"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="incremental-load-pattern" class="level2">
+<h2 class="anchored" data-anchor-id="incremental-load-pattern">5. Incremental Load Pattern</h2>
+<section id="what-it-is-4" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-is-4">What it is</h3>
+<p>Only process new or changed records.</p>
+</section>
+<section id="typical-use-case-4" class="level3">
+<h3 class="anchored" data-anchor-id="typical-use-case-4">Typical use case</h3>
+<ul>
+<li>large transactional tables,</li>
+<li>append-heavy event feeds,</li>
+<li>reducing nightly load times.</li>
+</ul>
+</section>
+<section id="how-to-do-it-in-adf-4" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-do-it-in-adf-4">How to do it in ADF</h3>
+<ol type="1">
+<li>Retrieve last watermark using <code>Lookup</code>.</li>
+<li>Pass watermark into source query, dataset, or <code>Copy Data</code> source settings.</li>
+<li>Load deltas into staging.</li>
+<li>Use <code>Stored Procedure</code> or <code>Data Flow</code> to merge.</li>
+<li>Persist new watermark on success.</li>
+</ol>
+</section>
+<section id="main-adf-activitiescomponents-4" class="level3">
+<h3 class="anchored" data-anchor-id="main-adf-activitiescomponents-4">Main ADF activities/components</h3>
+<ul>
+<li><code>Lookup</code></li>
+<li><code>Copy Data</code></li>
+<li><code>Data Flow</code></li>
+<li><code>Stored Procedure</code></li>
+<li><code>Set Variable</code></li>
+<li><code>If Condition</code></li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    A["Lookup Last Watermark"] --&gt; B["Extract Delta"]
+    B --&gt; C["Stage Delta"]
+    C --&gt; D["Merge into Target"]
+    D --&gt; E["Update Watermark"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="metadata-driven-fan-out-pattern" class="level2">
+<h2 class="anchored" data-anchor-id="metadata-driven-fan-out-pattern">6. Metadata-Driven Fan-Out Pattern</h2>
+<section id="what-it-is-5" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-is-5">What it is</h3>
+<p>One reusable pipeline processes many similar tables, files, or entities based on configuration metadata.</p>
+</section>
+<section id="typical-use-case-5" class="level3">
+<h3 class="anchored" data-anchor-id="typical-use-case-5">Typical use case</h3>
+<ul>
+<li>loading 50 source tables with the same control framework,</li>
+<li>handling many folders with the same copy rules,</li>
+<li>standardizing ingestion across domains.</li>
+</ul>
+</section>
+<section id="how-to-do-it-in-adf-5" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-do-it-in-adf-5">How to do it in ADF</h3>
+<ol type="1">
+<li>Store control metadata in SQL, JSON, or config files.</li>
+<li>Use <code>Lookup</code> to read the control set.</li>
+<li>Use <code>ForEach</code> to iterate entities.</li>
+<li>Inside <code>ForEach</code>, call <code>Copy Data</code>, <code>Data Flow</code>, or <code>Execute Pipeline</code>.</li>
+<li>Parameterize datasets, linked services, sink names, and queries.</li>
+</ol>
+</section>
+<section id="main-adf-activitiescomponents-5" class="level3">
+<h3 class="anchored" data-anchor-id="main-adf-activitiescomponents-5">Main ADF activities/components</h3>
+<ul>
+<li><code>Lookup</code></li>
+<li><code>ForEach</code></li>
+<li><code>Execute Pipeline</code></li>
+<li><code>Copy Data</code></li>
+<li><code>Data Flow</code></li>
+<li>parameterized datasets and linked services</li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    A["Control Table / Config"] --&gt; B["Lookup"]
+    B --&gt; C["ForEach Entity"]
+    C --&gt; D["Copy / Data Flow / Child Pipeline"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="contract-first-pipeline-pattern" class="level2">
+<h2 class="anchored" data-anchor-id="contract-first-pipeline-pattern">7. Contract-First Pipeline Pattern</h2>
+<section id="what-it-is-6" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-is-6">What it is</h3>
+<p>Design the pipeline from the expected consumer-facing dataset, not from the source shape alone.</p>
+</section>
+<section id="typical-use-case-6" class="level3">
+<h3 class="anchored" data-anchor-id="typical-use-case-6">Typical use case</h3>
+<ul>
+<li>shared reporting tables,</li>
+<li>datasets with strong SLA and semantic expectations,</li>
+<li>data products consumed by several teams.</li>
+</ul>
+</section>
+<section id="how-to-do-it-in-adf-6" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-do-it-in-adf-6">How to do it in ADF</h3>
+<p>ADF has no native “data contract” object, so implement the contract in the control layer:</p>
+<ol type="1">
+<li>Keep expected schema/rules in a control table, JSON, or SQL metadata store.</li>
+<li>Use <code>Lookup</code> to fetch contract details.</li>
+<li>Use <code>Get Metadata</code> for structural checks.</li>
+<li>Use <code>If Condition</code> or <code>Data Flow</code> checks for business rules.</li>
+<li>Block publish path with <code>Fail</code> when rules are broken.</li>
+</ol>
+</section>
+<section id="main-adf-activitiescomponents-6" class="level3">
+<h3 class="anchored" data-anchor-id="main-adf-activitiescomponents-6">Main ADF activities/components</h3>
+<ul>
+<li><code>Lookup</code></li>
+<li><code>Get Metadata</code></li>
+<li><code>If Condition</code></li>
+<li><code>Fail</code></li>
+<li><code>Data Flow</code></li>
+<li>control tables / config files</li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    A["Consumer Contract"] --&gt; B["Lookup Rules"]
+    B --&gt; C["Check Incoming Data"]
+    C --&gt;|Pass| D["Publish"]
+    C --&gt;|Fail| E["Fail / Escalate"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="schema-enforcement-pattern" class="level2">
+<h2 class="anchored" data-anchor-id="schema-enforcement-pattern">8. Schema Enforcement Pattern</h2>
+<section id="what-it-is-7" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-is-7">What it is</h3>
+<p>Reject or branch data when its shape no longer matches expectations.</p>
+</section>
+<section id="typical-use-case-7" class="level3">
+<h3 class="anchored" data-anchor-id="typical-use-case-7">Typical use case</h3>
+<ul>
+<li>CSV or JSON feeds that drift,</li>
+<li>SQL extracts where columns may change,</li>
+<li>upstream teams that deploy without notice.</li>
+</ul>
+</section>
+<section id="how-to-do-it-in-adf-7" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-do-it-in-adf-7">How to do it in ADF</h3>
+<ol type="1">
+<li>Use <code>Get Metadata</code> to inspect structure or existence.</li>
+<li>Compare metadata against expected config from <code>Lookup</code>.</li>
+<li>Use <code>If Condition</code> or <code>Switch</code> to decide pass/fail path.</li>
+<li>If row-level transformation is required, use <code>Data Flow</code> with column mappings and assertions.</li>
+</ol>
+</section>
+<section id="main-adf-activitiescomponents-7" class="level3">
+<h3 class="anchored" data-anchor-id="main-adf-activitiescomponents-7">Main ADF activities/components</h3>
+<ul>
+<li><code>Get Metadata</code></li>
+<li><code>Lookup</code></li>
+<li><code>If Condition</code></li>
+<li><code>Switch</code></li>
+<li><code>Data Flow</code></li>
+<li><code>Fail</code></li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    A["Incoming Dataset"] --&gt; B["Get Metadata"]
+    B --&gt; C["Compare to Expected Schema"]
+    C --&gt;|Match| D["Continue"]
+    C --&gt;|Mismatch| E["Fail / Quarantine"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="semantic-checkpoint-pattern" class="level2">
+<h2 class="anchored" data-anchor-id="semantic-checkpoint-pattern">9. Semantic Checkpoint Pattern</h2>
+<section id="what-it-is-8" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-is-8">What it is</h3>
+<p>Check business meaning, not just shape.</p>
+</section>
+<section id="typical-use-case-8" class="level3">
+<h3 class="anchored" data-anchor-id="typical-use-case-8">Typical use case</h3>
+<ul>
+<li>status values must be from an approved list,</li>
+<li>revenue must not go negative unexpectedly,</li>
+<li>date logic must obey business time windows.</li>
+</ul>
+</section>
+<section id="how-to-do-it-in-adf-8" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-do-it-in-adf-8">How to do it in ADF</h3>
+<ol type="1">
+<li>Use <code>Data Flow</code> for row-level semantic rules.</li>
+<li>Use <code>Conditional Split</code>, <code>Filter</code>, <code>Assert</code>, <code>Derived Column</code>, and <code>Aggregate</code> transformations.</li>
+<li>Route failing records to a reject sink.</li>
+<li>Use output counts or checks to decide whether to continue.</li>
+<li>If rules are aggregate-level only, <code>Lookup</code> + SQL can also work.</li>
+</ol>
+</section>
+<section id="main-adf-activitiescomponents-8" class="level3">
+<h3 class="anchored" data-anchor-id="main-adf-activitiescomponents-8">Main ADF activities/components</h3>
+<ul>
+<li><code>Data Flow</code></li>
+<li><code>Conditional Split</code></li>
+<li><code>Assert</code></li>
+<li><code>Aggregate</code></li>
+<li><code>Lookup</code></li>
+<li><code>If Condition</code></li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    A["Conformed Data"] --&gt; B["Data Flow Semantic Rules"]
+    B --&gt;|Valid| C["Trusted Output"]
+    B --&gt;|Invalid| D["Reject Sink / Alert"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="quarantine-pattern" class="level2">
+<h2 class="anchored" data-anchor-id="quarantine-pattern">10. Quarantine Pattern</h2>
+<section id="what-it-is-9" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-is-9">What it is</h3>
+<p>Bad records are isolated without blocking all good records.</p>
+</section>
+<section id="typical-use-case-9" class="level3">
+<h3 class="anchored" data-anchor-id="typical-use-case-9">Typical use case</h3>
+<ul>
+<li>one file contains a few malformed rows,</li>
+<li>source data is noisy but still mostly usable,</li>
+<li>business prefers partial delivery over hard stop.</li>
+</ul>
+</section>
+<section id="how-to-do-it-in-adf-9" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-do-it-in-adf-9">How to do it in ADF</h3>
+<ol type="1">
+<li>Use <code>Data Flow</code> with <code>Conditional Split</code>.</li>
+<li>Route valid rows to the main sink.</li>
+<li>Route invalid rows to quarantine storage.</li>
+<li>Optionally write run metadata to a SQL log table with <code>Stored Procedure</code>.</li>
+</ol>
+</section>
+<section id="main-adf-activitiescomponents-9" class="level3">
+<h3 class="anchored" data-anchor-id="main-adf-activitiescomponents-9">Main ADF activities/components</h3>
+<ul>
+<li><code>Data Flow</code></li>
+<li><code>Conditional Split</code></li>
+<li>multiple sinks</li>
+<li><code>Stored Procedure</code></li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    A["Incoming Rows"] --&gt; B["Rule Evaluation"]
+    B --&gt;|Good| C["Main Sink"]
+    B --&gt;|Bad| D["Quarantine Sink"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="reconciliation-pattern" class="level2">
+<h2 class="anchored" data-anchor-id="reconciliation-pattern">11. Reconciliation Pattern</h2>
+<section id="what-it-is-10" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-is-10">What it is</h3>
+<p>Compare source and target totals, counts, keys, or hashes before declaring success.</p>
+</section>
+<section id="typical-use-case-10" class="level3">
+<h3 class="anchored" data-anchor-id="typical-use-case-10">Typical use case</h3>
+<ul>
+<li>finance or compliance datasets,</li>
+<li>migrations,</li>
+<li>incremental pipelines that can drift silently.</li>
+</ul>
+</section>
+<section id="how-to-do-it-in-adf-10" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-do-it-in-adf-10">How to do it in ADF</h3>
+<ol type="1">
+<li>Use <code>Lookup</code> or <code>Stored Procedure</code> to compute source aggregates.</li>
+<li>Use another <code>Lookup</code> or <code>Stored Procedure</code> for target aggregates.</li>
+<li>Compare values in <code>If Condition</code>.</li>
+<li>Pass only when differences are within tolerance.</li>
+<li>Persist the comparison outcome to audit tables.</li>
+</ol>
+</section>
+<section id="main-adf-activitiescomponents-10" class="level3">
+<h3 class="anchored" data-anchor-id="main-adf-activitiescomponents-10">Main ADF activities/components</h3>
+<ul>
+<li><code>Lookup</code></li>
+<li><code>Stored Procedure</code></li>
+<li><code>If Condition</code></li>
+<li><code>Set Variable</code></li>
+<li><code>Fail</code></li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    A["Source Totals"] --&gt; C["Compare"]
+    B["Target Totals"] --&gt; C
+    C --&gt;|OK| D["Publish Success"]
+    C --&gt;|Mismatch| E["Fail / Investigate"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="execute-pipeline-modularization-pattern" class="level2">
+<h2 class="anchored" data-anchor-id="execute-pipeline-modularization-pattern">12. Execute-Pipeline Modularization Pattern</h2>
+<section id="what-it-is-11" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-is-11">What it is</h3>
+<p>Break one large pipeline into smaller reusable child pipelines.</p>
+</section>
+<section id="typical-use-case-11" class="level3">
+<h3 class="anchored" data-anchor-id="typical-use-case-11">Typical use case</h3>
+<ul>
+<li>separating landing, transform, validation, and publish,</li>
+<li>reusing the same child process across domains,</li>
+<li>reducing giant pipeline canvases.</li>
+</ul>
+</section>
+<section id="how-to-do-it-in-adf-11" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-do-it-in-adf-11">How to do it in ADF</h3>
+<ol type="1">
+<li>Create a parent orchestration pipeline.</li>
+<li>Call child pipelines with <code>Execute Pipeline</code>.</li>
+<li>Pass parameters explicitly.</li>
+<li>Keep child pipelines focused: one responsibility each.</li>
+</ol>
+</section>
+<section id="main-adf-activitiescomponents-11" class="level3">
+<h3 class="anchored" data-anchor-id="main-adf-activitiescomponents-11">Main ADF activities/components</h3>
+<ul>
+<li><code>Execute Pipeline</code></li>
+<li>pipeline parameters</li>
+<li>variables for orchestration</li>
+</ul>
+<pre class="mermaid"><code>flowchart TD
+    A["Master Pipeline"] --&gt; B["Child: Land"]
+    A --&gt; C["Child: Validate"]
+    A --&gt; D["Child: Publish"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="wait-for-arrival-pattern" class="level2">
+<h2 class="anchored" data-anchor-id="wait-for-arrival-pattern">13. Wait-for-Arrival Pattern</h2>
+<section id="what-it-is-12" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-is-12">What it is</h3>
+<p>Pause downstream processing until a required file or dataset is ready.</p>
+</section>
+<section id="typical-use-case-12" class="level3">
+<h3 class="anchored" data-anchor-id="typical-use-case-12">Typical use case</h3>
+<ul>
+<li>partner file drops,</li>
+<li>external systems with uncertain delivery time,</li>
+<li>batch dependencies across platforms.</li>
+</ul>
+</section>
+<section id="how-to-do-it-in-adf-12" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-do-it-in-adf-12">How to do it in ADF</h3>
+<ol type="1">
+<li>Use <code>Validation</code> for file existence and minimum size checks.</li>
+<li>Or loop with <code>Until</code> + <code>Get Metadata</code> + <code>Wait</code>.</li>
+<li>Set a clear timeout and failure path.</li>
+</ol>
+</section>
+<section id="main-adf-activitiescomponents-12" class="level3">
+<h3 class="anchored" data-anchor-id="main-adf-activitiescomponents-12">Main ADF activities/components</h3>
+<ul>
+<li><code>Validation</code></li>
+<li><code>Until</code></li>
+<li><code>Get Metadata</code></li>
+<li><code>Wait</code></li>
+<li><code>Fail</code></li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    A["Expected File"] --&gt; B["Validation / Until Loop"]
+    B --&gt;|Found| C["Continue"]
+    B --&gt;|Timeout| D["Fail"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="error-branch-controlled-failure-pattern" class="level2">
+<h2 class="anchored" data-anchor-id="error-branch-controlled-failure-pattern">14. Error Branch / Controlled Failure Pattern</h2>
+<section id="what-it-is-13" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-is-13">What it is</h3>
+<p>Use explicit failure branches instead of hoping monitoring alone will explain issues.</p>
+</section>
+<section id="typical-use-case-13" class="level3">
+<h3 class="anchored" data-anchor-id="typical-use-case-13">Typical use case</h3>
+<ul>
+<li>known failure modes,</li>
+<li>different actions for transient and permanent errors,</li>
+<li>clearer operations handoff.</li>
+</ul>
+</section>
+<section id="how-to-do-it-in-adf-13" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-do-it-in-adf-13">How to do it in ADF</h3>
+<ol type="1">
+<li>Use activity dependency conditions: <code>On Success</code>, <code>On Failure</code>, <code>On Completion</code>.</li>
+<li>Use <code>If Condition</code>, <code>Web</code>, <code>Stored Procedure</code>, or <code>Fail</code> in failure branches.</li>
+<li>Write diagnostic context into log tables.</li>
+</ol>
+</section>
+<section id="main-adf-activitiescomponents-13" class="level3">
+<h3 class="anchored" data-anchor-id="main-adf-activitiescomponents-13">Main ADF activities/components</h3>
+<ul>
+<li>dependency conditions</li>
+<li><code>Fail</code></li>
+<li><code>Web</code></li>
+<li><code>Stored Procedure</code></li>
+<li><code>Set Variable</code></li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    A["Main Activity"] --&gt;|Success| B["Next Step"]
+    A --&gt;|Failure| C["Log / Notify / Fail"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="data-observability-pattern" class="level2">
+<h2 class="anchored" data-anchor-id="data-observability-pattern">15. Data Observability Pattern</h2>
+<section id="what-it-is-14" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-is-14">What it is</h3>
+<p>Capture run-level trust signals: freshness, count changes, null spikes, schema drift, and semantic anomalies.</p>
+</section>
+<section id="typical-use-case-14" class="level3">
+<h3 class="anchored" data-anchor-id="typical-use-case-14">Typical use case</h3>
+<ul>
+<li>production shared pipelines,</li>
+<li>executive dashboards,</li>
+<li>feeds where silent bad data is worse than delayed data.</li>
+</ul>
+</section>
+<section id="how-to-do-it-in-adf-14" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-do-it-in-adf-14">How to do it in ADF</h3>
+<ol type="1">
+<li>Compute metrics via <code>Lookup</code>, SQL, or <code>Data Flow</code>.</li>
+<li>Store metrics in a monitoring table with <code>Stored Procedure</code>.</li>
+<li>Compare today vs historical ranges in <code>If Condition</code>.</li>
+<li>Trigger alerting with <code>Web</code> or handoff process.</li>
+</ol>
+</section>
+<section id="main-adf-activitiescomponents-14" class="level3">
+<h3 class="anchored" data-anchor-id="main-adf-activitiescomponents-14">Main ADF activities/components</h3>
+<ul>
+<li><code>Lookup</code></li>
+<li><code>Stored Procedure</code></li>
+<li><code>If Condition</code></li>
+<li><code>Web</code></li>
+<li><code>Data Flow</code></li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    A["Pipeline Run"] --&gt; B["Collect Quality Metrics"]
+    B --&gt; C["Store Monitoring Record"]
+    C --&gt; D["Threshold Check / Alert"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="metadata-driven-file-sweep-pattern" class="level2">
+<h2 class="anchored" data-anchor-id="metadata-driven-file-sweep-pattern">16. Metadata-Driven File Sweep Pattern</h2>
+<section id="what-it-is-15" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-is-15">What it is</h3>
+<p>Enumerate a folder and process each discovered file using the same logic.</p>
+</section>
+<section id="typical-use-case-15" class="level3">
+<h3 class="anchored" data-anchor-id="typical-use-case-15">Typical use case</h3>
+<ul>
+<li>daily folder ingestion,</li>
+<li>processing all partner drops in a landing path,</li>
+<li>reconciling wildcard arrivals.</li>
+</ul>
+</section>
+<section id="how-to-do-it-in-adf-15" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-do-it-in-adf-15">How to do it in ADF</h3>
+<ol type="1">
+<li>Use <code>Get Metadata</code> with <code>childItems</code>.</li>
+<li>Feed the result into <code>ForEach</code>.</li>
+<li>Inside the loop, parameterize the dataset path and run <code>Copy Data</code> or a child pipeline.</li>
+<li>Optionally use <code>Filter</code> to restrict the file list.</li>
+</ol>
+</section>
+<section id="main-adf-activitiescomponents-15" class="level3">
+<h3 class="anchored" data-anchor-id="main-adf-activitiescomponents-15">Main ADF activities/components</h3>
+<ul>
+<li><code>Get Metadata</code></li>
+<li><code>ForEach</code></li>
+<li><code>Filter</code></li>
+<li><code>Copy Data</code></li>
+<li><code>Execute Pipeline</code></li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    A["Folder"] --&gt; B["Get Metadata childItems"]
+    B --&gt; C["ForEach File"]
+    C --&gt; D["Process File"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="orchestrated-dag-pattern" class="level2">
+<h2 class="anchored" data-anchor-id="orchestrated-dag-pattern">17. Orchestrated DAG Pattern</h2>
+<section id="what-it-is-16" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-is-16">What it is</h3>
+<p>Represent the pipeline as explicit dependent activities rather than hidden sequencing.</p>
+</section>
+<section id="typical-use-case-16" class="level3">
+<h3 class="anchored" data-anchor-id="typical-use-case-16">Typical use case</h3>
+<ul>
+<li>multi-step ETL,</li>
+<li>pipelines with branching and merge points,</li>
+<li>teams that need clear operational flow.</li>
+</ul>
+</section>
+<section id="how-to-do-it-in-adf-16" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-do-it-in-adf-16">How to do it in ADF</h3>
+<ol type="1">
+<li>Keep each activity focused.</li>
+<li>Use explicit dependencies instead of embedding too much logic in expressions.</li>
+<li>Group related logic into child pipelines when the canvas becomes noisy.</li>
+</ol>
+</section>
+<section id="main-adf-activitiescomponents-16" class="level3">
+<h3 class="anchored" data-anchor-id="main-adf-activitiescomponents-16">Main ADF activities/components</h3>
+<ul>
+<li>pipeline dependencies</li>
+<li><code>Execute Pipeline</code></li>
+<li><code>If Condition</code></li>
+<li><code>ForEach</code></li>
+<li><code>Data Flow</code></li>
+</ul>
+<pre class="mermaid"><code>flowchart TD
+    A["Extract"] --&gt; B["Stage"]
+    B --&gt; C["Validate"]
+    C --&gt; D["Transform"]
+    D --&gt; E["Publish"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="cdc-to-target-pattern" class="level2">
+<h2 class="anchored" data-anchor-id="cdc-to-target-pattern">18. CDC-to-Target Pattern</h2>
+<section id="what-it-is-17" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-is-17">What it is</h3>
+<p>Consume inserts, updates, and deletes rather than full snapshots.</p>
+</section>
+<section id="typical-use-case-17" class="level3">
+<h3 class="anchored" data-anchor-id="typical-use-case-17">Typical use case</h3>
+<ul>
+<li>operational data sync,</li>
+<li>near-real-time replication,</li>
+<li>high-volume source tables.</li>
+</ul>
+</section>
+<section id="how-to-do-it-in-adf-17" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-do-it-in-adf-17">How to do it in ADF</h3>
+<p>ADF can orchestrate this pattern, but the CDC capture source and target merge design matter more than the canvas:</p>
+<ol type="1">
+<li>Source emits changes or exposes CDC tables/logs.</li>
+<li>Use <code>Copy Data</code> or source query to extract changes.</li>
+<li>Stage change records.</li>
+<li>Use <code>Stored Procedure</code> or <code>Data Flow</code> to apply insert/update/delete behavior downstream.</li>
+<li>Persist high-water marks.</li>
+</ol>
+</section>
+<section id="main-adf-activitiescomponents-17" class="level3">
+<h3 class="anchored" data-anchor-id="main-adf-activitiescomponents-17">Main ADF activities/components</h3>
+<ul>
+<li><code>Copy Data</code></li>
+<li><code>Lookup</code></li>
+<li><code>Stored Procedure</code></li>
+<li><code>Data Flow</code></li>
+<li>parameters and watermark storage</li>
+</ul>
+<pre class="mermaid"><code>flowchart LR
+    A["CDC Source"] --&gt; B["Extract Changes"]
+    B --&gt; C["Stage Changes"]
+    C --&gt; D["Apply I/U/D to Target"]</code></pre>
+<hr>
+</section>
+</section>
+</section>
+<section id="adf-antipattern-catalog" class="level1">
+<h1>ADF Antipattern Catalog</h1>
+<section id="one-giant-pipeline-canvas" class="level2">
+<h2 class="anchored" data-anchor-id="one-giant-pipeline-canvas">1. One Giant Pipeline Canvas</h2>
+<section id="what-it-looks-like" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-looks-like">What it looks like</h3>
+<p>Dozens of activities, nested branches, shared variables everywhere, and no meaningful modularization.</p>
+</section>
+<section id="why-it-hurts" class="level3">
+<h3 class="anchored" data-anchor-id="why-it-hurts">Why it hurts</h3>
+<ul>
+<li>hard to debug,</li>
+<li>hard to reuse,</li>
+<li>easy to break,</li>
+<li>difficult for others to understand.</li>
+</ul>
+</section>
+<section id="better-approach" class="level3">
+<h3 class="anchored" data-anchor-id="better-approach">Better approach</h3>
+<p>Use <code>Execute Pipeline</code>, modular pipelines, and smaller responsibility boundaries.</p>
+<pre class="mermaid"><code>flowchart TD
+    A["Huge Pipeline"] --&gt; B["Branch 1"]
+    A --&gt; C["Branch 2"]
+    A --&gt; D["Branch 3"]
+    B --&gt; E["Nested Logic"]
+    C --&gt; F["Nested Logic"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="business-logic-hidden-in-dynamic-expressions" class="level2">
+<h2 class="anchored" data-anchor-id="business-logic-hidden-in-dynamic-expressions">2. Business Logic Hidden in Dynamic Expressions</h2>
+<section id="what-it-looks-like-1" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-looks-like-1">What it looks like</h3>
+<p>Critical rules are buried in long ADF expressions, dataset parameters, and activity JSON.</p>
+</section>
+<section id="why-it-hurts-1" class="level3">
+<h3 class="anchored" data-anchor-id="why-it-hurts-1">Why it hurts</h3>
+<ul>
+<li>logic is unreadable,</li>
+<li>testing is weak,</li>
+<li>debugging becomes expression archaeology.</li>
+</ul>
+</section>
+<section id="better-approach-1" class="level3">
+<h3 class="anchored" data-anchor-id="better-approach-1">Better approach</h3>
+<p>Move heavy business logic into SQL, <code>Stored Procedure</code>, or <code>Data Flow</code>, and keep the pipeline as orchestration.</p>
+<pre class="mermaid"><code>flowchart LR
+    A["Pipeline"] --&gt; B["Huge Expression String"]
+    B --&gt; C["Opaque Outcome"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="copy-activity-used-as-a-universal-hammer" class="level2">
+<h2 class="anchored" data-anchor-id="copy-activity-used-as-a-universal-hammer">3. Copy Activity Used as a Universal Hammer</h2>
+<section id="what-it-looks-like-2" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-looks-like-2">What it looks like</h3>
+<p>Trying to solve every transformation, validation, and publishing problem with <code>Copy Data</code> alone.</p>
+</section>
+<section id="why-it-hurts-2" class="level3">
+<h3 class="anchored" data-anchor-id="why-it-hurts-2">Why it hurts</h3>
+<ul>
+<li>weak semantic controls,</li>
+<li>awkward branching,</li>
+<li>hidden assumptions in source/sink mappings.</li>
+</ul>
+</section>
+<section id="better-approach-2" class="level3">
+<h3 class="anchored" data-anchor-id="better-approach-2">Better approach</h3>
+<p>Use <code>Copy Data</code> for movement, <code>Data Flow</code> or SQL for transformation, and explicit control flow for gating.</p>
+<pre class="mermaid"><code>flowchart LR
+    A["All Problems"] --&gt; B["Copy Activity"]
+    B --&gt; C["Overloaded Pipeline"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="no-raw-landing-zone" class="level2">
+<h2 class="anchored" data-anchor-id="no-raw-landing-zone">4. No Raw Landing Zone</h2>
+<section id="what-it-looks-like-3" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-looks-like-3">What it looks like</h3>
+<p>Source data is transformed immediately into curated outputs with no raw retention.</p>
+</section>
+<section id="why-it-hurts-3" class="level3">
+<h3 class="anchored" data-anchor-id="why-it-hurts-3">Why it hurts</h3>
+<ul>
+<li>replay is painful,</li>
+<li>debugging is weak,</li>
+<li>source disputes cannot be verified.</li>
+</ul>
+</section>
+<section id="better-approach-3" class="level3">
+<h3 class="anchored" data-anchor-id="better-approach-3">Better approach</h3>
+<p>Introduce a raw landing layer with <code>Copy Data</code>.</p>
+<pre class="mermaid"><code>flowchart LR
+    A["Source"] --&gt; B["Immediate Transform"]
+    B --&gt; C["No Raw Trace"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="validation-only-after-publish" class="level2">
+<h2 class="anchored" data-anchor-id="validation-only-after-publish">5. Validation Only After Publish</h2>
+<section id="what-it-looks-like-4" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-looks-like-4">What it looks like</h3>
+<p>Data is loaded into serving tables first, then checked later.</p>
+</section>
+<section id="why-it-hurts-4" class="level3">
+<h3 class="anchored" data-anchor-id="why-it-hurts-4">Why it hurts</h3>
+<ul>
+<li>consumers can see bad data,</li>
+<li>rollback becomes operational cleanup.</li>
+</ul>
+</section>
+<section id="better-approach-4" class="level3">
+<h3 class="anchored" data-anchor-id="better-approach-4">Better approach</h3>
+<p>Validate before publish using <code>Get Metadata</code>, <code>Lookup</code>, <code>If Condition</code>, and <code>Data Flow</code>.</p>
+<pre class="mermaid"><code>flowchart LR
+    A["Load to Final"] --&gt; B["Check Later"]
+    B --&gt; C["Consumers Already Hit It"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="foreach-explosion" class="level2">
+<h2 class="anchored" data-anchor-id="foreach-explosion">6. ForEach Explosion</h2>
+<section id="what-it-looks-like-5" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-looks-like-5">What it looks like</h3>
+<p>A <code>ForEach</code> loop spins up too many parallel tasks with weak control over source limits and sink contention.</p>
+</section>
+<section id="why-it-hurts-5" class="level3">
+<h3 class="anchored" data-anchor-id="why-it-hurts-5">Why it hurts</h3>
+<ul>
+<li>source throttling,</li>
+<li>sink locking,</li>
+<li>inconsistent runtimes,</li>
+<li>noisy failures.</li>
+</ul>
+</section>
+<section id="better-approach-5" class="level3">
+<h3 class="anchored" data-anchor-id="better-approach-5">Better approach</h3>
+<p>Tune <code>ForEach</code> concurrency deliberately, batch similar work, or orchestrate via child pipelines.</p>
+<pre class="mermaid"><code>flowchart LR
+    A["ForEach 500 Items"] --&gt; B["Parallel Storm"]
+    B --&gt; C["Rate Limits / Contention"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="watermark-logic-without-reconciliation" class="level2">
+<h2 class="anchored" data-anchor-id="watermark-logic-without-reconciliation">7. Watermark Logic Without Reconciliation</h2>
+<section id="what-it-looks-like-6" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-looks-like-6">What it looks like</h3>
+<p>Incremental pipelines trust the watermark completely and never compare full source vs target behavior.</p>
+</section>
+<section id="why-it-hurts-6" class="level3">
+<h3 class="anchored" data-anchor-id="why-it-hurts-6">Why it hurts</h3>
+<ul>
+<li>silent drift accumulates,</li>
+<li>missed changes remain invisible.</li>
+</ul>
+</section>
+<section id="better-approach-6" class="level3">
+<h3 class="anchored" data-anchor-id="better-approach-6">Better approach</h3>
+<p>Pair incremental loads with periodic reconciliation checks.</p>
+<pre class="mermaid"><code>flowchart LR
+    A["Watermark Extract"] --&gt; B["Merge"]
+    B --&gt; C["Target Drift Over Time"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="quarantine-without-owner" class="level2">
+<h2 class="anchored" data-anchor-id="quarantine-without-owner">8. Quarantine Without Owner</h2>
+<section id="what-it-looks-like-7" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-looks-like-7">What it looks like</h3>
+<p>Reject files/rows are stored, but nobody reviews them.</p>
+</section>
+<section id="why-it-hurts-7" class="level3">
+<h3 class="anchored" data-anchor-id="why-it-hurts-7">Why it hurts</h3>
+<ul>
+<li>quality debt becomes invisible,</li>
+<li>bad upstream behavior never gets fixed.</li>
+</ul>
+</section>
+<section id="better-approach-7" class="level3">
+<h3 class="anchored" data-anchor-id="better-approach-7">Better approach</h3>
+<p>Add owner, SLA, and remediation flow. Log reject counts and fail when thresholds are too high.</p>
+<pre class="mermaid"><code>flowchart LR
+    A["Rejected Data"] --&gt; B["Quarantine"]
+    B --&gt; C["Nobody Looks"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="logging-only-pipeline-successfailure" class="level2">
+<h2 class="anchored" data-anchor-id="logging-only-pipeline-successfailure">9. Logging Only Pipeline Success/Failure</h2>
+<section id="what-it-looks-like-8" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-looks-like-8">What it looks like</h3>
+<p>The only thing tracked is whether the activity turned green or red.</p>
+</section>
+<section id="why-it-hurts-8" class="level3">
+<h3 class="anchored" data-anchor-id="why-it-hurts-8">Why it hurts</h3>
+<ul>
+<li>“green” pipelines can still publish wrong data,</li>
+<li>operations sees infra state, not data trust.</li>
+</ul>
+</section>
+<section id="better-approach-8" class="level3">
+<h3 class="anchored" data-anchor-id="better-approach-8">Better approach</h3>
+<p>Log row counts, freshness, rule violations, reconciliation results, and publish decisions.</p>
+<pre class="mermaid"><code>flowchart LR
+    A["Pipeline Green"] --&gt; B["No Quality Context"]
+    B --&gt; C["False Confidence"]</code></pre>
+<hr>
+</section>
+</section>
+<section id="parent-pipeline-as-manual-switchboard" class="level2">
+<h2 class="anchored" data-anchor-id="parent-pipeline-as-manual-switchboard">10. Parent Pipeline as Manual Switchboard</h2>
+<section id="what-it-looks-like-9" class="level3">
+<h3 class="anchored" data-anchor-id="what-it-looks-like-9">What it looks like</h3>
+<p>One parent pipeline contains endless <code>If Condition</code> and <code>Switch</code> branches for every special case.</p>
+</section>
+<section id="why-it-hurts-9" class="level3">
+<h3 class="anchored" data-anchor-id="why-it-hurts-9">Why it hurts</h3>
+<ul>
+<li>branching logic grows faster than maintainability,</li>
+<li>each new exception makes the whole factory harder to reason about.</li>
+</ul>
+</section>
+<section id="better-approach-9" class="level3">
+<h3 class="anchored" data-anchor-id="better-approach-9">Better approach</h3>
+<p>Move exceptions into metadata-driven configuration and reusable child pipelines.</p>
+<pre class="mermaid"><code>flowchart TD
+    A["Master Pipeline"] --&gt; B["If A"]
+    A --&gt; C["If B"]
+    A --&gt; D["If C"]
+    B --&gt; E["Special Branch"]
+    C --&gt; F["Special Branch"]</code></pre>
+<hr>
+</section>
+</section>
+</section>
+<section id="adf-activity-quick-reference-by-intent" class="level1">
+<h1>ADF Activity Quick Reference by Intent</h1>
+<section id="move-data" class="level2">
+<h2 class="anchored" data-anchor-id="move-data">Move data</h2>
+<ul>
+<li><code>Copy Data</code></li>
+</ul>
+</section>
+<section id="transform-row-level-data" class="level2">
+<h2 class="anchored" data-anchor-id="transform-row-level-data">Transform row-level data</h2>
+<ul>
+<li><code>Data Flow</code></li>
+<li>SQL transformations outside ADF</li>
+</ul>
+</section>
+<section id="read-controlconfiguration" class="level2">
+<h2 class="anchored" data-anchor-id="read-controlconfiguration">Read control/configuration</h2>
+<ul>
+<li><code>Lookup</code></li>
+<li><code>Get Metadata</code></li>
+</ul>
+</section>
+<section id="branch-loop-orchestrate" class="level2">
+<h2 class="anchored" data-anchor-id="branch-loop-orchestrate">Branch / loop / orchestrate</h2>
+<ul>
+<li><code>If Condition</code></li>
+<li><code>Switch</code></li>
+<li><code>ForEach</code></li>
+<li><code>Until</code></li>
+<li><code>Execute Pipeline</code></li>
+</ul>
+</section>
+<section id="wait-dependency-handling" class="level2">
+<h2 class="anchored" data-anchor-id="wait-dependency-handling">Wait / dependency handling</h2>
+<ul>
+<li><code>Validation</code></li>
+<li><code>Wait</code></li>
+</ul>
+</section>
+<section id="fail-fast-stop-intentionally" class="level2">
+<h2 class="anchored" data-anchor-id="fail-fast-stop-intentionally">Fail fast / stop intentionally</h2>
+<ul>
+<li><code>Fail</code></li>
+</ul>
+</section>
+<section id="write-logs-call-downstream-systems" class="level2">
+<h2 class="anchored" data-anchor-id="write-logs-call-downstream-systems">Write logs / call downstream systems</h2>
+<ul>
+<li><code>Stored Procedure</code></li>
+<li><code>Web</code></li>
+</ul>
+</section>
+<section id="maintain-file-targets" class="level2">
+<h2 class="anchored" data-anchor-id="maintain-file-targets">Maintain file targets</h2>
+<ul>
+<li><code>Delete</code></li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="design-rule-of-thumb-for-adf" class="level1">
+<h1>Design Rule of Thumb for ADF</h1>
+<p>ADF is strongest when you use it mainly as:</p>
+<ul>
+<li>orchestrator,</li>
+<li>data mover,</li>
+<li>control-flow engine,</li>
+<li>pipeline shell around SQL or Mapping Data Flow logic.</li>
+</ul>
+<p>ADF becomes fragile when you try to force it to be:</p>
+<ul>
+<li>your only validation framework,</li>
+<li>your only semantic rules engine,</li>
+<li>your only metadata store,</li>
+<li>your only monitoring platform.</li>
+</ul>
+<p>The practical design target is:</p>
+<p><code>ADF for orchestration + storage for raw/history + SQL/Data Flow for transformation + explicit quality gates for trust</code></p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = true;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/kgryczan\.github\.io\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>For everybody, not to be fooled by numbers</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
