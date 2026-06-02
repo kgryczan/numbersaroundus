@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Numbers around us">
+<meta name="dcterms.date" content="2026-05-14">
+<meta name="description" content="Mature systems are not shaped only by what they include. They are shaped by what they deliberately remove.">
+
+<title>Negative Filtering: The Architecture of What We Refuse to Keep – Numbers Around Us</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-697306ee647f3aecb60be57249203282.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-3fe3df12cb322cd60d4f50ab5ce79ec8.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-71a1c0b2fece7d4d1d4daa5e23e0c0ad.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-00ab377d17f9c7e1b98bb5b1ff2b2f0e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<meta property="og:title" content="Negative Filtering: The Architecture of What We Refuse to Keep – Numbers Around Us">
+<meta property="og:description" content="Mature systems are not shaped only by what they include. They are shaped by what they deliberately remove.">
+<meta property="og:image" content="https://kgryczan.github.io/ds/posts/images/negative_filtering.png">
+<meta property="og:site_name" content="Numbers Around Us">
+<meta property="og:image:height" content="941">
+<meta property="og:image:width" content="1672">
+<meta name="twitter:title" content="Negative Filtering: The Architecture of What We Refuse to Keep – Numbers Around Us">
+<meta name="twitter:description" content="Mature systems are not shaped only by what they include. They are shaped by what they deliberately remove.">
+<meta name="twitter:image" content="https://kgryczan.github.io/ds/posts/images/negative_filtering.png">
+<meta name="twitter:image-height" content="941">
+<meta name="twitter:image-width" content="1672">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Numbers Around Us</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../last-articles.html"> 
+<span class="menu-text">Newest articles</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../challenges/index.html"> 
+<span class="menu-text">Challenges</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../bi/index.html"> 
+<span class="menu-text">Business Intelligence</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../ds/index.html"> 
+<span class="menu-text">Data Science</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../dp/index.html"> 
+<span class="menu-text">Data Philosophy</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <a href="https://github.com" title="Github" class="quarto-navigation-tool px-1" aria-label="Github"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Negative Filtering: The Architecture of What We Refuse to Keep</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">r-programming</div>
+    <div class="quarto-category">tutorials</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Mature systems are not shaped only by what they include. They are shaped by what they deliberately remove.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Numbers around us </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">May 14, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/negative_filtering.png" class="img-fluid figure-img"></p>
+<figcaption>Illustration for Negative Filtering: The Architecture of What We Refuse to Keep</figcaption>
+</figure>
+</div>
+<p>Michelangelo did not sculpt by adding marble. He removed what did not belong. The statue was not assembled from parts, features, or decorative layers. It was exposed through subtraction. Every strike of the chisel was a decision: this remains, this goes, this is noise, this is form. That is a useful way to think about data systems. Not because pipelines are marble blocks or because code is fine art, but because mature structure is often revealed by disciplined removal.</p>
+<p>In analytics, data engineering, and software design, we usually talk about what systems should contain. More data. More columns. More integrations. More features. More flexibility. More options for the end user. This is understandable. Inclusion is visible. It gives us something to count, demo, document, and celebrate. But experienced practitioners eventually learn that inclusion is only half of architecture. The other half is refusal.</p>
+<p>A system becomes understandable not only because we know what is inside it, but because we know what is not allowed to survive there. Bad records. Deprecated columns. Unstable metrics. Accidental dependencies. Ambiguous categories. Dead code. Unclear ownership. Overloaded concepts. Duplicate business logic. Dashboards nobody trusts but everybody keeps. These things rarely destroy a system at once. They accumulate quietly, like marble dust nobody swept away.</p>
+<p>Negative filtering is the discipline of asking what should not pass. Not only what we want to keep, but what the system must reject in order to remain shaped. It is a technical operation, but also an architectural instinct. It appears in R code, data quality checks, semantic layers, software boundaries, dashboard design, and even in the way we think. Mature systems are often defined less by what they include, and more by what they intentionally exclude.</p>
+<section id="the-chisel-is-not-a-decoration" class="level2">
+<h2 class="anchored" data-anchor-id="the-chisel-is-not-a-decoration">The chisel is not a decoration</h2>
+<p>The familiar story says that Michelangelo saw the figure inside the block of marble and removed everything that was not part of it. Whether we treat this as historical truth, artistic mythology, or simply a useful metaphor, the idea is powerful because it reverses our default instinct. Creation is not always addition. Sometimes creation is controlled loss.</p>
+<p>This matters because many systems fail from accumulation. They do not collapse because of one terrible design decision. They become heavy through hundreds of tolerated leftovers. A temporary field becomes permanent. An exception becomes a branch in the pipeline. A debug column becomes part of a table contract. A manual override becomes expected behavior. A dashboard created for one meeting becomes a reporting product. “Just for now” becomes lineage.</p>
+<p>The system still runs, so the problem is easy to ignore. The pipeline completes. The table has rows. The dashboard refreshes. The numbers look familiar enough. Nothing screams. But form slowly disappears under residue. At some point, nobody is sure which parts are essential and which parts are historical sediment.</p>
+<p>Negative filtering is the chisel. It is not cleanup after the real work. It is part of the work. It is the discipline of saying: this does not belong to the final shape. Not because it is useless everywhere. Not because someone made a mistake. Not because the system should be artificially small. But because within this specific structure, it creates more confusion than value.</p>
+<p>That distinction is important. Structural discipline is not about blaming surface symptoms. It asks a colder question: what structure keeps producing this outcome? If a data product is confusing, the problem is rarely only the visualization. It may be the metric layer. If the metric layer is messy, the problem may be inconsistent business definitions. If definitions are inconsistent, the problem may be ownership. If ownership is unclear, the problem may be organizational design. The visible mess is often only the marble dust.</p>
+</section>
+<section id="systems-are-defined-by-exclusion" class="level2">
+<h2 class="anchored" data-anchor-id="systems-are-defined-by-exclusion">Systems are defined by exclusion</h2>
+<p>We usually describe systems through inclusion. A warehouse contains tables. A model contains variables. A dashboard contains charts. A package contains functions. A platform contains capabilities. This is natural, because inclusion is visible. It can be listed, diagrammed, and put into a scope document.</p>
+<p>Exclusion is quieter, but often more important. A good data model excludes invalid states. A good semantic layer excludes ambiguous metrics. A good API excludes accidental access patterns. A good function excludes unsupported inputs. A good dashboard excludes distracting precision. A good process excludes decisions that should not be made manually.</p>
+<p>The exclusions shape behavior before anyone starts using the system. A table that allows every possible status value transfers complexity downstream. A metric that can be calculated in three different places turns trust into negotiation. A pipeline that accepts malformed records without quarantine turns data quality into archaeology. A dashboard that displays every available dimension gives the user freedom, but also gives them fog.</p>
+<p>In immature systems, exclusion is treated as cleanup. In mature systems, exclusion is treated as design. The difference is timing. Cleanup happens after complexity has entered. Design prevents some complexity from entering in the first place.</p>
+<p>Architecture is consequence-shaping. When we allow something into a system, we are not only accepting a piece of data, code, or logic. We are accepting its future consequences. We are accepting the tests it will need, the documentation it will require, the edge cases it will generate, and the assumptions it will spread.</p>
+<p>The marble block is easier to shape before it is glued to five other marble blocks and connected to an executive reporting pack.</p>
+</section>
+<section id="pruning-as-intelligence" class="level2">
+<h2 class="anchored" data-anchor-id="pruning-as-intelligence">Pruning as intelligence</h2>
+<p>Nature does not optimize only by growth. It also prunes. A tree grows by extending branches, but its final shape depends on what does not continue. Some branches fail. Some are shaded out. Some are cut. The organism does not treat every possible extension as equally useful.</p>
+<p>The same is true for cognition. Thinking is not only the generation of ideas. It is the ability to reject most of them. A beginner often asks, “What else can I add?” An experienced analyst asks, “What can I safely ignore?” That is not laziness. It is compression.</p>
+<p>Good analytical thinking depends on exclusion. We exclude irrelevant variables, noisy records, misleading comparisons, categories too small to interpret, and metrics that look precise but are structurally weak. This is not anti-complexity. It is respect for complexity. Modern systems are too large to be understood by unlimited inclusion. Every dimension, filter, event, feature, and edge case competes for attention.</p>
+<p>Without negative filtering, the system becomes technically rich and cognitively poor. The dashboard has everything, so the user sees nothing.</p>
+<p>This is one of the quiet paradoxes of analytics. We often think that adding more information increases understanding. Sometimes it does. But after a certain point, adding more information only increases interpretive burden. A chart can be correct and still be unhelpful. A model can use more variables and become less explainable. A report can include more pages and become less read.</p>
+<p>The intelligent system is not the one that keeps every possible signal. It is the one that knows which signals would damage interpretation.</p>
+</section>
+<section id="data-quality-begins-with-what-should-not-survive" class="level2">
+<h2 class="anchored" data-anchor-id="data-quality-begins-with-what-should-not-survive">Data quality begins with what should not survive</h2>
+<p>Data quality is often described through validation: completeness checks, null rates, schema checks, freshness checks, duplicate checks, and threshold checks. That description is correct, but incomplete. At a deeper level, data quality is a system of exclusions.</p>
+<p>A freshness guard excludes stale tables from downstream execution. A schema contract excludes unexpected columns from silently reshaping a model. A null-rate monitor excludes false confidence. A deduplication rule excludes repeated events from becoming reality twice. A quarantine layer excludes suspicious records from contaminating trusted outputs.</p>
+<p>Data quality is not only about proving that data is good. It is about preventing bad structure from becoming normal. Consider a pipeline that reads source data, transforms it, and publishes a gold table consumed by Power BI. The naive version asks: did the pipeline run? The more mature version asks: what conditions must be false before this pipeline is allowed to continue?</p>
+<p>That shift matters. A pipeline may run successfully and still produce unusable data. A table may update on time and still miss one source stream. A report may refresh and still contain a broken business definition. Execution success is not system success.</p>
+<p>Negative filtering introduces refusal into the architecture. It says that not every record that exists in the source deserves to exist in the analytical layer. Source records are not automatically analytical facts. They must pass through structural decisions.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>valid_orders <span class="ot">&lt;-</span> orders <span class="sc">|&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter_out</span>(status <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"cancelled"</span>, <span class="st">"test"</span>, <span class="st">"duplicate"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>The technical operation is simple. The architectural message is larger. These rows may still matter somewhere. They may belong in an audit table, an operational reconciliation, or a quality report. But they do not belong in this analytical shape.</p>
+<p>The data product is carved from raw material. Not every piece of marble becomes the statue.</p>
+</section>
+<section id="negative-filtering-in-r-from-negation-to-first-class-exclusion" class="level2">
+<h2 class="anchored" data-anchor-id="negative-filtering-in-r-from-negation-to-first-class-exclusion">Negative filtering in R: from negation to first-class exclusion</h2>
+<p>For many years, negative filtering in R was usually written as the negation of a positive condition. We did not say directly what should be removed. We described what would match, then placed a <code>!</code> in front of it.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>orders <span class="sc">|&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>status <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"cancelled"</span>, <span class="st">"test"</span>, <span class="st">"duplicate"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>There is nothing wrong with this pattern. It is compact, familiar, and still useful. Many good R pipelines use it, and many should continue to use it. But conceptually, it treats exclusion as a secondary operation. First we define the positive set. Then we invert it. The system does not yet have a native sentence for removal. It says: keep everything that is not this.</p>
+<p>That distinction may sound small, but language shapes design. When exclusion is always expressed as negated inclusion, it remains slightly hidden. It looks like a local logical trick rather than a structural decision. In small scripts, this barely matters. In production pipelines, quality gates, analytical layers, and reusable transformations, it starts to matter a lot.</p>
+<p>The introduction of <code>filter_out()</code> in dplyr gives negative filtering its own verb. Instead of writing a condition for rows to keep, we can write the condition for rows to remove.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>orders <span class="sc">|&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter_out</span>(status <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"cancelled"</span>, <span class="st">"test"</span>, <span class="st">"duplicate"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>The code now says what the system means. These are the rows that should not survive this step. They may belong somewhere else, but not here. The chisel is no longer hidden inside a negation mark.</p>
+<p>This is not only syntax polish. It reflects a deeper architectural and cognitive shift. Mature systems eventually stop treating exclusion as negated inclusion. They recognize exclusion as an independent structural decision.</p>
+</section>
+<section id="the-grammar-of-removal" class="level2">
+<h2 class="anchored" data-anchor-id="the-grammar-of-removal">The grammar of removal</h2>
+<p>The difference between <code>filter(!condition)</code> and <code>filter_out(condition)</code> is not about whether one can replace the other in every situation. The difference is about intention. With <code>filter()</code>, the primary idea is keeping. With <code>filter_out()</code>, the primary idea is dropping. That makes the code easier to read because it aligns the verb with the purpose of the operation.</p>
+<p>This is especially useful when the condition itself is meaningful. Suppose we have events that should not enter an analytical model because they come from internal testing, duplicate ingestion, or known broken source windows.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>events_ready <span class="ot">&lt;-</span> events <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter_out</span>(source <span class="sc">==</span> <span class="st">"internal_test"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter_out</span>(event_id <span class="sc">%in%</span> duplicate_events<span class="sc">$</span>event_id) <span class="sc">|&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter_out</span>(event_time <span class="sc">&gt;=</span> broken_window_start <span class="sc">&amp;</span> event_time <span class="sc">&lt;=</span> broken_window_end)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>This pipeline reads like a controlled removal process. We are not merely keeping rows that survive a maze of negated conditions. We are explicitly carving away classes of records that do not belong in the final dataset.</p>
+<p>Of course, this does not mean every pipeline should become a long chain of exclusions. Structural discipline is not a license to fragment logic. Sometimes a single combined condition is clearer. Sometimes a separate rule table is better. Sometimes a join expresses the relationship more cleanly. The point is not to worship a function. The point is to notice that the language now lets us express removal directly.</p>
+<p>In data work, direct language matters. It reduces the distance between business meaning and code. When the requirement is “remove cancelled and test orders,” the code can now say “filter out cancelled and test orders.” That seems simple because it is simple. Good design often feels obvious only after the missing word appears.</p>
+</section>
+<section id="relational-exclusion-with-anti_join" class="level2">
+<h2 class="anchored" data-anchor-id="relational-exclusion-with-anti_join">Relational exclusion with <code>anti_join()</code></h2>
+<p><code>filter_out()</code> gives row-level exclusion a direct grammar, but it is not the only form of negative filtering in tidyverse practice. Another important pattern is relational exclusion with <code>anti_join()</code>.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>clean_customers <span class="ot">&lt;-</span> customers <span class="sc">|&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(blocklist, <span class="at">by =</span> <span class="st">"customer_id"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>This reads differently from an inline negated condition. The result may be similar in simple cases, but the design message is stronger. There is a dataset of entities that must not pass. There is a relationship defining exclusion. There is an operation built for that purpose.</p>
+<p>The blocklist becomes a structural object, not a hidden vector inside a predicate. It can be versioned, tested, documented, reviewed, and owned. It can have lineage. It can be stored as data rather than embedded as logic. This is where exclusion becomes architecture.</p>
+<p>The same pattern appears in data quality workflows.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>orders_ready <span class="ot">&lt;-</span> orders <span class="sc">|&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(failed_quality_checks, <span class="at">by =</span> <span class="st">"order_id"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>The exclusion is no longer hidden inside a predicate. It is externalized. The failed records can be inspected. The rule can be reused. The exclusion set can be monitored. The pipeline can expose how much was removed and why.</p>
+<p>This is structural discipline in code. We are not only asking whether the final number looks right. We are asking what mechanism produced it. We are making the removal visible.</p>
+<p>Invisible exclusions are dangerous. Every analytical system excludes something. The only question is whether the exclusion is explicit, inspectable, and justified.</p>
+</section>
+<section id="column-level-exclusion-and-analytical-shape" class="level2">
+<h2 class="anchored" data-anchor-id="column-level-exclusion-and-analytical-shape">Column-level exclusion and analytical shape</h2>
+<p>Negative filtering is not only about rows. In tidyverse workflows, column selection also carries an exclusion-oriented grammar.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>model_input <span class="ot">&lt;-</span> raw_data <span class="sc">|&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>internal_comment, <span class="sc">-</span>temporary_flag, <span class="sc">-</span>debug_timestamp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>This is not merely a convenience. It communicates that some fields are deliberately outside the analytical shape. The raw dataset may contain operational residue, audit fields, temporary markers, ingestion metadata, helper columns, and debug artifacts. They may all be valuable somewhere. But they should not all survive into the modeling layer.</p>
+<p>Tidyselect makes this more powerful because it allows us to reject whole classes of fields.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>model_input <span class="ot">&lt;-</span> raw_data <span class="sc">|&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="sc">-</span><span class="fu">starts_with</span>(<span class="st">"tmp_"</span>),</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="sc">-</span><span class="fu">ends_with</span>(<span class="st">"_debug"</span>),</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="sc">-</span><span class="fu">contains</span>(<span class="st">"internal"</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Now exclusion is semantic. We are not removing one accidental column. We are rejecting a category of columns. That is closer to architecture than cleanup.</p>
+<p>This is where the Michelangelo metaphor becomes technically useful. A column is not removed because we dislike it. It is removed because it does not belong to this form. The question is not “can this field be useful?” The answer is probably yes, somewhere. The better question is “should this field survive into this layer?”</p>
+<p>A bronze table, a silver table, a gold table, a feature table, and a dashboard dataset should not have the same tolerance for rawness. If they do, the architecture is mostly decorative. Layer names do not create discipline. Exclusion rules do.</p>
+</section>
+<section id="complexity-debt-is-often-failed-exclusion" class="level2">
+<h2 class="anchored" data-anchor-id="complexity-debt-is-often-failed-exclusion">Complexity debt is often failed exclusion</h2>
+<p>Technical debt is usually described as shortcuts taken in code. That is useful, but too narrow. A large part of complexity debt is failed exclusion.</p>
+<p>We allowed two definitions of the same metric. We allowed unclear ownership. We allowed nullable fields where the business process requires values. We allowed operational statuses to leak into analytical categories. We allowed dead columns to remain because removing them was risky. We allowed every exception to become a branch in the pipeline.</p>
+<p>Over time, the system becomes harder to change because nothing can be safely removed. That is a warning sign. A healthy system has removal paths. Deprecated columns can be retired. Old logic can be isolated. Invalid records can be quarantined. Unused dashboards can be archived. Experimental features can expire. Temporary exceptions can have end dates.</p>
+<p>Without removal paths, architecture becomes sediment. Layer after layer accumulates. Each layer tells a story, but nobody remembers which story still matters.</p>
+<p>This is common in analytics platforms. We build bronze, silver, and gold layers, but sometimes the conceptual discipline does not follow the naming convention. Bronze contains raw complexity. Silver is supposed to standardize. Gold is supposed to serve consumption. But if negative filtering is weak, every layer inherits too much.</p>
+<p>Gold becomes bronze with prettier column names.</p>
+<p>The statue remains trapped in the block.</p>
+</section>
+<section id="cognitive-filtering-the-analysts-hidden-skill" class="level2">
+<h2 class="anchored" data-anchor-id="cognitive-filtering-the-analysts-hidden-skill">Cognitive filtering: the analyst’s hidden skill</h2>
+<p>Good analysts are not only good at finding patterns. They are good at rejecting false patterns. This is less glamorous, but more important.</p>
+<p>A chart can show a spike, and the analyst asks whether it is structurally meaningful. A correlation can look strong, and the analyst asks what mechanism could generate it. A category can appear important, and the analyst asks whether sample size makes it stable. A metric can improve, and the analyst asks whether the denominator changed.</p>
+<p>This is negative filtering at the level of thought. We remove interpretations that do not survive contact with structure.</p>
+<p>Structural discipline is useful here because it prevents us from being hypnotized by visible movement. The question is not only “what changed?” The better question is “what structure could have produced this change, and which explanations should be eliminated?”</p>
+<p>This matters even more now because analytical tools make production easy. We can generate summaries, visualizations, anomaly checks, model explanations, and dashboard drafts very quickly. Speed increases the need for refusal. When production becomes easier, selection becomes more important.</p>
+<p>The analytical mind must become a chisel. Not every generated insight is an insight. Not every anomaly is meaningful. Not every metric deserves a dashboard. Not every dashboard deserves an audience.</p>
+<p>Intelligence is not the ability to produce endless interpretations. It is the ability to reject weak ones.</p>
+</section>
+<section id="negative-filtering-in-software-design" class="level2">
+<h2 class="anchored" data-anchor-id="negative-filtering-in-software-design">Negative filtering in software design</h2>
+<p>Software architecture also depends on exclusion. A function signature excludes unsupported usage. A type system excludes invalid values. A module boundary excludes accidental coupling. A service interface excludes internal implementation details. A test suite excludes regressions. A linter excludes inconsistent style. A deployment process excludes unreviewed changes.</p>
+<p>Good design is not only what the system can do. It is what the system makes difficult or impossible. That sounds restrictive, but it is the source of reliability. A system that allows everything transfers the burden to the user, developer, or downstream process. It is flexible in the same way a room without walls is flexible. You can put anything anywhere, but nothing has a place.</p>
+<p>Boundaries create meaning.</p>
+<p>In R, we often feel this when writing transformation functions. A loose function accepts anything and fails somewhere deep inside a pipeline. A better function rejects invalid input early.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>summarise_sales <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  required <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"date"</span>, <span class="st">"country"</span>, <span class="st">"sales"</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  missing <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(required, <span class="fu">names</span>(data))</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(missing) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"Missing required columns: "</span>, <span class="fu">paste</span>(missing, <span class="at">collapse =</span> <span class="st">", "</span>))</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  data <span class="sc">|&gt;</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(date, country) <span class="sc">|&gt;</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">sales =</span> <span class="fu">sum</span>(sales), <span class="at">.groups =</span> <span class="st">"drop"</span>)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>This is negative filtering as defensive design. The function refuses to continue when the structure is wrong. It does not pretend that a missing column is a small inconvenience. It treats structure as a precondition.</p>
+<p>That refusal is not harsh. It is kind to the future maintainer. Errors that happen early are cheaper than errors that become reports.</p>
+</section>
+<section id="exclusion-oriented-pipeline-design" class="level2">
+<h2 class="anchored" data-anchor-id="exclusion-oriented-pipeline-design">Exclusion-oriented pipeline design</h2>
+<p>In data pipelines, negative filtering often appears as a gate. Before publishing data, we ask whether the source is fresh enough, whether required partitions are present, whether critical columns are populated, whether key counts are within expected ranges, whether duplicate rates are acceptable, and whether reference mappings are complete.</p>
+<p>A basic quality pattern might look like this:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>quality_issues <span class="ot">&lt;-</span> checks <span class="sc">|&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(status <span class="sc">==</span> <span class="st">"fail"</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>publish_allowed <span class="ot">&lt;-</span> <span class="fu">nrow</span>(quality_issues) <span class="sc">==</span> <span class="dv">0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>But the stronger pattern is to make failed checks part of the system’s visible structure.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>records_to_publish <span class="ot">&lt;-</span> records <span class="sc">|&gt;</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(records_failed_checks, <span class="at">by =</span> <span class="st">"record_id"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Now data quality does not live only in logs. It participates in the data flow. We can measure what was excluded.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>exclusion_summary <span class="ot">&lt;-</span> records_failed_checks <span class="sc">|&gt;</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(check_name, severity, <span class="at">sort =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>This matters because mature exclusion needs accountability. If we remove records, we should know why. If we reject a pipeline run, we should know which condition failed. If a dashboard excludes a category, the reason should be available somewhere other than the author’s memory.</p>
+<p>Negative filtering without observability becomes silent distortion. Negative filtering with observability becomes architecture.</p>
+<p>This is also why quarantine is often better than deletion. A quarantined record is not trusted, but it is not erased. It remains available for inspection, reconciliation, and correction.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>quarantined <span class="ot">&lt;-</span> records <span class="sc">|&gt;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">semi_join</span>(records_failed_checks, <span class="at">by =</span> <span class="st">"record_id"</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>accepted <span class="ot">&lt;-</span> records <span class="sc">|&gt;</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(records_failed_checks, <span class="at">by =</span> <span class="st">"record_id"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>That distinction is small in code and large in governance. Rejected data does not vanish. It changes state.</p>
+</section>
+<section id="ethical-exclusion-must-be-inspectable" class="level2">
+<h2 class="anchored" data-anchor-id="ethical-exclusion-must-be-inspectable">Ethical exclusion must be inspectable</h2>
+<p>Any serious discussion of exclusion needs caution. Exclusion can clarify systems, but it can also hide harm.</p>
+<p>A fraud model excludes transactions. A credit model excludes applicants. A hiring filter excludes candidates. A public dashboard excludes populations with missing data. A metric definition excludes edge cases that may represent real people.</p>
+<p>In technical systems, exclusion is never purely technical when the system affects decisions. This does not mean exclusion is wrong. It means exclusion must be inspectable.</p>
+<p>We need to know what was excluded, why it was excluded, who defined the rule, what happens to excluded cases, and whether the exclusion can be reviewed or corrected. We also need to ask whether the exclusion removes noise or removes inconvenient reality.</p>
+<p>Structural discipline avoids moral grandstanding here. It does not pretend that every exclusion is oppression, and it does not pretend that every exclusion is harmless optimization. It asks what structure is being created.</p>
+<p>A data quality quarantine is not the same as deletion. A documented filter is not the same as a hidden omission. A temporary exclusion with monitoring is not the same as permanent invisibility.</p>
+<p>The ethical problem is not that systems exclude. All systems exclude. The ethical problem begins when exclusion is invisible, unowned, irreversible, or disguised as neutrality.</p>
+<p>The chisel should leave a trace.</p>
+</section>
+<section id="refusal-is-not-reductionism" class="level2">
+<h2 class="anchored" data-anchor-id="refusal-is-not-reductionism">Refusal is not reductionism</h2>
+<p>Negative filtering can also be misused. We can remove too much. We can over-clean data until it no longer represents reality. We can reject inconvenient edge cases because they complicate the model. We can prune dashboards until they become elegant but shallow. We can enforce architecture so rigidly that the system cannot adapt.</p>
+<p>This is why structural discipline matters. The goal is not simplicity at any cost. The goal is clarity under constraint.</p>
+<p>Good exclusion preserves the structure that matters. Bad exclusion removes the structure that challenges us. The difference is not always obvious. That is why mature systems need feedback: monitoring, review, documentation, ownership, and enough conversation between engineering, analytics, and business users to prevent silent distortion.</p>
+<p>A sculptor can remove too much marble. An engineer can remove too much context. An analyst can remove too much variance.</p>
+<p>The discipline is not subtraction alone. It is knowing what the subtraction serves.</p>
+</section>
+<section id="practical-patterns-for-disciplined-exclusion" class="level2">
+<h2 class="anchored" data-anchor-id="practical-patterns-for-disciplined-exclusion">Practical patterns for disciplined exclusion</h2>
+<p>Negative filtering becomes useful when it moves from idea to habit. One practical pattern is to externalize exclusion sets. Instead of burying exclusions inside code, represent them as data when possible.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>orders_clean <span class="ot">&lt;-</span> orders <span class="sc">|&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(excluded_orders, <span class="at">by =</span> <span class="st">"order_id"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Another pattern is to remove classes of accidental fields, not only individual columns.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>analytics_ready <span class="ot">&lt;-</span> raw_events <span class="sc">|&gt;</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="sc">-</span><span class="fu">starts_with</span>(<span class="st">"tmp_"</span>),</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="sc">-</span><span class="fu">ends_with</span>(<span class="st">"_debug"</span>),</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="sc">-</span><span class="fu">contains</span>(<span class="st">"internal"</span>)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>A third pattern is to use <code>filter_out()</code> when the intent is truly removal, especially when that makes the business rule clearer.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>orders_clean <span class="ot">&lt;-</span> orders <span class="sc">|&gt;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter_out</span>(status <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"cancelled"</span>, <span class="st">"test"</span>, <span class="st">"duplicate"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>A fourth pattern is to measure exclusion, not only perform it.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>exclusion_rate <span class="ot">&lt;-</span> records <span class="sc">|&gt;</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">total =</span> <span class="fu">n</span>(),</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">excluded =</span> <span class="fu">sum</span>(record_id <span class="sc">%in%</span> failed_checks<span class="sc">$</span>record_id),</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">exclusion_rate =</span> excluded <span class="sc">/</span> total</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>A fifth pattern is to give temporary exclusions an expiry path. The most dangerous exclusions are often created during incidents, migrations, or stakeholder pressure. They start as practical decisions and become fossilized logic. Every temporary exception should have an owner, a reason, and a review date.</p>
+<p>The marble dust should not become part of the statue again.</p>
+</section>
+<section id="the-deeper-shift-exclusion-as-a-first-class-decision" class="level2">
+<h2 class="anchored" data-anchor-id="the-deeper-shift-exclusion-as-a-first-class-decision">The deeper shift: exclusion as a first-class decision</h2>
+<p>The move from <code>filter(!condition)</code> to <code>filter_out(condition)</code> is not revolutionary by itself. Both can remove rows. Both can be correct. In many cases, the older pattern is still fine.</p>
+<p>The deeper shift is conceptual. When exclusion becomes first-class, we stop treating it as a local trick. We can design around it.</p>
+<p>A blocklist becomes a table. A failed-check set becomes an artifact. A removed-column rule becomes a tidyselect pattern. A rejected record becomes observable. A deprecated metric becomes a lifecycle state. An unsupported input becomes an explicit error. A row-removal condition becomes <code>filter_out()</code>, not a positive condition with a negation mark attached.</p>
+<p>This is how systems mature. They stop relying only on positive definitions. They define their boundaries.</p>
+<p>They say: these are the things that belong, and these are the things that must not survive this layer.</p>
+<p>That is not less creative. It is more precise. Michelangelo’s statue did not emerge because all marble was equally welcome. It emerged because most of the marble was removed.</p>
+<p>The same is true of architecture. A good analytical system is not the one that keeps every possible signal. It is the one that knows which signals would damage interpretation. A good codebase is not the one that supports every possible usage. It is the one that makes the intended usage clear and the dangerous usage difficult. A good data platform is not the one that stores everything forever in the same conceptual state. It is the one that gives rawness, validation, trust, and consumption different places to live.</p>
+<p>Form requires refusal.</p>
+</section>
+<section id="intelligence-as-disciplined-refusal" class="level2">
+<h2 class="anchored" data-anchor-id="intelligence-as-disciplined-refusal">Intelligence as disciplined refusal</h2>
+<p>Negative filtering looks small when treated as syntax. A <code>!</code> operator. A minus sign in <code>select()</code>. An <code>anti_join()</code>. A <code>filter_out()</code>. A quality gate before publication.</p>
+<p>But underneath these small operations is a larger idea. Mature systems are carved. They do not become reliable by accepting everything. They become reliable by developing boundaries. They know what does not belong in a trusted layer, what should not become a metric, what should not enter the model, what should not be shown without context, and what should not survive simply because removing it is uncomfortable.</p>
+<p>Michelangelo’s lesson is not that every engineer is an artist. The lesson is more practical. Form is not found by accumulation. Form is found by disciplined elimination.</p>
+<p>In analytics, data engineering, software design, and thinking itself, intelligence often appears as refusal: the refusal to keep noise because it is available, to preserve complexity because it is familiar, to publish data because a pipeline succeeded, to trust a metric because it is precise, or to confuse inclusion with understanding.</p>
+<p>The mature system does not ask only what it can hold.</p>
+<p>It asks what it must remove to become clear.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = true;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/kgryczan\.github\.io\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>For everybody, not to be fooled by numbers</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
