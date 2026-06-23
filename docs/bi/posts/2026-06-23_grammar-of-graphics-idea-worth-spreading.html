@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Numbers around us">
+<meta name="dcterms.date" content="2026-06-23">
+<meta name="description" content="From ggplot and ggplot2 to plotnine and ggsql: how one visualization idea keeps escaping its original tool.">
+
+<title>Grammar of Graphics: An Idea Worth Spreading – Numbers Around Us</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-697306ee647f3aecb60be57249203282.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-3fe3df12cb322cd60d4f50ab5ce79ec8.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-22ad72553b0c6ece34244e7d478a550c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-e7896b1a3545e9ceb1288d7a25a4c55a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<meta property="og:title" content="Grammar of Graphics: An Idea Worth Spreading – Numbers Around Us">
+<meta property="og:description" content="From ggplot and ggplot2 to plotnine and ggsql: how one visualization idea keeps escaping its original tool.">
+<meta property="og:image" content="https://kgryczan.github.io/bi/posts/images/grammar-of-graphics-idea-worth-spreading.png">
+<meta property="og:site_name" content="Numbers Around Us">
+<meta property="og:image:height" content="941">
+<meta property="og:image:width" content="1672">
+<meta property="og:image:alt" content="An abstract Grammar of Graphics idea glows on a stage while visual components flow toward analytics tools and SQL-like data systems.">
+<meta name="twitter:title" content="Grammar of Graphics: An Idea Worth Spreading – Numbers Around Us">
+<meta name="twitter:description" content="From ggplot and ggplot2 to plotnine and ggsql: how one visualization idea keeps escaping its original tool.">
+<meta name="twitter:image" content="https://kgryczan.github.io/bi/posts/images/grammar-of-graphics-idea-worth-spreading.png">
+<meta name="twitter:image-height" content="941">
+<meta name="twitter:image-width" content="1672">
+<meta name="twitter:image:alt" content="An abstract Grammar of Graphics idea glows on a stage while visual components flow toward analytics tools and SQL-like data systems.">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Numbers Around Us</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../last-articles.html"> 
+<span class="menu-text">Newest articles</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../challenges/index.html"> 
+<span class="menu-text">Challenges</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../bi/index.html"> 
+<span class="menu-text">Business Intelligence</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../ds/index.html"> 
+<span class="menu-text">Data Science</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../dp/index.html"> 
+<span class="menu-text">Data Philosophy</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+    <a href="https://github.com" title="Github" class="quarto-navigation-tool px-1" aria-label="Github"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Grammar of Graphics: An Idea Worth Spreading</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">business-intelligence</div>
+    <div class="quarto-category">data-visualization</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    From ggplot and ggplot2 to plotnine and ggsql: how one visualization idea keeps escaping its original tool.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Numbers around us </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 23, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/grammar-of-graphics-idea-worth-spreading.png" class="img-fluid figure-img"></p>
+<figcaption>An abstract Grammar of Graphics idea glows on a stage while visual components flow toward analytics tools and SQL-like data systems.</figcaption>
+</figure>
+</div>
+<p>An analyst writes a SQL query, gets a table back, and then opens a BI tool.</p>
+<p>Now the second question begins.</p>
+<p>Should this become a bar chart, a line chart, a scatter plot, a table, or something else? The menu offers chart types, but the real decision is deeper. What should become position? What should become color? Should the comparison happen in one view or many small panels? Is the value already summarized, or should the visualization compute something first?</p>
+<p>That is where the Grammar of Graphics becomes useful.</p>
+<p>It is not only a way to make charts. It is a way to think before the chart becomes a chart.</p>
+<p>Some ideas are too useful to stay inside one tool. They begin as theory, then become syntax, then habits, then expectations. After some time, people stop asking where the idea came from. They simply assume that this is how work should feel.</p>
+<p>The Grammar of Graphics is one of those ideas.</p>
+<p>It started as a way to think about statistical graphics. Then it became practical through <code>ggplot</code> and <code>ggplot2</code>. It crossed into Python through <code>plotnine</code>. Now, with <code>ggsql</code>, it is moving toward SQL, the language where many analysts begin their day.</p>
+<p>The real product was never only a package.</p>
+<p>The real product was a way of thinking.</p>
+<section id="the-idea-before-the-tool" class="level2">
+<h2 class="anchored" data-anchor-id="the-idea-before-the-tool">The Idea Before the Tool</h2>
+<p>The Grammar of Graphics, associated most strongly with Leland Wilkinson’s work, is powerful because it does not begin with chart names.</p>
+<p>When people first learn data visualization, they often think in chart names.</p>
+<p>Bar chart. Line chart. Scatter plot. Pie chart. Heatmap.</p>
+<p>This is natural. Chart names are easy to remember. They are the labels we see in BI tools, spreadsheet menus, presentation software, and dashboard builders. Pick a chart type, assign fields, adjust colors, move on.</p>
+<p>But the Grammar of Graphics asks a different question.</p>
+<p>Not: what chart type do you want?</p>
+<p>Rather: what are the parts from which this chart is built?</p>
+<p>A visualization is not a single object. It is a composition. We have data. We map variables to visual properties. We choose geometric marks. We define statistical transformations and position adjustments. We define scales. We place things in a coordinate system. We split views into facets. We add labels, guides, and themes. We layer information.</p>
+<p>A scatter plot is not magic. It is data mapped to x and y positions, drawn with points.</p>
+<p>A bar chart is not a separate species. Sometimes it is pre-aggregated values drawn with rectangular marks. Sometimes it is a count produced by a statistical transformation. Either way, the chart is built from parts.</p>
+<p>A multi-layer chart is not a special exception. It is the same grammar, repeated with another layer.</p>
+<p>This is the power of the idea. It turns visualization from a menu of chart types into a language of visual construction.</p>
+<p>A chart becomes less like choosing a template and more like writing a sentence.</p>
+</section>
+<section id="ggplot-and-ggplot2-when-theory-became-practice" class="level2">
+<h2 class="anchored" data-anchor-id="ggplot-and-ggplot2-when-theory-became-practice">ggplot and ggplot2: When Theory Became Practice</h2>
+<p>For many R users, the Grammar of Graphics became real through the early <code>ggplot</code> package and then through <code>ggplot2</code>.</p>
+<p>That matters. Ideas often sound elegant in theory but disappear when they meet daily work. A good abstraction has to survive contact with messy data, deadlines, unclear questions, and people who just need the plot to work.</p>
+<p><code>ggplot2</code> survived that contact.</p>
+<p>It gave analysts a stable mental model. In a simplified example, the parts are visible:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(sales, <span class="fu">aes</span>(<span class="at">x =</span> month, <span class="at">y =</span> revenue, <span class="at">color =</span> region)) <span class="sc">+</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Revenue by region"</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Month"</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Revenue"</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>There is nothing mysterious here, and that is the point.</p>
+<p>The data is named. The mapping is visible. The geometry is explicit. Labels are added as another part of the construction. More layers can be added without changing the whole logic of the plot.</p>
+<p>This changed how many people learned visualization.</p>
+<p>Before understanding the grammar, it is easy to see a plot as a finished object. After understanding it, you start seeing the parts. You notice that color can be a mapping, not merely decoration. You notice that a line is a geometry, not a chart identity. You notice that facets are not just “small charts”, but a structural decision about comparison.</p>
+<p>That is why <code>ggplot2</code> became more than a plotting package.</p>
+<p>It trained people to decompose charts.</p>
+<p>And once you learn to decompose charts, you start evaluating them differently. You ask whether the mapping makes sense. You ask whether the geometry supports the comparison. You ask whether the scale distorts perception. You ask whether an extra layer clarifies the message or only adds noise.</p>
+<p>The tool teaches the eye.</p>
+</section>
+<section id="plotnine-proof-that-it-was-not-just-an-r-trick" class="level2">
+<h2 class="anchored" data-anchor-id="plotnine-proof-that-it-was-not-just-an-r-trick">plotnine: Proof That It Was Not Just an R Trick</h2>
+<p>A useful idea becomes stronger when it survives translation.</p>
+<p><code>plotnine</code> matters because it shows that the Grammar of Graphics was not only an R habit. It could be carried into Python and still make sense.</p>
+<p>Python already had strong visualization libraries. It did not need <code>plotnine</code> because there was no other way to make charts. It needed it for a different reason: because some users wanted the grammar.</p>
+<p>They wanted to describe plots through data, mappings, geoms, scales, facets, and themes. They wanted the same compositional logic in another ecosystem.</p>
+<p>For a working analyst, this matters more than brand loyalty to a library. A shared grammar makes it easier to move between teams, notebooks, and languages without relearning the basic question: how is this chart constructed?</p>
+<p>The syntax changes slightly, but the thought remains familiar:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    ggplot(sales, aes(x<span class="op">=</span><span class="st">"month"</span>, y<span class="op">=</span><span class="st">"revenue"</span>, color<span class="op">=</span><span class="st">"region"</span>))</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> geom_line()</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> labs(title<span class="op">=</span><span class="st">"Revenue by region"</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This is the interesting part.</p>
+<p>If the idea were only a clever R interface, it would have stayed in R. But it crossed the border. It became a pattern that Python users could recognize, adopt, and adapt.</p>
+<p>That is usually a sign of a deeper abstraction.</p>
+<p>The best ideas in data are not trapped inside one language. They can be rewritten without being lost, because their value lives in the mental model as much as in the syntax.</p>
+</section>
+<section id="ggsql-when-the-grammar-moves-closer-to-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="ggsql-when-the-grammar-moves-closer-to-the-data">ggsql: When the Grammar Moves Closer to the Data</h2>
+<p>Now the story becomes especially interesting for BI.</p>
+<p>Many analysts do not begin their work in R or Python. They begin in SQL.</p>
+<p>They inspect tables. They join dimensions. They filter dates. They aggregate measures. They check grain. They compare counts. They ask whether the data looks sane before anyone opens a dashboard tool.</p>
+<p>SQL is often where the first contact with data happens.</p>
+<p>That is why <code>ggsql</code> is worth watching. Posit announced its alpha release in April 2026 as a Grammar of Graphics for SQL, and its current direction is clear: keep the query close to the visualization.</p>
+<p>A simplified example could look like this:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="dt">date</span>, revenue, region</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> sales</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> <span class="dt">year</span> <span class="op">=</span> <span class="dv">2024</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>VISUALISE <span class="dt">date</span> <span class="kw">AS</span> x, revenue <span class="kw">AS</span> y, region <span class="kw">AS</span> color</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>DRAW line</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="kw">LABEL</span> title <span class="op">=&gt;</span> <span class="st">'Revenue by region'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This feels unusual for a moment.</p>
+<p>Then it starts to make sense.</p>
+<p>The first part retrieves the data. The second part describes how to see it. The analyst does not have to export a result, open another environment, and rebuild context just to check whether the pattern is visible.</p>
+<p>The visualization becomes part of exploration.</p>
+<p>For BI, this is important. Reports and dashboards often fail long before the visual design stage. They fail because the grain is wrong. They fail because a metric behaves differently by segment. They fail because a join duplicates rows. They fail because the first visible pattern is not the pattern people expected.</p>
+<p>A visual check near the SQL layer can expose those problems earlier.</p>
+<p>This does not mean <code>ggsql</code> replaces Power BI, Tableau, R, or Python. It is an early project, its syntax and capabilities may still change, and its current scope is not the same as a mature BI platform. The point is not to crown a new winner. The point is to notice the direction of travel.</p>
+<p>But as a signal, it is fascinating.</p>
+<p>The Grammar of Graphics is moving upstream.</p>
+</section>
+<section id="why-this-matters-for-bi" class="level2">
+<h2 class="anchored" data-anchor-id="why-this-matters-for-bi">Why This Matters for BI</h2>
+<p>BI often lives on a boundary.</p>
+<p>On one side, there is the semantic world: metrics, dimensions, definitions, ownership, grain, business logic. On the other side, there is the visual world: dashboards, charts, labels, colors, interactions, pages.</p>
+<p>The dangerous part is not that these worlds are different. They should be different. A metric definition is not a chart. A SQL query is not a dashboard. A dashboard is not a data model.</p>
+<p>The danger is that the handoff becomes invisible.</p>
+<p>When the query, metric, and visual mapping are separated too early, assumptions harden quietly. A field becomes color because it was convenient. A summarized value becomes a bar because the menu made it easy. A facet becomes a page because the first chart was too crowded. A default aggregation becomes a business claim.</p>
+<p>A grammar-based approach helps because it makes the visual contract explicit.</p>
+<p>BI is about making meaning operational.</p>
+<p>A dashboard is trusted when people understand what is counted, how it is grouped, how it is compared, and why the visual form supports the question. The Grammar of Graphics does not solve all of that. But it gives us language for one important part of the contract: how data becomes visual evidence.</p>
+<p>It lets us ask better questions:</p>
+<ul>
+<li>Is this variable mapped to position, color, size, or shape?</li>
+<li>Is the comparison encoded in the strongest visual channel?</li>
+<li>Is the chart using layers to clarify or to impress?</li>
+<li>Are we splitting the data into facets because it helps comparison, or because the main chart became too crowded?</li>
+</ul>
+<p>These are not cosmetic questions.</p>
+<p>They are analytical questions expressed visually.</p>
+</section>
+<section id="a-grammar-is-not-a-chart-factory" class="level2">
+<h2 class="anchored" data-anchor-id="a-grammar-is-not-a-chart-factory">A Grammar Is Not a Chart Factory</h2>
+<p>There is one trap here.</p>
+<p>A grammar can make chart construction more systematic, but it cannot make judgment automatic.</p>
+<p>You can write a grammatically valid sentence that says something foolish. The same is true for charts.</p>
+<p>A chart can have valid mappings and still mislead. It can use clean syntax and still choose the wrong scale. It can layer information and still bury the message. It can use color consistently and still overload the reader.</p>
+<p>Grammar gives structure.</p>
+<p>It does not give wisdom.</p>
+<p>This is why standards, critique, and domain context still matter. IBCS, accessibility, data literacy, semantic definitions, and good dashboard design do not disappear because we have a better language for constructing visuals.</p>
+<p>If anything, the grammar makes our decisions more visible.</p>
+<p>And once decisions are visible, they can be questioned.</p>
+</section>
+<section id="the-small-yaml-door" class="level2">
+<h2 class="anchored" data-anchor-id="the-small-yaml-door">The Small YAML Door</h2>
+<p>There is also a strange little door hidden inside this topic.</p>
+<p>If a visualization is a composition of parts, then in theory those parts do not have to begin as plotting code.</p>
+<p>They could begin as metadata.</p>
+<p>Imagine a small YAML description like this:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span><span class="kw">:</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">source</span><span class="kw">:</span><span class="at"> sales</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">filter</span><span class="kw">:</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">year</span><span class="kw">:</span><span class="at"> </span><span class="dv">2024</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="fu">visual</span><span class="kw">:</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">x</span><span class="kw">:</span><span class="at"> date</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">y</span><span class="kw">:</span><span class="at"> revenue</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">color</span><span class="kw">:</span><span class="at"> region</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">geom</span><span class="kw">:</span><span class="at"> line</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="fu">labels</span><span class="kw">:</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">title</span><span class="kw">:</span><span class="at"> Revenue by region</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">x</span><span class="kw">:</span><span class="at"> Month</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">y</span><span class="kw">:</span><span class="at"> Revenue</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This is not a production recommendation. It is a thought experiment.</p>
+<p>But it shows why the grammar travels. Once a chart is described as data, mappings, geometry, scales, facets, and labels, the intention can be separated from one implementation. One renderer might produce <code>ggplot2</code>. Another might produce <code>plotnine</code>. Another might produce a <code>ggsql</code> query. A documentation system might read the same structure and explain what the chart is supposed to show.</p>
+<p>The interesting part is not YAML itself.</p>
+<p>The interesting part is that a good grammar makes structure explicit. Once structure is explicit, it can move.</p>
+</section>
+<section id="ideas-worth-spreading" class="level2">
+<h2 class="anchored" data-anchor-id="ideas-worth-spreading">Ideas Worth Spreading</h2>
+<p>This is where the title earns its keep.</p>
+<p>Some ideas are worth spreading because they are inspiring. Others are worth spreading because they are useful. The Grammar of Graphics is both, but in a quiet way.</p>
+<p>It does not promise artificial intelligence. It does not promise automatic insight. It does not promise that every chart will become beautiful.</p>
+<p>It promises something more modest and more durable:</p>
+<p>A chart can be understood as parts.</p>
+<p>Those parts can be named.</p>
+<p>Those names can be reused.</p>
+<p>That reuse can cross tools.</p>
+<p>That is why the idea survived.</p>
+<p><code>ggplot</code> and <code>ggplot2</code> made it practical for R users. <code>plotnine</code> showed that it could speak Python. <code>ggsql</code> now suggests that SQL users may also benefit from the same mental model.</p>
+<p>The path is not finished. It probably should not be finished. Good ideas change when they move.</p>
+<p>But that is exactly the point.</p>
+<p>The best ideas in data do not stay where they were born. They migrate into new tools, new languages, and new habits. They become less attached to their first implementation and more attached to the problem they help us solve.</p>
+<p>Grammar of Graphics is one of those ideas.</p>
+<p>It started as theory, became practice, crossed languages, and is now knocking on SQL’s door. The practical lesson is simple: when a visual idea is clear enough to be rebuilt in many places, it is probably more than a feature.</p>
+<p>That is what an idea worth spreading looks like.</p>
+</section>
+<section id="further-reading" class="level2">
+<h2 class="anchored" data-anchor-id="further-reading">Further Reading</h2>
+<ul>
+<li><a href="https://opensource.posit.co/blog/2026-04-20_ggsql_alpha_release/">ggsql: A grammar of graphics for SQL</a></li>
+<li><a href="https://ggsql.org/get_started/grammar.html">ggsql grammar documentation</a></li>
+<li><a href="https://github.com/posit-dev/ggsql">ggsql GitHub repository</a></li>
+<li><a href="https://link.springer.com/book/10.1007/0-387-28695-0">The Grammar of Graphics</a></li>
+<li><a href="https://ggplot2.tidyverse.org/">ggplot2 documentation</a></li>
+<li><a href="https://vita.had.co.nz/papers/layered-grammar.html">A layered grammar of graphics</a></li>
+<li><a href="https://plotnine.org/">plotnine documentation</a></li>
+</ul>
+<section id="related-reading" class="level3">
+<h3 class="anchored" data-anchor-id="related-reading">Related Reading</h3>
+<p>If you want to continue with a closely related topic:</p>
+<ul>
+<li><a href="../../ds/posts/2023-04-26_Crafting-Visual-Stories--ggplot2-Fundamentals-and-First-Creations-d3eff9b2a0fd.html">Crafting Visual Stories: ggplot2 Fundamentals and First Creations</a></li>
+<li><a href="../../ds/posts/2023-05-02_Tailoring-Your-Data-s-Outfit--Mastering-Aesthetics--Scales--Coordinates--Labels--and-Legends-39a8bc195611.html">Tailoring Your Data’s Outfit: Mastering Aesthetics, Scales, Coordinates, Labels, and Legends</a></li>
+<li><a href="../../bi/posts/2026-06-09_too-many-buttons-too-few-answers.html">Too Many Buttons, Too Few Answers</a></li>
+<li><a href="../../bi/posts/2024-09-05_Guarding-Against-Misleading-Data-503424ecd457.html">Guarding Against Misleading Data</a></li>
+</ul>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = true;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/kgryczan\.github\.io\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>For everybody, not to be fooled by numbers</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

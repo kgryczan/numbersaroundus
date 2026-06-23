@@ -1,0 +1,309 @@
+---
+title: "Grammar of Graphics: An Idea Worth Spreading"
+author: "Numbers around us"
+date: "2026-06-23"
+description: "From ggplot and ggplot2 to plotnine and ggsql: how one visualization idea keeps escaping its original tool."
+image: images/grammar-of-graphics-idea-worth-spreading.png
+image-alt: "An abstract Grammar of Graphics idea glows on a stage while visual components flow toward analytics tools and SQL-like data systems."
+categories: [business-intelligence, data-visualization]
+tags: [grammar-of-graphics, ggplot2, plotnine, ggsql, sql, data-presentation]
+format: html
+execute:
+  eval: false
+---
+
+![An abstract Grammar of Graphics idea glows on a stage while visual components flow toward analytics tools and SQL-like data systems.](images/grammar-of-graphics-idea-worth-spreading.png)
+
+An analyst writes a SQL query, gets a table back, and then opens a BI tool.
+
+Now the second question begins.
+
+Should this become a bar chart, a line chart, a scatter plot, a table, or something else? The menu offers chart types, but the real decision is deeper. What should become position? What should become color? Should the comparison happen in one view or many small panels? Is the value already summarized, or should the visualization compute something first?
+
+That is where the Grammar of Graphics becomes useful.
+
+It is not only a way to make charts. It is a way to think before the chart becomes a chart.
+
+Some ideas are too useful to stay inside one tool. They begin as theory, then become syntax, then habits, then expectations. After some time, people stop asking where the idea came from. They simply assume that this is how work should feel.
+
+The Grammar of Graphics is one of those ideas.
+
+It started as a way to think about statistical graphics. Then it became practical through `ggplot` and `ggplot2`. It crossed into Python through `plotnine`. Now, with `ggsql`, it is moving toward SQL, the language where many analysts begin their day.
+
+The real product was never only a package.
+
+The real product was a way of thinking.
+
+## The Idea Before the Tool
+
+The Grammar of Graphics, associated most strongly with Leland Wilkinson's work, is powerful because it does not begin with chart names.
+
+When people first learn data visualization, they often think in chart names.
+
+Bar chart. Line chart. Scatter plot. Pie chart. Heatmap.
+
+This is natural. Chart names are easy to remember. They are the labels we see in BI tools, spreadsheet menus, presentation software, and dashboard builders. Pick a chart type, assign fields, adjust colors, move on.
+
+But the Grammar of Graphics asks a different question.
+
+Not: what chart type do you want?
+
+Rather: what are the parts from which this chart is built?
+
+A visualization is not a single object. It is a composition. We have data. We map variables to visual properties. We choose geometric marks. We define statistical transformations and position adjustments. We define scales. We place things in a coordinate system. We split views into facets. We add labels, guides, and themes. We layer information.
+
+A scatter plot is not magic. It is data mapped to x and y positions, drawn with points.
+
+A bar chart is not a separate species. Sometimes it is pre-aggregated values drawn with rectangular marks. Sometimes it is a count produced by a statistical transformation. Either way, the chart is built from parts.
+
+A multi-layer chart is not a special exception. It is the same grammar, repeated with another layer.
+
+This is the power of the idea. It turns visualization from a menu of chart types into a language of visual construction.
+
+A chart becomes less like choosing a template and more like writing a sentence.
+
+## ggplot and ggplot2: When Theory Became Practice
+
+For many R users, the Grammar of Graphics became real through the early `ggplot` package and then through `ggplot2`.
+
+That matters. Ideas often sound elegant in theory but disappear when they meet daily work. A good abstraction has to survive contact with messy data, deadlines, unclear questions, and people who just need the plot to work.
+
+`ggplot2` survived that contact.
+
+It gave analysts a stable mental model. In a simplified example, the parts are visible:
+
+```r
+ggplot(sales, aes(x = month, y = revenue, color = region)) +
+  geom_line() +
+  labs(
+    title = "Revenue by region",
+    x = "Month",
+    y = "Revenue"
+  )
+```
+
+There is nothing mysterious here, and that is the point.
+
+The data is named. The mapping is visible. The geometry is explicit. Labels are added as another part of the construction. More layers can be added without changing the whole logic of the plot.
+
+This changed how many people learned visualization.
+
+Before understanding the grammar, it is easy to see a plot as a finished object. After understanding it, you start seeing the parts. You notice that color can be a mapping, not merely decoration. You notice that a line is a geometry, not a chart identity. You notice that facets are not just "small charts", but a structural decision about comparison.
+
+That is why `ggplot2` became more than a plotting package.
+
+It trained people to decompose charts.
+
+And once you learn to decompose charts, you start evaluating them differently. You ask whether the mapping makes sense. You ask whether the geometry supports the comparison. You ask whether the scale distorts perception. You ask whether an extra layer clarifies the message or only adds noise.
+
+The tool teaches the eye.
+
+## plotnine: Proof That It Was Not Just an R Trick
+
+A useful idea becomes stronger when it survives translation.
+
+`plotnine` matters because it shows that the Grammar of Graphics was not only an R habit. It could be carried into Python and still make sense.
+
+Python already had strong visualization libraries. It did not need `plotnine` because there was no other way to make charts. It needed it for a different reason: because some users wanted the grammar.
+
+They wanted to describe plots through data, mappings, geoms, scales, facets, and themes. They wanted the same compositional logic in another ecosystem.
+
+For a working analyst, this matters more than brand loyalty to a library. A shared grammar makes it easier to move between teams, notebooks, and languages without relearning the basic question: how is this chart constructed?
+
+The syntax changes slightly, but the thought remains familiar:
+
+```python
+(
+    ggplot(sales, aes(x="month", y="revenue", color="region"))
+    + geom_line()
+    + labs(title="Revenue by region")
+)
+```
+
+This is the interesting part.
+
+If the idea were only a clever R interface, it would have stayed in R. But it crossed the border. It became a pattern that Python users could recognize, adopt, and adapt.
+
+That is usually a sign of a deeper abstraction.
+
+The best ideas in data are not trapped inside one language. They can be rewritten without being lost, because their value lives in the mental model as much as in the syntax.
+
+## ggsql: When the Grammar Moves Closer to the Data
+
+Now the story becomes especially interesting for BI.
+
+Many analysts do not begin their work in R or Python. They begin in SQL.
+
+They inspect tables. They join dimensions. They filter dates. They aggregate measures. They check grain. They compare counts. They ask whether the data looks sane before anyone opens a dashboard tool.
+
+SQL is often where the first contact with data happens.
+
+That is why `ggsql` is worth watching. Posit announced its alpha release in April 2026 as a Grammar of Graphics for SQL, and its current direction is clear: keep the query close to the visualization.
+
+A simplified example could look like this:
+
+```sql
+SELECT date, revenue, region
+FROM sales
+WHERE year = 2024
+
+VISUALISE date AS x, revenue AS y, region AS color
+DRAW line
+LABEL title => 'Revenue by region'
+```
+
+This feels unusual for a moment.
+
+Then it starts to make sense.
+
+The first part retrieves the data. The second part describes how to see it. The analyst does not have to export a result, open another environment, and rebuild context just to check whether the pattern is visible.
+
+The visualization becomes part of exploration.
+
+For BI, this is important. Reports and dashboards often fail long before the visual design stage. They fail because the grain is wrong. They fail because a metric behaves differently by segment. They fail because a join duplicates rows. They fail because the first visible pattern is not the pattern people expected.
+
+A visual check near the SQL layer can expose those problems earlier.
+
+This does not mean `ggsql` replaces Power BI, Tableau, R, or Python. It is an early project, its syntax and capabilities may still change, and its current scope is not the same as a mature BI platform. The point is not to crown a new winner. The point is to notice the direction of travel.
+
+But as a signal, it is fascinating.
+
+The Grammar of Graphics is moving upstream.
+
+## Why This Matters for BI
+
+BI often lives on a boundary.
+
+On one side, there is the semantic world: metrics, dimensions, definitions, ownership, grain, business logic. On the other side, there is the visual world: dashboards, charts, labels, colors, interactions, pages.
+
+The dangerous part is not that these worlds are different. They should be different. A metric definition is not a chart. A SQL query is not a dashboard. A dashboard is not a data model.
+
+The danger is that the handoff becomes invisible.
+
+When the query, metric, and visual mapping are separated too early, assumptions harden quietly. A field becomes color because it was convenient. A summarized value becomes a bar because the menu made it easy. A facet becomes a page because the first chart was too crowded. A default aggregation becomes a business claim.
+
+A grammar-based approach helps because it makes the visual contract explicit.
+
+BI is about making meaning operational.
+
+A dashboard is trusted when people understand what is counted, how it is grouped, how it is compared, and why the visual form supports the question. The Grammar of Graphics does not solve all of that. But it gives us language for one important part of the contract: how data becomes visual evidence.
+
+It lets us ask better questions:
+
+- Is this variable mapped to position, color, size, or shape?
+- Is the comparison encoded in the strongest visual channel?
+- Is the chart using layers to clarify or to impress?
+- Are we splitting the data into facets because it helps comparison, or because the main chart became too crowded?
+
+These are not cosmetic questions.
+
+They are analytical questions expressed visually.
+
+## A Grammar Is Not a Chart Factory
+
+There is one trap here.
+
+A grammar can make chart construction more systematic, but it cannot make judgment automatic.
+
+You can write a grammatically valid sentence that says something foolish. The same is true for charts.
+
+A chart can have valid mappings and still mislead. It can use clean syntax and still choose the wrong scale. It can layer information and still bury the message. It can use color consistently and still overload the reader.
+
+Grammar gives structure.
+
+It does not give wisdom.
+
+This is why standards, critique, and domain context still matter. IBCS, accessibility, data literacy, semantic definitions, and good dashboard design do not disappear because we have a better language for constructing visuals.
+
+If anything, the grammar makes our decisions more visible.
+
+And once decisions are visible, they can be questioned.
+
+## The Small YAML Door
+
+There is also a strange little door hidden inside this topic.
+
+If a visualization is a composition of parts, then in theory those parts do not have to begin as plotting code.
+
+They could begin as metadata.
+
+Imagine a small YAML description like this:
+
+```yaml
+data:
+  source: sales
+  filter:
+    year: 2024
+
+visual:
+  x: date
+  y: revenue
+  color: region
+  geom: line
+
+labels:
+  title: Revenue by region
+  x: Month
+  y: Revenue
+```
+
+This is not a production recommendation. It is a thought experiment.
+
+But it shows why the grammar travels. Once a chart is described as data, mappings, geometry, scales, facets, and labels, the intention can be separated from one implementation. One renderer might produce `ggplot2`. Another might produce `plotnine`. Another might produce a `ggsql` query. A documentation system might read the same structure and explain what the chart is supposed to show.
+
+The interesting part is not YAML itself.
+
+The interesting part is that a good grammar makes structure explicit. Once structure is explicit, it can move.
+
+## Ideas Worth Spreading
+
+This is where the title earns its keep.
+
+Some ideas are worth spreading because they are inspiring. Others are worth spreading because they are useful. The Grammar of Graphics is both, but in a quiet way.
+
+It does not promise artificial intelligence. It does not promise automatic insight. It does not promise that every chart will become beautiful.
+
+It promises something more modest and more durable:
+
+A chart can be understood as parts.
+
+Those parts can be named.
+
+Those names can be reused.
+
+That reuse can cross tools.
+
+That is why the idea survived.
+
+`ggplot` and `ggplot2` made it practical for R users. `plotnine` showed that it could speak Python. `ggsql` now suggests that SQL users may also benefit from the same mental model.
+
+The path is not finished. It probably should not be finished. Good ideas change when they move.
+
+But that is exactly the point.
+
+The best ideas in data do not stay where they were born. They migrate into new tools, new languages, and new habits. They become less attached to their first implementation and more attached to the problem they help us solve.
+
+Grammar of Graphics is one of those ideas.
+
+It started as theory, became practice, crossed languages, and is now knocking on SQL's door. The practical lesson is simple: when a visual idea is clear enough to be rebuilt in many places, it is probably more than a feature.
+
+That is what an idea worth spreading looks like.
+
+## Further Reading
+
+- [ggsql: A grammar of graphics for SQL](https://opensource.posit.co/blog/2026-04-20_ggsql_alpha_release/)
+- [ggsql grammar documentation](https://ggsql.org/get_started/grammar.html)
+- [ggsql GitHub repository](https://github.com/posit-dev/ggsql)
+- [The Grammar of Graphics](https://link.springer.com/book/10.1007/0-387-28695-0)
+- [ggplot2 documentation](https://ggplot2.tidyverse.org/)
+- [A layered grammar of graphics](https://vita.had.co.nz/papers/layered-grammar.html)
+- [plotnine documentation](https://plotnine.org/)
+
+### Related Reading
+
+If you want to continue with a closely related topic:
+
+- [Crafting Visual Stories: ggplot2 Fundamentals and First Creations](../../ds/posts/2023-04-26_Crafting-Visual-Stories--ggplot2-Fundamentals-and-First-Creations-d3eff9b2a0fd.qmd)
+- [Tailoring Your Data's Outfit: Mastering Aesthetics, Scales, Coordinates, Labels, and Legends](../../ds/posts/2023-05-02_Tailoring-Your-Data-s-Outfit--Mastering-Aesthetics--Scales--Coordinates--Labels--and-Legends-39a8bc195611.qmd)
+- [Too Many Buttons, Too Few Answers](2026-06-09_too-many-buttons-too-few-answers.qmd)
+- [Guarding Against Misleading Data](2024-09-05_Guarding-Against-Misleading-Data-503424ecd457.qmd)
