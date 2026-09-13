@@ -1,0 +1,151 @@
+---
+title: "Excel BI - PowerQuery Challenge 257"
+description: "Transpose the Problem table to Result"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 257](/challenges/images/exc257pq.jpg)
+
+## Challenge Description
+
+Transpose the Problem table to Result
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_257.xlsx"
+input = read_excel(path, range = "A1:B18")
+test  = read_excel(path, range = "D1:I9")
+
+result = input %>%
+  mutate(group = cumsum(is.na(Quantity)) + 1) %>%
+  na.omit() %>%
+  mutate(rn = row_number(), .by = group) %>%
+  pivot_wider(names_from = rn, values_from = c(Quantity, Birds))
+
+process_result <- function(data, col_prefix) {
+  process_data <- function(data, col_prefix) {
+    data %>%
+      select(-starts_with(col_prefix)) %>%
+      set_names(colnames(test)) %>%
+      mutate(across(everything(), as.character))
+  }
+  process_data(data, col_prefix)
+}
+
+output <- bind_rows(
+  process_result(result, "Quantity"),
+  process_result(result, "Birds")
+) %>%
+  arrange(Column1) %>%
+  mutate(Column1 = ifelse(row_number() %% 2 == 0, "Quantity", "Birds"))
+
+all.equal(output, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "PQ_Challenge_257.xlsx"
+input = pd.read_excel(path,usecols="A:B", nrows=18, dtype = "str")
+test = pd.read_excel(path, usecols="D:I", nrows=8, dtype = "str")
+
+input['Counter'] = input.isnull().all(axis=1).cumsum() + 1
+input.dropna(subset=['Birds'], inplace=True)
+input['RowNumber'] = input.groupby('Counter').cumcount() + 2
+input_pivot = input.pivot(index='Counter', columns='RowNumber', values=['Birds', 'Quantity'])
+input_pivot.columns = [f'{col[0]}_{col[1]}' for col in input_pivot.columns]
+input_pivot.reset_index(inplace=True)
+
+df1 = input_pivot.filter(regex='^Counter|^Birds')
+df2 = input_pivot.filter(regex='^Counter|^Quantity')
+df1.columns = df2.columns = test.columns
+
+result = pd.concat([df1, df2]).sort_index(kind='merge').reset_index(drop=True)
+result['Column1'] = result.groupby('Column1').cumcount().map(lambda x: 'Birds' if x % 2 == 0 else 'Quantity')
+
+print(result.equals(test))
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 256](Excel256pq.qmd)
+-   [Excel BI - Excel Challenge 637](Excel637.qmd)

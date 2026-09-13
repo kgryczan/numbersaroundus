@@ -1,0 +1,89 @@
+---
+title: "Excel BI - Excel Challenge 638"
+description: "🔰 Given are Day of week names in 3 languages."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 638](/challenges/images/exc638.jpg)
+
+## Challenge Description
+
+🔰 Given are Day of week names in 3 languages. For each language, extract minimum characters from left to make the abbreviations unique. For ex - In English week names, you would need to extract minimum 2 characters from left to make abbreviations unique. If you extract only 1 character, then Sunday and Saturday will be S and Tuesday and Thursday will be T. Hence, these abbreviations will not be unique. If you extract 2 characters then Su, Mo, Tu, We, Th, Fr and Sa which are unique.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/638 Days of the Week Abbreviation.xlsx"
+input = read_excel(path, range = "A2:C9")
+test  = read_excel(path, range = "D2:F9")
+
+abbreviate = function(column) {
+  for (i in seq_len(nchar(column[1]))) {
+    abbrs = substr(column, 1, i)
+    if (length(unique(abbrs)) == length(column)) {
+      return(abbrs)
+    }
+  }
+}
+
+result = input %>%
+  mutate(across(everything(), ~ abbreviate(.)))
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Iterate through the sequence until the rule is satisfied.
+- **Strengths**: The algorithm is explicit about the sequence rule, so the control flow is easy to validate against the prompt.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The non-obvious part is the local rule inside the loop, because that rule determines the whole output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+
+path = "638 Days of the Week Abbreviation.xlsx"
+input = pd.read_excel(path, usecols="A:C", skiprows=1, nrows=8)
+test = pd.read_excel(path, usecols="D:F", skiprows=1, nrows=8).rename(columns=lambda x: x.split('.')[0])
+
+result = input.apply(lambda col: next(col.str[:i] for i in range(1, len(col[0]) + 1) if len(col.str[:i].unique()) == len(col)))
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version keeps the algorithm explicit, which helps when the challenge depends on a greedy or iterative rule.
+
+## **Difficulty Level**
+
+**Medium / Hard**
+
+The challenge relies on a non-obvious iterative rule rather than a single straight aggregation.
+
+### Related Challenges
+
+- [Excel Challenge 639](/challenges/excelbi/Excel639.html)
+- [Excel Challenge 640](/challenges/excelbi/Excel640.html)
+- [Excel Challenge 641](/challenges/excelbi/Excel641.html)

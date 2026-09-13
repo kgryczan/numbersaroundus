@@ -1,0 +1,138 @@
+---
+title: "Omid - Challenge 178"
+description: "🔰 Find the prime Factors of numbers in the question table."
+categories: [data-challenges, advanced-exercises]
+tags: [omid-motamedisedeh, challenge, advanced]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+---
+
+![Illustration for Omid - Challenge 178](/challenges/images/OmidC178.jpg)
+
+## Challenge Description
+
+🔰 Find the prime Factors of numbers in the question table.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "files/CH-178 Prime Factors.xlsx"
+input = read_excel(path, range = "B2:B7")
+test  = read_excel(path, range = "F2:G7")
+
+
+find_prime_factors <- function(n) {
+  factors <- c()
+  for (divisor in 2:n) {
+    while (n %% divisor == 0) {
+      factors <- c(factors, divisor)
+      n <- n / divisor
+    }
+  }
+  str_c(factors, collapse = "*")
+}
+
+result = input %>%
+  mutate(prime_factors = map_chr(Numbers, find_prime_factors)) 
+
+all.equal(result$prime_factors, test$`Result 1`)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Builds the intermediate columns that drive the final result
+
+    -   Parses the text patterns directly instead of relying on manual cleanup
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook rule and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the sheet structure and source ranges remain stable.
+
+-   **Gem**:
+
+    -   The strongest part of the solution is choosing the right intermediate representation before shaping the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "CH-178 Prime Factors.xlsx"
+input = pd.read_excel(path, usecols="B", skiprows=1, nrows=6)
+test = pd.read_excel(path, usecols="F:G", skiprows=1, nrows=6)
+
+def find_prime_factors(n):
+    factors = []
+    for divisor in range(2, int(n**0.5) + 1):
+        while n % divisor == 0:
+            factors.append(divisor)
+            n //= divisor
+    if n > 1:
+        factors.append(n)
+    return "*".join(map(str, factors))
+
+input['prime_factors'] = input.iloc[:, 0].apply(find_prime_factors)
+
+print(all(input["prime_factors"] == test['Result 1'])) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook ranges needed for the challenge
+
+    -   Applies the rule iteratively until the output stabilizes
+
+-   **Strengths**:
+
+    -   The Python version follows the same rule in a direct dataframe-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout remains stable, so any sheet redesign would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the original workbook rule instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate to challenging**:
+
+-   It depends on a non-trivial iterative or rule-based transformation.
+
+-   Getting the expected output requires more than one straightforward dataframe step.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Omid - Challenge 177](OmidC177.qmd)
+-   [Omid - Challenge 179](OmidC179.qmd)
+-   [Omid - Challenge 180](OmidC180.qmd)

@@ -1,0 +1,95 @@
+---
+title: "Excel BI - Excel Challenge 642"
+description: "🔰 List all consecutive alphabets in Data column separated by comma."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 642](/challenges/images/exc642.jpg)
+
+## Challenge Description
+
+🔰 List all consecutive alphabets in Data column separated by comma. Against this, list all numbers separated by comma between this set of alphabets and next alphabet.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/642 List Alphabets and Numbers.xlsx"
+input = read_excel(path, range = "A2:A22")
+test  = read_excel(path, range = "B2:C8")
+
+result = input %>%
+  mutate(group = consecutive_id(str_detect(Data, "^[a-z]"))) %>%
+  summarise(Data = paste(Data, collapse = ", "), .by = group) %>%
+  mutate(type = ifelse(group %% 2 == 0, "Number", "Alphabet"),
+         group2 = ceiling(group / 2)) %>%
+  select(-group) %>%
+  pivot_wider(names_from = type, values_from = Data) %>%
+  select(-group2)
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import re
+
+path = "642 List Alphabets and Numbers.xlsx"
+input = pd.read_excel(path, usecols="A", skiprows=1, nrows=21)
+test = pd.read_excel(path, usecols="B:C", skiprows=1, nrows=6).fillna("").astype(str)
+
+input['type'] = input.iloc[:, 0].apply(lambda x: 'Alphabet' if re.match(r'[A-Za-z]', str(x)) else 'Number')
+input['consecutive_id'] = (input['type'] != input['type'].shift()).cumsum()
+input['Data'] = input['Data'].astype(str)
+
+result = input.groupby('consecutive_id').agg({'Data': ', '.join, 'type': 'first'}).reset_index(drop=True)
+result['group'] = result.index // 2
+
+pivot_result = result.pivot(index='group', columns='type', values='Data').reset_index(drop=True).fillna("")
+pivot_result.columns.name = None
+
+print(pivot_result.equals(test)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 643](/challenges/excelbi/Excel643.html)
+- [Excel Challenge 644](/challenges/excelbi/Excel644.html)
+- [Excel Challenge 645](/challenges/excelbi/Excel645.html)

@@ -1,0 +1,85 @@
+---
+title: "Excel BI - Excel Challenge 644"
+description: "🔰 List All names and total cost against each name."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 644](/challenges/images/exc644.jpg)
+
+## Challenge Description
+
+🔰 List All names and total cost against each name.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/644 Total Cost.xlsx"
+input = read_excel(path, range = "A2:B17")
+test  = read_excel(path, range = "D2:E6")
+
+result = input %>%
+  mutate(Name = ifelse(is.na(Cost), `Name & Category`, NA)) %>%
+  fill(Name, .direction = "down") %>%
+  summarise(`Total Cost` = sum(Cost, na.rm = T), .by = Name)
+
+all.equal(result, test)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Apply the business rule conditions explicitly.
+- **Strengths**: The code maps the workbook rule into a compact, reproducible pipeline.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The elegant part is how little code is needed once the correct intermediate representation is chosen.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "644 Total Cost.xlsx"
+input = pd.read_excel(path, usecols="A:B", skiprows=1, nrows=16)
+test = pd.read_excel(path, usecols="D:E", skiprows=1, nrows=4).sort_values('Name').reset_index(drop  = True)
+
+input['Name'] = input['Name & Category'].where(input['Cost'].isna()).ffill()
+result = input.fillna({'Cost': 0}).groupby('Name')['Cost'].sum().reset_index().rename(columns={'Cost': 'Total Cost'})
+result['Total Cost'] = result['Total Cost'].astype(np.int64)
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Easy / Medium**
+
+The business rule is clear, though the workbook still needs a few transformation steps to reach the expected output.
+
+### Related Challenges
+
+- [Excel Challenge 645](/challenges/excelbi/Excel645.html)
+- [Excel Challenge 646](/challenges/excelbi/Excel646.html)
+- [Excel Challenge 647](/challenges/excelbi/Excel647.html)

@@ -1,0 +1,88 @@
+---
+title: "Excel BI - Excel Challenge 641"
+description: "🔰 Numbers Answer Expected Extend the given numbers into row and wrap the row where absolute gap between two subsequent numbers is greater than 2."
+categories: [excel-challenges, excel-formulas]
+tags: [excelbi, excel, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - Excel Challenge 641](/challenges/images/exc641.jpg)
+
+## Challenge Description
+
+🔰 Numbers Answer Expected Extend the given numbers into row and wrap the row where absolute gap between two subsequent numbers is greater than 2. Between row 5 and 6, absolute gap is > 2, hence 7 and 5 will come into different row. Between row 7 and 8, absolute gap is > 3, hence, 2, 1 and 3 will come into different row.
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Excel/641 Wrap the Row.xlsx"
+input = read_excel(path, range = "A1:A12")
+test  = read_excel(path, range = "B2:E6", col_names = c("N1", "N2", "N3", "N4"))
+
+result = input %>%
+  mutate(row = cumsum(if_else(is.na(lag(Numbers)) | abs(Numbers - lag(Numbers)) > 2, 1, 0))) %>%
+  mutate(num = glue::glue("N{row_number()}"), .by = row) %>%
+  pivot_wider(names_from = num, values_from = Numbers) %>%
+  select(-row)
+
+all.equal(result, test, check.attributes = FALSE)
+#> [1] TRUE
+```
+
+### R Analysis
+
+- **Logic**: Read the workbook ranges needed for the challenge; Derive the required intermediate columns; Aggregate or rank the data at the required grouping level; Reshape the result into the workbook output format.
+- **Strengths**: The reshaping step mirrors the workbook output closely instead of forcing extra post-processing.
+- **Areas for Improvement**: The solution assumes the workbook layout and selected ranges remain stable, so any structural change in the sheet would require small adjustments.
+- **Gem**: The last reshape turns a raw transformation into something that already looks like a report.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "641 Wrap the Row.xlsx"
+input = pd.read_excel(path, usecols="A", nrows=12)
+test = pd.read_excel(path, usecols="B:E", nrows=5, names=["N1", "N2", "N3", "N4"])
+test = test.astype('float64')
+
+input['row'] = (input['Numbers'].diff().abs().gt(2) | input['Numbers'].shift().isna()).cumsum()
+input['num'] = 'N' + (input.groupby('row').cumcount() + 1).astype(str)
+
+result = input.pivot(index='row', columns='num', values='Numbers').reset_index(drop=True).rename_axis(None, axis=1).astype('float64')
+
+print(result.equals(test)) # True
+```
+
+### Python
+
+The Python version follows the same grouped logic and keeps the transformation explicit in a dataframe pipeline.
+
+## **Difficulty Level**
+
+**Medium**
+
+The individual steps are manageable, but the correct transformation pattern is not obvious from the raw data.
+
+### Related Challenges
+
+- [Excel Challenge 642](/challenges/excelbi/Excel642.html)
+- [Excel Challenge 643](/challenges/excelbi/Excel643.html)
+- [Excel Challenge 644](/challenges/excelbi/Excel644.html)

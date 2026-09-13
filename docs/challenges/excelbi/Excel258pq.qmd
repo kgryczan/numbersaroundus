@@ -1,0 +1,162 @@
+---
+title: "Excel BI - PowerQuery Challenge 258"
+description: "Name Amout Start Month Total Months Robert Mar"
+categories: [excel-challenges, power-query]
+tags: [excelbi, power-query, challenge]
+format: 
+  html:
+    code-fold: false
+date: "2026-03-24"
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+![Illustration for Excel BI - PowerQuery Challenge 258](/challenges/images/exc258pq.jpg)
+
+## Challenge Description
+
+Name Amout Start Month Total Months Robert Mar
+
+## Solutions
+
+::: panel-tabset
+### R Solution
+
+```{r}
+#| eval: false
+
+library(tidyverse)
+library(readxl)
+
+path = "Power Query/PQ_Challenge_258.xlsx"
+input = read_excel(path, range = "A2:D7")
+test  = read_excel(path, range = "A11:M16") %>%
+  replace(is.na(.), 0)
+
+r2 = input %>%
+  mutate(year = 2025) %>%
+  uncount(`Total Months`, .remove = F) %>%
+  mutate(month_amount = Amout / `Total Months`) %>%
+  mutate(`Start Month` = match(`Start Month`, month.abb)) %>%
+  mutate(month = `Start Month` + row_number() - 1, .by = Name) %>%
+  mutate(year = ifelse(month > 12, year + 1, year),
+         month = ifelse(month > 12, month - 12, month)) %>%
+  select(Name, year, month, month_amount) %>%
+  mutate(month = month.abb[month])
+
+
+r3 = expand.grid(year = 2025, month = month.abb, Name = unique(input$Name)) %>%
+  left_join(r2, by = c("year", "month", "Name")) %>%
+  pivot_wider(names_from = month, values_from = month_amount) %>%
+  select(-year) %>%
+  replace(is.na(.), 0)
+
+all.equal(r3, test, check.attributes = F)
+# [1] TRUE
+```
+
+### R Analysis
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Builds helper columns that drive the final output
+
+-   **Strengths**:
+
+    -   The R solution stays close to the workbook logic and keeps the transformation compact.
+
+-   **Areas for Improvement**:
+
+    -   The code assumes the workbook layout and selected ranges remain stable.
+
+-   **Gem**:
+
+    -   The best part of the solution is choosing the right intermediate shape before formatting the final output.
+
+### Python Solution
+
+```{python}
+#| eval: false
+
+import pandas as pd
+import numpy as np
+
+path = "PQ_Challenge_258.xlsx"
+months = pd.Categorical(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], 
+                        categories=['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], 
+                        ordered=True)
+
+input = pd.read_excel(path, skiprows=1, nrows=6, usecols="A:D")
+test = pd.read_excel(path, skiprows=10, nrows=6, usecols="A:M").fillna(0).sort_values(by = 'Name').reset_index(drop = True)
+
+input["year"] = 2025
+df_expanded = input.loc[np.repeat(input.index, input["Total Months"])].copy()
+df_expanded["month_amount"] = df_expanded["Amout"] / df_expanded["Total Months"]
+df_expanded["month_num"] = df_expanded["Start Month"].apply(lambda x: months.categories.get_loc(x) + 1) + df_expanded.groupby("Name").cumcount()
+
+overflow = df_expanded["month_num"] > 12
+df_expanded.loc[overflow, "year"] += 1
+df_expanded.loc[overflow, "month_num"] = df_expanded.loc[overflow, "month_num"] - 12
+
+df_expanded["month"] = df_expanded["month_num"].apply(lambda x: months[x - 1])
+r2 = df_expanded[["Name", "year", "month", "month_amount"]]
+
+r3 = pd.DataFrame([(2025, m, n) for n in input["Name"].unique() for m in months], 
+                  columns=["year", "month", "Name"]).merge(r2, on=["year", "month", "Name"], how="left")
+
+r3_pivot = r3.pivot_table(index="Name", columns="month", values="month_amount", 
+                          aggfunc='first', fill_value=0).reset_index()
+
+r3_pivot = r3_pivot.reindex(columns=["Name"] + list(months), fill_value=0)
+r3_pivot.columns.name = None
+
+
+print(all(r3_pivot == test)) # True
+```
+
+### Python
+
+-   **Logic**:
+
+    -   Reads the workbook range needed for the challenge
+
+    -   Reshapes the data into the structure required by the result table
+
+    -   Aggregates or ranks values at the relevant grouping level
+
+    -   Applies the rule iteratively until the output is complete
+
+-   **Strengths**:
+
+    -   The Python version follows the same workbook rule in a direct pandas-oriented implementation.
+
+-   **Areas for Improvement**:
+
+    -   As with the R version, any workbook layout change would require small adjustments.
+
+-   **Gem**:
+
+    -   The implementation stays close to the source challenge instead of adding unnecessary abstraction.
+:::
+
+## **Difficulty Level**
+
+This task is **moderate**:
+
+-   It combines reshaping, grouping, or parsing steps that are common in Power Query style problems.
+
+-   The main challenge is reproducing the workbook output structure exactly.
+
+### Related Challenges
+
+Explore more challenges from the same series:
+
+-   [Excel BI - PowerQuery Challenge 257](Excel257pq.qmd)
+-   [Excel BI - Excel Challenge 638](Excel638.qmd)
